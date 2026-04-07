@@ -9,12 +9,15 @@ on:
 jobs:
   ESLint:
     runs-on: ubuntu-latest
+
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Install NPM dependencies
-        uses: bahmutov/npm-install@v1.7.4
+        run: npm install
 
       - name: Run ESLint
-        run: |
-          npx eslint src/
+        run: npx eslint src/
