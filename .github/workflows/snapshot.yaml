@@ -2,6 +2,10 @@ name: Publish Nightly Snapshot
 
 on:
   workflow_dispatch:
+  push:
+    branches: [master]
+    paths:
+      - 'src/**'
   schedule:
   - cron: "0 0 * * *"
 
