@@ -2,22 +2,23 @@ import { darkTheme } from "themes/dark-theme";
 import { Theme, ViewTheme } from "themes/theme.interface";
 import { hex } from "utils/color3";
 
-const redAccent = hex("#C6428E");
-const blueAccent = hex("#484fd7");
-const mixedAccent = hex("#9a3fe5");
+const redAccent = hex("#FF2222");
+const white = hex("#ffffff");
+const black = hex("#0a0a0a");
+
 const accentSequence = new ColorSequence([
-	new ColorSequenceKeypoint(0, redAccent),
-	new ColorSequenceKeypoint(0.5, mixedAccent),
-	new ColorSequenceKeypoint(1, blueAccent),
+	new ColorSequenceKeypoint(0, hex("#FF4444")),
+	new ColorSequenceKeypoint(0.5, hex("#CC0000")),
+	new ColorSequenceKeypoint(1, hex("#880000")),
 ]);
 
-const background = hex("#181818");
-const backgroundDark = hex("#242424");
+const background = hex("#111111");
+const backgroundDark = hex("#0a0a0a");
 
 const view: ViewTheme = {
 	acrylic: false,
-	outlined: false,
-	foreground: hex("#ffffff"),
+	outlined: true,
+	foreground: white,
 	background: background,
 	backgroundGradient: undefined,
 	transparency: 0,
@@ -25,28 +26,30 @@ const view: ViewTheme = {
 	dropshadowTransparency: 0.3,
 };
 
-export const sorbet: Theme = {
+export const crimson: Theme = {
 	...darkTheme,
 
-	name: "Sorbet",
+	name: "Crimson",
 
 	preview: {
 		foreground: {
-			color: new ColorSequence(hex("#ffffff")),
+			color: new ColorSequence(white),
 		},
 		background: {
 			color: new ColorSequence(background),
 		},
 		accent: {
 			color: accentSequence,
+			rotation: 25,
 		},
 	},
 
 	navbar: {
 		...darkTheme.navbar,
-		outlined: false,
+		outlined: true,
 		background: background,
 		dropshadow: background,
+		foreground: white,
 		accentGradient: {
 			color: accentSequence,
 		},
@@ -54,23 +57,24 @@ export const sorbet: Theme = {
 
 	clock: {
 		...darkTheme.clock,
-		outlined: false,
+		outlined: true,
 		background: background,
 		dropshadow: background,
+		foreground: white,
 	},
 
 	home: {
 		title: {
 			...view,
-			background: hex("#ffffff"),
+			background: white,
 			backgroundGradient: {
 				color: accentSequence,
-				rotation: 30,
+				rotation: 25,
 			},
-			dropshadow: hex("#ffffff"),
+			dropshadow: white,
 			dropshadowGradient: {
 				color: accentSequence,
-				rotation: 30,
+				rotation: 25,
 			},
 		},
 		profile: {
@@ -81,68 +85,72 @@ export const sorbet: Theme = {
 				transparency: 0,
 				gradient: {
 					color: accentSequence,
-					rotation: 45,
+					rotation: 25,
 				},
 			},
 			highlight: {
 				flight: redAccent,
-				walkSpeed: mixedAccent,
-				jumpHeight: blueAccent,
+				walkSpeed: hex("#FF4444"),
+				jumpHeight: hex("#FF6666"),
 				refresh: redAccent,
-				ghost: blueAccent,
-				godmode: redAccent,
-				freecam: blueAccent,
+				ghost: hex("#FF4444"),
+				godmode: hex("#FF0000"),
+				freecam: hex("#FF6666"),
 			},
 			slider: {
 				...darkTheme.home.profile.slider,
-				outlined: false,
-				foreground: hex("#ffffff"),
+				outlined: true,
+				foreground: white,
 				background: backgroundDark,
 			},
 			button: {
 				...darkTheme.home.profile.button,
-				outlined: false,
-				foreground: hex("#ffffff"),
+				outlined: true,
+				foreground: white,
 				background: backgroundDark,
 			},
 		},
 		server: {
 			...view,
+			background: hex("#CC0000"),
+			dropshadow: hex("#CC0000"),
 			rejoinButton: {
 				...darkTheme.home.server.rejoinButton,
-				outlined: false,
-				foreground: hex("#ffffff"),
-				background: backgroundDark,
-				foregroundTransparency: 0.5,
-				accent: redAccent,
+				outlined: true,
+				foreground: white,
+				background: hex("#CC0000"),
+				foregroundTransparency: 0,
+				accent: black,
 			},
 			switchButton: {
 				...darkTheme.home.server.switchButton,
-				outlined: false,
-				foreground: hex("#ffffff"),
-				background: backgroundDark,
-				foregroundTransparency: 0.5,
-				accent: blueAccent,
+				outlined: true,
+				foreground: white,
+				background: hex("#CC0000"),
+				foregroundTransparency: 0,
+				accent: black,
 			},
 		},
 		friendActivity: {
 			...view,
 			friendButton: {
 				...darkTheme.home.friendActivity.friendButton,
-				outlined: false,
-				foreground: hex("#ffffff"),
+				outlined: true,
+				foreground: white,
 				background: backgroundDark,
+				accent: redAccent,
 			},
 		},
 	},
+
 	apps: {
 		players: {
 			...view,
 			highlight: {
-				teleport: redAccent,
-				hide: blueAccent,
-				kill: redAccent,
-				spectate: blueAccent,
+				teleport: hex("#FF4444"),
+				hide: hex("#FF2222"),
+				kill: hex("#CC0000"),
+				spectate: hex("#FF6666"),
 			},
 			avatar: {
 				...darkTheme.apps.players.avatar,
@@ -150,32 +158,33 @@ export const sorbet: Theme = {
 				transparency: 0,
 				gradient: {
 					color: accentSequence,
-					rotation: 45,
+					rotation: 25,
 				},
 			},
 			button: {
 				...darkTheme.apps.players.button,
-				outlined: false,
-				foreground: hex("#ffffff"),
+				outlined: true,
+				foreground: white,
 				background: backgroundDark,
 			},
 			playerButton: {
 				...darkTheme.apps.players.playerButton,
-				outlined: false,
-				foreground: hex("#ffffff"),
+				outlined: true,
+				foreground: white,
 				background: backgroundDark,
 				dropshadow: backgroundDark,
-				accent: blueAccent,
+				accent: redAccent,
 			},
 		},
 	},
+
 	options: {
 		config: {
 			...view,
 			configButton: {
 				...darkTheme.options.config.configButton,
-				outlined: false,
-				foreground: hex("#ffffff"),
+				outlined: true,
+				foreground: white,
 				background: backgroundDark,
 				dropshadow: backgroundDark,
 				accent: redAccent,
@@ -185,22 +194,22 @@ export const sorbet: Theme = {
 			...view,
 			shortcutButton: {
 				...darkTheme.options.shortcuts.shortcutButton,
-				outlined: false,
-				foreground: hex("#ffffff"),
+				outlined: true,
+				foreground: white,
 				background: backgroundDark,
 				dropshadow: backgroundDark,
-				accent: mixedAccent,
+				accent: redAccent,
 			},
 		},
 		themes: {
 			...view,
 			themeButton: {
 				...darkTheme.options.themes.themeButton,
-				outlined: false,
-				foreground: hex("#ffffff"),
+				outlined: true,
+				foreground: white,
 				background: backgroundDark,
 				dropshadow: backgroundDark,
-				accent: blueAccent,
+				accent: redAccent,
 			},
 		},
 	},
