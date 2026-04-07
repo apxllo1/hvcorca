@@ -2,20 +2,20 @@ import { Theme } from "themes/theme.interface";
 import { hex } from "utils/color3";
 
 export const darkTheme: Theme = {
-	name: "Dark theme",
+	name: "Havoc",
 
 	preview: {
 		foreground: {
 			color: new ColorSequence(hex("#ffffff")),
 		},
 		background: {
-			color: new ColorSequence(hex("#232428")),
+			color: new ColorSequence(hex("#0f0f0f")),
 		},
 		accent: {
 			color: new ColorSequence([
-				new ColorSequenceKeypoint(0, hex("#F6BD29")),
-				new ColorSequenceKeypoint(0.5, hex("#F64229")),
-				new ColorSequenceKeypoint(1, hex("#9029F6")),
+				new ColorSequenceKeypoint(0, hex("#FF2222")),
+				new ColorSequenceKeypoint(0.5, hex("#CC0000")),
+				new ColorSequenceKeypoint(1, hex("#880000")),
 			]),
 			rotation: 25,
 		},
@@ -26,19 +26,19 @@ export const darkTheme: Theme = {
 		acrylic: false,
 
 		foreground: hex("#ffffff"),
-		background: hex("#232428"),
+		background: hex("#0f0f0f"),
 		transparency: 0,
 
 		accentGradient: {
 			color: new ColorSequence([
-				new ColorSequenceKeypoint(0, hex("#f629c6")),
-				new ColorSequenceKeypoint(0.25, hex("#F64229")),
-				new ColorSequenceKeypoint(0.5, hex("#ffd42a")),
-				new ColorSequenceKeypoint(0.75, hex("#37CC95")),
-				new ColorSequenceKeypoint(1, hex("#3789cc")),
+				new ColorSequenceKeypoint(0, hex("#FF4444")),
+				new ColorSequenceKeypoint(0.25, hex("#FF2222")),
+				new ColorSequenceKeypoint(0.5, hex("#CC0000")),
+				new ColorSequenceKeypoint(0.75, hex("#990000")),
+				new ColorSequenceKeypoint(1, hex("#FF4444")),
 			]),
 		},
-		dropshadow: hex("#232428"),
+		dropshadow: hex("#0f0f0f"),
 		dropshadowTransparency: 0.3,
 		glowTransparency: 0,
 	},
@@ -48,10 +48,10 @@ export const darkTheme: Theme = {
 		acrylic: false,
 
 		foreground: hex("#ffffff"),
-		background: hex("#232428"),
+		background: hex("#0f0f0f"),
 		transparency: 0,
 
-		dropshadow: hex("#232428"),
+		dropshadow: hex("#0f0f0f"),
 		dropshadowTransparency: 0.3,
 	},
 
@@ -64,9 +64,9 @@ export const darkTheme: Theme = {
 			background: hex("#ffffff"),
 			backgroundGradient: {
 				color: new ColorSequence([
-					new ColorSequenceKeypoint(0, hex("#F6BD29")),
-					new ColorSequenceKeypoint(0.5, hex("#F64229")),
-					new ColorSequenceKeypoint(1, hex("#9029F6")),
+					new ColorSequenceKeypoint(0, hex("#FF4444")),
+					new ColorSequenceKeypoint(0.5, hex("#CC0000")),
+					new ColorSequenceKeypoint(1, hex("#880000")),
 				]),
 				rotation: 25,
 			},
@@ -75,9 +75,9 @@ export const darkTheme: Theme = {
 			dropshadow: hex("#ffffff"),
 			dropshadowGradient: {
 				color: new ColorSequence([
-					new ColorSequenceKeypoint(0, hex("#F6BD29")),
-					new ColorSequenceKeypoint(0.5, hex("#F64229")),
-					new ColorSequenceKeypoint(1, hex("#9029F6")),
+					new ColorSequenceKeypoint(0, hex("#FF4444")),
+					new ColorSequenceKeypoint(0.5, hex("#CC0000")),
+					new ColorSequenceKeypoint(1, hex("#880000")),
 				]),
 				rotation: 25,
 			},
@@ -89,19 +89,19 @@ export const darkTheme: Theme = {
 			acrylic: false,
 
 			foreground: hex("#ffffff"),
-			background: hex("#232428"),
+			background: hex("#141414"),
 			transparency: 0,
 
-			dropshadow: hex("#232428"),
+			dropshadow: hex("#141414"),
 			dropshadowTransparency: 0.3,
 
 			avatar: {
-				background: hex("#1B1C20"),
+				background: hex("#0a0a0a"),
 				gradient: {
 					color: new ColorSequence([
-						new ColorSequenceKeypoint(0, hex("#F6BD29")),
-						new ColorSequenceKeypoint(0.5, hex("#F64229")),
-						new ColorSequenceKeypoint(1, hex("#9029F6")),
+						new ColorSequenceKeypoint(0, hex("#FF4444")),
+						new ColorSequenceKeypoint(0.5, hex("#CC0000")),
+						new ColorSequenceKeypoint(1, hex("#880000")),
 					]),
 					rotation: 25,
 				},
@@ -114,7 +114,7 @@ export const darkTheme: Theme = {
 				foreground: hex("#ffffff"),
 				foregroundTransparency: 0.5,
 
-				background: hex("#1B1C20"),
+				background: hex("#0a0a0a"),
 				backgroundTransparency: 0,
 			},
 
@@ -124,18 +124,18 @@ export const darkTheme: Theme = {
 				foreground: hex("#ffffff"),
 				foregroundTransparency: 0,
 
-				background: hex("#1B1C20"),
+				background: hex("#0a0a0a"),
 				backgroundTransparency: 0,
 			},
 
 			highlight: {
-				flight: hex("#a22df0"),
-				walkSpeed: hex("#EC423D"),
-				jumpHeight: hex("#37CC95"),
-				refresh: hex("#a22df0"),
-				ghost: hex("#FF4040"),
-				godmode: hex("#f09c2d"),
-				freecam: hex("#37CC95"),
+				flight: hex("#CC0000"),
+				walkSpeed: hex("#FF2222"),
+				jumpHeight: hex("#FF6666"),
+				refresh: hex("#CC0000"),
+				ghost: hex("#FF4444"),
+				godmode: hex("#FF0000"),
+				freecam: hex("#FF6666"),
 			},
 		},
 
@@ -144,17 +144,17 @@ export const darkTheme: Theme = {
 			acrylic: false,
 
 			foreground: hex("#ffffff"),
-			background: hex("#37CC95"),
+			background: hex("#CC0000"),
 			transparency: 0,
 
-			dropshadow: hex("#37CC95"),
+			dropshadow: hex("#CC0000"),
 			dropshadowTransparency: 0.3,
 
 			rejoinButton: {
 				outlined: true,
 				foreground: hex("#ffffff"),
-				background: hex("#37CC95"),
-				accent: hex("#232428"),
+				background: hex("#CC0000"),
+				accent: hex("#0f0f0f"),
 				foregroundTransparency: 0,
 				backgroundTransparency: 0,
 			},
@@ -162,8 +162,8 @@ export const darkTheme: Theme = {
 			switchButton: {
 				outlined: true,
 				foreground: hex("#ffffff"),
-				background: hex("#37CC95"),
-				accent: hex("#232428"),
+				background: hex("#CC0000"),
+				accent: hex("#0f0f0f"),
 				foregroundTransparency: 0,
 				backgroundTransparency: 0,
 			},
@@ -174,21 +174,21 @@ export const darkTheme: Theme = {
 			acrylic: false,
 
 			foreground: hex("#ffffff"),
-			background: hex("#232428"),
+			background: hex("#141414"),
 			transparency: 0,
 
-			dropshadow: hex("#232428"),
+			dropshadow: hex("#141414"),
 			dropshadowTransparency: 0.3,
 
 			friendButton: {
 				outlined: true,
 
-				accent: hex("#37CC95"),
+				accent: hex("#CC0000"),
 
 				foreground: hex("#ffffff"),
 				foregroundTransparency: 0,
 
-				background: hex("#1B1C20"),
+				background: hex("#0a0a0a"),
 				backgroundTransparency: 0,
 
 				dropshadow: hex("#000000"),
@@ -204,18 +204,18 @@ export const darkTheme: Theme = {
 			acrylic: false,
 
 			foreground: hex("#ffffff"),
-			background: hex("#232428"),
+			background: hex("#141414"),
 			transparency: 0,
 
-			dropshadow: hex("#232428"),
+			dropshadow: hex("#141414"),
 			dropshadowTransparency: 0.3,
 
 			avatar: {
-				background: hex("#1B1C20"),
+				background: hex("#0a0a0a"),
 				gradient: {
 					color: new ColorSequence([
-						new ColorSequenceKeypoint(0, hex("#37CC95")),
-						new ColorSequenceKeypoint(1, hex("#37CC95")),
+						new ColorSequenceKeypoint(0, hex("#CC0000")),
+						new ColorSequenceKeypoint(1, hex("#CC0000")),
 					]),
 					rotation: 25,
 				},
@@ -228,26 +228,26 @@ export const darkTheme: Theme = {
 				foreground: hex("#ffffff"),
 				foregroundTransparency: 0.5,
 
-				background: hex("#1B1C20"),
+				background: hex("#0a0a0a"),
 				backgroundTransparency: 0,
 			},
 
 			highlight: {
-				teleport: hex("#37CC95"),
-				hide: hex("#f09c2d"),
-				kill: hex("#EC423D"),
-				spectate: hex("#a22df0"),
+				teleport: hex("#FF4444"),
+				hide: hex("#FF2222"),
+				kill: hex("#CC0000"),
+				spectate: hex("#FF6666"),
 			},
 
 			playerButton: {
 				outlined: true,
 
-				accent: hex("#37CC95"),
+				accent: hex("#CC0000"),
 
 				foreground: hex("#ffffff"),
 				foregroundTransparency: 0.5,
 
-				background: hex("#1B1C20"),
+				background: hex("#0a0a0a"),
 				backgroundTransparency: 0,
 
 				dropshadow: hex("#000000"),
@@ -263,21 +263,21 @@ export const darkTheme: Theme = {
 			acrylic: false,
 
 			foreground: hex("#ffffff"),
-			background: hex("#232428"),
+			background: hex("#141414"),
 			transparency: 0,
 
-			dropshadow: hex("#232428"),
+			dropshadow: hex("#141414"),
 			dropshadowTransparency: 0.3,
 
 			themeButton: {
 				outlined: true,
 
-				accent: hex("#37a4cc"),
+				accent: hex("#FF2222"),
 
 				foreground: hex("#ffffff"),
 				foregroundTransparency: 0.5,
 
-				background: hex("#1B1C20"),
+				background: hex("#0a0a0a"),
 				backgroundTransparency: 0,
 
 				dropshadow: hex("#000000"),
@@ -291,21 +291,21 @@ export const darkTheme: Theme = {
 			acrylic: false,
 
 			foreground: hex("#ffffff"),
-			background: hex("#232428"),
+			background: hex("#141414"),
 			transparency: 0,
 
-			dropshadow: hex("#232428"),
+			dropshadow: hex("#141414"),
 			dropshadowTransparency: 0.3,
 
 			shortcutButton: {
 				outlined: true,
 
-				accent: hex("#37CC95"),
+				accent: hex("#CC0000"),
 
 				foreground: hex("#ffffff"),
 				foregroundTransparency: 0.5,
 
-				background: hex("#1B1C20"),
+				background: hex("#0a0a0a"),
 				backgroundTransparency: 0,
 
 				dropshadow: hex("#000000"),
@@ -319,21 +319,21 @@ export const darkTheme: Theme = {
 			acrylic: false,
 
 			foreground: hex("#ffffff"),
-			background: hex("#232428"),
+			background: hex("#141414"),
 			transparency: 0,
 
-			dropshadow: hex("#232428"),
+			dropshadow: hex("#141414"),
 			dropshadowTransparency: 0.3,
 
 			configButton: {
 				outlined: true,
 
-				accent: hex("#37CC95"),
+				accent: hex("#CC0000"),
 
 				foreground: hex("#ffffff"),
 				foregroundTransparency: 0.5,
 
-				background: hex("#1B1C20"),
+				background: hex("#0a0a0a"),
 				backgroundTransparency: 0,
 
 				dropshadow: hex("#000000"),
