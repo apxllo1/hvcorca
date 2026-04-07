@@ -1,9 +1,9 @@
 {
-	"name": "orca",
+	"name": "havoc",
 	"scripts": {
 		"compile": "npx rbxtsc --verbose --type=model",
 		"watch": "npx rbxtsc -w",
-		"build": "rojo build default.project.json --output \"Orca.rbxm\"",
+		"build": "rojo build default.project.json --output \"Havoc.rbxm\"",
 		"serve": "rojo serve place.project.json",
 		"bundle": "npm run build && remodel run ci/bundle.lua public/dev.lua dev verbose",
 		"bundle:dbg": "npm run build && remodel run ci/bundle.lua public/dev.lua dev_dbg debug verbose",
