@@ -1,9 +1,11 @@
-name: Publish Release
+name: Publish Nightly Snapshot
 
 on:
   workflow_dispatch:
-  release:
-    types: [ published ]
+  push:
+    branches: [master]
+    paths:
+      - 'src/**'
 
 jobs:
   bundle-release:
@@ -17,6 +19,11 @@ jobs:
         with:
           repository: ${{ github.event.repository.full_name }}
           ref: "master"
+
+      - name: Install OpenSSL 1.1
+        run: |
+          wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb
+          sudo dpkg -i libssl1.1_1.1.1f-1ubuntu2_amd64.deb
 
       - name: Install Foreman
         run: |
@@ -35,23 +42,14 @@ jobs:
       - name: Build model
         run: npm run build
 
-      - name: Determine tag name
-        id: tag
-        run: |
-          if [ "${{ github.event_name }}" == "release" ]; then
-            echo "tag_name=${{ github.event.release.tag_name }}" >> $GITHUB_OUTPUT
-          else
-            echo "tag_name=$(git describe --tags --always)" >> $GITHUB_OUTPUT
-          fi
-
       - name: Bundle modules
         run: |
-          remodel run ci/bundle.lua public/latest.lua ${{ steps.tag.outputs.tag_name }} minify
-          remodel run ci/bundle.lua public/latest.debug.lua ${{ steps.tag.outputs.tag_name }}-dbg debug
+          remodel run ci/bundle.lua public/latest.lua dev minify
+          remodel run ci/bundle.lua public/latest.debug.lua dev-dbg debug
 
       - name: Commit latest
         uses: EndBug/add-and-commit@v9
         with:
           default_author: github_actions
           add: "['public/latest.lua', 'public/latest.debug.lua']"
-          message: 🔴 Release ${{ steps.tag.outputs.tag_name }}
+          message: 🔥 Auto-build from src push
