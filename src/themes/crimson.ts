@@ -102,12 +102,14 @@ export const crimson: Theme = {
 				outlined: true,
 				foreground: white,
 				background: backgroundDark,
+				accent: redAccent,        // added for consistency
 			},
 			button: {
 				...darkTheme.home.profile.button,
 				outlined: true,
 				foreground: white,
 				background: backgroundDark,
+				accent: redAccent,        // added for consistency
 			},
 		},
 		server: {
@@ -118,17 +120,17 @@ export const crimson: Theme = {
 				...darkTheme.home.server.rejoinButton,
 				outlined: true,
 				foreground: white,
-				background: hex("#CC0000"),
+				background: hex("#880000"),   // darkened for contrast
 				foregroundTransparency: 0,
-				accent: black,
+				accent: white,                // changed black → white for visibility
 			},
 			switchButton: {
 				...darkTheme.home.server.switchButton,
 				outlined: true,
 				foreground: white,
-				background: hex("#CC0000"),
+				background: hex("#880000"),   // darkened for contrast
 				foregroundTransparency: 0,
-				accent: black,
+				accent: white,                // changed black → white for visibility
 			},
 		},
 		friendActivity: {
@@ -166,6 +168,7 @@ export const crimson: Theme = {
 				outlined: true,
 				foreground: white,
 				background: backgroundDark,
+				accent: redAccent,        // added for consistency
 			},
 			playerButton: {
 				...darkTheme.apps.players.playerButton,
