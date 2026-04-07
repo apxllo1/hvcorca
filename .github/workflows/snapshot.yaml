@@ -1,5 +1,4 @@
 name: Publish Nightly Snapshot
-
 on:
   workflow_dispatch:
   push:
@@ -8,14 +7,11 @@ on:
       - 'src/**'
   schedule:
     - cron: "0 0 * * *"
-
 jobs:
   bundle-snapshot:
     runs-on: ubuntu-22.04
-
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
     steps:
       - uses: actions/checkout@v4
 
@@ -36,6 +32,13 @@ jobs:
           sudo mv foreman /usr/local/bin/foreman
           foreman install
           echo "$HOME/.foreman/bin" >> $GITHUB_PATH
+
+      - name: Install Remodel
+        run: |
+          curl -L https://github.com/rojo-rbx/remodel/releases/download/v0.11.0/remodel-0.11.0-linux-x86_64.zip -o remodel.zip
+          unzip remodel.zip
+          chmod +x remodel
+          sudo mv remodel /usr/local/bin/remodel
 
       - name: Install NPM dependencies
         run: npm install
