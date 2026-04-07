@@ -35,6 +35,7 @@ jobs:
           chmod +x foreman
           sudo mv foreman /usr/local/bin/foreman
           foreman install
+          echo "$HOME/.foreman/bin" >> $GITHUB_PATH
 
       - name: Install NPM dependencies
         run: npm install
