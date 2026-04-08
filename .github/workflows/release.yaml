@@ -19,6 +19,7 @@ jobs:
         with:
           repository: ${{ github.event.repository.full_name }}
           ref: "master"
+          fetch-depth: 0
 
       - name: Install OpenSSL 1.1
         run: |
