@@ -4402,7 +4402,7 @@ local darkTheme = {\
 \9\9\9color = ColorSequence.new(hex(\"#232428\")),\
 \9\9},\
 \9\9accent = {\
-\9\9\9color = ColorSequence.new({ ColorSequenceKeypoint.new(0, hex(\"#F6BD29\")), ColorSequenceKeypoint.new(0.5, hex(\"#F64229\")), ColorSequenceKeypoint.new(1, hex(\"#9029F6\")) }),\
+\9\9\9color = ColorSequence.new({ ColorSequenceKeypoint.new(0, hex(\"#F6BD29\")), ColorSequenceKeypoint.new(0.5, hex(\"#F64229\")), ColorSequenceKeypoint.new(1, hex(\"#000000\")) }),\
 \9\9\9rotation = 25,\
 \9\9},\
 \9},\
@@ -4435,13 +4435,13 @@ local darkTheme = {\
 \9\9\9foreground = hex(\"#ffffff\"),\
 \9\9\9background = hex(\"#ffffff\"),\
 \9\9\9backgroundGradient = {\
-\9\9\9\9color = ColorSequence.new({ ColorSequenceKeypoint.new(0, hex(\"#F6BD29\")), ColorSequenceKeypoint.new(0.5, hex(\"#F64229\")), ColorSequenceKeypoint.new(1, hex(\"#9029F6\")) }),\
+\9\9\9\9color = ColorSequence.new({ ColorSequenceKeypoint.new(0, hex(\"#F6BD29\")), ColorSequenceKeypoint.new(0.5, hex(\"#F64229\")), ColorSequenceKeypoint.new(1, hex(\"#000000\")) }),\
 \9\9\9\9rotation = 25,\
 \9\9\9},\
 \9\9\9transparency = 0,\
 \9\9\9dropshadow = hex(\"#ffffff\"),\
 \9\9\9dropshadowGradient = {\
-\9\9\9\9color = ColorSequence.new({ ColorSequenceKeypoint.new(0, hex(\"#F6BD29\")), ColorSequenceKeypoint.new(0.5, hex(\"#F64229\")), ColorSequenceKeypoint.new(1, hex(\"#9029F6\")) }),\
+\9\9\9\9color = ColorSequence.new({ ColorSequenceKeypoint.new(0, hex(\"#F6BD29\")), ColorSequenceKeypoint.new(0.5, hex(\"#F64229\")), ColorSequenceKeypoint.new(1, hex(\"#000000\")) }),\
 \9\9\9\9rotation = 25,\
 \9\9\9},\
 \9\9\9dropshadowTransparency = 0.3,\
@@ -4457,7 +4457,7 @@ local darkTheme = {\
 \9\9\9avatar = {\
 \9\9\9\9background = hex(\"#1B1C20\"),\
 \9\9\9\9gradient = {\
-\9\9\9\9\9color = ColorSequence.new({ ColorSequenceKeypoint.new(0, hex(\"#F6BD29\")), ColorSequenceKeypoint.new(0.5, hex(\"#F64229\")), ColorSequenceKeypoint.new(1, hex(\"#9029F6\")) }),\
+\9\9\9\9\9color = ColorSequence.new({ ColorSequenceKeypoint.new(0, hex(\"#F6BD29\")), ColorSequenceKeypoint.new(0.5, hex(\"#F64229\")), ColorSequenceKeypoint.new(1, hex(\"#000000\")) }),\
 \9\9\9\9\9rotation = 25,\
 \9\9\9\9},\
 \9\9\9\9transparency = 0,\
@@ -4949,7 +4949,7 @@ _object.preview = {\
 \9\9color = ColorSequence.new(hex(\"#000000\")),\
 \9},\
 \9accent = {\
-\9\9color = ColorSequence.new({ ColorSequenceKeypoint.new(0, hex(\"#F6BD29\")), ColorSequenceKeypoint.new(0.5, hex(\"#F64229\")), ColorSequenceKeypoint.new(1, hex(\"#9029F6\")) }),\
+\9\9color = ColorSequence.new({ ColorSequenceKeypoint.new(0, hex(\"#F6BD29\")), ColorSequenceKeypoint.new(0.5, hex(\"#F64229\")), ColorSequenceKeypoint.new(1, hex(\"#000000\")) }),\
 \9\9rotation = 25,\
 \9},\
 }\
@@ -4998,7 +4998,7 @@ end\
 _object_6.background = hex(\"#ffffff\")\
 _object_6.transparency = 0.9\
 _object_6.gradient = {\
-\9color = ColorSequence.new({ ColorSequenceKeypoint.new(0, hex(\"#F6BD29\")), ColorSequenceKeypoint.new(0.5, hex(\"#F64229\")), ColorSequenceKeypoint.new(1, hex(\"#9029F6\")) }),\
+\9color = ColorSequence.new({ ColorSequenceKeypoint.new(0, hex(\"#F6BD29\")), ColorSequenceKeypoint.new(0.5, hex(\"#F64229\")), ColorSequenceKeypoint.new(1, hex(\"#000000\")) }),\
 }\
 _object_5[_left_5] = _object_6\
 local _left_6 = \"slider\"\
@@ -5083,7 +5083,7 @@ end\
 _object_16.background = hex(\"#ffffff\")\
 _object_16.transparency = 0.9\
 _object_16.gradient = {\
-\9color = ColorSequence.new({ ColorSequenceKeypoint.new(0, hex(\"#F6BD29\")), ColorSequenceKeypoint.new(0.5, hex(\"#F64229\")), ColorSequenceKeypoint.new(1, hex(\"#9029F6\")) }),\
+\9color = ColorSequence.new({ ColorSequenceKeypoint.new(0, hex(\"#F6BD29\")), ColorSequenceKeypoint.new(0.5, hex(\"#F64229\")), ColorSequenceKeypoint.new(1, hex(\"#000000\")) }),\
 }\
 _object_15[_left_15] = _object_16\
 local _left_16 = \"button\"\
@@ -5189,7 +5189,7 @@ _object.preview = {\
 \9\9color = ColorSequence.new(hex(\"#ffffff\")),\
 \9},\
 \9accent = {\
-\9\9color = ColorSequence.new({ ColorSequenceKeypoint.new(0, hex(\"#F6BD29\")), ColorSequenceKeypoint.new(0.5, hex(\"#F64229\")), ColorSequenceKeypoint.new(1, hex(\"#9029F6\")) }),\
+\9\9color = ColorSequence.new({ ColorSequenceKeypoint.new(0, hex(\"#F6BD29\")), ColorSequenceKeypoint.new(0.5, hex(\"#F64229\")), ColorSequenceKeypoint.new(1, hex(\"#000000\")) }),\
 \9\9rotation = 25,\
 \9},\
 }\
@@ -5409,8 +5409,8 @@ newModule("obsidian", "ModuleScript", "Orca.themes.obsidian", "Orca.themes", fun
 local TS = require(script.Parent.Parent.include.RuntimeLib)\
 local darkTheme = TS.import(script, script.Parent, \"dark-theme\").darkTheme\
 local hex = TS.import(script, script.Parent.Parent, \"utils\", \"color3\").hex\
-local accent = hex(\"#9029F6\")\
-local accentSequence = ColorSequence.new(hex(\"#9029F6\"))\
+local accent = hex(\"#000000\")\
+local accentSequence = ColorSequence.new(hex(\"#000000\"))\
 local _object = {}\
 for _k, _v in pairs(darkTheme) do\
 \9_object[_k] = _v\
