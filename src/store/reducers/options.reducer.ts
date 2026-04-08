@@ -4,7 +4,7 @@ import { OptionsState } from "store/models/options.model";
 import { persistentState } from "store/persistent-state";
 
 const initialState: OptionsState = persistentState<OptionsState>("options", (state) => state.options, {
-	currentTheme: "Crimson",
+	currentTheme: "Sorbet",
 	config: {
 		acrylicBlur: true,
 	},

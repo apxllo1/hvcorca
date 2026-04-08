@@ -18,7 +18,7 @@ export const highContrast: Theme = {
 			color: new ColorSequence([
 				new ColorSequenceKeypoint(0, hex("#F6BD29")),
 				new ColorSequenceKeypoint(0.5, hex("#F64229")),
-				new ColorSequenceKeypoint(1, hex("#000000")),
+				new ColorSequenceKeypoint(1, hex("#9029F6")),
 			]),
 			rotation: 25,
 		},
@@ -58,7 +58,7 @@ export const highContrast: Theme = {
 					color: new ColorSequence([
 						new ColorSequenceKeypoint(0, hex("#F6BD29")),
 						new ColorSequenceKeypoint(0.5, hex("#F64229")),
-						new ColorSequenceKeypoint(1, hex("#000000")),
+						new ColorSequenceKeypoint(1, hex("#9029F6")),
 					]),
 				},
 			},
@@ -119,7 +119,7 @@ export const highContrast: Theme = {
 					color: new ColorSequence([
 						new ColorSequenceKeypoint(0, hex("#F6BD29")),
 						new ColorSequenceKeypoint(0.5, hex("#F64229")),
-						new ColorSequenceKeypoint(1, hex("#000000")),
+						new ColorSequenceKeypoint(1, hex("#9029F6")),
 					]),
 				},
 			},

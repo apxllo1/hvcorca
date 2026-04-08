@@ -2,8 +2,8 @@ import { darkTheme } from "themes/dark-theme";
 import { Theme } from "themes/theme.interface";
 import { hex } from "utils/color3";
 
-const accent = hex("#000000");
-const accentSequence = new ColorSequence(hex("#000000"));
+const accent = hex("#9029F6");
+const accentSequence = new ColorSequence(hex("#9029F6"));
 
 export const obsidian: Theme = {
 	...darkTheme,
