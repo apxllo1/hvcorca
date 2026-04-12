@@ -1,4 +1,4 @@
-name: Publish Nightly Snapshot
+name: Publish Release
 
 on:
   workflow_dispatch:
