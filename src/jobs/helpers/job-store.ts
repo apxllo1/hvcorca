@@ -50,5 +50,10 @@ function shallowEqual(a: object, b: object) {
 			return false;
 		}
 	}
+	for (const [key] of pairs(b)) {
+		if (a[key as never] !== b[key as never]) {
+			return false;
+		}
+	}
 	return true;
 }
