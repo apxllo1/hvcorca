@@ -102,14 +102,12 @@ export const crimson: Theme = {
 				outlined: true,
 				foreground: white,
 				background: backgroundDark,
-				accent: redAccent,        // added for consistency
 			},
 			button: {
 				...darkTheme.home.profile.button,
 				outlined: true,
 				foreground: white,
 				background: backgroundDark,
-				accent: redAccent,        // added for consistency
 			},
 		},
 		server: {
@@ -168,7 +166,6 @@ export const crimson: Theme = {
 				outlined: true,
 				foreground: white,
 				background: backgroundDark,
-				accent: redAccent,        // added for consistency
 			},
 			playerButton: {
 				...darkTheme.apps.players.playerButton,
