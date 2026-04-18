@@ -1,61 +1,10 @@
-name: Publish Release
-on:
-  workflow_dispatch:
-  push:
-    branches: [master]
-    paths:
-      - 'src/**'
-jobs:
-  bundle-release:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          repository: ${{ github.event.repository.full_name }}
-          ref: "master"
-          fetch-depth: 0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Install OpenSSL 1.1
-        run: |
-          wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb
-          sudo dpkg -i libssl1.1_1.1.1f-1ubuntu2_amd64.deb
-
-      - name: Install Rojo
+- name: Install Rojo
         run: |
           curl -L https://github.com/rojo-rbx/rojo/releases/download/v7.4.1/rojo-7.4.1-linux.zip -o rojo.zip
           unzip rojo.zip
+          ls -la
+          file rojo || echo "rojo binary not found"
           chmod +x rojo
           sudo mv rojo /usr/local/bin/rojo
-
-      - name: Install Remodel
-        run: |
-          curl -L https://github.com/rojo-rbx/remodel/releases/download/v0.11.0/remodel-0.11.0-linux-x86_64.zip -o remodel.zip
-          unzip remodel.zip
-          chmod +x remodel
-          sudo mv remodel /usr/local/bin/remodel
-
-      - name: Install NPM dependencies
-        run: npm install
-
-      - name: Compile roblox-ts
-        run: npm run compile
-
-      - name: Build model
-        run: npm run build
-
-      - name: Bundle modules
-        run: |
-          remodel run ci/bundle.lua public/latest.lua dev minify
-          remodel run ci/bundle.lua public/latest.debug.lua dev-dbg debug
-
-      - name: Commit latest
-        uses: EndBug/add-and-commit@v9
-        with:
-          default_author: github_actions
-          add: "['public/latest.lua', 'public/latest.debug.lua']"
-          message: 🔥 Auto-build from src push
+          which rojo
+          rojo --version
