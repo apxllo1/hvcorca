@@ -44,6 +44,13 @@ jobs:
           chmod +x remodel
           sudo mv remodel /usr/local/bin/remodel
 
+      - name: Install Rojo
+        run: |
+          curl -L https://github.com/rojo-rbx/rojo/releases/download/v7.4.1/rojo-7.4.1-linux.zip -o rojo.zip
+          unzip rojo.zip
+          chmod +x rojo
+          sudo mv rojo /usr/local/bin/rojo
+
       - name: Install NPM dependencies
         run: npm install
 
