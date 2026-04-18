@@ -1,16 +1,13 @@
 name: Publish Release
-
 on:
   workflow_dispatch:
   push:
     branches: [master]
     paths:
       - 'src/**'
-
 jobs:
   bundle-release:
     runs-on: ubuntu-22.04
-
     steps:
       - uses: actions/checkout@v4
         with:
@@ -28,14 +25,12 @@ jobs:
           wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb
           sudo dpkg -i libssl1.1_1.1.1f-1ubuntu2_amd64.deb
 
-      - name: Install Foreman
+      - name: Install Rojo
         run: |
-          curl -L https://github.com/Roblox/foreman/releases/download/v1.0.4/foreman-linux.zip -o foreman.zip
-          unzip foreman.zip
-          chmod +x foreman
-          sudo mv foreman /usr/local/bin/foreman
-          foreman install
-          echo "$HOME/.foreman/bin" >> $GITHUB_PATH
+          curl -L https://github.com/rojo-rbx/rojo/releases/download/v7.4.1/rojo-7.4.1-linux.zip -o rojo.zip
+          unzip rojo.zip
+          chmod +x rojo
+          sudo mv rojo /usr/local/bin/rojo
 
       - name: Install Remodel
         run: |
@@ -43,13 +38,6 @@ jobs:
           unzip remodel.zip
           chmod +x remodel
           sudo mv remodel /usr/local/bin/remodel
-
-      - name: Install Rojo
-        run: |
-          curl -L https://github.com/rojo-rbx/rojo/releases/download/v7.4.1/rojo-7.4.1-linux.zip -o rojo.zip
-          unzip rojo.zip
-          chmod +x rojo
-          sudo mv rojo /usr/local/bin/rojo
 
       - name: Install NPM dependencies
         run: npm install
