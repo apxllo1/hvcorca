@@ -118,17 +118,15 @@ export const crimson: Theme = {
 				...darkTheme.home.server.rejoinButton,
 				outlined: true,
 				foreground: white,
-				background: hex("#880000"),   // darkened for contrast
+				background: hex("#880000"),
 				foregroundTransparency: 0,
-				accent: white,                // changed black → white for visibility
 			},
 			switchButton: {
 				...darkTheme.home.server.switchButton,
 				outlined: true,
 				foreground: white,
-				background: hex("#880000"),   // darkened for contrast
+				background: hex("#880000"),
 				foregroundTransparency: 0,
-				accent: white,                // changed black → white for visibility
 			},
 		},
 		friendActivity: {
@@ -138,7 +136,6 @@ export const crimson: Theme = {
 				outlined: true,
 				foreground: white,
 				background: backgroundDark,
-				accent: redAccent,
 			},
 		},
 	},
