@@ -9924,7 +9924,7 @@ local function Scripts()\
 \9\9}, {\
 \9\9\9Roact.createElement(Content, {\
 \9\9\9\9header = \"AK ADMIN\",\
-\9\9\9\9body = \"A universal script with 60k+ users, enjoy.\",\
+\9\9\9\9body = \"A universal script with 60k+ users.\",\
 \9\9\9\9footer = \"absent.wtf\",\
 \9\9\9}),\
 \9\9}),\
