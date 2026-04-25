@@ -42,7 +42,7 @@ function Scripts() {
 				}
 				position={scale(0, 0)}
 			>
-				<Content header="AK ADMIN" body="A universal script with 60k+ users." footer="absent.wtf" />
+				<Content header="AK ADMIN" body="A universal script with 60k+ users, enjoy." footer="absent.wtf" />
 			</ScriptCard>
 
 			{/* NOVOLINE */}
