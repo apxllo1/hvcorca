@@ -9781,10 +9781,10 @@ local function Scripts()
 		}),
 		Roact.createElement(ScriptCard, {
 			onActivate = function()
-				return runScriptFromUrl("https://raw.githubusercontent.com/1201for/V.G-Hub/main/V.Ghub", "V.G Hub")
+				return runScriptFromUrl("https://novoline.pro", "Novoline")
 			end,
 			index = 1,
-			backgroundImage = "rbxassetid://8992292381",
+			backgroundImage = "rbxassetid://127094516248328",
 			backgroundImageSize = Vector2.new(1021, 1023),
 			dropshadow = "rbxassetid://8992291993",
 			dropshadowSize = Vector2.new(1.15, 1.25),

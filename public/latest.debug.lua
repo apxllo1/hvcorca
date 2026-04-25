@@ -9930,10 +9930,10 @@ local function Scripts()\
 \9\9}),\
 \9\9Roact.createElement(ScriptCard, {\
 \9\9\9onActivate = function()\
-\9\9\9\9return runScriptFromUrl(\"https://raw.githubusercontent.com/1201for/V.G-Hub/main/V.Ghub\", \"V.G Hub\")\
+\9\9\9\9return runScriptFromUrl(\"https://novoline.pro\", \"Novoline\")\
 \9\9\9end,\
 \9\9\9index = 1,\
-\9\9\9backgroundImage = \"rbxassetid://8992292381\",\
+\9\9\9backgroundImage = \"rbxassetid://127094516248328\",\
 \9\9\9backgroundImageSize = Vector2.new(1021, 1023),\
 \9\9\9dropshadow = \"rbxassetid://8992291993\",\
 \9\9\9dropshadowSize = Vector2.new(1.15, 1.25),\
