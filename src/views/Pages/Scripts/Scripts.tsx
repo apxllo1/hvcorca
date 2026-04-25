@@ -67,7 +67,7 @@ function Scripts() {
 				}
 				position={scale(0, 1)}
 			>
-				<Content header="V.G Hub" body="Featuring over\n100 games." footer="github.com/1201for" />
+				<Content header="Novoline" body="A universal script made by Gladius." footer="novoline.pro" />
 			</ScriptCard>
 
 			{/* CMD-X */}
