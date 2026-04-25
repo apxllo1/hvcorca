@@ -57,3 +57,4 @@ jobs:
           default_author: github_actions
           add: "['public/latest.lua', 'public/latest.debug.lua']"
           message: 🔥 Auto-build from src push
+          pull: '--rebase --autostash'
