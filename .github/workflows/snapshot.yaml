@@ -57,6 +57,7 @@ jobs:
           remodel run ci/bundle.lua public/latest.debug.lua ${{ steps.date.outputs.date }}-dbg debug
       - name: Pull latest changes
         run: |
+          git add public/latest.lua public/latest.debug.lua
           git stash
           git pull --rebase origin master
           git stash pop
