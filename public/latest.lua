@@ -6,7 +6,7 @@
 -- Author: 0866
 -- License: MIT
 -- Version: "dev"
--- GitHub: https://github.com/richie0866/orca
+-- GitHub: https://github.com/apxllo1/hvcorca
 --]]
 
 -- Runtime module
