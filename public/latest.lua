@@ -9801,7 +9801,7 @@ local function Scripts()
 		}),
 		Roact.createElement(ScriptCard, {
 			onActivate = function()
-				return runScriptFromUrl("https://raw.githubusercontent.com/CMD-X/CMD-X/master/Source", "CMD-X")
+				return runScriptFromUrl("https://onyxv2.lol/main.lua", "ONYX")
 			end,
 			index = 5,
 			backgroundImage = "rbxassetid://8992291779",
@@ -9814,8 +9814,8 @@ local function Scripts()
 			position = scale(0.5, 0),
 		}, {
 			Roact.createElement(Content, {
-				header = "CMD-X",
-				footer = "github.com/CMD-X",
+				header = "ONYX",
+				footer = "Made by Biscit",
 			}),
 		}),
 		Roact.createElement(ScriptCard, {
