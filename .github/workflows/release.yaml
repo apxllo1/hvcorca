@@ -23,20 +23,7 @@ jobs:
           wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb
           sudo dpkg -i libssl1.1_1.1.1f-1ubuntu2_amd64.deb
       - name: Install Rojo
-        run: |
-          curl -L --fail --retry 3 --retry-delay 2 https://github.com/rojo-rbx/rojo/releases/download/v7.4.1/rojo-7.4.1-linux.zip -o rojo.zip
-          if ! unzip -t rojo.zip > /dev/null 2>&1; then
-            echo "Downloaded file is not a valid ZIP, retrying..."
-            rm -f rojo.zip
-            curl -L --fail --retry 3 --retry-delay 2 https://github.com/rojo-rbx/rojo/releases/download/v7.4.1/rojo-7.4.1-linux.zip -o rojo.zip
-          fi
-          unzip rojo.zip
-          ls -la
-          file rojo || echo "rojo binary not found"
-          chmod +x rojo
-          sudo mv rojo /usr/local/bin/rojo
-          which rojo
-          rojo --version
+        run: cargo install rojo --version 7.4.1 --locked
       - name: Install Remodel
         run: |
           curl -L --fail --retry 3 --retry-delay 2 https://github.com/rojo-rbx/remodel/releases/download/v0.11.0/remodel-0.11.0-linux-x86_64.zip -o remodel.zip
