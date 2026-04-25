@@ -56,7 +56,10 @@ jobs:
           remodel run ci/bundle.lua public/latest.lua ${{ steps.date.outputs.date }} minify
           remodel run ci/bundle.lua public/latest.debug.lua ${{ steps.date.outputs.date }}-dbg debug
       - name: Pull latest changes
-        run: git pull --rebase origin master
+        run: |
+          git stash
+          git pull --rebase origin master
+          git stash pop
       - name: Commit latest
         uses: EndBug/add-and-commit@v9
         with:
