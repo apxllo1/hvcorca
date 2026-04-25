@@ -26,7 +26,7 @@ function Scripts() {
 			<ScriptCard
 				onActivate={() => runScriptFromUrl("https://absent.wtf/AKADMIN.lua", "AKADMIN")}
 				index={4}
-				backgroundImage="rbxassetid://8992292705"
+				backgroundImage="rbxassetid://84773916777698"
 				backgroundImageSize={new Vector2(1023, 682)}
 				dropshadow="rbxassetid://8992292536"
 				dropshadowSize={new Vector2(1.15, 1.25)}
@@ -42,7 +42,7 @@ function Scripts() {
 				}
 				position={scale(0, 0)}
 			>
-				<Content header="AK ADMIn" body="A universal script with 60k+ users." footer="absent.wtf" />
+				<Content header="AK ADMIN" body="A universal script with 60k+ users." footer="absent.wtf" />
 			</ScriptCard>
 
 			{/* V.G Hub */}
