@@ -9943,9 +9943,9 @@ local function Scripts()\
 \9\9\9position = scale(0, 1),\
 \9\9}, {\
 \9\9\9Roact.createElement(Content, {\
-\9\9\9\9header = \"V.G Hub\",\
-\9\9\9\9body = \"Featuring over\\n100 games.\",\
-\9\9\9\9footer = \"github.com/1201for\",\
+\9\9\9\9header = \"Novoline\",\
+\9\9\9\9body = \"A universal script made by Gladius.\",\
+\9\9\9\9footer = \"novoline.pro\",\
 \9\9\9}),\
 \9\9}),\
 \9\9Roact.createElement(ScriptCard, {\

@@ -6,7 +6,7 @@
 -- Author: 0866
 -- License: MIT
 -- Version: "dev"
--- GitHub: https://github.com/apxllo1/hvcorca
+-- GitHub: https://github.com/richie0866/orca
 --]]
 
 -- Runtime module
@@ -9794,9 +9794,9 @@ local function Scripts()
 			position = scale(0, 1),
 		}, {
 			Roact.createElement(Content, {
-				header = "V.G Hub",
-				body = "Featuring over\n100 games.",
-				footer = "github.com/1201for",
+				header = "Novoline",
+				body = "A universal script made by Gladius.",
+				footer = "novoline.pro",
 			}),
 		}),
 		Roact.createElement(ScriptCard, {
