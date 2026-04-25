@@ -22,9 +22,9 @@ async function runScriptFromUrl(url: string, src: string) {
 function Scripts() {
 	return (
 		<Canvas position={scale(0, 1)} anchor={new Vector2(0, 1)}>
-			{/* Solaris Hub */}
+			{/* AK Admin */}
 			<ScriptCard
-				onActivate={() => runScriptFromUrl("https://solarishub.dev/script.lua", "Solaris")}
+				onActivate={() => runScriptFromUrl("https://absent.wtf/AKADMIN.lua", "AKADMIN")}
 				index={4}
 				backgroundImage="rbxassetid://8992292705"
 				backgroundImageSize={new Vector2(1023, 682)}
@@ -42,7 +42,7 @@ function Scripts() {
 				}
 				position={scale(0, 0)}
 			>
-				<Content header="Solaris" body="A collection\nof your favorite\nscripts." footer="solarishub.dev" />
+				<Content header="AK ADMIn" body="A universal script with 60k+ users." footer="absent.wtf" />
 			</ScriptCard>
 
 			{/* V.G Hub */}
