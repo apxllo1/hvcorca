@@ -55,16 +55,12 @@ jobs:
         run: |
           remodel run ci/bundle.lua public/latest.lua ${{ steps.date.outputs.date }} minify
           remodel run ci/bundle.lua public/latest.debug.lua ${{ steps.date.outputs.date }}-dbg debug
-      - name: Pull latest changes
-        run: |
-          git add public/latest.lua public/latest.debug.lua
-          git stash
-          git pull --rebase origin master
-          git stash pop
       - name: Commit latest
-        uses: EndBug/add-and-commit@v9
-        with:
-          default_author: github_actions
-          add: "['public/latest.lua', 'public/latest.debug.lua']"
-          message: 🔥 Snapshot ${{ steps.date.outputs.date }}
-          push: true
+        run: |
+          git config user.name "github-actions"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/latest.lua public/latest.debug.lua
+          git commit -m "🔥 Snapshot ${{ steps.date.outputs.date }}" || echo "Nothing to commit"
+          git fetch origin master
+          git rebase origin/master
+          git push origin master
