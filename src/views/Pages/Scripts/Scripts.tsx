@@ -45,13 +45,13 @@ function Scripts() {
 				<Content header="AK ADMIN" body="A universal script with 60k+ users." footer="absent.wtf" />
 			</ScriptCard>
 
-			{/* V.G Hub */}
+			{/* NOVOLINE */}
 			<ScriptCard
 				onActivate={() =>
-					runScriptFromUrl("https://raw.githubusercontent.com/1201for/V.G-Hub/main/V.Ghub", "V.G Hub")
+					runScriptFromUrl("https://novoline.pro", "Novoline")
 				}
 				index={1}
-				backgroundImage="rbxassetid://8992292381"
+				backgroundImage="rbxassetid://127094516248328"
 				backgroundImageSize={new Vector2(1021, 1023)}
 				dropshadow="rbxassetid://8992291993"
 				dropshadowSize={new Vector2(1.15, 1.25)}
