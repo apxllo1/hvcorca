@@ -70,10 +70,10 @@ function Scripts() {
 				<Content header="Novoline" body="A universal script made by Gladius." footer="novoline.pro" />
 			</ScriptCard>
 
-			{/* CMD-X */}
+			{/* ONYX */}
 			<ScriptCard
 				onActivate={() =>
-					runScriptFromUrl("https://raw.githubusercontent.com/CMD-X/CMD-X/master/Source", "CMD-X")
+					runScriptFromUrl("https://onyxv2.lol/main.lua", "ONYX")
 				}
 				index={5}
 				backgroundImage="rbxassetid://8992291779"
@@ -92,7 +92,7 @@ function Scripts() {
 				}
 				position={scale(0.5, 0)}
 			>
-				<Content header="CMD-X" footer="github.com/CMD-X" />
+				<Content header="ONYX" footer="Made by Biscit" />
 			</ScriptCard>
 
 			{/* Infinite Yield */}
