@@ -14,14 +14,16 @@ import { getColorInSequence, hex } from "utils/color3";
 import { px, scale } from "utils/udim2";
 import NavbarTab from "./NavbarTab";
 
-const NAVBAR_SIZE = px(400, 56);
+// 1. Increased width from 400 to 500 to fit 5 buttons perfectly
+const NAVBAR_SIZE = px(500, 56);
 
 function Navbar() {
 	const theme = useTheme("navbar");
 	const page = useCurrentPage();
 	const isOpen = useAppSelector((state) => state.dashboard.isOpen);
 
-	const alpha = useSpring(PAGE_TO_INDEX[page] / 4, { frequency: 3.9, dampingRatio: 0.76 });
+	// 2. Updated division from 4 to 5 so the 'accent' light aligns with 5 tabs
+	const alpha = useSpring(PAGE_TO_INDEX[page] / 5, { frequency: 3.9, dampingRatio: 0.76 });
 
 	return (
 		<frame
@@ -39,10 +41,12 @@ function Navbar() {
 				gradient={theme.dropshadowGradient}
 				transparency={theme.transparency}
 			/>
+			
+			{/* 3. Updated math (0.1) to keep the underglow centered under the 5th tab */}
 			<Underglow
 				transparency={theme.glowTransparency}
-				position={alpha.map((a) => a + 0.125)}
-				sequenceColor={alpha.map((a) => getColorInSequence(theme.accentGradient.color, a + 0.125))}
+				position={alpha.map((a) => a + 0.1)}
+				sequenceColor={alpha.map((a) => getColorInSequence(theme.accentGradient.color, a + 0.1))}
 			/>
 
 			{/* Body */}
@@ -53,15 +57,15 @@ function Navbar() {
 				transparency={theme.transparency}
 			/>
 
-			{/* Accent */}
+			{/* Accent Light */}
 			<Canvas
 				size={px(100, 56)}
-				position={alpha.map((a) => scale(math.round(a * 800) / 800, 0))}
+				position={alpha.map((a) => scale(math.round(a * 1000) / 1000, 0))}
 				clipsDescendants
 			>
 				<frame
 					Size={NAVBAR_SIZE}
-					Position={alpha.map((a) => scale(-4 * (math.round(a * 800) / 800), 0))}
+					Position={alpha.map((a) => scale(-5 * (math.round(a * 1000) / 1000), 0))}
 					BackgroundColor3={hex("#FFFFFF")}
 					BorderSizePixel={0}
 				>
@@ -77,11 +81,12 @@ function Navbar() {
 			{/* Overlapping border */}
 			{theme.outlined && <Border Key="border" color={theme.foreground} radius={8} transparency={0.8} />}
 
-			{/* Tabs */}
+			{/* Tabs - Added the Misc tab here */}
 			<NavbarTab page={DashboardPage.Home} />
 			<NavbarTab page={DashboardPage.Apps} />
 			<NavbarTab page={DashboardPage.Scripts} />
 			<NavbarTab page={DashboardPage.Options} />
+			<NavbarTab page={DashboardPage.Misc} />
 
 			{/* Effects */}
 			{theme.acrylic && <Acrylic />}
