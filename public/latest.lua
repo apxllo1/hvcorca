@@ -2091,7 +2091,7 @@ newModule("use-theme", "ModuleScript", "Havoc.hooks.use-theme", "Havoc.hooks", f
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local useAppSelector = TS.import(script, script.Parent, "common", "rodux-hooks").useAppSelector
 local getThemes = TS.import(script, script.Parent.Parent, "themes").getThemes
-local darkTheme = TS.import(script, script.Parent.Parent, "themes", "dark-theme").darkTheme
+local darkTheme = TS.import(script, script.Parent.Parent, "themes", "sorbet").darkTheme
 local function useTheme(key)
 	return useAppSelector(function(state)
 		local _exp = getThemes()
@@ -4235,7 +4235,7 @@ return {
 } end, newEnv("Havoc.store.store"))() end)
 newModule("themes", "ModuleScript", "Havoc.themes", "Havoc", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.include.RuntimeLib)
-local darkTheme = TS.import(script, script, "dark-theme").darkTheme
+local darkTheme = TS.import(script, script, "sorbet").darkTheme
 local frostedGlass = TS.import(script, script, "frosted-glass").frostedGlass
 local highContrast = TS.import(script, script, "high-contrast").highContrast
 local lightTheme = TS.import(script, script, "light-theme").lightTheme
@@ -4250,7 +4250,7 @@ return {
 } end, newEnv("Havoc.themes"))() end)
 newModule("crimson", "ModuleScript", "Havoc.themes.crimson", "Havoc.themes", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
-local darkTheme = TS.import(script, script.Parent, "dark-theme").darkTheme
+local darkTheme = TS.import(script, script.Parent, "sorbet").darkTheme
 local hex = TS.import(script, script.Parent.Parent, "utils", "color3").hex
 local redAccent = hex("#FF2222")
 local white = hex("#ffffff")
@@ -4520,261 +4520,9 @@ local crimson = _object
 return {
 	crimson = crimson,
 } end, newEnv("Havoc.themes.crimson"))() end)
-newModule("dark-theme", "ModuleScript", "Havoc.themes.dark-theme", "Havoc.themes", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
-local TS = require(script.Parent.Parent.include.RuntimeLib)
-local hex = TS.import(script, script.Parent.Parent, "utils", "color3").hex
-local darkTheme = {
-	name = "Havoc",
-	preview = {
-		foreground = {
-			color = ColorSequence.new(hex("#ffffff")),
-		},
-		background = {
-			color = ColorSequence.new(hex("#0f0f0f")),
-		},
-		accent = {
-			color = ColorSequence.new({ ColorSequenceKeypoint.new(0, hex("#FF2222")), ColorSequenceKeypoint.new(0.5, hex("#CC0000")), ColorSequenceKeypoint.new(1, hex("#880000")) }),
-			rotation = 25,
-		},
-	},
-	navbar = {
-		outlined = true,
-		acrylic = false,
-		foreground = hex("#ffffff"),
-		background = hex("#0f0f0f"),
-		transparency = 0,
-		accentGradient = {
-			color = ColorSequence.new({ ColorSequenceKeypoint.new(0, hex("#FF4444")), ColorSequenceKeypoint.new(0.25, hex("#FF2222")), ColorSequenceKeypoint.new(0.5, hex("#CC0000")), ColorSequenceKeypoint.new(0.75, hex("#990000")), ColorSequenceKeypoint.new(1, hex("#FF4444")) }),
-		},
-		dropshadow = hex("#0f0f0f"),
-		dropshadowTransparency = 0.3,
-		glowTransparency = 0,
-	},
-	clock = {
-		outlined = true,
-		acrylic = false,
-		foreground = hex("#ffffff"),
-		background = hex("#0f0f0f"),
-		transparency = 0,
-		dropshadow = hex("#0f0f0f"),
-		dropshadowTransparency = 0.3,
-	},
-	home = {
-		title = {
-			outlined = true,
-			acrylic = false,
-			foreground = hex("#ffffff"),
-			background = hex("#ffffff"),
-			backgroundGradient = {
-				color = ColorSequence.new({ ColorSequenceKeypoint.new(0, hex("#FF4444")), ColorSequenceKeypoint.new(0.5, hex("#CC0000")), ColorSequenceKeypoint.new(1, hex("#880000")) }),
-				rotation = 25,
-			},
-			transparency = 0,
-			dropshadow = hex("#ffffff"),
-			dropshadowGradient = {
-				color = ColorSequence.new({ ColorSequenceKeypoint.new(0, hex("#FF4444")), ColorSequenceKeypoint.new(0.5, hex("#CC0000")), ColorSequenceKeypoint.new(1, hex("#880000")) }),
-				rotation = 25,
-			},
-			dropshadowTransparency = 0.3,
-		},
-		profile = {
-			outlined = true,
-			acrylic = false,
-			foreground = hex("#ffffff"),
-			background = hex("#141414"),
-			transparency = 0,
-			dropshadow = hex("#141414"),
-			dropshadowTransparency = 0.3,
-			avatar = {
-				background = hex("#0a0a0a"),
-				gradient = {
-					color = ColorSequence.new({ ColorSequenceKeypoint.new(0, hex("#FF4444")), ColorSequenceKeypoint.new(0.5, hex("#CC0000")), ColorSequenceKeypoint.new(1, hex("#880000")) }),
-					rotation = 25,
-				},
-				transparency = 0,
-			},
-			button = {
-				outlined = true,
-				foreground = hex("#ffffff"),
-				foregroundTransparency = 0.5,
-				background = hex("#0a0a0a"),
-				backgroundTransparency = 0,
-			},
-			slider = {
-				outlined = true,
-				foreground = hex("#ffffff"),
-				foregroundTransparency = 0,
-				background = hex("#0a0a0a"),
-				backgroundTransparency = 0,
-			},
-			highlight = {
-				flight = hex("#CC0000"),
-				walkSpeed = hex("#FF2222"),
-				jumpHeight = hex("#FF6666"),
-				refresh = hex("#CC0000"),
-				ghost = hex("#FF4444"),
-				godmode = hex("#FF0000"),
-				freecam = hex("#FF6666"),
-			},
-		},
-		server = {
-			outlined = true,
-			acrylic = false,
-			foreground = hex("#ffffff"),
-			background = hex("#CC0000"),
-			transparency = 0,
-			dropshadow = hex("#CC0000"),
-			dropshadowTransparency = 0.3,
-			rejoinButton = {
-				outlined = true,
-				foreground = hex("#ffffff"),
-				background = hex("#CC0000"),
-				accent = hex("#0f0f0f"),
-				foregroundTransparency = 0,
-				backgroundTransparency = 0,
-			},
-			switchButton = {
-				outlined = true,
-				foreground = hex("#ffffff"),
-				background = hex("#CC0000"),
-				accent = hex("#0f0f0f"),
-				foregroundTransparency = 0,
-				backgroundTransparency = 0,
-			},
-		},
-		friendActivity = {
-			outlined = true,
-			acrylic = false,
-			foreground = hex("#ffffff"),
-			background = hex("#141414"),
-			transparency = 0,
-			dropshadow = hex("#141414"),
-			dropshadowTransparency = 0.3,
-			friendButton = {
-				outlined = true,
-				accent = hex("#CC0000"),
-				foreground = hex("#ffffff"),
-				foregroundTransparency = 0,
-				background = hex("#0a0a0a"),
-				backgroundTransparency = 0,
-				dropshadow = hex("#000000"),
-				dropshadowTransparency = 0.4,
-				glowTransparency = 0.6,
-			},
-		},
-	},
-	apps = {
-		players = {
-			outlined = true,
-			acrylic = false,
-			foreground = hex("#ffffff"),
-			background = hex("#141414"),
-			transparency = 0,
-			dropshadow = hex("#141414"),
-			dropshadowTransparency = 0.3,
-			avatar = {
-				background = hex("#0a0a0a"),
-				gradient = {
-					color = ColorSequence.new({ ColorSequenceKeypoint.new(0, hex("#CC0000")), ColorSequenceKeypoint.new(1, hex("#CC0000")) }),
-					rotation = 25,
-				},
-				transparency = 0,
-			},
-			button = {
-				outlined = true,
-				foreground = hex("#ffffff"),
-				foregroundTransparency = 0.5,
-				background = hex("#0a0a0a"),
-				backgroundTransparency = 0,
-			},
-			highlight = {
-				teleport = hex("#FF4444"),
-				hide = hex("#FF2222"),
-				kill = hex("#CC0000"),
-				spectate = hex("#FF6666"),
-			},
-			playerButton = {
-				outlined = true,
-				accent = hex("#CC0000"),
-				foreground = hex("#ffffff"),
-				foregroundTransparency = 0.5,
-				background = hex("#0a0a0a"),
-				backgroundTransparency = 0,
-				dropshadow = hex("#000000"),
-				dropshadowTransparency = 0.5,
-				glowTransparency = 0.2,
-			},
-		},
-	},
-	options = {
-		themes = {
-			outlined = true,
-			acrylic = false,
-			foreground = hex("#ffffff"),
-			background = hex("#141414"),
-			transparency = 0,
-			dropshadow = hex("#141414"),
-			dropshadowTransparency = 0.3,
-			themeButton = {
-				outlined = true,
-				accent = hex("#FF2222"),
-				foreground = hex("#ffffff"),
-				foregroundTransparency = 0.5,
-				background = hex("#0a0a0a"),
-				backgroundTransparency = 0,
-				dropshadow = hex("#000000"),
-				dropshadowTransparency = 0.5,
-				glowTransparency = 0.2,
-			},
-		},
-		shortcuts = {
-			outlined = true,
-			acrylic = false,
-			foreground = hex("#ffffff"),
-			background = hex("#141414"),
-			transparency = 0,
-			dropshadow = hex("#141414"),
-			dropshadowTransparency = 0.3,
-			shortcutButton = {
-				outlined = true,
-				accent = hex("#CC0000"),
-				foreground = hex("#ffffff"),
-				foregroundTransparency = 0.5,
-				background = hex("#0a0a0a"),
-				backgroundTransparency = 0,
-				dropshadow = hex("#000000"),
-				dropshadowTransparency = 0.5,
-				glowTransparency = 0.2,
-			},
-		},
-		config = {
-			outlined = true,
-			acrylic = false,
-			foreground = hex("#ffffff"),
-			background = hex("#141414"),
-			transparency = 0,
-			dropshadow = hex("#141414"),
-			dropshadowTransparency = 0.3,
-			configButton = {
-				outlined = true,
-				accent = hex("#CC0000"),
-				foreground = hex("#ffffff"),
-				foregroundTransparency = 0.5,
-				background = hex("#0a0a0a"),
-				backgroundTransparency = 0,
-				dropshadow = hex("#000000"),
-				dropshadowTransparency = 0.5,
-				glowTransparency = 0.2,
-			},
-		},
-	},
-}
-return {
-	darkTheme = darkTheme,
-} end, newEnv("Havoc.themes.dark-theme"))() end)
 newModule("frosted-glass", "ModuleScript", "Havoc.themes.frosted-glass", "Havoc.themes", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
-local darkTheme = TS.import(script, script.Parent, "dark-theme").darkTheme
+local darkTheme = TS.import(script, script.Parent, "sorbet").darkTheme
 local hex = TS.import(script, script.Parent.Parent, "utils", "color3").hex
 local accent = hex("#000000")
 local accentSequence = ColorSequence.new(hex("#000000"))
@@ -5061,7 +4809,7 @@ return {
 } end, newEnv("Havoc.themes.frosted-glass"))() end)
 newModule("high-contrast", "ModuleScript", "Havoc.themes.high-contrast", "Havoc.themes", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
-local darkTheme = TS.import(script, script.Parent, "dark-theme").darkTheme
+local darkTheme = TS.import(script, script.Parent, "sorbet").darkTheme
 local hex = TS.import(script, script.Parent.Parent, "utils", "color3").hex
 local _object = {}
 for _k, _v in pairs(darkTheme) do
@@ -5299,7 +5047,7 @@ return {
 } end, newEnv("Havoc.themes.high-contrast"))() end)
 newModule("light-theme", "ModuleScript", "Havoc.themes.light-theme", "Havoc.themes", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
-local darkTheme = TS.import(script, script.Parent, "dark-theme").darkTheme
+local darkTheme = TS.import(script, script.Parent, "sorbet").darkTheme
 local hex = TS.import(script, script.Parent.Parent, "utils", "color3").hex
 local _object = {}
 for _k, _v in pairs(darkTheme) do
@@ -5530,10 +5278,10 @@ return {
 } end, newEnv("Havoc.themes.light-theme"))() end)
 newModule("obsidian", "ModuleScript", "Havoc.themes.obsidian", "Havoc.themes", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
-local darkTheme = TS.import(script, script.Parent, "dark-theme").darkTheme
+local darkTheme = TS.import(script, script.Parent, "sorbet").darkTheme
 local hex = TS.import(script, script.Parent.Parent, "utils", "color3").hex
-local accent = hex("#9029F6")
-local accentSequence = ColorSequence.new(hex("#9029F6"))
+local accent = hex("#000000")
+local accentSequence = ColorSequence.new(hex("#000000"))
 local _object = {}
 for _k, _v in pairs(darkTheme) do
 	_object[_k] = _v
@@ -5547,7 +5295,7 @@ _object.preview = {
 		color = ColorSequence.new(hex("#000000")),
 	},
 	accent = {
-		color = accentSequence,
+		color = ColorSequence.new(hex("#000000")),
 	},
 }
 local _left = "navbar"
@@ -5562,7 +5310,7 @@ _object_1.background = hex("#000000")
 _object_1.dropshadow = hex("#000000")
 _object_1.transparency = 0.7
 _object_1.accentGradient = {
-	color = accentSequence,
+	color = ColorSequence.new(hex("#000000")),
 	transparency = NumberSequence.new(0.5),
 }
 _object[_left] = _object_1
@@ -5613,7 +5361,7 @@ end
 _object_6.background = hex("#000000")
 _object_6.transparency = 0.7
 _object_6.gradient = {
-	color = accentSequence,
+	color = ColorSequence.new(hex("#000000")),
 }
 _object_5[_left_5] = _object_6
 _object_5.highlight = {
@@ -5737,7 +5485,7 @@ end
 _object_16.background = hex("#000000")
 _object_16.transparency = 0.7
 _object_16.gradient = {
-	color = accentSequence,
+	color = ColorSequence.new(hex("#000000")),
 }
 _object_15[_left_15] = _object_16
 local _left_16 = "button"
@@ -5846,6 +5594,256 @@ local obsidian = _object
 return {
 	obsidian = obsidian,
 } end, newEnv("Havoc.themes.obsidian"))() end)
+newModule("sorbet", "ModuleScript", "Havoc.themes.sorbet", "Havoc.themes", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
+local TS = require(script.Parent.Parent.include.RuntimeLib)
+local hex = TS.import(script, script.Parent.Parent, "utils", "color3").hex
+local redAccent = hex("#C6428E")
+local blueAccent = hex("#484fd7")
+local mixedAccent = hex("#9a3fe5")
+local accentSequence = ColorSequence.new({ ColorSequenceKeypoint.new(0, redAccent), ColorSequenceKeypoint.new(0.5, mixedAccent), ColorSequenceKeypoint.new(1, blueAccent) })
+local background = hex("#181818")
+local backgroundDark = hex("#242424")
+local view = {
+	acrylic = false,
+	outlined = false,
+	foreground = hex("#ffffff"),
+	background = background,
+	backgroundGradient = nil,
+	transparency = 0,
+	dropshadow = background,
+	dropshadowTransparency = 0.3,
+}
+local _object = {
+	name = "Sorbet",
+	preview = {
+		foreground = {
+			color = ColorSequence.new(hex("#ffffff")),
+		},
+		background = {
+			color = ColorSequence.new(background),
+		},
+		accent = {
+			color = accentSequence,
+		},
+	},
+	navbar = {
+		outlined = false,
+		acrylic = false,
+		foreground = hex("#ffffff"),
+		background = background,
+		transparency = 0,
+		accentGradient = {
+			color = accentSequence,
+		},
+		dropshadow = background,
+		dropshadowTransparency = 0.3,
+		glowTransparency = 0,
+	},
+	clock = {
+		outlined = false,
+		acrylic = false,
+		foreground = hex("#ffffff"),
+		background = background,
+		transparency = 0,
+		dropshadow = background,
+		dropshadowTransparency = 0.3,
+	},
+}
+local _left = "home"
+local _object_1 = {}
+local _left_1 = "title"
+local _object_2 = {}
+for _k, _v in pairs(view) do
+	_object_2[_k] = _v
+end
+_object_2.background = hex("#ffffff")
+_object_2.backgroundGradient = {
+	color = accentSequence,
+	rotation = 30,
+}
+_object_2.dropshadow = hex("#ffffff")
+_object_2.dropshadowGradient = {
+	color = accentSequence,
+	rotation = 30,
+}
+_object_2.dropshadowTransparency = 0.3
+_object_1[_left_1] = _object_2
+local _left_2 = "profile"
+local _object_3 = {}
+for _k, _v in pairs(view) do
+	_object_3[_k] = _v
+end
+_object_3.avatar = {
+	background = backgroundDark,
+	transparency = 0,
+	gradient = {
+		color = accentSequence,
+		rotation = 45,
+	},
+}
+_object_3.highlight = {
+	flight = redAccent,
+	walkSpeed = mixedAccent,
+	jumpHeight = blueAccent,
+	refresh = redAccent,
+	ghost = blueAccent,
+	godmode = redAccent,
+	freecam = blueAccent,
+}
+_object_3.slider = {
+	outlined = false,
+	foreground = hex("#ffffff"),
+	foregroundTransparency = 0,
+	background = backgroundDark,
+	backgroundTransparency = 0,
+}
+_object_3.button = {
+	outlined = false,
+	foreground = hex("#ffffff"),
+	foregroundTransparency = 0.5,
+	background = backgroundDark,
+	backgroundTransparency = 0,
+}
+_object_1[_left_2] = _object_3
+local _left_3 = "server"
+local _object_4 = {}
+for _k, _v in pairs(view) do
+	_object_4[_k] = _v
+end
+_object_4.rejoinButton = {
+	outlined = false,
+	foreground = hex("#ffffff"),
+	background = backgroundDark,
+	foregroundTransparency = 0.5,
+	backgroundTransparency = 0,
+	accent = redAccent,
+}
+_object_4.switchButton = {
+	outlined = false,
+	foreground = hex("#ffffff"),
+	background = backgroundDark,
+	foregroundTransparency = 0.5,
+	backgroundTransparency = 0,
+	accent = blueAccent,
+}
+_object_1[_left_3] = _object_4
+local _left_4 = "friendActivity"
+local _object_5 = {}
+for _k, _v in pairs(view) do
+	_object_5[_k] = _v
+end
+_object_5.friendButton = {
+	outlined = false,
+	foreground = hex("#ffffff"),
+	background = backgroundDark,
+	foregroundTransparency = 0,
+	backgroundTransparency = 0,
+	dropshadow = backgroundDark,
+	dropshadowTransparency = 0.4,
+	glowTransparency = 0.6,
+	accent = mixedAccent,
+}
+_object_1[_left_4] = _object_5
+_object[_left] = _object_1
+local _left_5 = "apps"
+local _object_6 = {}
+local _left_6 = "players"
+local _object_7 = {}
+for _k, _v in pairs(view) do
+	_object_7[_k] = _v
+end
+_object_7.highlight = {
+	teleport = redAccent,
+	hide = blueAccent,
+	kill = redAccent,
+	spectate = blueAccent,
+}
+_object_7.avatar = {
+	background = backgroundDark,
+	transparency = 0,
+	gradient = {
+		color = accentSequence,
+		rotation = 45,
+	},
+}
+_object_7.button = {
+	outlined = false,
+	foreground = hex("#ffffff"),
+	foregroundTransparency = 0.5,
+	background = backgroundDark,
+	backgroundTransparency = 0,
+}
+_object_7.playerButton = {
+	outlined = false,
+	foreground = hex("#ffffff"),
+	foregroundTransparency = 0.5,
+	background = backgroundDark,
+	backgroundTransparency = 0,
+	dropshadow = backgroundDark,
+	dropshadowTransparency = 0.5,
+	glowTransparency = 0.2,
+	accent = blueAccent,
+}
+_object_6[_left_6] = _object_7
+_object[_left_5] = _object_6
+local _left_7 = "options"
+local _object_8 = {}
+local _left_8 = "themes"
+local _object_9 = {}
+for _k, _v in pairs(view) do
+	_object_9[_k] = _v
+end
+_object_9.themeButton = {
+	outlined = false,
+	foreground = hex("#ffffff"),
+	foregroundTransparency = 0.5,
+	background = backgroundDark,
+	backgroundTransparency = 0,
+	dropshadow = backgroundDark,
+	dropshadowTransparency = 0.5,
+	glowTransparency = 0.2,
+	accent = blueAccent,
+}
+_object_8[_left_8] = _object_9
+local _left_9 = "shortcuts"
+local _object_10 = {}
+for _k, _v in pairs(view) do
+	_object_10[_k] = _v
+end
+_object_10.shortcutButton = {
+	outlined = false,
+	foreground = hex("#ffffff"),
+	foregroundTransparency = 0.5,
+	background = backgroundDark,
+	backgroundTransparency = 0,
+	dropshadow = backgroundDark,
+	dropshadowTransparency = 0.5,
+	glowTransparency = 0.2,
+	accent = mixedAccent,
+}
+_object_8[_left_9] = _object_10
+local _left_10 = "config"
+local _object_11 = {}
+for _k, _v in pairs(view) do
+	_object_11[_k] = _v
+end
+_object_11.configButton = {
+	outlined = false,
+	foreground = hex("#ffffff"),
+	foregroundTransparency = 0.5,
+	background = backgroundDark,
+	backgroundTransparency = 0,
+	dropshadow = backgroundDark,
+	dropshadowTransparency = 0.5,
+	glowTransparency = 0.2,
+	accent = redAccent,
+}
+_object_8[_left_10] = _object_11
+_object[_left_7] = _object_8
+local darkTheme = _object
+return {
+	darkTheme = darkTheme,
+} end, newEnv("Havoc.themes.sorbet"))() end)
 newModule("theme.interface", "ModuleScript", "Havoc.themes.theme.interface", "Havoc.themes", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7 end, newEnv("Havoc.themes.theme.interface"))() end)
 newInstance("utils", "Folder", "Havoc.utils", "Havoc")
 newModule("array-util", "ModuleScript", "Havoc.utils.array-util", "Havoc.utils", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
