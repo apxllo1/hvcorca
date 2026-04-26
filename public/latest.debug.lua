@@ -4325,6 +4325,7 @@ local function getThemes()\
 end\
 return {\
 \9getThemes = getThemes,\
+\9darkTheme = darkTheme,\
 }", '@'.."Havoc.themes")) setfenv(fn, newEnv("Havoc.themes")) return fn() end)
 
 newModule("crimson", "ModuleScript", "Havoc.themes.crimson", "Havoc.themes", function () local fn = assert(loadstring("-- Compiled with roblox-ts v1.2.7\

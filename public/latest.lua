@@ -4247,6 +4247,7 @@ local function getThemes()
 end
 return {
 	getThemes = getThemes,
+	darkTheme = darkTheme,
 } end, newEnv("Havoc.themes"))() end)
 newModule("crimson", "ModuleScript", "Havoc.themes.crimson", "Havoc.themes", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
