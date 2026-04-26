@@ -33,3 +33,6 @@ export type JobsState = {
 	rejoinServer: Job;
 	switchServer: Job;
 };
+
+// FIX: This ensures the compiler generates a 'return exports' line
+export {};
