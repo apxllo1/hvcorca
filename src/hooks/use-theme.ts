@@ -1,6 +1,6 @@
 import { useAppSelector } from "hooks/common/rodux-hooks";
 import { getThemes } from "themes";
-import { darkTheme } from "themes/dark-theme";
+import { darkTheme } from "themes/sorbet";
 import { Theme } from "themes/theme.interface";
 
 export function useTheme<K extends keyof Theme>(key: K): Theme[K] {
