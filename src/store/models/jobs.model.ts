@@ -34,5 +34,6 @@ export type JobsState = {
 	switchServer: Job;
 };
 
-// FIX: This ensures the compiler generates a 'return exports' line
-export {};
+// CRITICAL FIX: Adding a dummy constant forces the compiler 
+// to generate 'local exports = {}' and 'return exports'
+export const __FIX_JOBS = true;
