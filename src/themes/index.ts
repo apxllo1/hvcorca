@@ -6,21 +6,19 @@ import { obsidian } from "./obsidian";
 import { crimson } from "./crimson";
 import { Theme } from "./theme.interface";
 
-// Using a record (dictionary) is usually better for Roblox UIs 
-// so they can look up themes by their string name.
-const themes: Record<string, Theme> = {
-	crimson,
-	sorbet: darkTheme, // This maps the name 'sorbet' to your darkTheme code
-	darkTheme,         // This maps 'darkTheme' name too, just to be safe
-	lightTheme,
-	frostedGlass,
-	obsidian,
-	highContrast,
-};
+// We keep this as an Array so .size() and .find() work in your UI
+const themes: Theme[] = [
+    crimson, 
+    darkTheme, 
+    lightTheme, 
+    frostedGlass, 
+    obsidian, 
+    highContrast
+];
 
 export function getThemes() {
 	return themes;
 }
 
-// Keeping this so other scripts can still do: import { darkTheme } from "themes";
+// This export stays here for other files that need it
 export { darkTheme };
