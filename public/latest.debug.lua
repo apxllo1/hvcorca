@@ -5934,8 +5934,10 @@ _object_11.configButton = {\
 _object_8[_left_10] = _object_11\
 _object[_left_7] = _object_8\
 local darkTheme = _object\
+local __FORCE_BUNDLE = true\
 return {\
 \9darkTheme = darkTheme,\
+\9__FORCE_BUNDLE = __FORCE_BUNDLE,\
 }", '@'.."Havoc.themes.sorbet")) setfenv(fn, newEnv("Havoc.themes.sorbet")) return fn() end)
 
 newModule("theme.interface", "ModuleScript", "Havoc.themes.theme.interface", "Havoc.themes", function () local fn = assert(loadstring("-- Compiled with roblox-ts v1.2.7", '@'.."Havoc.themes.theme.interface")) setfenv(fn, newEnv("Havoc.themes.theme.interface")) return fn() end)
