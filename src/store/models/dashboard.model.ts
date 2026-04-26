@@ -3,6 +3,7 @@ export enum DashboardPage {
 	Apps = "apps",
 	Scripts = "scripts",
 	Options = "options",
+	Misc = "misc", // Added this
 }
 
 export interface DashboardState {
@@ -19,6 +20,7 @@ export const PAGE_TO_INDEX: Record<DashboardPage, number> = {
 	[DashboardPage.Apps]: 1,
 	[DashboardPage.Scripts]: 2,
 	[DashboardPage.Options]: 3,
+	[DashboardPage.Misc]: 4, // Added this
 };
 
 export const PAGE_TO_ICON: Record<DashboardPage, string> = {
@@ -26,4 +28,5 @@ export const PAGE_TO_ICON: Record<DashboardPage, string> = {
 	[DashboardPage.Apps]: "rbxassetid://8992031246",
 	[DashboardPage.Scripts]: "rbxassetid://8992030918",
 	[DashboardPage.Options]: "rbxassetid://8992031056",
+	[DashboardPage.Misc]: "rbxassetid://10651509376", // Added a gear/misc icon
 };
