@@ -3921,7 +3921,11 @@ return {
 	PAGE_TO_INDEX = PAGE_TO_INDEX,
 	PAGE_TO_ICON = PAGE_TO_ICON,
 } end, newEnv("Havoc.store.models.dashboard.model"))() end)
-newModule("jobs.model", "ModuleScript", "Havoc.store.models.jobs.model", "Havoc.store.models", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7 end, newEnv("Havoc.store.models.jobs.model"))() end)
+newModule("jobs.model", "ModuleScript", "Havoc.store.models.jobs.model", "Havoc.store.models", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
+local __FIX_JOBS = true
+return {
+	__FIX_JOBS = __FIX_JOBS,
+} end, newEnv("Havoc.store.models.jobs.model"))() end)
 newModule("options.model", "ModuleScript", "Havoc.store.models.options.model", "Havoc.store.models", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7 end, newEnv("Havoc.store.models.options.model"))() end)
 newModule("persistent-state", "ModuleScript", "Havoc.store.persistent-state", "Havoc.store", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
