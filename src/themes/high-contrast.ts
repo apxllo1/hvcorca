@@ -1,4 +1,4 @@
-import { darkTheme } from "themes/dark-theme";
+import { darkTheme } from "themes/sorbet";
 import { Theme } from "themes/theme.interface";
 import { hex } from "utils/color3";
 
