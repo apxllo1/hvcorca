@@ -3997,7 +3997,11 @@ return {\
 \9__FIX_JOBS = __FIX_JOBS,\
 }", '@'.."Havoc.store.models.jobs.model")) setfenv(fn, newEnv("Havoc.store.models.jobs.model")) return fn() end)
 
-newModule("options.model", "ModuleScript", "Havoc.store.models.options.model", "Havoc.store.models", function () local fn = assert(loadstring("-- Compiled with roblox-ts v1.2.7", '@'.."Havoc.store.models.options.model")) setfenv(fn, newEnv("Havoc.store.models.options.model")) return fn() end)
+newModule("options.model", "ModuleScript", "Havoc.store.models.options.model", "Havoc.store.models", function () local fn = assert(loadstring("-- Compiled with roblox-ts v1.2.7\
+local __FIX_OPTIONS = true\
+return {\
+\9__FIX_OPTIONS = __FIX_OPTIONS,\
+}", '@'.."Havoc.store.models.options.model")) setfenv(fn, newEnv("Havoc.store.models.options.model")) return fn() end)
 
 newModule("persistent-state", "ModuleScript", "Havoc.store.persistent-state", "Havoc.store", function () local fn = assert(loadstring("-- Compiled with roblox-ts v1.2.7\
 local TS = require(script.Parent.Parent.include.RuntimeLib)\

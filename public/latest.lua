@@ -3926,7 +3926,11 @@ local __FIX_JOBS = true
 return {
 	__FIX_JOBS = __FIX_JOBS,
 } end, newEnv("Havoc.store.models.jobs.model"))() end)
-newModule("options.model", "ModuleScript", "Havoc.store.models.options.model", "Havoc.store.models", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7 end, newEnv("Havoc.store.models.options.model"))() end)
+newModule("options.model", "ModuleScript", "Havoc.store.models.options.model", "Havoc.store.models", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
+local __FIX_OPTIONS = true
+return {
+	__FIX_OPTIONS = __FIX_OPTIONS,
+} end, newEnv("Havoc.store.models.options.model"))() end)
 newModule("persistent-state", "ModuleScript", "Havoc.store.persistent-state", "Havoc.store", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local _services = TS.import(script, TS.getModule(script, "@rbxts", "services"))
