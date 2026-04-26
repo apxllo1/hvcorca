@@ -17,6 +17,9 @@ const initialState: JobsState = {
 	kill: { active: false },
 	spectate: { active: false },
 
+	// Added Facebang here to fix the "Property missing" error
+	facebang: { active: false },
+
 	rejoinServer: { active: false },
 	switchServer: { active: false },
 };
@@ -26,7 +29,7 @@ export const jobsReducer = Rodux.createReducer<JobsState, JobsAction>(initialSta
 		return {
 			...state,
 			[action.jobName]: {
-				...state[action.jobName],
+				...state[action.jobName as keyof JobsState],
 				active: action.active,
 			},
 		};
@@ -35,7 +38,7 @@ export const jobsReducer = Rodux.createReducer<JobsState, JobsAction>(initialSta
 		return {
 			...state,
 			[action.jobName]: {
-				...state[action.jobName],
+				...state[action.jobName as keyof JobsState],
 				value: action.value,
 			},
 		};
