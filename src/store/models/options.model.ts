@@ -13,3 +13,7 @@ export interface OptionsState {
 		toggleDashboard: number;
 	};
 }
+
+// CRITICAL FIX: Adding this constant forces the compiler to 
+// generate 'local exports = {}' and 'return exports' in Lua.
+export const __FIX_OPTIONS = true;
