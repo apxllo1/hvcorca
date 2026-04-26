@@ -12,6 +12,7 @@ function MiscPage() {
 			Position={new UDim2(0, 20, 0, 20)}
 			BackgroundTransparency={1}
 			BorderSizePixel={0}
+			ScrollBarImageColor3={theme.button.background}
 			ScrollBarThickness={2}
 		>
 			<uilistlayout Padding={new UDim(0, 10)} SortOrder="LayoutOrder" />
@@ -19,10 +20,11 @@ function MiscPage() {
 			<ActionButton 
 				action="facebang" 
 				theme={theme} 
-				Text="Facebang Target" 
 				Size={new UDim2(1, 0, 0, 45)} 
 				canDeactivate 
 			/>
+
+			{/* You can add your Animation Logger or Infinite Baseplate buttons here later! */}
 		</scrollingframe>
 	);
 }
