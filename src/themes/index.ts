@@ -1,4 +1,4 @@
-import { darkTheme } from "themes/dark-theme";
+import { darkTheme } from "themes/sorbet";
 import { frostedGlass } from "themes/frosted-glass";
 import { highContrast } from "themes/high-contrast";
 import { lightTheme } from "themes/light-theme";
