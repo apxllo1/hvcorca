@@ -4153,7 +4153,7 @@ local persistentState = TS.import(script, script.Parent.Parent, "persistent-stat
 local initialState = persistentState("options", function(state)
 	return state.options
 end, {
-	currentTheme = "Sorbet",
+	currentTheme = "Crimson",
 	config = {
 		acrylicBlur = true,
 	},

@@ -4229,7 +4229,7 @@ local persistentState = TS.import(script, script.Parent.Parent, \"persistent-sta
 local initialState = persistentState(\"options\", function(state)\
 \9return state.options\
 end, {\
-\9currentTheme = \"Sorbet\",\
+\9currentTheme = \"Crimson\",\
 \9config = {\
 \9\9acrylicBlur = true,\
 \9},\
