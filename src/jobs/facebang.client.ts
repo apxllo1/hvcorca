@@ -1,10 +1,10 @@
 import { RunService, Players, Workspace } from "@rbxts/services";
-import { store } from "store/store";
+import store from "store/store"; // Fixed: Removed curly braces for default export
+import { Job } from "store/models/jobs.model"; // Added: Import Job type for safety
 
 const lp = Players.LocalPlayer;
 
 // Exact values from your facebang.lua
-const OFFSET_FORWARD = -0.7;
 const OFFSET_HEIGHT = 0.8;
 const TELEPORT_DISTANCE = 1.9;
 
@@ -14,7 +14,6 @@ const disableActions = (char: Model) => {
 
 	const humanoid = char.FindFirstChildOfClass("Humanoid");
 	if (humanoid) {
-		// Stops all playing animations exactly like your Lua script
 		humanoid.GetPlayingAnimationTracks().forEach((track) => {
 			track.Stop();
 		});
@@ -35,12 +34,16 @@ const enableActions = (char: Model) => {
 		humanoid.AutoRotate = true;
 		humanoid.ChangeState(Enum.HumanoidStateType.GettingUp);
 	}
-	Workspace.Gravity = 196.2; // Default Roblox gravity
+	// Only reset gravity if it's currently 0 to avoid overriding other scripts
+	if (Workspace.Gravity === 0) Workspace.Gravity = 196.2;
 };
 
 RunService.Stepped.Connect(() => {
 	const state = store.getState();
-	const isActive = state.jobs.facebang?.active;
+	
+	// Fixed: Cast to Job to prevent "Property active does not exist" error
+	const facebangJob = state.jobs.facebang as Job | undefined;
+	const isActive = facebangJob?.active;
 
 	const char = lp.Character;
 	if (!char) return;
@@ -50,22 +53,21 @@ RunService.Stepped.Connect(() => {
 		return;
 	}
 
-	// If active, apply the "facebang" state
 	disableActions(char);
 
 	const hrp = char.FindFirstChild("HumanoidRootPart") as Part;
-	const target = state.dashboard.selectedPlayer; // This uses the player you selected in the UI
+	
+	// Get the target player from the store
+	const targetUserId = state.dashboard.apps.playerSelected;
+	const target = Players.GetPlayerByUserId(tonumber(targetUserId) || 0);
 
 	if (hrp && target && target.Character) {
 		const targetHrp = target.Character.FindFirstChild("HumanoidRootPart") as Part;
 		const targetHead = target.Character.FindFirstChild("Head") as Part;
 
 		if (targetHrp && targetHead) {
-			// MATH CONVERSION: 
-			// 1. Calculate position in front of target head
 			const targetPos = targetHead.Position.add(targetHrp.CFrame.LookVector.mul(TELEPORT_DISTANCE));
 			
-			// 2. Set CFrame to look at head, add height offset, and rotate 180 degrees
 			hrp.CFrame = new CFrame(targetPos, targetHead.Position)
 				.add(new Vector3(0, OFFSET_HEIGHT, 0))
 				.mul(CFrame.Angles(0, math.rad(180), 0));
