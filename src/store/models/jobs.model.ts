@@ -29,6 +29,9 @@ export type JobsState = {
 	hide: Job;
 	kill: Job;
 	spectate: Job;
+	
+	// Added Facebang here
+	facebang: Job;
 
 	rejoinServer: Job;
 	switchServer: Job;
