@@ -3,7 +3,6 @@ import { useSelector, useDispatch } from "hooks/common/rodux-hooks";
 import { setJobActive, setJobSlider } from "store/actions/jobs.action";
 import { JobWithSliders } from "store/models/jobs.model";
 
-// This interface tells TypeScript exactly what "props" this component takes
 interface FacebangProps {
 	isVisible: boolean;
 	onClose: () => void;
@@ -13,7 +12,6 @@ export default function FacebangModal({ isVisible, onClose }: FacebangProps) {
 	const job = useSelector((state) => state.jobs.facebang) as JobWithSliders;
 	const dispatch = useDispatch();
 
-	// If the UI isn't supposed to be visible, return nothing
 	if (!isVisible) return <></>;
 
 	const renderSlider = (label: string, value: string, percent: number, onUpdate: (val: number) => void) => {
@@ -87,7 +85,6 @@ export default function FacebangModal({ isVisible, onClose }: FacebangProps) {
 				TextXAlignment="Left"
 			/>
 
-			{/* Use onClose to handle the exit button if you add one later */}
 			<textbutton
 				Text="X"
 				Size={new UDim2(0, 30, 0, 30)}
@@ -105,7 +102,7 @@ export default function FacebangModal({ isVisible, onClose }: FacebangProps) {
 				Position={new UDim2(1, -120, 0, 5)}
 				BackgroundTransparency={1}
 				TextColor3={job.active ? Color3.fromRGB(235, 76, 105) : Color3.fromRGB(150, 150, 150)}
-				Font={Enum.Font.Gotham} // Fixed GothamMedium error here
+				Font={Enum.Font.Gotham}
 				TextSize={14}
 				TextXAlignment="Right"
 			/>
