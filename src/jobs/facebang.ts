@@ -3,50 +3,61 @@ import { onJobChange, getStore } from "./helpers/job-store";
 
 const lp = Players.LocalPlayer;
 let isActive = false;
+const originalGravity = Workspace.Gravity;
 
-onJobChange("facebang", (job) => {
-	isActive = job.active;
-	print(`[Facebang] State changed: ${isActive}`);
-});
-
-RunService.Stepped.Connect(async () => {
-	if (!isActive) return;
-
+async function initFacebang() {
+	// 1. Get the store once at the start to prevent lag
 	const store = await getStore();
-	const state = store.getState();
-	const targetUserId = state.dashboard.apps.playerSelected;
+	print("[Facebang] Successfully linked to Store");
 
-	// DEBUG: Is a player actually selected?
-	if (targetUserId === undefined || targetUserId === "") {
-		warn("[Facebang] Error: No player selected in UI");
-		return;
-	}
-
-	const char = lp.Character;
-	if (!char) {
-		warn("[Facebang] Waiting for your character...");
-		return;
-	}
-
-	const target = Players.GetPlayerByUserId(tonumber(targetUserId) || 0);
-	if (!target || !target.Character) {
-		warn(`[Facebang] Target player ${targetUserId} character not found`);
-		return;
-	}
-
-	const hrp = char.FindFirstChild("HumanoidRootPart") as Part;
-	const targetHrp = target.Character.FindFirstChild("HumanoidRootPart") as Part;
-	const targetHead = target.Character.FindFirstChild("Head") as Part;
-
-	if (hrp && targetHrp && targetHead) {
-		// Logic is running
-		const targetPos = targetHead.Position.add(targetHrp.CFrame.LookVector.mul(1.9));
-		hrp.CFrame = new CFrame(targetPos, targetHead.Position)
-			.add(new Vector3(0, 0.8, 0))
-			.mul(CFrame.Angles(0, math.rad(180), 0));
+	// 2. Listen for the toggle change
+	onJobChange("facebang", (job) => {
+		isActive = job.active;
 		
-		Workspace.Gravity = 0;
-	} else {
-		warn("[Facebang] Missing Body Parts (HRP or Head)");
-	}
-});
+		// Reset gravity when turned off
+		if (!isActive) {
+			Workspace.Gravity = originalGravity;
+		}
+		
+		print(`[Facebang] Active: ${isActive}`);
+	});
+
+	// 3. The high-speed loop
+	RunService.Stepped.Connect(() => {
+		if (!isActive) return;
+
+		const state = store.getState();
+		const targetIdentifier = state.dashboard.apps.playerSelected;
+
+		// Validation: Check if a player is selected
+		if (targetIdentifier === undefined || targetIdentifier === "") return;
+
+		const char = lp.Character;
+		if (!char) return;
+
+		// Find target by Name or UserId (Handling both string/number cases)
+		const target = Players.FindFirstChild(tostring(targetIdentifier)) as Player;
+		
+		if (!target || !target.Character) return;
+
+		const hrp = char.FindFirstChild("HumanoidRootPart") as Part;
+		const targetHrp = target.Character.FindFirstChild("HumanoidRootPart") as Part;
+		const targetHead = target.Character.FindFirstChild("Head") as Part;
+
+		if (hrp && targetHrp && targetHead) {
+			// Calculate position: 1.9 studs in front of their face
+			const targetPos = targetHead.Position.add(targetHrp.CFrame.LookVector.mul(1.9));
+			
+			// Set CFrame: Look at their head, flip 180 degrees to face them
+			hrp.CFrame = new CFrame(targetPos, targetHead.Position)
+				.add(new Vector3(0, 0.8, 0))
+				.mul(CFrame.Angles(0, math.rad(180), 0));
+			
+			// Float in place
+			Workspace.Gravity = 0;
+		}
+	});
+}
+
+// Start the job
+initFacebang().catch((err) => warn(`[Facebang] Initialization Error: ${err}`));
