@@ -1556,17 +1556,19 @@ return {\
 newModule("rodux-hooks", "ModuleScript", "Havoc.hooks.common.rodux-hooks", "Havoc.hooks.common", function () local fn = assert(loadstring("-- Compiled with roblox-ts v1.2.7\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
 local _roact_rodux_hooked = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-rodux-hooked\").out)\
-local useDispatch = _roact_rodux_hooked.useDispatch\
-local useSelector = _roact_rodux_hooked.useSelector\
-local useStore = _roact_rodux_hooked.useStore\
+local useBaseDispatch = _roact_rodux_hooked.useDispatch\
+local useBaseSelector = _roact_rodux_hooked.useSelector\
+local useBaseStore = _roact_rodux_hooked.useStore\
+local useSelector = useBaseSelector\
+local useDispatch = useBaseDispatch\
+local useStore = useBaseStore\
 local useAppSelector = useSelector\
-local useAppDispatch = function()\
-\9return useDispatch()\
-end\
-local useAppStore = function()\
-\9return useStore()\
-end\
+local useAppDispatch = useDispatch\
+local useAppStore = useStore\
 return {\
+\9useSelector = useSelector,\
+\9useDispatch = useDispatch,\
+\9useStore = useStore,\
 \9useAppSelector = useAppSelector,\
 \9useAppDispatch = useAppDispatch,\
 \9useAppStore = useAppStore,\
@@ -8607,7 +8609,97 @@ return {\
 \9default = default,\
 }", '@'.."Havoc.views.Pages.Home.Title")) setfenv(fn, newEnv("Havoc.views.Pages.Home.Title")) return fn() end)
 
-newInstance("Misc", "Folder", "Havoc.views.Pages.Misc", "Havoc.views.Pages")
+newModule("Misc", "ModuleScript", "Havoc.views.Pages.Misc", "Havoc.views.Pages", function () local fn = assert(loadstring("-- Compiled with roblox-ts v1.2.7\
+local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
+local exports = {}\
+exports.default = TS.import(script, script, \"Misc\").default\
+return exports", '@'.."Havoc.views.Pages.Misc")) setfenv(fn, newEnv("Havoc.views.Pages.Misc")) return fn() end)
+
+newModule("FacebangModal", "ModuleScript", "Havoc.views.Pages.Misc.FacebangModal", "Havoc.views.Pages.Misc", function () local fn = assert(loadstring("-- Compiled with roblox-ts v1.2.7\
+local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)\
+local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
+local hooked = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-hooked\").out).hooked\
+local _rodux_hooks = TS.import(script, script.Parent.Parent.Parent.Parent, \"hooks\", \"common\", \"rodux-hooks\")\
+local useAppDispatch = _rodux_hooks.useAppDispatch\
+local useAppSelector = _rodux_hooks.useAppSelector\
+local setJobActive = TS.import(script, script.Parent.Parent.Parent.Parent, \"store\", \"actions\", \"jobs.action\").setJobActive\
+local FacebangModal = hooked(function(props)\
+\9local dispatch = useAppDispatch()\
+\9local isEnabled = useAppSelector(function(state)\
+\9\9return state.jobs.facebang.active\
+\9end)\
+\9if not props.isVisible then\
+\9\9return Roact.createElement(\"Frame\", {\
+\9\9\9Visible = false,\
+\9\9})\
+\9end\
+\9return Roact.createFragment({\
+\9\9FacebangPopOut = Roact.createElement(\"Frame\", {\
+\9\9\9Size = UDim2.new(0.4, 0, 0.6, 0),\
+\9\9\9Position = UDim2.new(0.5, 0, 0.5, 0),\
+\9\9\9AnchorPoint = Vector2.new(0.5, 0.5),\
+\9\9\9BackgroundColor3 = Color3.fromRGB(10, 10, 10),\
+\9\9\9ZIndex = 10,\
+\9\9}, {\
+\9\9\9Roact.createElement(\"UICorner\", {\
+\9\9\9\9CornerRadius = UDim.new(0, 15),\
+\9\9\9}),\
+\9\9\9Roact.createElement(\"UIAspectRatioConstraint\", {\
+\9\9\9\9AspectRatio = 350 / 550,\
+\9\9\9\9AspectType = \"ScaleWithParentSize\",\
+\9\9\9}),\
+\9\9\9Roact.createElement(\"UIPadding\", {\
+\9\9\9\9PaddingTop = UDim.new(0.05, 0),\
+\9\9\9\9PaddingLeft = UDim.new(0.05, 0),\
+\9\9\9\9PaddingRight = UDim.new(0.05, 0),\
+\9\9\9}),\
+\9\9\9Roact.createElement(\"TextLabel\", {\
+\9\9\9\9Text = \"Facebang\",\
+\9\9\9\9Size = UDim2.new(0.6, 0, 0.08, 0),\
+\9\9\9\9BackgroundTransparency = 1,\
+\9\9\9\9TextColor3 = Color3.fromRGB(255, 255, 255),\
+\9\9\9\9Font = Enum.Font.GothamBold,\
+\9\9\9\9TextSize = 22,\
+\9\9\9\9TextXAlignment = \"Left\",\
+\9\9\9}),\
+\9\9\9Roact.createElement(\"TextButton\", {\
+\9\9\9\9Text = isEnabled and \"STOP\" or \"START\",\
+\9\9\9\9Size = UDim2.new(1, 0, 0.12, 0),\
+\9\9\9\9Position = UDim2.new(0, 0, 0.12, 0),\
+\9\9\9\9BackgroundColor3 = isEnabled and Color3.fromRGB(40, 40, 40) or Color3.fromRGB(235, 76, 105),\
+\9\9\9\9TextColor3 = Color3.fromRGB(255, 255, 255),\
+\9\9\9\9Font = Enum.Font.GothamBold,\
+\9\9\9\9TextSize = 18,\
+\9\9\9\9[Roact.Event.Activated] = function()\
+\9\9\9\9\9return dispatch(setJobActive(\"facebang\", not isEnabled))\
+\9\9\9\9end,\
+\9\9\9}, {\
+\9\9\9\9Roact.createElement(\"UICorner\", {\
+\9\9\9\9\9CornerRadius = UDim.new(0, 8),\
+\9\9\9\9}),\
+\9\9\9}),\
+\9\9\9Roact.createElement(\"TextButton\", {\
+\9\9\9\9Text = \"CLOSE\",\
+\9\9\9\9Size = UDim2.new(1, 0, 0.08, 0),\
+\9\9\9\9Position = UDim2.new(0, 0, 1, -10),\
+\9\9\9\9AnchorPoint = Vector2.new(0, 1),\
+\9\9\9\9BackgroundColor3 = Color3.fromRGB(25, 25, 25),\
+\9\9\9\9TextColor3 = Color3.fromRGB(255, 255, 255),\
+\9\9\9\9Font = Enum.Font.GothamBold,\
+\9\9\9\9TextSize = 14,\
+\9\9\9\9[Roact.Event.Activated] = props.onClose,\
+\9\9\9}, {\
+\9\9\9\9Roact.createElement(\"UICorner\", {\
+\9\9\9\9\9CornerRadius = UDim.new(0, 8),\
+\9\9\9\9}),\
+\9\9\9}),\
+\9\9}),\
+\9})\
+end)\
+local default = FacebangModal\
+return {\
+\9default = default,\
+}", '@'.."Havoc.views.Pages.Misc.FacebangModal")) setfenv(fn, newEnv("Havoc.views.Pages.Misc.FacebangModal")) return fn() end)
 
 newModule("Misc", "ModuleScript", "Havoc.views.Pages.Misc.Misc", "Havoc.views.Pages.Misc", function () local fn = assert(loadstring("-- Compiled with roblox-ts v1.2.7\
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)\
@@ -8615,140 +8707,54 @@ local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)
 local _roact_hooked = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-hooked\").out)\
 local hooked = _roact_hooked.hooked\
 local useState = _roact_hooked.useState\
-local ActionButton = TS.import(script, script.Parent.Parent.Parent.Parent, \"components\", \"ActionButton\").default\
 local useTheme = TS.import(script, script.Parent.Parent.Parent.Parent, \"hooks\", \"use-theme\").useTheme\
+local FacebangModal = TS.import(script, script.Parent, \"FacebangModal\").default\
 local function MiscPage()\
 \9local theme = useTheme(\"home\").profile\
-\9local _binding = useState(\"\")\
-\9local searchText = _binding[1]\
-\9local setSearchText = _binding[2]\
-\9local commands = { {\
-\9\9name = \"Facebang\",\
-\9\9action = \"facebang\",\
-\9\9hint = \"Teleport to target's face\",\
-\9\9icon = \"rbxassetid://10734950309\",\
-\9} }\
-\9local _attributes = {\
+\9local _binding = useState(false)\
+\9local modalVisible = _binding[1]\
+\9local setModalVisible = _binding[2]\
+\9return Roact.createElement(\"Frame\", {\
 \9\9Size = UDim2.new(1, 0, 1, 0),\
 \9\9BackgroundTransparency = 1,\
-\9}\
-\9local _children = {\
+\9}, {\
 \9\9Roact.createElement(\"UIPadding\", {\
 \9\9\9PaddingTop = UDim.new(0, 20),\
 \9\9\9PaddingLeft = UDim.new(0, 20),\
 \9\9\9PaddingRight = UDim.new(0, 20),\
 \9\9}),\
-\9\9Roact.createElement(\"UIListLayout\", {\
-\9\9\9Padding = UDim.new(0, 15),\
-\9\9\9SortOrder = \"LayoutOrder\",\
-\9\9\9HorizontalAlignment = \"Center\",\
-\9\9}),\
-\9\9Roact.createElement(\"TextBox\", {\
-\9\9\9Size = UDim2.new(1, 0, 0, 40),\
-\9\9\9BackgroundColor3 = theme.button.background,\
-\9\9\9BackgroundTransparency = 0.5,\
-\9\9\9Text = searchText,\
-\9\9\9PlaceholderText = \"Search commands...\",\
-\9\9\9PlaceholderColor3 = Color3.fromRGB(200, 200, 200),\
-\9\9\9TextColor3 = theme.button.foreground,\
-\9\9\9Font = Enum.Font.Gotham,\
-\9\9\9TextSize = 14,\
-\9\9\9[Roact.Change.Text] = function(rbx)\
-\9\9\9\9return setSearchText(rbx.Text)\
-\9\9\9end,\
+\9\9Roact.createElement(\"ScrollingFrame\", {\
+\9\9\9Size = UDim2.new(1, 0, 1, 0),\
+\9\9\9BackgroundTransparency = 1,\
+\9\9\9ScrollBarThickness = 2,\
 \9\9}, {\
-\9\9\9Roact.createElement(\"UICorner\", {\
-\9\9\9\9CornerRadius = UDim.new(0, 8),\
+\9\9\9Roact.createElement(\"UIListLayout\", {\
+\9\9\9\9Padding = UDim.new(0, 10),\
+\9\9\9\9SortOrder = \"LayoutOrder\",\
 \9\9\9}),\
-\9\9\9Roact.createElement(\"UIStroke\", {\
-\9\9\9\9Color = theme.button.background,\
-\9\9\9\9Thickness = 1,\
-\9\9\9\9Transparency = 0.8,\
-\9\9\9}),\
-\9\9}),\
-\9}\
-\9local _length = #_children\
-\9local _arg0 = function(cmd)\
-\9\9local _exp = string.lower(cmd.name)\
-\9\9local _arg0_1 = string.lower(searchText)\
-\9\9return { string.find(_exp, _arg0_1) } ~= nil\
-\9end\
-\9-- ▼ ReadonlyArray.filter ▼\
-\9local _newValue = {}\
-\9local _length_1 = 0\
-\9for _k, _v in ipairs(commands) do\
-\9\9if _arg0(_v, _k - 1, commands) == true then\
-\9\9\9_length_1 += 1\
-\9\9\9_newValue[_length_1] = _v\
-\9\9end\
-\9end\
-\9-- ▲ ReadonlyArray.filter ▲\
-\9local _arg0_1 = function(cmd)\
-\9\9return Roact.createFragment({\
-\9\9\9[cmd.name] = Roact.createElement(\"Frame\", {\
-\9\9\9\9Size = UDim2.new(1, 0, 0, 60),\
+\9\9\9Roact.createElement(\"TextButton\", {\
+\9\9\9\9Text = \"Facebang Settings\",\
+\9\9\9\9Size = UDim2.new(1, 0, 0, 50),\
 \9\9\9\9BackgroundColor3 = theme.button.background,\
-\9\9\9\9BackgroundTransparency = 0.7,\
+\9\9\9\9TextColor3 = theme.button.foreground,\
+\9\9\9\9Font = Enum.Font.GothamBold,\
+\9\9\9\9TextSize = 16,\
+\9\9\9\9[Roact.Event.Activated] = function()\
+\9\9\9\9\9return setModalVisible(true)\
+\9\9\9\9end,\
 \9\9\9}, {\
 \9\9\9\9Roact.createElement(\"UICorner\", {\
 \9\9\9\9\9CornerRadius = UDim.new(0, 8),\
 \9\9\9\9}),\
-\9\9\9\9Roact.createElement(\"UIPadding\", {\
-\9\9\9\9\9PaddingLeft = UDim.new(0, 10),\
-\9\9\9\9\9PaddingRight = UDim.new(0, 10),\
-\9\9\9\9}),\
-\9\9\9\9Roact.createElement(\"UIListLayout\", {\
-\9\9\9\9\9FillDirection = \"Horizontal\",\
-\9\9\9\9\9VerticalAlignment = \"Center\",\
-\9\9\9\9\9Padding = UDim.new(0, 15),\
-\9\9\9\9}),\
-\9\9\9\9Roact.createElement(ActionButton, {\
-\9\9\9\9\9action = cmd.action,\
-\9\9\9\9\9theme = theme,\
-\9\9\9\9\9hint = cmd.hint,\
-\9\9\9\9\9image = cmd.icon,\
-\9\9\9\9\9position = UDim2.new(0, 0, 0, 0),\
-\9\9\9\9\9canDeactivate = true,\
-\9\9\9\9}),\
-\9\9\9\9Roact.createElement(\"TextLabel\", {\
-\9\9\9\9\9Text = string.upper(cmd.name),\
-\9\9\9\9\9Size = UDim2.new(1, -60, 1, 0),\
-\9\9\9\9\9BackgroundTransparency = 1,\
-\9\9\9\9\9TextColor3 = theme.button.foreground,\
-\9\9\9\9\9Font = Enum.Font.GothamBold,\
-\9\9\9\9\9TextSize = 14,\
-\9\9\9\9\9TextXAlignment = \"Left\",\
-\9\9\9\9}),\
 \9\9\9}),\
-\9\9})\
-\9end\
-\9-- ▼ ReadonlyArray.map ▼\
-\9local _newValue_1 = table.create(#_newValue)\
-\9for _k, _v in ipairs(_newValue) do\
-\9\9_newValue_1[_k] = _arg0_1(_v, _k - 1, _newValue)\
-\9end\
-\9-- ▲ ReadonlyArray.map ▲\
-\9local _attributes_1 = {\
-\9\9Size = UDim2.new(1, 0, 1, -60),\
-\9\9BackgroundTransparency = 1,\
-\9\9BorderSizePixel = 0,\
-\9\9ScrollBarThickness = 2,\
-\9\9ScrollBarImageColor3 = theme.button.foreground,\
-\9\9CanvasSize = UDim2.new(0, 0, 0, 0),\
-\9\9AutomaticCanvasSize = \"Y\",\
-\9}\
-\9local _children_1 = {\
-\9\9Roact.createElement(\"UIListLayout\", {\
-\9\9\9Padding = UDim.new(0, 10),\
-\9\9\9SortOrder = \"LayoutOrder\",\
 \9\9}),\
-\9}\
-\9local _length_2 = #_children_1\
-\9for _k, _v in ipairs(_newValue_1) do\
-\9\9_children_1[_length_2 + _k] = _v\
-\9end\
-\9_children[_length + 1] = Roact.createElement(\"ScrollingFrame\", _attributes_1, _children_1)\
-\9return Roact.createElement(\"Frame\", _attributes, _children)\
+\9\9Roact.createElement(FacebangModal, {\
+\9\9\9isVisible = modalVisible,\
+\9\9\9onClose = function()\
+\9\9\9\9return setModalVisible(false)\
+\9\9\9end,\
+\9\9}),\
+\9})\
 end\
 local default = hooked(MiscPage)\
 return {\
