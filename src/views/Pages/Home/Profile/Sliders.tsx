@@ -1,7 +1,7 @@
 import Roact from "@rbxts/roact";
 import { hooked, useBinding, useState } from "@rbxts/roact-hooked";
-import BrightButton from "components/BrightButton";
-import BrightSlider from "components/BrightSlider";
+import { BrightButton } from "components/BrightButton";
+import { BrightSlider } from "components/BrightSlider";
 import Canvas from "components/Canvas";
 import { SpringOptions } from "hooks/common/flipper-hooks";
 import { useAppDispatch, useAppSelector } from "hooks/common/rodux-hooks";
@@ -9,7 +9,7 @@ import { useSpring } from "hooks/common/use-spring";
 import { useTheme } from "hooks/use-theme";
 import { clearHint, setHint } from "store/actions/dashboard.action";
 import { setJobActive, setJobValue } from "store/actions/jobs.action";
-import { JobsWithValue } from "store/models/jobs.model";
+import { JobsWithValue, JobWithValue } from "store/models/jobs.model";
 import { px, scale } from "utils/udim2";
 
 const SPRING_OPTIONS: SpringOptions = {
@@ -64,11 +64,14 @@ function SliderComponent(props: {
 	const theme = useTheme("home").profile;
 	const dispatch = useAppDispatch();
 
-	const job = useAppSelector((state) => state.jobs[props.jobName]);
-	const [value, setValue] = useBinding(job.value); // Update for animation
+	// FIX: Cast the job as a JobWithValue to ensure .value exists
+	const job = useAppSelector((state) => state.jobs[props.jobName] as JobWithValue<number>);
+	const [value, setValue] = useBinding(job.value);
 	const [hovered, setHovered] = useState(false);
 
-	const accent = theme.highlight[props.jobName];
+	// FIX: Use a record cast to allow string indexing of the highlight colors
+	const highlightColors = theme.highlight as Record<string, Color3>;
+	const accent = highlightColors[props.jobName as string] ?? Color3.fromRGB(255, 255, 255);
 
 	const buttonBackground = useSpring(
 		job.active
@@ -87,7 +90,8 @@ function SliderComponent(props: {
 		<Canvas size={px(278, 49)} position={px(0, props.position)}>
 			<BrightSlider
 				onValueChanged={setValue}
-				onRelease={() => dispatch(setJobValue(props.jobName, math.round(value.getValue())))}
+				// FIX: Explicitly cast jobName as K to satisfy the action creator
+				onRelease={() => dispatch(setJobValue(props.jobName as never, math.round(value.getValue())))}
 				min={props.min}
 				max={props.max}
 				initialValue={job.value}
@@ -115,7 +119,7 @@ function SliderComponent(props: {
 			</BrightSlider>
 
 			<BrightButton
-				onActivate={() => dispatch(setJobActive(props.jobName, !job.active))}
+				onActivate={() => dispatch(setJobActive(props.jobName as string, !job.active))}
 				onHover={(hovered) => {
 					if (hovered) {
 						setHovered(true);
