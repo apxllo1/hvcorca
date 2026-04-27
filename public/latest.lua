@@ -3379,8 +3379,9 @@ onJobChange("facebang", function(job, state)
 			local localRoot = localChar:FindFirstChild("HumanoidRootPart")
 			local targetRoot = targetChar:FindFirstChild("HumanoidRootPart")
 			if localRoot and targetRoot then
-				local distance = sliderJob.sliders.distance
-				local angle = sliderJob.sliders.angle
+				local _binding = sliderJob.sliders
+				local angle = _binding.angle
+				local distance = _binding.distance
 				local offset = CFrame.new(0, 0, -distance)
 				local rotation = CFrame.Angles(0, math.rad(angle), 0)
 				localRoot.CFrame = targetRoot.CFrame:ToWorldSpace(offset) * rotation
