@@ -2,6 +2,7 @@ import Roact from "@rbxts/roact";
 import { hooked } from "@rbxts/roact-hooked";
 import { useAppDispatch, useAppSelector } from "hooks/common/rodux-hooks";
 import { setJobActive } from "store/actions/jobs.action";
+import { RootState } from "store/store"; // Import RootState to solve 'unknown' type
 
 interface Props {
 	isVisible: boolean;
@@ -11,8 +12,8 @@ interface Props {
 const FacebangModal = hooked((props: Props) => {
 	const dispatch = useAppDispatch();
 	
-	// Using useAppSelector ensures the 'state' type is known automatically
-	const isEnabled = useAppSelector((state) => state.jobs.facebang.active);
+	// FIX: Explicitly type the state as RootState
+	const isEnabled = useAppSelector((state: RootState) => state.jobs.facebang.active);
 
 	if (!props.isVisible) return <frame Visible={false} />;
 
