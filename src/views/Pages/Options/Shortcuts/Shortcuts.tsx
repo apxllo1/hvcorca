@@ -7,10 +7,10 @@ import { useTheme } from "hooks/use-theme";
 import { toggleDashboard } from "store/actions/dashboard.action";
 import { setJobActive } from "store/actions/jobs.action";
 import { DashboardPage } from "store/models/dashboard.model";
+import { Job } from "store/models/jobs.model"; // Added Job import for casting
 import { px, scale } from "utils/udim2";
 import ShortcutItem, { ENTRY_HEIGHT, PADDING } from "./ShortcutItem";
 
-// UPDATED: Increased from 6 to 7 to account for Facebang
 const ENTRY_COUNT = 7; 
 
 function Shortcuts() {
@@ -54,7 +54,8 @@ function Shortcuts() {
 					/>
 					<ShortcutItem
 						onActivate={() => {
-							dispatch(setJobActive("flight", !store.getState().jobs.flight.active));
+							const job = store.getState().jobs.flight as Job;
+							dispatch(setJobActive("flight", !job.active));
 						}}
 						onSelect={setSelectedItem}
 						selectedItem={selectedItem}
@@ -64,7 +65,8 @@ function Shortcuts() {
 					/>
 					<ShortcutItem
 						onActivate={() => {
-							dispatch(setJobActive("freecam", !store.getState().jobs.freecam.active));
+							const job = store.getState().jobs.freecam as Job;
+							dispatch(setJobActive("freecam", !job.active));
 						}}
 						onSelect={setSelectedItem}
 						selectedItem={selectedItem}
@@ -74,7 +76,8 @@ function Shortcuts() {
 					/>
 					<ShortcutItem
 						onActivate={() => {
-							dispatch(setJobActive("ghost", !store.getState().jobs.ghost.active));
+							const job = store.getState().jobs.ghost as Job;
+							dispatch(setJobActive("ghost", !job.active));
 						}}
 						onSelect={setSelectedItem}
 						selectedItem={selectedItem}
@@ -84,7 +87,8 @@ function Shortcuts() {
 					/>
 					<ShortcutItem
 						onActivate={() => {
-							dispatch(setJobActive("walkSpeed", !store.getState().jobs.walkSpeed.active));
+							const job = store.getState().jobs.walkSpeed as Job;
+							dispatch(setJobActive("walkSpeed", !job.active));
 						}}
 						onSelect={setSelectedItem}
 						selectedItem={selectedItem}
@@ -94,7 +98,8 @@ function Shortcuts() {
 					/>
 					<ShortcutItem
 						onActivate={() => {
-							dispatch(setJobActive("jumpHeight", !store.getState().jobs.jumpHeight.active));
+							const job = store.getState().jobs.jumpHeight as Job;
+							dispatch(setJobActive("jumpHeight", !job.active));
 						}}
 						onSelect={setSelectedItem}
 						selectedItem={selectedItem}
@@ -102,10 +107,10 @@ function Shortcuts() {
 						description="Set jump height"
 						index={5}
 					/>
-                    {/* ADDED: Facebang Shortcut */}
 					<ShortcutItem
 						onActivate={() => {
-							dispatch(setJobActive("facebang", !store.getState().jobs.facebang.active));
+							const job = store.getState().jobs.facebang as Job;
+							dispatch(setJobActive("facebang", !job.active));
 						}}
 						onSelect={setSelectedItem}
 						selectedItem={selectedItem}
