@@ -1,18 +1,25 @@
-import { createAction } from "@rbxts/rodux";
 import { JobsState, InferJobValue } from "store/models/jobs.model";
 
-export const setJobActive = createAction("setJobActive", (jobName: string, active: boolean) => ({
+export type JobsAction = 
+	| { type: "setJobActive"; jobName: keyof JobsState; active: boolean }
+	| { type: "setJobValue"; jobName: keyof JobsState; value: unknown }
+	| { type: "setJobSlider"; jobName: keyof JobsState; slider: string; value: number };
+
+export const setJobActive = (jobName: keyof JobsState, active: boolean): JobsAction => ({
+	type: "setJobActive",
 	jobName,
 	active,
-}));
+});
 
-export const setJobValue = createAction("setJobValue", <K extends keyof JobsState>(jobName: K, value: InferJobValue<JobsState[K]>) => ({
+export const setJobValue = <K extends keyof JobsState>(jobName: K, value: InferJobValue<JobsState[K]>): JobsAction => ({
+	type: "setJobValue",
 	jobName,
 	value,
-} as unknown as Record<string, unknown>)); // This cast fixes the Rodux error
+});
 
-export const setJobSlider = createAction("setJobSlider", (jobName: string, slider: string, value: number) => ({
+export const setJobSlider = (jobName: keyof JobsState, slider: string, value: number): JobsAction => ({
+	type: "setJobSlider",
 	jobName,
 	slider,
 	value,
-}));
+});
