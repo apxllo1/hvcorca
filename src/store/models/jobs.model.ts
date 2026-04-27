@@ -6,14 +6,12 @@ export interface JobWithValue<T> extends Job {
 	value: T;
 }
 
-export type InferJobValue<T> = T extends JobWithValue<infer V> ? V : never;
+// New interface to support multiple sliders (Angle, Distance, etc.)
+export interface JobWithSliders extends Job {
+	sliders: Record<string, number>;
+}
 
-export type JobsWithValue<T> = ExcludeMembers<
-	{
-		[K in keyof JobsState]: JobsState[K] extends JobWithValue<T> ? JobsState[K] : never;
-	},
-	never
->;
+export type InferJobValue<T> = T extends JobWithValue<infer V> ? V : never;
 
 export type JobsState = {
 	flight: JobWithValue<number>;
@@ -30,13 +28,11 @@ export type JobsState = {
 	kill: Job;
 	spectate: Job;
 	
-	// Added Facebang here
-	facebang: Job;
+	// FIXED: Now supports sliders so the UI won't crash
+	facebang: JobWithSliders;
 
 	rejoinServer: Job;
 	switchServer: Job;
 };
 
-// CRITICAL FIX: Adding a dummy constant forces the compiler 
-// to generate 'local exports = {}' and 'return exports'
 export const __FIX_JOBS = true;
