@@ -70,6 +70,7 @@ function MiscPage() {
 								theme={theme}
 								hint={cmd.hint}
 								image={cmd.icon}
+								position={new UDim2()}
 								canDeactivate
 							/>
 
