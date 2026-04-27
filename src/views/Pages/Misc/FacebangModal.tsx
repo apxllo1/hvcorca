@@ -15,11 +15,9 @@ interface Props {
 const FacebangModal = hooked((props: Props) => {
 	const dispatch = useAppDispatch();
 	
-	// Logic to fetch the headshot (Orca style)
 	const localPlayer = Players.LocalPlayer;
 	const avatarUrl = `https://www.roblox.com/headshot-thumbnail/image?userId=${localPlayer.UserId}&width=420&height=420&format=png`;
 
-	// Fetch job state with the double-cast safety pattern
 	const job = useAppSelector((state: RootState) => {
 		const facebang = state.jobs.facebang as unknown;
 		return facebang as JobWithSliders;
@@ -39,7 +37,6 @@ const FacebangModal = hooked((props: Props) => {
 			<uicorner CornerRadius={new UDim(0, 12)} />
 			<uistroke Color={Color3.fromRGB(35, 35, 35)} Thickness={1} />
 			
-			{/* Top Decoration Bar */}
 			<frame
 				Size={new UDim2(1, 0, 0, 3)}
 				BackgroundColor3={Color3.fromRGB(235, 76, 105)}
@@ -52,7 +49,6 @@ const FacebangModal = hooked((props: Props) => {
 			<uipadding PaddingTop={new UDim(0, 25)} PaddingLeft={new UDim(0, 20)} PaddingRight={new UDim(0, 20)} PaddingBottom={new UDim(0, 20)} />
 			<uilistlayout Padding={new UDim(0, 18)} SortOrder="LayoutOrder" />
 
-			{/* Header with Avatar */}
 			<frame Size={new UDim2(1, 0, 0, 50)} BackgroundTransparency={1} LayoutOrder={1}>
 				<imagelabel
 					Key="AvatarCircle"
@@ -81,13 +77,12 @@ const FacebangModal = hooked((props: Props) => {
 					Size={new UDim2(1, -65, 0, 15)}
 					BackgroundTransparency={1}
 					TextColor3={Color3.fromRGB(150, 150, 150)}
-					Font={Enum.Font.GothamMedium}
+					Font={Enum.Font.Gotham} // FIXED: Changed from GothamMedium
 					TextSize={12}
 					TextXAlignment="Left"
 				/>
 			</frame>
 
-			{/* Main Toggle Button */}
 			<textbutton
 				Key="StateToggle"
 				LayoutOrder={2}
@@ -102,32 +97,29 @@ const FacebangModal = hooked((props: Props) => {
 				<uicorner CornerRadius={new UDim(0, 6)} />
 			</textbutton>
 
-			{/* Settings Group (Sliders) */}
 			<frame Size={new UDim2(1, 0, 0, 100)} BackgroundTransparency={1} LayoutOrder={3}>
 				<uilistlayout Padding={new UDim(0, 12)} />
 				
-				{/* Angle Slider */}
 				<frame Size={new UDim2(1, 0, 0, 40)} BackgroundTransparency={1}>
-					<textlabel Text="Angle Offset" Size={new UDim2(0.5, 0, 0, 15)} BackgroundTransparency={1} TextColor3={Color3.fromRGB(200, 200, 200)} Font="GothamMedium" TextSize={12} TextXAlignment="Left" />
-					<textlabel Text={`${math.round(job.sliders.angle)}°`} Size={new UDim2(0.5, 0, 0, 15)} Position={new UDim2(1, 0, 0, 0)} AnchorPoint={new Vector2(1, 0)} BackgroundTransparency={1} TextColor3={Color3.fromRGB(235, 76, 105)} Font="GothamBold" TextSize={12} TextXAlignment="Right" />
+					<textlabel Text="Angle Offset" Size={new UDim2(0.5, 0, 0, 15)} BackgroundTransparency={1} TextColor3={Color3.fromRGB(200, 200, 200)} Font={Enum.Font.Gotham} TextSize={12} TextXAlignment="Left" />
+					<textlabel Text={`${math.round(job.sliders.angle)}°`} Size={new UDim2(0.5, 0, 0, 15)} Position={new UDim2(1, 0, 0, 0)} AnchorPoint={new Vector2(1, 0)} BackgroundTransparency={1} TextColor3={Color3.fromRGB(235, 76, 105)} Font={Enum.Font.GothamBold} TextSize={12} TextXAlignment="Right" />
 					<BrightSlider
 						size={new UDim2(1, 0, 0, 20)}
 						position={new UDim2(0, 0, 1, 0)}
-						AnchorPoint={new Vector2(0, 1)}
+						// FIXED: Removed AnchorPoint because BrightSlider doesn't support it
 						min={0} max={360} initialValue={job.sliders.angle}
 						onRelease={(v) => dispatch(setJobSlider("facebang", "angle", v))}
 						accentColor={Color3.fromRGB(235, 76, 105)}
 					/>
 				</frame>
 
-				{/* Distance Slider */}
 				<frame Size={new UDim2(1, 0, 0, 40)} BackgroundTransparency={1}>
-					<textlabel Text="Distance" Size={new UDim2(0.5, 0, 0, 15)} BackgroundTransparency={1} TextColor3={Color3.fromRGB(200, 200, 200)} Font="GothamMedium" TextSize={12} TextXAlignment="Left" />
-					<textlabel Text={`${math.round(job.sliders.distance * 10) / 10}s`} Size={new UDim2(0.5, 0, 0, 15)} Position={new UDim2(1, 0, 0, 0)} AnchorPoint={new Vector2(1, 0)} BackgroundTransparency={1} TextColor3={Color3.fromRGB(235, 76, 105)} Font="GothamBold" TextSize={12} TextXAlignment="Right" />
+					<textlabel Text="Distance" Size={new UDim2(0.5, 0, 0, 15)} BackgroundTransparency={1} TextColor3={Color3.fromRGB(200, 200, 200)} Font={Enum.Font.Gotham} TextSize={12} TextXAlignment="Left" />
+					<textlabel Text={`${math.round(job.sliders.distance * 10) / 10}s`} Size={new UDim2(0.5, 0, 0, 15)} Position={new UDim2(1, 0, 0, 0)} AnchorPoint={new Vector2(1, 0)} BackgroundTransparency={1} TextColor3={Color3.fromRGB(235, 76, 105)} Font={Enum.Font.GothamBold} TextSize={12} TextXAlignment="Right" />
 					<BrightSlider
 						size={new UDim2(1, 0, 0, 20)}
 						position={new UDim2(0, 0, 1, 0)}
-						AnchorPoint={new Vector2(0, 1)}
+						// FIXED: Removed AnchorPoint
 						min={1} max={15} initialValue={job.sliders.distance}
 						onRelease={(v) => dispatch(setJobSlider("facebang", "distance", v))}
 						accentColor={Color3.fromRGB(235, 76, 105)}
@@ -135,7 +127,6 @@ const FacebangModal = hooked((props: Props) => {
 				</frame>
 			</frame>
 
-			{/* Close Button */}
 			<textbutton
 				Text="CLOSE SETTINGS"
 				Size={new UDim2(1, 0, 0, 30)}
