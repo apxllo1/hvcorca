@@ -1,23 +1,23 @@
 export interface Job {
-	active: boolean;
+	readonly active: boolean;
 }
 
 export interface JobWithValue<T> extends Job {
-	value: T;
+	readonly value: T;
 }
 
 export interface JobWithSliders extends Job {
-	sliders: Record<string, number>;
+	readonly sliders: Record<string, number>;
 }
 
 export type InferJobValue<T> = T extends JobWithValue<infer V> ? V : never;
 
-// This fixes the error in Sliders.tsx
+// This fixes the 'no exported member' error in Sliders.tsx
 export type JobsWithValue<T> = {
 	[K in keyof JobsState]: JobsState[K] extends JobWithValue<T> ? JobsState[K] : never;
 };
 
-export type JobsState = {
+export interface JobsState {
 	flight: JobWithValue<number>;
 	walkSpeed: JobWithValue<number>;
 	jumpHeight: JobWithValue<number>;
@@ -36,6 +36,9 @@ export type JobsState = {
 
 	rejoinServer: Job;
 	switchServer: Job;
-} & { [key: string]: any }; // This allows indexing by string (fixing the Sliders.tsx error)
+
+	/** Index signature to allow dynamic access without 'any' */
+	[key: string]: Job | JobWithValue<number> | JobWithSliders | undefined;
+}
 
 export const __FIX_JOBS = true;
