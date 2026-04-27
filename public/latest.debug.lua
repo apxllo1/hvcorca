@@ -8681,220 +8681,152 @@ return exports", '@'.."Havoc.views.Pages.Misc")) setfenv(fn, newEnv("Havoc.views
 newModule("FacebangModal", "ModuleScript", "Havoc.views.Pages.Misc.FacebangModal", "Havoc.views.Pages.Misc", function () local fn = assert(loadstring("-- Compiled with roblox-ts v1.2.7\
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)\
 local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
-local hooked = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-hooked\").out).hooked\
-local Players = TS.import(script, TS.getModule(script, \"@rbxts\", \"services\")).Players\
 local _rodux_hooks = TS.import(script, script.Parent.Parent.Parent.Parent, \"hooks\", \"common\", \"rodux-hooks\")\
-local useAppDispatch = _rodux_hooks.useAppDispatch\
-local useAppSelector = _rodux_hooks.useAppSelector\
+local useSelector = _rodux_hooks.useSelector\
+local useDispatch = _rodux_hooks.useDispatch\
 local _jobs_action = TS.import(script, script.Parent.Parent.Parent.Parent, \"store\", \"actions\", \"jobs.action\")\
 local setJobActive = _jobs_action.setJobActive\
 local setJobSlider = _jobs_action.setJobSlider\
-local BrightSlider = TS.import(script, script.Parent.Parent.Parent.Parent, \"components\", \"BrightSlider\").default\
-local FacebangModal = hooked(function(props)\
-\9local dispatch = useAppDispatch()\
-\9local localPlayer = Players.LocalPlayer\
-\9local avatarUrl = \"https://www.roblox.com/headshot-thumbnail/image?userId=\" .. (tostring(localPlayer.UserId) .. \"&width=420&height=420&format=png\")\
-\9local job = useAppSelector(function(state)\
-\9\9local facebang = state.jobs.facebang\
-\9\9return facebang\
+local function FacebangModal(_param)\
+\9local isVisible = _param.isVisible\
+\9local onClose = _param.onClose\
+\9local job = useSelector(function(state)\
+\9\9return state.jobs.facebang\
 \9end)\
-\9if not props.isVisible then\
-\9\9return Roact.createElement(\"Frame\", {\
-\9\9\9Visible = false,\
-\9\9})\
+\9local dispatch = useDispatch()\
+\9if not isVisible then\
+\9\9return Roact.createFragment()\
 \9end\
-\9return Roact.createFragment({\
-\9\9FacebangContainer = Roact.createElement(\"Frame\", {\
-\9\9\9Size = UDim2.new(0, 320, 0, 300),\
-\9\9\9Position = UDim2.new(0.5, 0, 0.5, 0),\
-\9\9\9AnchorPoint = Vector2.new(0.5, 0.5),\
-\9\9\9BackgroundColor3 = Color3.fromRGB(12, 12, 12),\
-\9\9\9BorderSizePixel = 0,\
-\9\9}, {\
-\9\9\9Roact.createElement(\"UICorner\", {\
-\9\9\9\9CornerRadius = UDim.new(0, 12),\
-\9\9\9}),\
-\9\9\9Roact.createElement(\"UIStroke\", {\
-\9\9\9\9Color = Color3.fromRGB(35, 35, 35),\
-\9\9\9\9Thickness = 1,\
-\9\9\9}),\
-\9\9\9Roact.createElement(\"Frame\", {\
-\9\9\9\9Size = UDim2.new(1, 0, 0, 3),\
-\9\9\9\9BackgroundColor3 = Color3.fromRGB(235, 76, 105),\
-\9\9\9\9BorderSizePixel = 0,\
-\9\9\9}, {\
-\9\9\9\9Roact.createElement(\"UICorner\", {\
-\9\9\9\9\9CornerRadius = UDim.new(0, 12),\
-\9\9\9\9}),\
-\9\9\9\9Roact.createElement(\"Frame\", {\
-\9\9\9\9\9Size = UDim2.new(1, 0, 0.5, 0),\
-\9\9\9\9\9Position = UDim2.new(0, 0, 0.5, 0),\
-\9\9\9\9\9BackgroundColor3 = Color3.fromRGB(235, 76, 105),\
-\9\9\9\9\9BorderSizePixel = 0,\
-\9\9\9\9}),\
-\9\9\9}),\
-\9\9\9Roact.createElement(\"UIPadding\", {\
-\9\9\9\9PaddingTop = UDim.new(0, 25),\
-\9\9\9\9PaddingLeft = UDim.new(0, 20),\
-\9\9\9\9PaddingRight = UDim.new(0, 20),\
-\9\9\9\9PaddingBottom = UDim.new(0, 20),\
-\9\9\9}),\
-\9\9\9Roact.createElement(\"UIListLayout\", {\
-\9\9\9\9Padding = UDim.new(0, 18),\
-\9\9\9\9SortOrder = \"LayoutOrder\",\
-\9\9\9}),\
-\9\9\9Roact.createElement(\"Frame\", {\
-\9\9\9\9Size = UDim2.new(1, 0, 0, 50),\
+\9local renderSlider = function(label, value, percent, onUpdate)\
+\9\9return Roact.createFragment({\
+\9\9\9[label] = Roact.createElement(\"Frame\", {\
+\9\9\9\9Size = UDim2.new(1, -40, 0, 60),\
 \9\9\9\9BackgroundTransparency = 1,\
-\9\9\9\9LayoutOrder = 1,\
 \9\9\9}, {\
-\9\9\9\9AvatarCircle = Roact.createElement(\"ImageLabel\", {\
-\9\9\9\9\9Image = avatarUrl,\
-\9\9\9\9\9Size = UDim2.new(0, 50, 0, 50),\
-\9\9\9\9\9BackgroundColor3 = Color3.fromRGB(25, 25, 25),\
-\9\9\9\9}, {\
-\9\9\9\9\9Roact.createElement(\"UICorner\", {\
-\9\9\9\9\9\9CornerRadius = UDim.new(1, 0),\
-\9\9\9\9\9}),\
-\9\9\9\9\9Roact.createElement(\"UIStroke\", {\
-\9\9\9\9\9\9Color = Color3.fromRGB(235, 76, 105),\
-\9\9\9\9\9\9Thickness = 2,\
-\9\9\9\9\9}),\
-\9\9\9\9}),\
 \9\9\9\9Roact.createElement(\"TextLabel\", {\
-\9\9\9\9\9Text = \"Facebang\",\
-\9\9\9\9\9Position = UDim2.new(0, 60, 0, 5),\
-\9\9\9\9\9Size = UDim2.new(1, -65, 0, 20),\
+\9\9\9\9\9Text = label,\
+\9\9\9\9\9Size = UDim2.new(0, 100, 0, 20),\
 \9\9\9\9\9BackgroundTransparency = 1,\
 \9\9\9\9\9TextColor3 = Color3.fromRGB(255, 255, 255),\
 \9\9\9\9\9Font = Enum.Font.GothamBold,\
-\9\9\9\9\9TextSize = 18,\
+\9\9\9\9\9TextSize = 14,\
 \9\9\9\9\9TextXAlignment = \"Left\",\
 \9\9\9\9}),\
 \9\9\9\9Roact.createElement(\"TextLabel\", {\
-\9\9\9\9\9Text = \"Active Target: LocalUser\",\
-\9\9\9\9\9Position = UDim2.new(0, 60, 0, 25),\
-\9\9\9\9\9Size = UDim2.new(1, -65, 0, 15),\
+\9\9\9\9\9Text = value,\
+\9\9\9\9\9Size = UDim2.new(0, 100, 0, 20),\
+\9\9\9\9\9Position = UDim2.new(1, -100, 0, 0),\
 \9\9\9\9\9BackgroundTransparency = 1,\
-\9\9\9\9\9TextColor3 = Color3.fromRGB(150, 150, 150),\
-\9\9\9\9\9Font = Enum.Font.Gotham,\
-\9\9\9\9\9TextSize = 12,\
-\9\9\9\9\9TextXAlignment = \"Left\",\
+\9\9\9\9\9TextColor3 = Color3.fromRGB(235, 76, 105),\
+\9\9\9\9\9Font = Enum.Font.GothamBold,\
+\9\9\9\9\9TextSize = 14,\
+\9\9\9\9\9TextXAlignment = \"Right\",\
+\9\9\9\9}),\
+\9\9\9\9Roact.createElement(\"TextButton\", {\
+\9\9\9\9\9Text = \"\",\
+\9\9\9\9\9Size = UDim2.new(1, 0, 0, 35),\
+\9\9\9\9\9Position = UDim2.new(0, 0, 0, 25),\
+\9\9\9\9\9BackgroundColor3 = Color3.fromRGB(20, 20, 20),\
+\9\9\9\9\9[Roact.Event.MouseButton1Click] = function(rbx)\
+\9\9\9\9\9\9local mouse = game:GetService(\"Players\").LocalPlayer:GetMouse()\
+\9\9\9\9\9\9local relativeX = mouse.X - rbx.AbsolutePosition.X\
+\9\9\9\9\9\9local newPercent = math.clamp(relativeX / rbx.AbsoluteSize.X, 0, 1)\
+\9\9\9\9\9\9onUpdate(newPercent)\
+\9\9\9\9\9end,\
+\9\9\9\9}, {\
+\9\9\9\9\9Roact.createElement(\"UICorner\", {\
+\9\9\9\9\9\9CornerRadius = UDim.new(0, 8),\
+\9\9\9\9\9}),\
+\9\9\9\9\9Roact.createElement(\"Frame\", {\
+\9\9\9\9\9\9Size = UDim2.new(percent, 0, 1, 0),\
+\9\9\9\9\9\9BackgroundColor3 = Color3.fromRGB(235, 76, 105),\
+\9\9\9\9\9\9BorderSizePixel = 0,\
+\9\9\9\9\9}, {\
+\9\9\9\9\9\9Roact.createElement(\"UICorner\", {\
+\9\9\9\9\9\9\9CornerRadius = UDim.new(0, 8),\
+\9\9\9\9\9\9}),\
+\9\9\9\9\9}),\
 \9\9\9\9}),\
 \9\9\9}),\
-\9\9\9StateToggle = Roact.createElement(\"TextButton\", {\
-\9\9\9\9LayoutOrder = 2,\
-\9\9\9\9Text = job.active and \"STOP MODULE\" or \"START MODULE\",\
-\9\9\9\9Size = UDim2.new(1, 0, 0, 35),\
-\9\9\9\9BackgroundColor3 = job.active and Color3.fromRGB(235, 76, 105) or Color3.fromRGB(30, 30, 30),\
+\9\9})\
+\9end\
+\9return Roact.createFragment({\
+\9\9Main = Roact.createElement(\"Frame\", {\
+\9\9\9Size = UDim2.new(0, 350, 0, 550),\
+\9\9\9Position = UDim2.new(0.5, -175, 0.5, -275),\
+\9\9\9BackgroundColor3 = Color3.fromRGB(10, 10, 10),\
+\9\9\9BorderSizePixel = 0,\
+\9\9\9Active = true,\
+\9\9}, {\
+\9\9\9Roact.createElement(\"UICorner\", {\
+\9\9\9\9CornerRadius = UDim.new(0, 15),\
+\9\9\9}),\
+\9\9\9Roact.createElement(\"TextLabel\", {\
+\9\9\9\9Text = \"Facebang\",\
+\9\9\9\9Size = UDim2.new(0, 200, 0, 50),\
+\9\9\9\9Position = UDim2.new(0, 20, 0, 5),\
+\9\9\9\9BackgroundTransparency = 1,\
 \9\9\9\9TextColor3 = Color3.fromRGB(255, 255, 255),\
 \9\9\9\9Font = Enum.Font.GothamBold,\
-\9\9\9\9TextSize = 13,\
-\9\9\9\9[Roact.Event.Activated] = function()\
+\9\9\9\9TextSize = 22,\
+\9\9\9\9TextXAlignment = \"Left\",\
+\9\9\9}),\
+\9\9\9Roact.createElement(\"TextButton\", {\
+\9\9\9\9Text = \"X\",\
+\9\9\9\9Size = UDim2.new(0, 30, 0, 30),\
+\9\9\9\9Position = UDim2.new(1, -40, 0, 10),\
+\9\9\9\9BackgroundTransparency = 1,\
+\9\9\9\9TextColor3 = Color3.fromRGB(255, 255, 255),\
+\9\9\9\9Font = Enum.Font.GothamBold,\
+\9\9\9\9TextSize = 18,\
+\9\9\9\9[Roact.Event.MouseButton1Click] = onClose,\
+\9\9\9}),\
+\9\9\9Roact.createElement(\"TextLabel\", {\
+\9\9\9\9Text = job.active and \"• Active\" or \"• Idle\",\
+\9\9\9\9Size = UDim2.new(0, 100, 0, 50),\
+\9\9\9\9Position = UDim2.new(1, -120, 0, 5),\
+\9\9\9\9BackgroundTransparency = 1,\
+\9\9\9\9TextColor3 = job.active and Color3.fromRGB(235, 76, 105) or Color3.fromRGB(150, 150, 150),\
+\9\9\9\9Font = Enum.Font.Gotham,\
+\9\9\9\9TextSize = 14,\
+\9\9\9\9TextXAlignment = \"Right\",\
+\9\9\9}),\
+\9\9\9Roact.createElement(\"TextButton\", {\
+\9\9\9\9Text = job.active and \"Stop Facebang\" or \"Start Facebang\",\
+\9\9\9\9Size = UDim2.new(1, -40, 0, 50),\
+\9\9\9\9Position = UDim2.new(0, 20, 0, 60),\
+\9\9\9\9BackgroundColor3 = Color3.fromRGB(235, 76, 105),\
+\9\9\9\9Font = Enum.Font.GothamBold,\
+\9\9\9\9TextColor3 = Color3.fromRGB(255, 255, 255),\
+\9\9\9\9TextSize = 16,\
+\9\9\9\9[Roact.Event.MouseButton1Click] = function()\
 \9\9\9\9\9return dispatch(setJobActive(\"facebang\", not job.active))\
 \9\9\9\9end,\
 \9\9\9}, {\
 \9\9\9\9Roact.createElement(\"UICorner\", {\
-\9\9\9\9\9CornerRadius = UDim.new(0, 6),\
+\9\9\9\9\9CornerRadius = UDim.new(0, 8),\
 \9\9\9\9}),\
 \9\9\9}),\
 \9\9\9Roact.createElement(\"Frame\", {\
-\9\9\9\9Size = UDim2.new(1, 0, 0, 100),\
+\9\9\9\9Size = UDim2.new(1, 0, 0, 300),\
+\9\9\9\9Position = UDim2.new(0, 20, 0, 130),\
 \9\9\9\9BackgroundTransparency = 1,\
-\9\9\9\9LayoutOrder = 3,\
 \9\9\9}, {\
 \9\9\9\9Roact.createElement(\"UIListLayout\", {\
-\9\9\9\9\9Padding = UDim.new(0, 12),\
+\9\9\9\9\9Padding = UDim.new(0, 15),\
 \9\9\9\9}),\
-\9\9\9\9Roact.createElement(\"Frame\", {\
-\9\9\9\9\9Size = UDim2.new(1, 0, 0, 40),\
-\9\9\9\9\9BackgroundTransparency = 1,\
-\9\9\9\9}, {\
-\9\9\9\9\9Roact.createElement(\"TextLabel\", {\
-\9\9\9\9\9\9Text = \"Angle Offset\",\
-\9\9\9\9\9\9Size = UDim2.new(0.5, 0, 0, 15),\
-\9\9\9\9\9\9BackgroundTransparency = 1,\
-\9\9\9\9\9\9TextColor3 = Color3.fromRGB(200, 200, 200),\
-\9\9\9\9\9\9Font = Enum.Font.Gotham,\
-\9\9\9\9\9\9TextSize = 12,\
-\9\9\9\9\9\9TextXAlignment = \"Left\",\
-\9\9\9\9\9}),\
-\9\9\9\9\9Roact.createElement(\"TextLabel\", {\
-\9\9\9\9\9\9Text = tostring(math.round(job.sliders.angle)) .. \"°\",\
-\9\9\9\9\9\9Size = UDim2.new(0.5, 0, 0, 15),\
-\9\9\9\9\9\9Position = UDim2.new(1, 0, 0, 0),\
-\9\9\9\9\9\9AnchorPoint = Vector2.new(1, 0),\
-\9\9\9\9\9\9BackgroundTransparency = 1,\
-\9\9\9\9\9\9TextColor3 = Color3.fromRGB(235, 76, 105),\
-\9\9\9\9\9\9Font = Enum.Font.GothamBold,\
-\9\9\9\9\9\9TextSize = 12,\
-\9\9\9\9\9\9TextXAlignment = \"Right\",\
-\9\9\9\9\9}),\
-\9\9\9\9\9Roact.createElement(BrightSlider, {\
-\9\9\9\9\9\9size = UDim2.new(1, 0, 0, 20),\
-\9\9\9\9\9\9position = UDim2.new(0, 0, 1, 0),\
-\9\9\9\9\9\9min = 0,\
-\9\9\9\9\9\9max = 360,\
-\9\9\9\9\9\9initialValue = job.sliders.angle,\
-\9\9\9\9\9\9onRelease = function(v)\
-\9\9\9\9\9\9\9return dispatch(setJobSlider(\"facebang\", \"angle\", v))\
-\9\9\9\9\9\9end,\
-\9\9\9\9\9\9accentColor = Color3.fromRGB(235, 76, 105),\
-\9\9\9\9\9}),\
-\9\9\9\9}),\
-\9\9\9\9Roact.createElement(\"Frame\", {\
-\9\9\9\9\9Size = UDim2.new(1, 0, 0, 40),\
-\9\9\9\9\9BackgroundTransparency = 1,\
-\9\9\9\9}, {\
-\9\9\9\9\9Roact.createElement(\"TextLabel\", {\
-\9\9\9\9\9\9Text = \"Distance\",\
-\9\9\9\9\9\9Size = UDim2.new(0.5, 0, 0, 15),\
-\9\9\9\9\9\9BackgroundTransparency = 1,\
-\9\9\9\9\9\9TextColor3 = Color3.fromRGB(200, 200, 200),\
-\9\9\9\9\9\9Font = Enum.Font.Gotham,\
-\9\9\9\9\9\9TextSize = 12,\
-\9\9\9\9\9\9TextXAlignment = \"Left\",\
-\9\9\9\9\9}),\
-\9\9\9\9\9Roact.createElement(\"TextLabel\", {\
-\9\9\9\9\9\9Text = tostring(math.round(job.sliders.distance * 10) / 10) .. \"s\",\
-\9\9\9\9\9\9Size = UDim2.new(0.5, 0, 0, 15),\
-\9\9\9\9\9\9Position = UDim2.new(1, 0, 0, 0),\
-\9\9\9\9\9\9AnchorPoint = Vector2.new(1, 0),\
-\9\9\9\9\9\9BackgroundTransparency = 1,\
-\9\9\9\9\9\9TextColor3 = Color3.fromRGB(235, 76, 105),\
-\9\9\9\9\9\9Font = Enum.Font.GothamBold,\
-\9\9\9\9\9\9TextSize = 12,\
-\9\9\9\9\9\9TextXAlignment = \"Right\",\
-\9\9\9\9\9}),\
-\9\9\9\9\9Roact.createElement(BrightSlider, {\
-\9\9\9\9\9\9size = UDim2.new(1, 0, 0, 20),\
-\9\9\9\9\9\9position = UDim2.new(0, 0, 1, 0),\
-\9\9\9\9\9\9min = 1,\
-\9\9\9\9\9\9max = 15,\
-\9\9\9\9\9\9initialValue = job.sliders.distance,\
-\9\9\9\9\9\9onRelease = function(v)\
-\9\9\9\9\9\9\9return dispatch(setJobSlider(\"facebang\", \"distance\", v))\
-\9\9\9\9\9\9end,\
-\9\9\9\9\9\9accentColor = Color3.fromRGB(235, 76, 105),\
-\9\9\9\9\9}),\
-\9\9\9\9}),\
-\9\9\9}),\
-\9\9\9Roact.createElement(\"TextButton\", {\
-\9\9\9\9Text = \"CLOSE SETTINGS\",\
-\9\9\9\9Size = UDim2.new(1, 0, 0, 30),\
-\9\9\9\9BackgroundTransparency = 1,\
-\9\9\9\9TextColor3 = Color3.fromRGB(100, 100, 100),\
-\9\9\9\9Font = Enum.Font.GothamBold,\
-\9\9\9\9TextSize = 11,\
-\9\9\9\9LayoutOrder = 4,\
-\9\9\9\9[Roact.Event.Activated] = props.onClose,\
+\9\9\9\9renderSlider(\"Distance\", tostring(math.round(job.sliders.distance * 10) / 10) .. \" studs\", job.sliders.distance / 15, function(p)\
+\9\9\9\9\9return dispatch(setJobSlider(\"facebang\", \"distance\", p * 15))\
+\9\9\9\9end),\
+\9\9\9\9renderSlider(\"Angle Offset\", tostring(math.round(job.sliders.angle)) .. \"°\", job.sliders.angle / 360, function(p)\
+\9\9\9\9\9return dispatch(setJobSlider(\"facebang\", \"angle\", p * 360))\
+\9\9\9\9end),\
 \9\9\9}),\
 \9\9}),\
 \9})\
-end)\
-local default = FacebangModal\
+end\
 return {\
-\9default = default,\
+\9default = FacebangModal,\
 }", '@'.."Havoc.views.Pages.Misc.FacebangModal")) setfenv(fn, newEnv("Havoc.views.Pages.Misc.FacebangModal")) return fn() end)
 
 newModule("Misc", "ModuleScript", "Havoc.views.Pages.Misc.Misc", "Havoc.views.Pages.Misc", function () local fn = assert(loadstring("-- Compiled with roblox-ts v1.2.7\

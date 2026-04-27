@@ -8545,220 +8545,152 @@ return exports end, newEnv("Havoc.views.Pages.Misc"))() end)
 newModule("FacebangModal", "ModuleScript", "Havoc.views.Pages.Misc.FacebangModal", "Havoc.views.Pages.Misc", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
-local hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).hooked
-local Players = TS.import(script, TS.getModule(script, "@rbxts", "services")).Players
 local _rodux_hooks = TS.import(script, script.Parent.Parent.Parent.Parent, "hooks", "common", "rodux-hooks")
-local useAppDispatch = _rodux_hooks.useAppDispatch
-local useAppSelector = _rodux_hooks.useAppSelector
+local useSelector = _rodux_hooks.useSelector
+local useDispatch = _rodux_hooks.useDispatch
 local _jobs_action = TS.import(script, script.Parent.Parent.Parent.Parent, "store", "actions", "jobs.action")
 local setJobActive = _jobs_action.setJobActive
 local setJobSlider = _jobs_action.setJobSlider
-local BrightSlider = TS.import(script, script.Parent.Parent.Parent.Parent, "components", "BrightSlider").default
-local FacebangModal = hooked(function(props)
-	local dispatch = useAppDispatch()
-	local localPlayer = Players.LocalPlayer
-	local avatarUrl = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. (tostring(localPlayer.UserId) .. "&width=420&height=420&format=png")
-	local job = useAppSelector(function(state)
-		local facebang = state.jobs.facebang
-		return facebang
+local function FacebangModal(_param)
+	local isVisible = _param.isVisible
+	local onClose = _param.onClose
+	local job = useSelector(function(state)
+		return state.jobs.facebang
 	end)
-	if not props.isVisible then
-		return Roact.createElement("Frame", {
-			Visible = false,
-		})
+	local dispatch = useDispatch()
+	if not isVisible then
+		return Roact.createFragment()
 	end
-	return Roact.createFragment({
-		FacebangContainer = Roact.createElement("Frame", {
-			Size = UDim2.new(0, 320, 0, 300),
-			Position = UDim2.new(0.5, 0, 0.5, 0),
-			AnchorPoint = Vector2.new(0.5, 0.5),
-			BackgroundColor3 = Color3.fromRGB(12, 12, 12),
-			BorderSizePixel = 0,
-		}, {
-			Roact.createElement("UICorner", {
-				CornerRadius = UDim.new(0, 12),
-			}),
-			Roact.createElement("UIStroke", {
-				Color = Color3.fromRGB(35, 35, 35),
-				Thickness = 1,
-			}),
-			Roact.createElement("Frame", {
-				Size = UDim2.new(1, 0, 0, 3),
-				BackgroundColor3 = Color3.fromRGB(235, 76, 105),
-				BorderSizePixel = 0,
-			}, {
-				Roact.createElement("UICorner", {
-					CornerRadius = UDim.new(0, 12),
-				}),
-				Roact.createElement("Frame", {
-					Size = UDim2.new(1, 0, 0.5, 0),
-					Position = UDim2.new(0, 0, 0.5, 0),
-					BackgroundColor3 = Color3.fromRGB(235, 76, 105),
-					BorderSizePixel = 0,
-				}),
-			}),
-			Roact.createElement("UIPadding", {
-				PaddingTop = UDim.new(0, 25),
-				PaddingLeft = UDim.new(0, 20),
-				PaddingRight = UDim.new(0, 20),
-				PaddingBottom = UDim.new(0, 20),
-			}),
-			Roact.createElement("UIListLayout", {
-				Padding = UDim.new(0, 18),
-				SortOrder = "LayoutOrder",
-			}),
-			Roact.createElement("Frame", {
-				Size = UDim2.new(1, 0, 0, 50),
+	local renderSlider = function(label, value, percent, onUpdate)
+		return Roact.createFragment({
+			[label] = Roact.createElement("Frame", {
+				Size = UDim2.new(1, -40, 0, 60),
 				BackgroundTransparency = 1,
-				LayoutOrder = 1,
 			}, {
-				AvatarCircle = Roact.createElement("ImageLabel", {
-					Image = avatarUrl,
-					Size = UDim2.new(0, 50, 0, 50),
-					BackgroundColor3 = Color3.fromRGB(25, 25, 25),
-				}, {
-					Roact.createElement("UICorner", {
-						CornerRadius = UDim.new(1, 0),
-					}),
-					Roact.createElement("UIStroke", {
-						Color = Color3.fromRGB(235, 76, 105),
-						Thickness = 2,
-					}),
-				}),
 				Roact.createElement("TextLabel", {
-					Text = "Facebang",
-					Position = UDim2.new(0, 60, 0, 5),
-					Size = UDim2.new(1, -65, 0, 20),
+					Text = label,
+					Size = UDim2.new(0, 100, 0, 20),
 					BackgroundTransparency = 1,
 					TextColor3 = Color3.fromRGB(255, 255, 255),
 					Font = Enum.Font.GothamBold,
-					TextSize = 18,
+					TextSize = 14,
 					TextXAlignment = "Left",
 				}),
 				Roact.createElement("TextLabel", {
-					Text = "Active Target: LocalUser",
-					Position = UDim2.new(0, 60, 0, 25),
-					Size = UDim2.new(1, -65, 0, 15),
+					Text = value,
+					Size = UDim2.new(0, 100, 0, 20),
+					Position = UDim2.new(1, -100, 0, 0),
 					BackgroundTransparency = 1,
-					TextColor3 = Color3.fromRGB(150, 150, 150),
-					Font = Enum.Font.Gotham,
-					TextSize = 12,
-					TextXAlignment = "Left",
+					TextColor3 = Color3.fromRGB(235, 76, 105),
+					Font = Enum.Font.GothamBold,
+					TextSize = 14,
+					TextXAlignment = "Right",
+				}),
+				Roact.createElement("TextButton", {
+					Text = "",
+					Size = UDim2.new(1, 0, 0, 35),
+					Position = UDim2.new(0, 0, 0, 25),
+					BackgroundColor3 = Color3.fromRGB(20, 20, 20),
+					[Roact.Event.MouseButton1Click] = function(rbx)
+						local mouse = game:GetService("Players").LocalPlayer:GetMouse()
+						local relativeX = mouse.X - rbx.AbsolutePosition.X
+						local newPercent = math.clamp(relativeX / rbx.AbsoluteSize.X, 0, 1)
+						onUpdate(newPercent)
+					end,
+				}, {
+					Roact.createElement("UICorner", {
+						CornerRadius = UDim.new(0, 8),
+					}),
+					Roact.createElement("Frame", {
+						Size = UDim2.new(percent, 0, 1, 0),
+						BackgroundColor3 = Color3.fromRGB(235, 76, 105),
+						BorderSizePixel = 0,
+					}, {
+						Roact.createElement("UICorner", {
+							CornerRadius = UDim.new(0, 8),
+						}),
+					}),
 				}),
 			}),
-			StateToggle = Roact.createElement("TextButton", {
-				LayoutOrder = 2,
-				Text = job.active and "STOP MODULE" or "START MODULE",
-				Size = UDim2.new(1, 0, 0, 35),
-				BackgroundColor3 = job.active and Color3.fromRGB(235, 76, 105) or Color3.fromRGB(30, 30, 30),
+		})
+	end
+	return Roact.createFragment({
+		Main = Roact.createElement("Frame", {
+			Size = UDim2.new(0, 350, 0, 550),
+			Position = UDim2.new(0.5, -175, 0.5, -275),
+			BackgroundColor3 = Color3.fromRGB(10, 10, 10),
+			BorderSizePixel = 0,
+			Active = true,
+		}, {
+			Roact.createElement("UICorner", {
+				CornerRadius = UDim.new(0, 15),
+			}),
+			Roact.createElement("TextLabel", {
+				Text = "Facebang",
+				Size = UDim2.new(0, 200, 0, 50),
+				Position = UDim2.new(0, 20, 0, 5),
+				BackgroundTransparency = 1,
 				TextColor3 = Color3.fromRGB(255, 255, 255),
 				Font = Enum.Font.GothamBold,
-				TextSize = 13,
-				[Roact.Event.Activated] = function()
+				TextSize = 22,
+				TextXAlignment = "Left",
+			}),
+			Roact.createElement("TextButton", {
+				Text = "X",
+				Size = UDim2.new(0, 30, 0, 30),
+				Position = UDim2.new(1, -40, 0, 10),
+				BackgroundTransparency = 1,
+				TextColor3 = Color3.fromRGB(255, 255, 255),
+				Font = Enum.Font.GothamBold,
+				TextSize = 18,
+				[Roact.Event.MouseButton1Click] = onClose,
+			}),
+			Roact.createElement("TextLabel", {
+				Text = job.active and "• Active" or "• Idle",
+				Size = UDim2.new(0, 100, 0, 50),
+				Position = UDim2.new(1, -120, 0, 5),
+				BackgroundTransparency = 1,
+				TextColor3 = job.active and Color3.fromRGB(235, 76, 105) or Color3.fromRGB(150, 150, 150),
+				Font = Enum.Font.Gotham,
+				TextSize = 14,
+				TextXAlignment = "Right",
+			}),
+			Roact.createElement("TextButton", {
+				Text = job.active and "Stop Facebang" or "Start Facebang",
+				Size = UDim2.new(1, -40, 0, 50),
+				Position = UDim2.new(0, 20, 0, 60),
+				BackgroundColor3 = Color3.fromRGB(235, 76, 105),
+				Font = Enum.Font.GothamBold,
+				TextColor3 = Color3.fromRGB(255, 255, 255),
+				TextSize = 16,
+				[Roact.Event.MouseButton1Click] = function()
 					return dispatch(setJobActive("facebang", not job.active))
 				end,
 			}, {
 				Roact.createElement("UICorner", {
-					CornerRadius = UDim.new(0, 6),
+					CornerRadius = UDim.new(0, 8),
 				}),
 			}),
 			Roact.createElement("Frame", {
-				Size = UDim2.new(1, 0, 0, 100),
+				Size = UDim2.new(1, 0, 0, 300),
+				Position = UDim2.new(0, 20, 0, 130),
 				BackgroundTransparency = 1,
-				LayoutOrder = 3,
 			}, {
 				Roact.createElement("UIListLayout", {
-					Padding = UDim.new(0, 12),
+					Padding = UDim.new(0, 15),
 				}),
-				Roact.createElement("Frame", {
-					Size = UDim2.new(1, 0, 0, 40),
-					BackgroundTransparency = 1,
-				}, {
-					Roact.createElement("TextLabel", {
-						Text = "Angle Offset",
-						Size = UDim2.new(0.5, 0, 0, 15),
-						BackgroundTransparency = 1,
-						TextColor3 = Color3.fromRGB(200, 200, 200),
-						Font = Enum.Font.Gotham,
-						TextSize = 12,
-						TextXAlignment = "Left",
-					}),
-					Roact.createElement("TextLabel", {
-						Text = tostring(math.round(job.sliders.angle)) .. "°",
-						Size = UDim2.new(0.5, 0, 0, 15),
-						Position = UDim2.new(1, 0, 0, 0),
-						AnchorPoint = Vector2.new(1, 0),
-						BackgroundTransparency = 1,
-						TextColor3 = Color3.fromRGB(235, 76, 105),
-						Font = Enum.Font.GothamBold,
-						TextSize = 12,
-						TextXAlignment = "Right",
-					}),
-					Roact.createElement(BrightSlider, {
-						size = UDim2.new(1, 0, 0, 20),
-						position = UDim2.new(0, 0, 1, 0),
-						min = 0,
-						max = 360,
-						initialValue = job.sliders.angle,
-						onRelease = function(v)
-							return dispatch(setJobSlider("facebang", "angle", v))
-						end,
-						accentColor = Color3.fromRGB(235, 76, 105),
-					}),
-				}),
-				Roact.createElement("Frame", {
-					Size = UDim2.new(1, 0, 0, 40),
-					BackgroundTransparency = 1,
-				}, {
-					Roact.createElement("TextLabel", {
-						Text = "Distance",
-						Size = UDim2.new(0.5, 0, 0, 15),
-						BackgroundTransparency = 1,
-						TextColor3 = Color3.fromRGB(200, 200, 200),
-						Font = Enum.Font.Gotham,
-						TextSize = 12,
-						TextXAlignment = "Left",
-					}),
-					Roact.createElement("TextLabel", {
-						Text = tostring(math.round(job.sliders.distance * 10) / 10) .. "s",
-						Size = UDim2.new(0.5, 0, 0, 15),
-						Position = UDim2.new(1, 0, 0, 0),
-						AnchorPoint = Vector2.new(1, 0),
-						BackgroundTransparency = 1,
-						TextColor3 = Color3.fromRGB(235, 76, 105),
-						Font = Enum.Font.GothamBold,
-						TextSize = 12,
-						TextXAlignment = "Right",
-					}),
-					Roact.createElement(BrightSlider, {
-						size = UDim2.new(1, 0, 0, 20),
-						position = UDim2.new(0, 0, 1, 0),
-						min = 1,
-						max = 15,
-						initialValue = job.sliders.distance,
-						onRelease = function(v)
-							return dispatch(setJobSlider("facebang", "distance", v))
-						end,
-						accentColor = Color3.fromRGB(235, 76, 105),
-					}),
-				}),
-			}),
-			Roact.createElement("TextButton", {
-				Text = "CLOSE SETTINGS",
-				Size = UDim2.new(1, 0, 0, 30),
-				BackgroundTransparency = 1,
-				TextColor3 = Color3.fromRGB(100, 100, 100),
-				Font = Enum.Font.GothamBold,
-				TextSize = 11,
-				LayoutOrder = 4,
-				[Roact.Event.Activated] = props.onClose,
+				renderSlider("Distance", tostring(math.round(job.sliders.distance * 10) / 10) .. " studs", job.sliders.distance / 15, function(p)
+					return dispatch(setJobSlider("facebang", "distance", p * 15))
+				end),
+				renderSlider("Angle Offset", tostring(math.round(job.sliders.angle)) .. "°", job.sliders.angle / 360, function(p)
+					return dispatch(setJobSlider("facebang", "angle", p * 360))
+				end),
 			}),
 		}),
 	})
-end)
-local default = FacebangModal
+end
 return {
-	default = default,
+	default = FacebangModal,
 } end, newEnv("Havoc.views.Pages.Misc.FacebangModal"))() end)
 newModule("Misc", "ModuleScript", "Havoc.views.Pages.Misc.Misc", "Havoc.views.Pages.Misc", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
