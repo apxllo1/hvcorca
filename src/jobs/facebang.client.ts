@@ -1,15 +1,14 @@
 import { RunService, Players, Workspace } from "@rbxts/services";
 import { Job } from "store/models/jobs.model";
-// We import the store from the client entry point where it's usually initialized
-import { store } from "main.client"; 
+import { getStore } from "./helpers/job-store"; // This is the secret sauce
 
 const lp = Players.LocalPlayer;
 const OFFSET_HEIGHT = 0.8;
 const TELEPORT_DISTANCE = 1.9;
 
 RunService.Stepped.Connect(() => {
-    // Basic guard to prevent errors if store isn't ready
-    if (!store) return;
+	const store = getStore(); // Get the store safely from the helper
+	if (!store) return;
     
 	const state = store.getState();
 	const facebangJob = state.jobs.facebang as Job | undefined;
@@ -23,7 +22,6 @@ RunService.Stepped.Connect(() => {
 		return;
 	}
 
-	// Disable actions
 	const humanoid = char.FindFirstChildOfClass("Humanoid");
 	if (humanoid) {
 		humanoid.PlatformStand = true;
