@@ -3358,7 +3358,8 @@ onJobChange("facebang", function(job, state)
 		connection:Disconnect()
 		connection = nil
 	end
-	if not job.active then
+	local sliderJob = job
+	if not sliderJob.active or not sliderJob.sliders then
 		return nil
 	end
 	local targetName = state.dashboard.apps.playerSelected
@@ -3378,10 +3379,11 @@ onJobChange("facebang", function(job, state)
 			local localRoot = localChar:FindFirstChild("HumanoidRootPart")
 			local targetRoot = targetChar:FindFirstChild("HumanoidRootPart")
 			if localRoot and targetRoot then
-				local offset = CFrame.new(0, 0, -2.5)
-				local _exp = targetRoot.CFrame:ToWorldSpace(offset)
-				local _arg0 = CFrame.Angles(0, math.rad(180), 0)
-				localRoot.CFrame = _exp * _arg0
+				local distance = sliderJob.sliders.distance
+				local angle = sliderJob.sliders.angle
+				local offset = CFrame.new(0, 0, -distance)
+				local rotation = CFrame.Angles(0, math.rad(angle), 0)
+				localRoot.CFrame = targetRoot.CFrame:ToWorldSpace(offset) * rotation
 			end
 		end
 	end)

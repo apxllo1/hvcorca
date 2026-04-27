@@ -3415,7 +3415,8 @@ onJobChange(\"facebang\", function(job, state)\
 \9\9connection:Disconnect()\
 \9\9connection = nil\
 \9end\
-\9if not job.active then\
+\9local sliderJob = job\
+\9if not sliderJob.active or not sliderJob.sliders then\
 \9\9return nil\
 \9end\
 \9local targetName = state.dashboard.apps.playerSelected\
@@ -3435,10 +3436,11 @@ onJobChange(\"facebang\", function(job, state)\
 \9\9\9local localRoot = localChar:FindFirstChild(\"HumanoidRootPart\")\
 \9\9\9local targetRoot = targetChar:FindFirstChild(\"HumanoidRootPart\")\
 \9\9\9if localRoot and targetRoot then\
-\9\9\9\9local offset = CFrame.new(0, 0, -2.5)\
-\9\9\9\9local _exp = targetRoot.CFrame:ToWorldSpace(offset)\
-\9\9\9\9local _arg0 = CFrame.Angles(0, math.rad(180), 0)\
-\9\9\9\9localRoot.CFrame = _exp * _arg0\
+\9\9\9\9local distance = sliderJob.sliders.distance\
+\9\9\9\9local angle = sliderJob.sliders.angle\
+\9\9\9\9local offset = CFrame.new(0, 0, -distance)\
+\9\9\9\9local rotation = CFrame.Angles(0, math.rad(angle), 0)\
+\9\9\9\9localRoot.CFrame = targetRoot.CFrame:ToWorldSpace(offset) * rotation\
 \9\9\9end\
 \9\9end\
 \9end)\
