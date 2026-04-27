@@ -2161,7 +2161,6 @@ newModule("jobs", "ModuleScript", "Havoc.jobs", "Havoc", function () local fn = 
 local TS = require(script.Parent.include.RuntimeLib)\
 local exports = {}\
 exports.setStore = TS.import(script, script, \"helpers\", \"job-store\").setStore\
-TS.import(script, script, \"facebang\")\
 TS.import(script, script, \"acrylic\")\
 TS.import(script, script, \"freecam\")\
 TS.import(script, script, \"server\")\
@@ -2174,6 +2173,7 @@ TS.import(script, script, \"players\", \"hide\")\
 TS.import(script, script, \"players\", \"kill\")\
 TS.import(script, script, \"players\", \"spectate\")\
 TS.import(script, script, \"players\", \"teleport\")\
+TS.import(script, script, \"players\", \"facebang\")\
 return exports", '@'.."Havoc.jobs")) setfenv(fn, newEnv("Havoc.jobs")) return fn() end)
 
 newModule("acrylic", "ModuleScript", "Havoc.jobs.acrylic", "Havoc.jobs", function () local fn = assert(loadstring("-- Compiled with roblox-ts v1.2.7\
@@ -2816,60 +2816,6 @@ main():catch(function(err)\
 end)\
 return nil", '@'.."Havoc.jobs.character.refresh")) setfenv(fn, newEnv("Havoc.jobs.character.refresh")) return fn() end)
 
-newModule("facebang", "ModuleScript", "Havoc.jobs.facebang", "Havoc.jobs", function () local fn = assert(loadstring("-- Compiled with roblox-ts v1.2.7\
-local TS = require(script.Parent.Parent.include.RuntimeLib)\
-local _services = TS.import(script, TS.getModule(script, \"@rbxts\", \"services\"))\
-local RunService = _services.RunService\
-local Players = _services.Players\
-local Workspace = _services.Workspace\
-local _job_store = TS.import(script, script.Parent, \"helpers\", \"job-store\")\
-local onJobChange = _job_store.onJobChange\
-local getStore = _job_store.getStore\
-local lp = Players.LocalPlayer\
-local isActive = false\
-local originalGravity = Workspace.Gravity\
-local initFacebang = TS.async(function()\
-\9local store = TS.await(getStore())\
-\9onJobChange(\"facebang\", function(job)\
-\9\9isActive = job.active\
-\9\9if not isActive then\
-\9\9\9Workspace.Gravity = originalGravity\
-\9\9end\
-\9end)\
-\9RunService.Stepped:Connect(function()\
-\9\9if not isActive then\
-\9\9\9return nil\
-\9\9end\
-\9\9local state = store:getState()\
-\9\9local targetIdentifier = state.dashboard.apps.playerSelected\
-\9\9if targetIdentifier == nil or targetIdentifier == \"\" then\
-\9\9\9return nil\
-\9\9end\
-\9\9local char = lp.Character\
-\9\9local target = Players:FindFirstChild(tostring(targetIdentifier))\
-\9\9if not char or (not target or not target.Character) then\
-\9\9\9return nil\
-\9\9end\
-\9\9local hrp = char:FindFirstChild(\"HumanoidRootPart\")\
-\9\9local targetHrp = target.Character:FindFirstChild(\"HumanoidRootPart\")\
-\9\9local targetHead = target.Character:FindFirstChild(\"Head\")\
-\9\9if hrp and (targetHrp and targetHead) then\
-\9\9\9local _position = targetHead.Position\
-\9\9\9local _arg0 = targetHrp.CFrame.LookVector * 1.9\
-\9\9\9local targetPos = _position + _arg0\
-\9\9\9local _cFrame = CFrame.new(targetPos, targetHead.Position)\
-\9\9\9local _vector3 = Vector3.new(0, 0.8, 0)\
-\9\9\9local _arg0_1 = CFrame.Angles(0, math.rad(180), 0)\
-\9\9\9hrp.CFrame = (_cFrame + _vector3) * _arg0_1\
-\9\9\9Workspace.Gravity = 0\
-\9\9end\
-\9end)\
-end)\
-initFacebang():catch(function(err)\
-\9return warn(\"[Facebang] Init Error: \" .. tostring(err))\
-end)\
-return nil", '@'.."Havoc.jobs.facebang")) setfenv(fn, newEnv("Havoc.jobs.facebang")) return fn() end)
-
 newModule("freecam", "ModuleScript", "Havoc.jobs.freecam", "Havoc.jobs", function () local fn = assert(loadstring("-- Compiled with roblox-ts v1.2.7\
 local TS = require(script.Parent.Parent.include.RuntimeLib)\
 local _freecam = TS.import(script, script.Parent, \"helpers\", \"freecam\")\
@@ -3437,6 +3383,48 @@ return {\
 }", '@'.."Havoc.jobs.helpers.job-store")) setfenv(fn, newEnv("Havoc.jobs.helpers.job-store")) return fn() end)
 
 newInstance("players", "Folder", "Havoc.jobs.players", "Havoc.jobs")
+
+newModule("facebang", "ModuleScript", "Havoc.jobs.players.facebang", "Havoc.jobs.players", function () local fn = assert(loadstring("-- Compiled with roblox-ts v1.2.7\
+local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
+local _services = TS.import(script, TS.getModule(script, \"@rbxts\", \"services\"))\
+local RunService = _services.RunService\
+local Players = _services.Players\
+local onJobChange = TS.import(script, script.Parent.Parent, \"helpers\", \"job-store\").onJobChange\
+local connection\
+onJobChange(\"facebang\", function(job, state)\
+\9if connection then\
+\9\9connection:Disconnect()\
+\9\9connection = nil\
+\9end\
+\9if not job.active then\
+\9\9return nil\
+\9end\
+\9local targetName = state.dashboard.apps.playerSelected\
+\9local _fn = Players\
+\9local _condition = targetName\
+\9if _condition == nil then\
+\9\9_condition = \"\"\
+\9end\
+\9local targetPlayer = _fn:FindFirstChild(_condition)\
+\9if not targetPlayer then\
+\9\9return nil\
+\9end\
+\9connection = RunService.Heartbeat:Connect(function()\
+\9\9local localChar = Players.LocalPlayer.Character\
+\9\9local targetChar = targetPlayer.Character\
+\9\9if localChar and targetChar then\
+\9\9\9local localRoot = localChar:FindFirstChild(\"HumanoidRootPart\")\
+\9\9\9local targetRoot = targetChar:FindFirstChild(\"HumanoidRootPart\")\
+\9\9\9if localRoot and targetRoot then\
+\9\9\9\9local offset = CFrame.new(0, 0, -2.5)\
+\9\9\9\9local _exp = targetRoot.CFrame:ToWorldSpace(offset)\
+\9\9\9\9local _arg0 = CFrame.Angles(0, math.rad(180), 0)\
+\9\9\9\9localRoot.CFrame = _exp * _arg0\
+\9\9\9end\
+\9\9end\
+\9end)\
+end)\
+return nil", '@'.."Havoc.jobs.players.facebang")) setfenv(fn, newEnv("Havoc.jobs.players.facebang")) return fn() end)
 
 newModule("hide", "ModuleScript", "Havoc.jobs.players.hide", "Havoc.jobs.players", function () local fn = assert(loadstring("-- Compiled with roblox-ts v1.2.7\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
@@ -4284,13 +4272,14 @@ local initialState = {\
 }\
 local jobsReducer = Rodux.createReducer(initialState, {\
 \9[\"jobs/setJobActive\"] = function(state, action)\
+\9\9local jobName = action.jobName\
 \9\9local _object = {}\
 \9\9for _k, _v in pairs(state) do\
 \9\9\9_object[_k] = _v\
 \9\9end\
-\9\9local _left = action.jobName\
+\9\9local _left = jobName\
 \9\9local _object_1 = {}\
-\9\9for _k, _v in pairs(state[action.jobName]) do\
+\9\9for _k, _v in pairs(state[jobName]) do\
 \9\9\9_object_1[_k] = _v\
 \9\9end\
 \9\9_object_1.active = action.active\
@@ -4298,13 +4287,15 @@ local jobsReducer = Rodux.createReducer(initialState, {\
 \9\9return _object\
 \9end,\
 \9[\"jobs/setJobValue\"] = function(state, action)\
+\9\9local jobName = action.jobName\
+\9\9local currentJob = state[jobName]\
 \9\9local _object = {}\
 \9\9for _k, _v in pairs(state) do\
 \9\9\9_object[_k] = _v\
 \9\9end\
-\9\9local _left = action.jobName\
+\9\9local _left = jobName\
 \9\9local _object_1 = {}\
-\9\9for _k, _v in pairs(state[action.jobName]) do\
+\9\9for _k, _v in pairs(currentJob) do\
 \9\9\9_object_1[_k] = _v\
 \9\9end\
 \9\9_object_1.value = action.value\
@@ -8716,12 +8707,12 @@ local function MiscPage()\
 \9\9\9\9\9theme = theme,\
 \9\9\9\9\9hint = cmd.hint,\
 \9\9\9\9\9image = cmd.icon,\
-\9\9\9\9\9position = UDim2.new(),\
+\9\9\9\9\9position = UDim2.new(0, 0, 0, 0),\
 \9\9\9\9\9canDeactivate = true,\
 \9\9\9\9}),\
 \9\9\9\9Roact.createElement(\"TextLabel\", {\
 \9\9\9\9\9Text = string.upper(cmd.name),\
-\9\9\9\9\9Size = UDim2.new(0, 150, 1, 0),\
+\9\9\9\9\9Size = UDim2.new(1, -60, 1, 0),\
 \9\9\9\9\9BackgroundTransparency = 1,\
 \9\9\9\9\9TextColor3 = theme.button.foreground,\
 \9\9\9\9\9Font = Enum.Font.GothamBold,\
@@ -8741,7 +8732,8 @@ local function MiscPage()\
 \9\9Size = UDim2.new(1, 0, 1, -60),\
 \9\9BackgroundTransparency = 1,\
 \9\9BorderSizePixel = 0,\
-\9\9ScrollBarThickness = 0,\
+\9\9ScrollBarThickness = 2,\
+\9\9ScrollBarImageColor3 = theme.button.foreground,\
 \9\9CanvasSize = UDim2.new(0, 0, 0, 0),\
 \9\9AutomaticCanvasSize = \"Y\",\
 \9}\

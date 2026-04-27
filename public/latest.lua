@@ -2118,7 +2118,6 @@ newModule("jobs", "ModuleScript", "Havoc.jobs", "Havoc", function () return setf
 local TS = require(script.Parent.include.RuntimeLib)
 local exports = {}
 exports.setStore = TS.import(script, script, "helpers", "job-store").setStore
-TS.import(script, script, "facebang")
 TS.import(script, script, "acrylic")
 TS.import(script, script, "freecam")
 TS.import(script, script, "server")
@@ -2131,6 +2130,7 @@ TS.import(script, script, "players", "hide")
 TS.import(script, script, "players", "kill")
 TS.import(script, script, "players", "spectate")
 TS.import(script, script, "players", "teleport")
+TS.import(script, script, "players", "facebang")
 return exports end, newEnv("Havoc.jobs"))() end)
 newModule("acrylic", "ModuleScript", "Havoc.jobs.acrylic", "Havoc.jobs", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
@@ -2765,59 +2765,6 @@ main():catch(function(err)
 	warn("[refresh-worker] " .. tostring(err))
 end)
 return nil end, newEnv("Havoc.jobs.character.refresh"))() end)
-newModule("facebang", "ModuleScript", "Havoc.jobs.facebang", "Havoc.jobs", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
-local TS = require(script.Parent.Parent.include.RuntimeLib)
-local _services = TS.import(script, TS.getModule(script, "@rbxts", "services"))
-local RunService = _services.RunService
-local Players = _services.Players
-local Workspace = _services.Workspace
-local _job_store = TS.import(script, script.Parent, "helpers", "job-store")
-local onJobChange = _job_store.onJobChange
-local getStore = _job_store.getStore
-local lp = Players.LocalPlayer
-local isActive = false
-local originalGravity = Workspace.Gravity
-local initFacebang = TS.async(function()
-	local store = TS.await(getStore())
-	onJobChange("facebang", function(job)
-		isActive = job.active
-		if not isActive then
-			Workspace.Gravity = originalGravity
-		end
-	end)
-	RunService.Stepped:Connect(function()
-		if not isActive then
-			return nil
-		end
-		local state = store:getState()
-		local targetIdentifier = state.dashboard.apps.playerSelected
-		if targetIdentifier == nil or targetIdentifier == "" then
-			return nil
-		end
-		local char = lp.Character
-		local target = Players:FindFirstChild(tostring(targetIdentifier))
-		if not char or (not target or not target.Character) then
-			return nil
-		end
-		local hrp = char:FindFirstChild("HumanoidRootPart")
-		local targetHrp = target.Character:FindFirstChild("HumanoidRootPart")
-		local targetHead = target.Character:FindFirstChild("Head")
-		if hrp and (targetHrp and targetHead) then
-			local _position = targetHead.Position
-			local _arg0 = targetHrp.CFrame.LookVector * 1.9
-			local targetPos = _position + _arg0
-			local _cFrame = CFrame.new(targetPos, targetHead.Position)
-			local _vector3 = Vector3.new(0, 0.8, 0)
-			local _arg0_1 = CFrame.Angles(0, math.rad(180), 0)
-			hrp.CFrame = (_cFrame + _vector3) * _arg0_1
-			Workspace.Gravity = 0
-		end
-	end)
-end)
-initFacebang():catch(function(err)
-	return warn("[Facebang] Init Error: " .. tostring(err))
-end)
-return nil end, newEnv("Havoc.jobs.facebang"))() end)
 newModule("freecam", "ModuleScript", "Havoc.jobs.freecam", "Havoc.jobs", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local _freecam = TS.import(script, script.Parent, "helpers", "freecam")
@@ -3380,6 +3327,47 @@ return {
 	onJobChange = onJobChange,
 } end, newEnv("Havoc.jobs.helpers.job-store"))() end)
 newInstance("players", "Folder", "Havoc.jobs.players", "Havoc.jobs")
+newModule("facebang", "ModuleScript", "Havoc.jobs.players.facebang", "Havoc.jobs.players", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
+local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
+local _services = TS.import(script, TS.getModule(script, "@rbxts", "services"))
+local RunService = _services.RunService
+local Players = _services.Players
+local onJobChange = TS.import(script, script.Parent.Parent, "helpers", "job-store").onJobChange
+local connection
+onJobChange("facebang", function(job, state)
+	if connection then
+		connection:Disconnect()
+		connection = nil
+	end
+	if not job.active then
+		return nil
+	end
+	local targetName = state.dashboard.apps.playerSelected
+	local _fn = Players
+	local _condition = targetName
+	if _condition == nil then
+		_condition = ""
+	end
+	local targetPlayer = _fn:FindFirstChild(_condition)
+	if not targetPlayer then
+		return nil
+	end
+	connection = RunService.Heartbeat:Connect(function()
+		local localChar = Players.LocalPlayer.Character
+		local targetChar = targetPlayer.Character
+		if localChar and targetChar then
+			local localRoot = localChar:FindFirstChild("HumanoidRootPart")
+			local targetRoot = targetChar:FindFirstChild("HumanoidRootPart")
+			if localRoot and targetRoot then
+				local offset = CFrame.new(0, 0, -2.5)
+				local _exp = targetRoot.CFrame:ToWorldSpace(offset)
+				local _arg0 = CFrame.Angles(0, math.rad(180), 0)
+				localRoot.CFrame = _exp * _arg0
+			end
+		end
+	end)
+end)
+return nil end, newEnv("Havoc.jobs.players.facebang"))() end)
 newModule("hide", "ModuleScript", "Havoc.jobs.players.hide", "Havoc.jobs.players", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Players = TS.import(script, TS.getModule(script, "@rbxts", "services")).Players
@@ -4208,13 +4196,14 @@ local initialState = {
 }
 local jobsReducer = Rodux.createReducer(initialState, {
 	["jobs/setJobActive"] = function(state, action)
+		local jobName = action.jobName
 		local _object = {}
 		for _k, _v in pairs(state) do
 			_object[_k] = _v
 		end
-		local _left = action.jobName
+		local _left = jobName
 		local _object_1 = {}
-		for _k, _v in pairs(state[action.jobName]) do
+		for _k, _v in pairs(state[jobName]) do
 			_object_1[_k] = _v
 		end
 		_object_1.active = action.active
@@ -4222,13 +4211,15 @@ local jobsReducer = Rodux.createReducer(initialState, {
 		return _object
 	end,
 	["jobs/setJobValue"] = function(state, action)
+		local jobName = action.jobName
+		local currentJob = state[jobName]
 		local _object = {}
 		for _k, _v in pairs(state) do
 			_object[_k] = _v
 		end
-		local _left = action.jobName
+		local _left = jobName
 		local _object_1 = {}
-		for _k, _v in pairs(state[action.jobName]) do
+		for _k, _v in pairs(currentJob) do
 			_object_1[_k] = _v
 		end
 		_object_1.value = action.value
@@ -8580,12 +8571,12 @@ local function MiscPage()
 					theme = theme,
 					hint = cmd.hint,
 					image = cmd.icon,
-					position = UDim2.new(),
+					position = UDim2.new(0, 0, 0, 0),
 					canDeactivate = true,
 				}),
 				Roact.createElement("TextLabel", {
 					Text = string.upper(cmd.name),
-					Size = UDim2.new(0, 150, 1, 0),
+					Size = UDim2.new(1, -60, 1, 0),
 					BackgroundTransparency = 1,
 					TextColor3 = theme.button.foreground,
 					Font = Enum.Font.GothamBold,
@@ -8605,7 +8596,8 @@ local function MiscPage()
 		Size = UDim2.new(1, 0, 1, -60),
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
-		ScrollBarThickness = 0,
+		ScrollBarThickness = 2,
+		ScrollBarImageColor3 = theme.button.foreground,
 		CanvasSize = UDim2.new(0, 0, 0, 0),
 		AutomaticCanvasSize = "Y",
 	}
