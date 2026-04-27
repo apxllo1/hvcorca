@@ -7,32 +7,20 @@ function MiscPage() {
 	const theme = useTheme("home").profile;
 
 	return (
-		<scrollingframe
+		<frame
 			Size={new UDim2(1, -40, 1, -40)}
 			Position={new UDim2(0, 20, 0, 20)}
 			BackgroundTransparency={1}
-			BorderSizePixel={0}
-			ScrollBarThickness={2}
 		>
-			<uilistlayout 
-				Padding={new UDim(0, 10)} 
-				SortOrder="LayoutOrder" 
-				HorizontalAlignment="Center"
+			<ActionButton 
+				action="facebang" 
+				theme={theme} 
+				hint="Teleport to and 'facebang' the selected target"
+				image="rbxassetid://10734950309" // A decent default icon
+				position={new UDim2(0, 0, 0, 0)}
+				canDeactivate 
 			/>
-			
-			{/* We use this Frame to set the size so the ActionButton doesn't error out */}
-			<frame 
-				Key="FacebangContainer"
-				Size={new UDim2(1, 0, 0, 45)} 
-				BackgroundTransparency={1}
-			>
-				<ActionButton 
-					action="facebang" 
-					theme={theme} 
-					canDeactivate 
-				/>
-			</frame>
-		</scrollingframe>
+		</frame>
 	);
 }
 
