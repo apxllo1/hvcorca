@@ -6,12 +6,16 @@ export interface JobWithValue<T> extends Job {
 	value: T;
 }
 
-// New interface to support multiple sliders (Angle, Distance, etc.)
 export interface JobWithSliders extends Job {
 	sliders: Record<string, number>;
 }
 
 export type InferJobValue<T> = T extends JobWithValue<infer V> ? V : never;
+
+// This fixes the error in Sliders.tsx
+export type JobsWithValue<T> = {
+	[K in keyof JobsState]: JobsState[K] extends JobWithValue<T> ? JobsState[K] : never;
+};
 
 export type JobsState = {
 	flight: JobWithValue<number>;
@@ -28,11 +32,10 @@ export type JobsState = {
 	kill: Job;
 	spectate: Job;
 	
-	// FIXED: Now supports sliders so the UI won't crash
 	facebang: JobWithSliders;
 
 	rejoinServer: Job;
 	switchServer: Job;
-};
+} & { [key: string]: any }; // This allows indexing by string (fixing the Sliders.tsx error)
 
 export const __FIX_JOBS = true;
