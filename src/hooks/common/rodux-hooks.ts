@@ -1,8 +1,7 @@
-import { TypedUseSelectorHook, useDispatch, useSelector, useStore } from "@rbxts/roact-rodux-hooked";
-import Rodux from "@rbxts/rodux";
+import { TypedUseSelectorHook, useDispatch as useBaseDispatch, useSelector as useBaseSelector, useStore } from "@rbxts/roact-rodux-hooked";
+import { RootState } from "store/store";
 
-import { RootState, RootStore } from "store/store";
-
-export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
-export const useAppDispatch = () => useDispatch<Rodux.Action>();
-export const useAppStore = () => useStore<RootStore>();
+// We must explicitly export these so other files can use them!
+export const useSelector: TypedUseSelectorHook<RootState> = useBaseSelector;
+export const useDispatch = useBaseDispatch;
+export { useStore };
