@@ -18,7 +18,7 @@ const initialState: JobsState = {
 	spectate: { active: false },
 
 	// 1. Initialized as false so it doesn't run until you "pick and choose"
-	facebang: { active: false },
+	facebang: { active: false, sliders: {} },
 
 	rejoinServer: { active: false },
 	switchServer: { active: false },
