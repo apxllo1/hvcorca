@@ -4254,18 +4254,19 @@ local jobsReducer = Rodux.createReducer(initialState, {
 	["jobs/setJobSlider"] = function(state, action)
 		local job = state[action.jobName]
 		if job.sliders ~= nil then
+			local jobWithSliders = job
 			local _object = {}
 			for _k, _v in pairs(state) do
 				_object[_k] = _v
 			end
 			local _left = action.jobName
 			local _object_1 = {}
-			for _k, _v in pairs(job) do
+			for _k, _v in pairs(jobWithSliders) do
 				_object_1[_k] = _v
 			end
 			local _left_1 = "sliders"
 			local _object_2 = {}
-			for _k, _v in pairs(job.sliders) do
+			for _k, _v in pairs(jobWithSliders.sliders) do
 				_object_2[_k] = _v
 			end
 			_object_2[action.slider] = action.value
