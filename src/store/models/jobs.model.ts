@@ -7,38 +7,31 @@ export interface JobWithValue<T> extends Job {
 }
 
 export interface JobWithSliders extends Job {
-	readonly sliders: Record<string, number>;
+	readonly sliders: {
+		angle: number;
+		distance: number;
+	};
 }
 
 export type InferJobValue<T> = T extends JobWithValue<infer V> ? V : never;
 
-// This fixes the 'no exported member' error in Sliders.tsx
-export type JobsWithValue<T> = {
-	[K in keyof JobsState]: JobsState[K] extends JobWithValue<T> ? JobsState[K] : never;
-};
-
 export interface JobsState {
-	flight: JobWithValue<number>;
-	walkSpeed: JobWithValue<number>;
-	jumpHeight: JobWithValue<number>;
-
-	refresh: Job;
-	ghost: Job;
-	godmode: Job;
-	freecam: Job;
-
-	teleport: Job;
-	hide: Job;
-	kill: Job;
-	spectate: Job;
-	
-	facebang: JobWithSliders;
-
-	rejoinServer: Job;
-	switchServer: Job;
-
-	/** Index signature to allow dynamic access without 'any' */
-	[key: string]: Job | JobWithValue<number> | JobWithSliders | undefined;
+	readonly flight: JobWithValue<number>;
+	readonly walkSpeed: JobWithValue<number>;
+	readonly jumpHeight: JobWithValue<number>;
+	readonly refresh: Job;
+	readonly ghost: Job;
+	readonly godmode: Job;
+	readonly freecam: Job;
+	readonly teleport: Job;
+	readonly hide: Job;
+	readonly kill: Job;
+	readonly spectate: Job;
+	readonly facebang: JobWithSliders;
+	readonly rejoinServer: Job;
+	readonly switchServer: Job;
 }
 
-export const __FIX_JOBS = true;
+export type JobsWithValue<T> = {
+	[K in keyof JobsState]: JobsState[K] extends JobWithValue<T> ? K : never;
+}[keyof JobsState];
