@@ -1,52 +1,35 @@
 import { RunService, Players, Workspace } from "@rbxts/services";
-import * as StoreModule from "store/store"; // Force-grab everything from the store file
 import { Job } from "store/models/jobs.model";
+// We import the store from the client entry point where it's usually initialized
+import { store } from "main.client"; 
 
 const lp = Players.LocalPlayer;
-const store = StoreModule.store; // Pick the store variable out manually
-
 const OFFSET_HEIGHT = 0.8;
 const TELEPORT_DISTANCE = 1.9;
 
-const disableActions = (char: Model) => {
-	const animate = char.FindFirstChild("Animate") as LocalScript;
-	if (animate) animate.Disabled = true;
-
-	const humanoid = char.FindFirstChildOfClass("Humanoid");
-	if (humanoid) {
-		humanoid.GetPlayingAnimationTracks().forEach((track) => track.Stop());
-		humanoid.PlatformStand = true;
-		humanoid.AutoRotate = false;
-		humanoid.ChangeState(Enum.HumanoidStateType.Physics);
-	}
-	Workspace.Gravity = 0;
-};
-
-const enableActions = (char: Model) => {
-	const animate = char.FindFirstChild("Animate") as LocalScript;
-	if (animate) animate.Disabled = false;
-
-	const humanoid = char.FindFirstChildOfClass("Humanoid");
-	if (humanoid) {
-		humanoid.PlatformStand = false;
-		humanoid.AutoRotate = true;
-		humanoid.ChangeState(Enum.HumanoidStateType.GettingUp);
-	}
-	if (Workspace.Gravity === 0) Workspace.Gravity = 196.2;
-};
-
 RunService.Stepped.Connect(() => {
+    // Basic guard to prevent errors if store isn't ready
+    if (!store) return;
+    
 	const state = store.getState();
 	const facebangJob = state.jobs.facebang as Job | undefined;
 	const isActive = facebangJob?.active;
 
 	const char = lp.Character;
-	if (!char || !isActive) {
-		if (char) enableActions(char);
+	if (!char) return;
+
+	if (!isActive) {
+		if (Workspace.Gravity === 0) Workspace.Gravity = 196.2;
 		return;
 	}
 
-	disableActions(char);
+	// Disable actions
+	const humanoid = char.FindFirstChildOfClass("Humanoid");
+	if (humanoid) {
+		humanoid.PlatformStand = true;
+		humanoid.ChangeState(Enum.HumanoidStateType.Physics);
+	}
+	Workspace.Gravity = 0;
 
 	const hrp = char.FindFirstChild("HumanoidRootPart") as Part;
 	const targetUserId = state.dashboard.apps.playerSelected;
