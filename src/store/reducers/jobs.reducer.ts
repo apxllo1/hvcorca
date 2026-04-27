@@ -17,7 +17,7 @@ const initialState: JobsState = {
 	kill: { active: false },
 	spectate: { active: false },
 
-	// Added Facebang here to fix the "Property missing" error
+	// 1. Initialized as false so it doesn't run until you "pick and choose"
 	facebang: { active: false },
 
 	rejoinServer: { active: false },
@@ -26,19 +26,24 @@ const initialState: JobsState = {
 
 export const jobsReducer = Rodux.createReducer<JobsState, JobsAction>(initialState, {
 	"jobs/setJobActive": (state, action) => {
+		const jobName = action.jobName as keyof JobsState;
 		return {
 			...state,
-			[action.jobName]: {
-				...state[action.jobName as keyof JobsState],
+			[jobName]: {
+				...state[jobName],
 				active: action.active,
 			},
 		};
 	},
 	"jobs/setJobValue": (state, action) => {
+		const jobName = action.jobName as keyof JobsState;
+		// 2. Added a safety check to ensure we only update values for jobs that HAVE values
+		const currentJob = state[jobName];
+		
 		return {
 			...state,
-			[action.jobName]: {
-				...state[action.jobName as keyof JobsState],
+			[jobName]: {
+				...currentJob,
 				value: action.value,
 			},
 		};
