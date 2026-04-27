@@ -39,7 +39,7 @@ export async function onJobChange<K extends keyof JobsState>(
 		const job = newState.jobs[jobName];
 		
 		// FIX: Check that both exist and cast to object for shallowEqual
-		if (job !== undefined && lastJob !== undefined && !shallowEqual(job as object, lastJob as object)) {
+		if (job !== undefined && lastJob !== undefined && !shallowEqual(job as Record<string, unknown>, lastJob as Record<string, unknown>)) {
 			lastJob = job;
 			task.defer(callback, job, newState);
 		}
