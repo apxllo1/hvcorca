@@ -5,7 +5,7 @@ import { useAppDispatch, useAppSelector } from "hooks/common/rodux-hooks";
 import { useSpring } from "hooks/common/use-spring";
 import { clearHint, setHint } from "store/actions/dashboard.action";
 import { setJobActive } from "store/actions/jobs.action";
-import { JobsState } from "store/models/jobs.model";
+import { JobsState, Job } from "store/models/jobs.model";
 import { Theme } from "themes/theme.interface";
 import { px } from "utils/udim2";
 
@@ -20,14 +20,18 @@ interface Props {
 
 function ActionButton({ action, hint, theme, image, position, canDeactivate }: Props) {
 	const dispatch = useAppDispatch();
-	const active = useAppSelector((state) => state.jobs[action].active);
+	
+	// FIX: Cast as Job and use optional chaining to prevent "possibly undefined" error
+	const active = useAppSelector((state) => {
+		const job = state.jobs[action] as Job | undefined;
+		return job?.active ?? false;
+	});
 
 	const [hovered, setHovered] = useState(false);
 
-	const accent = action in theme.highlight ? theme.highlight[action as never] : theme.background;
-	if (!(action in theme.highlight)) {
-		warn(`ActionButton: ${action} is not in theme.highlight`);
-	}
+	// FIX: Cast highlight as a record to prevent indexing errors
+	const highlightMap = theme.highlight as Record<string, Color3>;
+	const accent = highlightMap[action as string] ?? theme.button.background;
 
 	const background = useSpring(
 		active
@@ -37,6 +41,7 @@ function ActionButton({ action, hint, theme, image, position, canDeactivate }: P
 			: theme.button.background,
 		{},
 	);
+	
 	const foreground = useSpring(
 		active && theme.button.foregroundAccent ? theme.button.foregroundAccent : theme.button.foreground,
 		{},
@@ -51,12 +56,11 @@ function ActionButton({ action, hint, theme, image, position, canDeactivate }: P
 					dispatch(setJobActive(action, true));
 				}
 			}}
-			onHover={(hovered) => {
-				if (hovered) {
-					setHovered(true);
+			onHover={(isHovered: boolean) => { // FIX: Explicitly typed 'boolean'
+				setHovered(isHovered);
+				if (isHovered) {
 					dispatch(setHint(hint));
 				} else {
-					setHovered(false);
 					dispatch(clearHint());
 				}
 			}}
