@@ -10,7 +10,8 @@ import { DashboardPage } from "store/models/dashboard.model";
 import { px, scale } from "utils/udim2";
 import ShortcutItem, { ENTRY_HEIGHT, PADDING } from "./ShortcutItem";
 
-const ENTRY_COUNT = 6; // Hardcoded for now
+// UPDATED: Increased from 6 to 7 to account for Facebang
+const ENTRY_COUNT = 7; 
 
 function Shortcuts() {
 	const store = useAppStore();
@@ -100,6 +101,17 @@ function Shortcuts() {
 						action="setJumpHeight"
 						description="Set jump height"
 						index={5}
+					/>
+                    {/* ADDED: Facebang Shortcut */}
+					<ShortcutItem
+						onActivate={() => {
+							dispatch(setJobActive("facebang", !store.getState().jobs.facebang.active));
+						}}
+						onSelect={setSelectedItem}
+						selectedItem={selectedItem}
+						action="setFacebang"
+						description="Toggle Facebang"
+						index={6}
 					/>
 				</scrollingframe>
 			</Canvas>
