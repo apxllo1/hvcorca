@@ -2,12 +2,12 @@ import Roact from "@rbxts/roact";
 import { hooked, useState } from "@rbxts/roact-hooked";
 import ActionButton from "components/ActionButton";
 import { useTheme } from "hooks/use-theme";
+import { JobsState } from "store/models/jobs.model";
 
 function MiscPage() {
 	const theme = useTheme("home").profile;
 	const [searchText, setSearchText] = useState("");
 
-	// You can add more commands to this list as you make them!
 	const commands = [
 		{ 
 			name: "Facebang", 
@@ -19,7 +19,7 @@ function MiscPage() {
 
 	return (
 		<frame Size={new UDim2(1, 0, 1, 0)} BackgroundTransparency={1}>
-			<padding PaddingTop={new UDim(0, 20)} PaddingLeft={new UDim(0, 20)} PaddingRight={new UDim(0, 20)} />
+			<uipadding PaddingTop={new UDim(0, 20)} PaddingLeft={new UDim(0, 20)} PaddingRight={new UDim(0, 20)} />
 			<uilistlayout Padding={new UDim(0, 15)} SortOrder="LayoutOrder" HorizontalAlignment="Center" />
 
 			{/* Search Bar */}
@@ -29,17 +29,16 @@ function MiscPage() {
 				BackgroundTransparency={0.5}
 				Text={searchText}
 				PlaceholderText="Search commands..."
-				PlaceholderColor3={theme.button.foregroundTransparency ? Color3.fromRGB(200, 200, 200) : theme.button.foreground}
+				PlaceholderColor3={Color3.fromRGB(200, 200, 200)}
 				TextColor3={theme.button.foreground}
 				Font={Enum.Font.Gotham}
 				TextSize={14}
-				Event={{
-					Focused: (rbx) => (rbx.Text = ""),
-					Change: (rbx) => setSearchText(rbx.Text),
+				Change={{
+					Text: (rbx) => setSearchText(rbx.Text),
 				}}
 			>
 				<uicorner CornerRadius={new UDim(0, 8)} />
-				<uistroke Color={theme.button.border} Thickness={1} Transparency={0.8} />
+				<uistroke Color={theme.button.background} Thickness={1} Transparency={0.8} />
 			</textbox>
 
 			{/* Scrolling List */}
@@ -54,7 +53,7 @@ function MiscPage() {
 				<uilistlayout Padding={new UDim(0, 10)} SortOrder="LayoutOrder" />
 
 				{commands
-					.filter((cmd) => cmd.name.lower().find(searchText.lower())[0] !== undefined)
+					.filter((cmd) => cmd.name.lower().find(searchText.lower()) !== undefined)
 					.map((cmd) => (
 						<frame
 							Key={cmd.name}
@@ -63,15 +62,14 @@ function MiscPage() {
 							BackgroundTransparency={0.7}
 						>
 							<uicorner CornerRadius={new UDim(0, 8)} />
-							<padding PaddingLeft={new UDim(0, 10)} PaddingRight={new UDim(0, 10)} />
+							<uipadding PaddingLeft={new UDim(0, 10)} PaddingRight={new UDim(0, 10)} />
 							<uilistlayout FillDirection="Horizontal" VerticalAlignment="Center" Padding={new UDim(0, 15)} />
 
 							<ActionButton
-								action={cmd.action}
+								action={cmd.action as keyof JobsState}
 								theme={theme}
 								hint={cmd.hint}
 								image={cmd.icon}
-								position={new UDim2(0, 0, 0, 0)}
 								canDeactivate
 							/>
 
