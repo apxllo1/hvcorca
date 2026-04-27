@@ -1,19 +1,22 @@
 // Triggering new build - Facebang update
 export { setStore } from "./helpers/job-store";
 
-// This tells the script to load your new Facebang logic
-import "./facebang.client";
+// We removed ".client" because these are now ModuleScripts
+import "./facebang";
 
-// These are your existing features
-import "./acrylic.client";
-import "./freecam.client";
-import "./server.client";
-import "./character/flight.client";
-import "./character/ghost.client";
-import "./character/godmode.client";
-import "./character/humanoid.client";
-import "./character/refresh.client";
-import "./players/hide.client";
-import "./players/kill.client";
-import "./players/spectate.client";
-import "./players/teleport.client";
+// Updated imports for existing features
+import "./acrylic";
+import "./freecam";
+import "./server";
+
+// Updated subfolder imports
+import "./character/flight";
+import "./character/ghost";
+import "./character/godmode";
+import "./character/humanoid";
+import "./character/refresh";
+
+import "./players/hide";
+import "./players/kill";
+import "./players/spectate";
+import "./players/teleport";
