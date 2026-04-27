@@ -1,7 +1,7 @@
 import Roact from "@rbxts/roact";
 import { hooked, useBinding, useState } from "@rbxts/roact-hooked";
-import { BrightButton } from "components/BrightButton";
-import { BrightSlider } from "components/BrightSlider";
+import BrightButton from "components/BrightButton"; // Default import fix
+import BrightSlider from "components/BrightSlider"; // Default import fix
 import Canvas from "components/Canvas";
 import { SpringOptions } from "hooks/common/flipper-hooks";
 import { useAppDispatch, useAppSelector } from "hooks/common/rodux-hooks";
@@ -9,7 +9,7 @@ import { useSpring } from "hooks/common/use-spring";
 import { useTheme } from "hooks/use-theme";
 import { clearHint, setHint } from "store/actions/dashboard.action";
 import { setJobActive, setJobValue } from "store/actions/jobs.action";
-import { JobsWithValue, JobWithValue } from "store/models/jobs.model";
+import { JobsWithValue, JobWithValue, JobsState } from "store/models/jobs.model";
 import { px, scale } from "utils/udim2";
 
 const SPRING_OPTIONS: SpringOptions = {
@@ -55,7 +55,7 @@ export default Sliders;
 function SliderComponent(props: {
 	display: string;
 	hint: string;
-	jobName: keyof JobsWithValue<number>;
+	jobName: keyof JobsState; // Changed from JobsWithValue to allow safer indexing
 	units: string;
 	min: number;
 	max: number;
@@ -64,14 +64,14 @@ function SliderComponent(props: {
 	const theme = useTheme("home").profile;
 	const dispatch = useAppDispatch();
 
-	// FIX: Cast the job as a JobWithValue to ensure .value exists
-	const job = useAppSelector((state) => state.jobs[props.jobName] as JobWithValue<number>);
+	// Casting to JobWithValue<number> to ensure .value is valid
+	const job = useAppSelector((state) => state.jobs[props.jobName]) as JobWithValue<number>;
 	const [value, setValue] = useBinding(job.value);
 	const [hovered, setHovered] = useState(false);
 
-	// FIX: Use a record cast to allow string indexing of the highlight colors
+	// Safe theme lookup using Record cast
 	const highlightColors = theme.highlight as Record<string, Color3>;
-	const accent = highlightColors[props.jobName as string] ?? Color3.fromRGB(255, 255, 255);
+	const accent = highlightColors[props.jobName as string] ?? theme.foreground;
 
 	const buttonBackground = useSpring(
 		job.active
@@ -90,7 +90,6 @@ function SliderComponent(props: {
 		<Canvas size={px(278, 49)} position={px(0, props.position)}>
 			<BrightSlider
 				onValueChanged={setValue}
-				// FIX: Explicitly cast jobName as K to satisfy the action creator
 				onRelease={() => dispatch(setJobValue(props.jobName as never, math.round(value.getValue())))}
 				min={props.min}
 				max={props.max}
@@ -107,7 +106,7 @@ function SliderComponent(props: {
 			>
 				<textlabel
 					Font="GothamBold"
-					Text={value.map((value) => `${math.round(value)} ${props.units}`)}
+					Text={value.map((v) => `${math.round(v)} ${props.units}`)}
 					TextSize={15}
 					TextColor3={theme.slider.foreground}
 					TextXAlignment="Center"
@@ -119,13 +118,12 @@ function SliderComponent(props: {
 			</BrightSlider>
 
 			<BrightButton
-				onActivate={() => dispatch(setJobActive(props.jobName as string, !job.active))}
-				onHover={(hovered) => {
-					if (hovered) {
-						setHovered(true);
+				onActivate={() => dispatch(setJobActive(props.jobName, !job.active))}
+				onHover={(isHovered: boolean) => { // Explicit type to prevent 'any' error
+					setHovered(isHovered);
+					if (isHovered) {
 						dispatch(setHint(props.hint));
 					} else {
-						setHovered(false);
 						dispatch(clearHint());
 					}
 				}}
