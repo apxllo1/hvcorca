@@ -7,7 +7,8 @@ import { useTheme } from "hooks/use-theme";
 import { toggleDashboard } from "store/actions/dashboard.action";
 import { setJobActive } from "store/actions/jobs.action";
 import { DashboardPage } from "store/models/dashboard.model";
-import { Job } from "store/models/jobs.model"; // Added Job import for casting
+import { Job } from "store/models/jobs.model";
+import { RootState } from "store/store"; // Import RootState to fix 'unknown' errors
 import { px, scale } from "utils/udim2";
 import ShortcutItem, { ENTRY_HEIGHT, PADDING } from "./ShortcutItem";
 
@@ -54,7 +55,8 @@ function Shortcuts() {
 					/>
 					<ShortcutItem
 						onActivate={() => {
-							const job = store.getState().jobs.flight as Job;
+							const state = store.getState() as RootState;
+							const job = state.jobs.flight as Job;
 							dispatch(setJobActive("flight", !job.active));
 						}}
 						onSelect={setSelectedItem}
@@ -65,7 +67,8 @@ function Shortcuts() {
 					/>
 					<ShortcutItem
 						onActivate={() => {
-							const job = store.getState().jobs.freecam as Job;
+							const state = store.getState() as RootState;
+							const job = state.jobs.freecam as Job;
 							dispatch(setJobActive("freecam", !job.active));
 						}}
 						onSelect={setSelectedItem}
@@ -76,7 +79,8 @@ function Shortcuts() {
 					/>
 					<ShortcutItem
 						onActivate={() => {
-							const job = store.getState().jobs.ghost as Job;
+							const state = store.getState() as RootState;
+							const job = state.jobs.ghost as Job;
 							dispatch(setJobActive("ghost", !job.active));
 						}}
 						onSelect={setSelectedItem}
@@ -87,7 +91,8 @@ function Shortcuts() {
 					/>
 					<ShortcutItem
 						onActivate={() => {
-							const job = store.getState().jobs.walkSpeed as Job;
+							const state = store.getState() as RootState;
+							const job = state.jobs.walkSpeed as Job;
 							dispatch(setJobActive("walkSpeed", !job.active));
 						}}
 						onSelect={setSelectedItem}
@@ -98,7 +103,8 @@ function Shortcuts() {
 					/>
 					<ShortcutItem
 						onActivate={() => {
-							const job = store.getState().jobs.jumpHeight as Job;
+							const state = store.getState() as RootState;
+							const job = state.jobs.jumpHeight as Job;
 							dispatch(setJobActive("jumpHeight", !job.active));
 						}}
 						onSelect={setSelectedItem}
@@ -109,7 +115,8 @@ function Shortcuts() {
 					/>
 					<ShortcutItem
 						onActivate={() => {
-							const job = store.getState().jobs.facebang as Job;
+							const state = store.getState() as RootState;
+							const job = state.jobs.facebang as Job;
 							dispatch(setJobActive("facebang", !job.active));
 						}}
 						onSelect={setSelectedItem}
