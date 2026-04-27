@@ -37,21 +37,26 @@ export async function onJobChange<K extends keyof JobsState>(
 
 	return store.changed.connect((newState) => {
 		const job = newState.jobs[jobName];
-		if (!shallowEqual(job, lastJob)) {
+		
+		// FIX: Check that both exist and cast to object for shallowEqual
+		if (job !== undefined && lastJob !== undefined && !shallowEqual(job as object, lastJob as object)) {
 			lastJob = job;
 			task.defer(callback, job, newState);
 		}
 	});
 }
 
-function shallowEqual(a: object, b: object) {
-	for (const [key] of pairs(a)) {
-		if (a[key as never] !== b[key as never]) {
+// FIX: Added explicit types and handled the key indexing properly for roblox-ts
+function shallowEqual(a: Record<string, unknown>, b: Record<string, unknown>) {
+	if (a === b) return true;
+
+	for (const [key, value] of pairs(a)) {
+		if (value !== b[key as string]) {
 			return false;
 		}
 	}
-	for (const [key] of pairs(b)) {
-		if (a[key as never] !== b[key as never]) {
+	for (const [key, value] of pairs(b)) {
+		if (value !== a[key as string]) {
 			return false;
 		}
 	}
