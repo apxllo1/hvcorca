@@ -1,5 +1,6 @@
 import { RunService, Players } from "@rbxts/services";
 import { onJobChange } from "../helpers/job-store";
+import { JobWithSliders } from "store/models/jobs.model";
 
 let connection: RBXScriptConnection | undefined;
 
@@ -9,12 +10,12 @@ onJobChange("facebang", (job, state) => {
         connection = undefined;
     }
 
-    if (!job.active) return;
+    // Cast to JobWithSliders to access the slider data
+    const sliderJob = job as unknown as JobWithSliders;
 
-    // Path updated to match your dashboard model
+    if (!sliderJob.active || !sliderJob.sliders) return;
+
     const targetName = state.dashboard.apps.playerSelected;
-    
-    // We cast this as Player | undefined so TypeScript knows it has a .Character
     const targetPlayer = Players.FindFirstChild(targetName ?? "") as Player | undefined;
 
     if (!targetPlayer) return;
@@ -28,9 +29,14 @@ onJobChange("facebang", (job, state) => {
             const targetRoot = targetChar.FindFirstChild("HumanoidRootPart") as BasePart;
 
             if (localRoot && targetRoot) {
-                // Stick to their face
-                const offset = new CFrame(0, 0, -2.5);
-                localRoot.CFrame = targetRoot.CFrame.ToWorldSpace(offset).mul(CFrame.Angles(0, math.rad(180), 0));
+                // FIXED: Now uses the actual slider values from your UI
+                const distance = sliderJob.sliders.distance;
+                const angle = sliderJob.sliders.angle;
+
+                const offset = new CFrame(0, 0, -distance);
+                const rotation = CFrame.Angles(0, math.rad(angle), 0);
+
+                localRoot.CFrame = targetRoot.CFrame.ToWorldSpace(offset).mul(rotation);
             }
         }
     });
