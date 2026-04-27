@@ -2827,52 +2827,47 @@ local onJobChange = _job_store.onJobChange\
 local getStore = _job_store.getStore\
 local lp = Players.LocalPlayer\
 local isActive = false\
-onJobChange(\"facebang\", function(job)\
-\9isActive = job.active\
-\9print(\"[Facebang] State changed: \" .. tostring(isActive))\
-end)\
-RunService.Stepped:Connect(TS.async(function()\
-\9if not isActive then\
-\9\9return nil\
-\9end\
+local originalGravity = Workspace.Gravity\
+local initFacebang = TS.async(function()\
 \9local store = TS.await(getStore())\
-\9local state = store:getState()\
-\9local targetUserId = state.dashboard.apps.playerSelected\
-\9if targetUserId == nil or targetUserId == \"\" then\
-\9\9warn(\"[Facebang] Error: No player selected in UI\")\
-\9\9return nil\
-\9end\
-\9local char = lp.Character\
-\9if not char then\
-\9\9warn(\"[Facebang] Waiting for your character...\")\
-\9\9return nil\
-\9end\
-\9local _fn = Players\
-\9local _condition = tonumber(targetUserId)\
-\9if not (_condition ~= 0 and (_condition == _condition and _condition)) then\
-\9\9_condition = 0\
-\9end\
-\9local target = _fn:GetPlayerByUserId(_condition)\
-\9if not target or not target.Character then\
-\9\9warn(\"[Facebang] Target player \" .. (targetUserId .. \" character not found\"))\
-\9\9return nil\
-\9end\
-\9local hrp = char:FindFirstChild(\"HumanoidRootPart\")\
-\9local targetHrp = target.Character:FindFirstChild(\"HumanoidRootPart\")\
-\9local targetHead = target.Character:FindFirstChild(\"Head\")\
-\9if hrp and (targetHrp and targetHead) then\
-\9\9local _position = targetHead.Position\
-\9\9local _arg0 = targetHrp.CFrame.LookVector * 1.9\
-\9\9local targetPos = _position + _arg0\
-\9\9local _cFrame = CFrame.new(targetPos, targetHead.Position)\
-\9\9local _vector3 = Vector3.new(0, 0.8, 0)\
-\9\9local _arg0_1 = CFrame.Angles(0, math.rad(180), 0)\
-\9\9hrp.CFrame = (_cFrame + _vector3) * _arg0_1\
-\9\9Workspace.Gravity = 0\
-\9else\
-\9\9warn(\"[Facebang] Missing Body Parts (HRP or Head)\")\
-\9end\
-end))\
+\9onJobChange(\"facebang\", function(job)\
+\9\9isActive = job.active\
+\9\9if not isActive then\
+\9\9\9Workspace.Gravity = originalGravity\
+\9\9end\
+\9end)\
+\9RunService.Stepped:Connect(function()\
+\9\9if not isActive then\
+\9\9\9return nil\
+\9\9end\
+\9\9local state = store:getState()\
+\9\9local targetIdentifier = state.dashboard.apps.playerSelected\
+\9\9if targetIdentifier == nil or targetIdentifier == \"\" then\
+\9\9\9return nil\
+\9\9end\
+\9\9local char = lp.Character\
+\9\9local target = Players:FindFirstChild(tostring(targetIdentifier))\
+\9\9if not char or (not target or not target.Character) then\
+\9\9\9return nil\
+\9\9end\
+\9\9local hrp = char:FindFirstChild(\"HumanoidRootPart\")\
+\9\9local targetHrp = target.Character:FindFirstChild(\"HumanoidRootPart\")\
+\9\9local targetHead = target.Character:FindFirstChild(\"Head\")\
+\9\9if hrp and (targetHrp and targetHead) then\
+\9\9\9local _position = targetHead.Position\
+\9\9\9local _arg0 = targetHrp.CFrame.LookVector * 1.9\
+\9\9\9local targetPos = _position + _arg0\
+\9\9\9local _cFrame = CFrame.new(targetPos, targetHead.Position)\
+\9\9\9local _vector3 = Vector3.new(0, 0.8, 0)\
+\9\9\9local _arg0_1 = CFrame.Angles(0, math.rad(180), 0)\
+\9\9\9hrp.CFrame = (_cFrame + _vector3) * _arg0_1\
+\9\9\9Workspace.Gravity = 0\
+\9\9end\
+\9end)\
+end)\
+initFacebang():catch(function(err)\
+\9return warn(\"[Facebang] Init Error: \" .. tostring(err))\
+end)\
 return nil", '@'.."Havoc.jobs.facebang")) setfenv(fn, newEnv("Havoc.jobs.facebang")) return fn() end)
 
 newModule("freecam", "ModuleScript", "Havoc.jobs.freecam", "Havoc.jobs", function () local fn = assert(loadstring("-- Compiled with roblox-ts v1.2.7\
@@ -8626,31 +8621,142 @@ newInstance("Misc", "Folder", "Havoc.views.Pages.Misc", "Havoc.views.Pages")
 newModule("Misc", "ModuleScript", "Havoc.views.Pages.Misc.Misc", "Havoc.views.Pages.Misc", function () local fn = assert(loadstring("-- Compiled with roblox-ts v1.2.7\
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)\
 local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
-local hooked = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-hooked\").out).hooked\
+local _roact_hooked = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-hooked\").out)\
+local hooked = _roact_hooked.hooked\
+local useState = _roact_hooked.useState\
 local ActionButton = TS.import(script, script.Parent.Parent.Parent.Parent, \"components\", \"ActionButton\").default\
 local useTheme = TS.import(script, script.Parent.Parent.Parent.Parent, \"hooks\", \"use-theme\").useTheme\
 local function MiscPage()\
 \9local theme = useTheme(\"home\").profile\
-\9return Roact.createElement(\"ScrollingFrame\", {\
-\9\9Size = UDim2.new(1, -40, 1, -40),\
-\9\9Position = UDim2.new(0, 20, 0, 20),\
+\9local _binding = useState(\"\")\
+\9local searchText = _binding[1]\
+\9local setSearchText = _binding[2]\
+\9local commands = { {\
+\9\9name = \"Facebang\",\
+\9\9action = \"facebang\",\
+\9\9hint = \"Teleport to target's face\",\
+\9\9icon = \"rbxassetid://10734950309\",\
+\9} }\
+\9local _attributes = {\
+\9\9Size = UDim2.new(1, 0, 1, 0),\
+\9\9BackgroundTransparency = 1,\
+\9}\
+\9local _children = {\
+\9\9Roact.createElement(\"UIPadding\", {\
+\9\9\9PaddingTop = UDim.new(0, 20),\
+\9\9\9PaddingLeft = UDim.new(0, 20),\
+\9\9\9PaddingRight = UDim.new(0, 20),\
+\9\9}),\
+\9\9Roact.createElement(\"UIListLayout\", {\
+\9\9\9Padding = UDim.new(0, 15),\
+\9\9\9SortOrder = \"LayoutOrder\",\
+\9\9\9HorizontalAlignment = \"Center\",\
+\9\9}),\
+\9\9Roact.createElement(\"TextBox\", {\
+\9\9\9Size = UDim2.new(1, 0, 0, 40),\
+\9\9\9BackgroundColor3 = theme.button.background,\
+\9\9\9BackgroundTransparency = 0.5,\
+\9\9\9Text = searchText,\
+\9\9\9PlaceholderText = \"Search commands...\",\
+\9\9\9PlaceholderColor3 = Color3.fromRGB(200, 200, 200),\
+\9\9\9TextColor3 = theme.button.foreground,\
+\9\9\9Font = Enum.Font.Gotham,\
+\9\9\9TextSize = 14,\
+\9\9\9[Roact.Change.Text] = function(rbx)\
+\9\9\9\9return setSearchText(rbx.Text)\
+\9\9\9end,\
+\9\9}, {\
+\9\9\9Roact.createElement(\"UICorner\", {\
+\9\9\9\9CornerRadius = UDim.new(0, 8),\
+\9\9\9}),\
+\9\9\9Roact.createElement(\"UIStroke\", {\
+\9\9\9\9Color = theme.button.background,\
+\9\9\9\9Thickness = 1,\
+\9\9\9\9Transparency = 0.8,\
+\9\9\9}),\
+\9\9}),\
+\9}\
+\9local _length = #_children\
+\9local _arg0 = function(cmd)\
+\9\9local _exp = string.lower(cmd.name)\
+\9\9local _arg0_1 = string.lower(searchText)\
+\9\9return { string.find(_exp, _arg0_1) } ~= nil\
+\9end\
+\9-- ▼ ReadonlyArray.filter ▼\
+\9local _newValue = {}\
+\9local _length_1 = 0\
+\9for _k, _v in ipairs(commands) do\
+\9\9if _arg0(_v, _k - 1, commands) == true then\
+\9\9\9_length_1 += 1\
+\9\9\9_newValue[_length_1] = _v\
+\9\9end\
+\9end\
+\9-- ▲ ReadonlyArray.filter ▲\
+\9local _arg0_1 = function(cmd)\
+\9\9return Roact.createFragment({\
+\9\9\9[cmd.name] = Roact.createElement(\"Frame\", {\
+\9\9\9\9Size = UDim2.new(1, 0, 0, 60),\
+\9\9\9\9BackgroundColor3 = theme.button.background,\
+\9\9\9\9BackgroundTransparency = 0.7,\
+\9\9\9}, {\
+\9\9\9\9Roact.createElement(\"UICorner\", {\
+\9\9\9\9\9CornerRadius = UDim.new(0, 8),\
+\9\9\9\9}),\
+\9\9\9\9Roact.createElement(\"UIPadding\", {\
+\9\9\9\9\9PaddingLeft = UDim.new(0, 10),\
+\9\9\9\9\9PaddingRight = UDim.new(0, 10),\
+\9\9\9\9}),\
+\9\9\9\9Roact.createElement(\"UIListLayout\", {\
+\9\9\9\9\9FillDirection = \"Horizontal\",\
+\9\9\9\9\9VerticalAlignment = \"Center\",\
+\9\9\9\9\9Padding = UDim.new(0, 15),\
+\9\9\9\9}),\
+\9\9\9\9Roact.createElement(ActionButton, {\
+\9\9\9\9\9action = cmd.action,\
+\9\9\9\9\9theme = theme,\
+\9\9\9\9\9hint = cmd.hint,\
+\9\9\9\9\9image = cmd.icon,\
+\9\9\9\9\9position = UDim2.new(),\
+\9\9\9\9\9canDeactivate = true,\
+\9\9\9\9}),\
+\9\9\9\9Roact.createElement(\"TextLabel\", {\
+\9\9\9\9\9Text = string.upper(cmd.name),\
+\9\9\9\9\9Size = UDim2.new(0, 150, 1, 0),\
+\9\9\9\9\9BackgroundTransparency = 1,\
+\9\9\9\9\9TextColor3 = theme.button.foreground,\
+\9\9\9\9\9Font = Enum.Font.GothamBold,\
+\9\9\9\9\9TextSize = 14,\
+\9\9\9\9\9TextXAlignment = \"Left\",\
+\9\9\9\9}),\
+\9\9\9}),\
+\9\9})\
+\9end\
+\9-- ▼ ReadonlyArray.map ▼\
+\9local _newValue_1 = table.create(#_newValue)\
+\9for _k, _v in ipairs(_newValue) do\
+\9\9_newValue_1[_k] = _arg0_1(_v, _k - 1, _newValue)\
+\9end\
+\9-- ▲ ReadonlyArray.map ▲\
+\9local _attributes_1 = {\
+\9\9Size = UDim2.new(1, 0, 1, -60),\
 \9\9BackgroundTransparency = 1,\
 \9\9BorderSizePixel = 0,\
-\9\9ScrollBarThickness = 2,\
-\9}, {\
+\9\9ScrollBarThickness = 0,\
+\9\9CanvasSize = UDim2.new(0, 0, 0, 0),\
+\9\9AutomaticCanvasSize = \"Y\",\
+\9}\
+\9local _children_1 = {\
 \9\9Roact.createElement(\"UIListLayout\", {\
 \9\9\9Padding = UDim.new(0, 10),\
 \9\9\9SortOrder = \"LayoutOrder\",\
 \9\9}),\
-\9\9Roact.createElement(ActionButton, {\
-\9\9\9action = \"facebang\",\
-\9\9\9theme = theme,\
-\9\9\9hint = \"Facebang the selected player\",\
-\9\9\9image = \"rbxassetid://10734950309\",\
-\9\9\9position = UDim2.new(0, 0, 0, 0),\
-\9\9\9canDeactivate = true,\
-\9\9}),\
-\9})\
+\9}\
+\9local _length_2 = #_children_1\
+\9for _k, _v in ipairs(_newValue_1) do\
+\9\9_children_1[_length_2 + _k] = _v\
+\9end\
+\9_children[_length + 1] = Roact.createElement(\"ScrollingFrame\", _attributes_1, _children_1)\
+\9return Roact.createElement(\"Frame\", _attributes, _children)\
 end\
 local default = hooked(MiscPage)\
 return {\

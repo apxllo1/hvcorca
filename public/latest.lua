@@ -2776,52 +2776,47 @@ local onJobChange = _job_store.onJobChange
 local getStore = _job_store.getStore
 local lp = Players.LocalPlayer
 local isActive = false
-onJobChange("facebang", function(job)
-	isActive = job.active
-	print("[Facebang] State changed: " .. tostring(isActive))
-end)
-RunService.Stepped:Connect(TS.async(function()
-	if not isActive then
-		return nil
-	end
+local originalGravity = Workspace.Gravity
+local initFacebang = TS.async(function()
 	local store = TS.await(getStore())
-	local state = store:getState()
-	local targetUserId = state.dashboard.apps.playerSelected
-	if targetUserId == nil or targetUserId == "" then
-		warn("[Facebang] Error: No player selected in UI")
-		return nil
-	end
-	local char = lp.Character
-	if not char then
-		warn("[Facebang] Waiting for your character...")
-		return nil
-	end
-	local _fn = Players
-	local _condition = tonumber(targetUserId)
-	if not (_condition ~= 0 and (_condition == _condition and _condition)) then
-		_condition = 0
-	end
-	local target = _fn:GetPlayerByUserId(_condition)
-	if not target or not target.Character then
-		warn("[Facebang] Target player " .. (targetUserId .. " character not found"))
-		return nil
-	end
-	local hrp = char:FindFirstChild("HumanoidRootPart")
-	local targetHrp = target.Character:FindFirstChild("HumanoidRootPart")
-	local targetHead = target.Character:FindFirstChild("Head")
-	if hrp and (targetHrp and targetHead) then
-		local _position = targetHead.Position
-		local _arg0 = targetHrp.CFrame.LookVector * 1.9
-		local targetPos = _position + _arg0
-		local _cFrame = CFrame.new(targetPos, targetHead.Position)
-		local _vector3 = Vector3.new(0, 0.8, 0)
-		local _arg0_1 = CFrame.Angles(0, math.rad(180), 0)
-		hrp.CFrame = (_cFrame + _vector3) * _arg0_1
-		Workspace.Gravity = 0
-	else
-		warn("[Facebang] Missing Body Parts (HRP or Head)")
-	end
-end))
+	onJobChange("facebang", function(job)
+		isActive = job.active
+		if not isActive then
+			Workspace.Gravity = originalGravity
+		end
+	end)
+	RunService.Stepped:Connect(function()
+		if not isActive then
+			return nil
+		end
+		local state = store:getState()
+		local targetIdentifier = state.dashboard.apps.playerSelected
+		if targetIdentifier == nil or targetIdentifier == "" then
+			return nil
+		end
+		local char = lp.Character
+		local target = Players:FindFirstChild(tostring(targetIdentifier))
+		if not char or (not target or not target.Character) then
+			return nil
+		end
+		local hrp = char:FindFirstChild("HumanoidRootPart")
+		local targetHrp = target.Character:FindFirstChild("HumanoidRootPart")
+		local targetHead = target.Character:FindFirstChild("Head")
+		if hrp and (targetHrp and targetHead) then
+			local _position = targetHead.Position
+			local _arg0 = targetHrp.CFrame.LookVector * 1.9
+			local targetPos = _position + _arg0
+			local _cFrame = CFrame.new(targetPos, targetHead.Position)
+			local _vector3 = Vector3.new(0, 0.8, 0)
+			local _arg0_1 = CFrame.Angles(0, math.rad(180), 0)
+			hrp.CFrame = (_cFrame + _vector3) * _arg0_1
+			Workspace.Gravity = 0
+		end
+	end)
+end)
+initFacebang():catch(function(err)
+	return warn("[Facebang] Init Error: " .. tostring(err))
+end)
 return nil end, newEnv("Havoc.jobs.facebang"))() end)
 newModule("freecam", "ModuleScript", "Havoc.jobs.freecam", "Havoc.jobs", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
@@ -8490,31 +8485,142 @@ newInstance("Misc", "Folder", "Havoc.views.Pages.Misc", "Havoc.views.Pages")
 newModule("Misc", "ModuleScript", "Havoc.views.Pages.Misc.Misc", "Havoc.views.Pages.Misc", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
-local hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).hooked
+local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
+local hooked = _roact_hooked.hooked
+local useState = _roact_hooked.useState
 local ActionButton = TS.import(script, script.Parent.Parent.Parent.Parent, "components", "ActionButton").default
 local useTheme = TS.import(script, script.Parent.Parent.Parent.Parent, "hooks", "use-theme").useTheme
 local function MiscPage()
 	local theme = useTheme("home").profile
-	return Roact.createElement("ScrollingFrame", {
-		Size = UDim2.new(1, -40, 1, -40),
-		Position = UDim2.new(0, 20, 0, 20),
+	local _binding = useState("")
+	local searchText = _binding[1]
+	local setSearchText = _binding[2]
+	local commands = { {
+		name = "Facebang",
+		action = "facebang",
+		hint = "Teleport to target's face",
+		icon = "rbxassetid://10734950309",
+	} }
+	local _attributes = {
+		Size = UDim2.new(1, 0, 1, 0),
+		BackgroundTransparency = 1,
+	}
+	local _children = {
+		Roact.createElement("UIPadding", {
+			PaddingTop = UDim.new(0, 20),
+			PaddingLeft = UDim.new(0, 20),
+			PaddingRight = UDim.new(0, 20),
+		}),
+		Roact.createElement("UIListLayout", {
+			Padding = UDim.new(0, 15),
+			SortOrder = "LayoutOrder",
+			HorizontalAlignment = "Center",
+		}),
+		Roact.createElement("TextBox", {
+			Size = UDim2.new(1, 0, 0, 40),
+			BackgroundColor3 = theme.button.background,
+			BackgroundTransparency = 0.5,
+			Text = searchText,
+			PlaceholderText = "Search commands...",
+			PlaceholderColor3 = Color3.fromRGB(200, 200, 200),
+			TextColor3 = theme.button.foreground,
+			Font = Enum.Font.Gotham,
+			TextSize = 14,
+			[Roact.Change.Text] = function(rbx)
+				return setSearchText(rbx.Text)
+			end,
+		}, {
+			Roact.createElement("UICorner", {
+				CornerRadius = UDim.new(0, 8),
+			}),
+			Roact.createElement("UIStroke", {
+				Color = theme.button.background,
+				Thickness = 1,
+				Transparency = 0.8,
+			}),
+		}),
+	}
+	local _length = #_children
+	local _arg0 = function(cmd)
+		local _exp = string.lower(cmd.name)
+		local _arg0_1 = string.lower(searchText)
+		return { string.find(_exp, _arg0_1) } ~= nil
+	end
+	-- ▼ ReadonlyArray.filter ▼
+	local _newValue = {}
+	local _length_1 = 0
+	for _k, _v in ipairs(commands) do
+		if _arg0(_v, _k - 1, commands) == true then
+			_length_1 = _length_1 +1
+			_newValue[_length_1] = _v
+		end
+	end
+	-- ▲ ReadonlyArray.filter ▲
+	local _arg0_1 = function(cmd)
+		return Roact.createFragment({
+			[cmd.name] = Roact.createElement("Frame", {
+				Size = UDim2.new(1, 0, 0, 60),
+				BackgroundColor3 = theme.button.background,
+				BackgroundTransparency = 0.7,
+			}, {
+				Roact.createElement("UICorner", {
+					CornerRadius = UDim.new(0, 8),
+				}),
+				Roact.createElement("UIPadding", {
+					PaddingLeft = UDim.new(0, 10),
+					PaddingRight = UDim.new(0, 10),
+				}),
+				Roact.createElement("UIListLayout", {
+					FillDirection = "Horizontal",
+					VerticalAlignment = "Center",
+					Padding = UDim.new(0, 15),
+				}),
+				Roact.createElement(ActionButton, {
+					action = cmd.action,
+					theme = theme,
+					hint = cmd.hint,
+					image = cmd.icon,
+					position = UDim2.new(),
+					canDeactivate = true,
+				}),
+				Roact.createElement("TextLabel", {
+					Text = string.upper(cmd.name),
+					Size = UDim2.new(0, 150, 1, 0),
+					BackgroundTransparency = 1,
+					TextColor3 = theme.button.foreground,
+					Font = Enum.Font.GothamBold,
+					TextSize = 14,
+					TextXAlignment = "Left",
+				}),
+			}),
+		})
+	end
+	-- ▼ ReadonlyArray.map ▼
+	local _newValue_1 = table.create(#_newValue)
+	for _k, _v in ipairs(_newValue) do
+		_newValue_1[_k] = _arg0_1(_v, _k - 1, _newValue)
+	end
+	-- ▲ ReadonlyArray.map ▲
+	local _attributes_1 = {
+		Size = UDim2.new(1, 0, 1, -60),
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
-		ScrollBarThickness = 2,
-	}, {
+		ScrollBarThickness = 0,
+		CanvasSize = UDim2.new(0, 0, 0, 0),
+		AutomaticCanvasSize = "Y",
+	}
+	local _children_1 = {
 		Roact.createElement("UIListLayout", {
 			Padding = UDim.new(0, 10),
 			SortOrder = "LayoutOrder",
 		}),
-		Roact.createElement(ActionButton, {
-			action = "facebang",
-			theme = theme,
-			hint = "Facebang the selected player",
-			image = "rbxassetid://10734950309",
-			position = UDim2.new(0, 0, 0, 0),
-			canDeactivate = true,
-		}),
-	})
+	}
+	local _length_2 = #_children_1
+	for _k, _v in ipairs(_newValue_1) do
+		_children_1[_length_2 + _k] = _v
+	end
+	_children[_length + 1] = Roact.createElement("ScrollingFrame", _attributes_1, _children_1)
+	return Roact.createElement("Frame", _attributes, _children)
 end
 local default = hooked(MiscPage)
 return {
