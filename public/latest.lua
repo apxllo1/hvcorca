@@ -9154,7 +9154,7 @@ local _ShortcutItem = TS.import(script, script.Parent, "ShortcutItem")
 local ShortcutItem = _ShortcutItem.default
 local ENTRY_HEIGHT = _ShortcutItem.ENTRY_HEIGHT
 local PADDING = _ShortcutItem.PADDING
-local ENTRY_COUNT = 6
+local ENTRY_COUNT = 7
 local function Shortcuts()
 	local store = useAppStore()
 	local dispatch = useAppDispatch()
@@ -9257,6 +9257,16 @@ local function Shortcuts()
 					action = "setJumpHeight",
 					description = "Set jump height",
 					index = 5,
+				}),
+				Roact.createElement(ShortcutItem, {
+					onActivate = function()
+						dispatch(setJobActive("facebang", not store:getState().jobs.facebang.active))
+					end,
+					onSelect = setSelectedItem,
+					selectedItem = selectedItem,
+					action = "setFacebang",
+					description = "Toggle Facebang",
+					index = 6,
 				}),
 			}),
 		}),

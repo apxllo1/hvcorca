@@ -9299,7 +9299,7 @@ local _ShortcutItem = TS.import(script, script.Parent, \"ShortcutItem\")\
 local ShortcutItem = _ShortcutItem.default\
 local ENTRY_HEIGHT = _ShortcutItem.ENTRY_HEIGHT\
 local PADDING = _ShortcutItem.PADDING\
-local ENTRY_COUNT = 6\
+local ENTRY_COUNT = 7\
 local function Shortcuts()\
 \9local store = useAppStore()\
 \9local dispatch = useAppDispatch()\
@@ -9402,6 +9402,16 @@ local function Shortcuts()\
 \9\9\9\9\9action = \"setJumpHeight\",\
 \9\9\9\9\9description = \"Set jump height\",\
 \9\9\9\9\9index = 5,\
+\9\9\9\9}),\
+\9\9\9\9Roact.createElement(ShortcutItem, {\
+\9\9\9\9\9onActivate = function()\
+\9\9\9\9\9\9dispatch(setJobActive(\"facebang\", not store:getState().jobs.facebang.active))\
+\9\9\9\9\9end,\
+\9\9\9\9\9onSelect = setSelectedItem,\
+\9\9\9\9\9selectedItem = selectedItem,\
+\9\9\9\9\9action = \"setFacebang\",\
+\9\9\9\9\9description = \"Toggle Facebang\",\
+\9\9\9\9\9index = 6,\
 \9\9\9\9}),\
 \9\9\9}),\
 \9\9}),\
