@@ -522,26 +522,37 @@ local function ActionButton(_param)\
 \9local canDeactivate = _param.canDeactivate\
 \9local dispatch = useAppDispatch()\
 \9local active = useAppSelector(function(state)\
-\9\9return state.jobs[action].active\
+\9\9local job = state.jobs[action]\
+\9\9local _result = job\
+\9\9if _result ~= nil then\
+\9\9\9_result = _result.active\
+\9\9end\
+\9\9local _condition = _result\
+\9\9if _condition == nil then\
+\9\9\9_condition = false\
+\9\9end\
+\9\9return _condition\
 \9end)\
 \9local _binding = useState(false)\
 \9local hovered = _binding[1]\
 \9local setHovered = _binding[2]\
-\9local accent = theme.highlight[action] ~= nil and theme.highlight[action] or theme.background\
-\9if not (theme.highlight[action] ~= nil) then\
-\9\9warn(\"ActionButton: \" .. (action .. \" is not in theme.highlight\"))\
+\9local highlightMap = theme.highlight\
+\9local _condition = highlightMap[action]\
+\9if _condition == nil then\
+\9\9_condition = theme.button.background\
 \9end\
+\9local accent = _condition\
 \9local _result\
 \9if active then\
 \9\9_result = accent\
 \9else\
 \9\9local _result_1\
 \9\9if hovered then\
-\9\9\9local _condition = theme.button.backgroundHovered\
-\9\9\9if _condition == nil then\
-\9\9\9\9_condition = theme.button.background:Lerp(accent, 0.1)\
+\9\9\9local _condition_1 = theme.button.backgroundHovered\
+\9\9\9if _condition_1 == nil then\
+\9\9\9\9_condition_1 = theme.button.background:Lerp(accent, 0.1)\
 \9\9\9end\
-\9\9\9_result_1 = _condition\
+\9\9\9_result_1 = _condition_1\
 \9\9else\
 \9\9\9_result_1 = theme.button.background\
 \9\9end\
@@ -557,12 +568,11 @@ local function ActionButton(_param)\
 \9\9\9\9dispatch(setJobActive(action, true))\
 \9\9\9end\
 \9\9end,\
-\9\9onHover = function(hovered)\
-\9\9\9if hovered then\
-\9\9\9\9setHovered(true)\
+\9\9onHover = function(isHovered)\
+\9\9\9setHovered(isHovered)\
+\9\9\9if isHovered then\
 \9\9\9\9dispatch(setHint(hint))\
 \9\9\9else\
-\9\9\9\9setHovered(false)\
 \9\9\9\9dispatch(clearHint())\
 \9\9\9end\
 \9\9end,\
@@ -3359,20 +3369,27 @@ local onJobChange = TS.async(function(jobName, callback)\
 \9local lastJob = store:getState().jobs[jobName]\
 \9return store.changed:connect(function(newState)\
 \9\9local job = newState.jobs[jobName]\
-\9\9if not shallowEqual(job, lastJob) then\
-\9\9\9lastJob = job\
-\9\9\9task.defer(callback, job, newState)\
+\9\9if job ~= nil and lastJob ~= nil then\
+\9\9\9local currentJobObj = job\
+\9\9\9local lastJobObj = lastJob\
+\9\9\9if not shallowEqual(currentJobObj, lastJobObj) then\
+\9\9\9\9lastJob = job\
+\9\9\9\9task.defer(callback, job, newState)\
+\9\9\9end\
 \9\9end\
 \9end)\
 end)\
 function shallowEqual(a, b)\
-\9for key in pairs(a) do\
-\9\9if a[key] ~= b[key] then\
+\9if a == b then\
+\9\9return true\
+\9end\
+\9for key, value in pairs(a) do\
+\9\9if value ~= b[key] then\
 \9\9\9return false\
 \9\9end\
 \9end\
-\9for key in pairs(b) do\
-\9\9if a[key] ~= b[key] then\
+\9for key, value in pairs(b) do\
+\9\9if value ~= a[key] then\
 \9\9\9return false\
 \9\9end\
 \9end\
@@ -3973,23 +3990,32 @@ return {\
 }", '@'.."Havoc.store.actions.dashboard.action")) setfenv(fn, newEnv("Havoc.store.actions.dashboard.action")) return fn() end)
 
 newModule("jobs.action", "ModuleScript", "Havoc.store.actions.jobs.action", "Havoc.store.actions", function () local fn = assert(loadstring("-- Compiled with roblox-ts v1.2.7\
-local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
-local Rodux = TS.import(script, TS.getModule(script, \"@rbxts\", \"rodux\").src)\
-local setJobActive = Rodux.makeActionCreator(\"jobs/setJobActive\", function(jobName, active)\
+local setJobActive = function(jobName, active)\
 \9return {\
+\9\9type = \"jobs/setJobActive\",\
 \9\9jobName = jobName,\
 \9\9active = active,\
 \9}\
-end)\
-local setJobValue = Rodux.makeActionCreator(\"jobs/setJobValue\", function(jobName, value)\
+end\
+local setJobValue = function(jobName, value)\
 \9return {\
+\9\9type = \"jobs/setJobValue\",\
 \9\9jobName = jobName,\
 \9\9value = value,\
 \9}\
-end)\
+end\
+local setJobSlider = function(jobName, slider, value)\
+\9return {\
+\9\9type = \"jobs/setJobSlider\",\
+\9\9jobName = jobName,\
+\9\9slider = slider,\
+\9\9value = value,\
+\9}\
+end\
 return {\
 \9setJobActive = setJobActive,\
 \9setJobValue = setJobValue,\
+\9setJobSlider = setJobSlider,\
 }", '@'.."Havoc.store.actions.jobs.action")) setfenv(fn, newEnv("Havoc.store.actions.jobs.action")) return fn() end)
 
 newModule("options.action", "ModuleScript", "Havoc.store.actions.options.action", "Havoc.store.actions", function () local fn = assert(loadstring("-- Compiled with roblox-ts v1.2.7\
@@ -4064,11 +4090,7 @@ return {\
 \9PAGE_TO_ICON = PAGE_TO_ICON,\
 }", '@'.."Havoc.store.models.dashboard.model")) setfenv(fn, newEnv("Havoc.store.models.dashboard.model")) return fn() end)
 
-newModule("jobs.model", "ModuleScript", "Havoc.store.models.jobs.model", "Havoc.store.models", function () local fn = assert(loadstring("-- Compiled with roblox-ts v1.2.7\
-local __FIX_JOBS = true\
-return {\
-\9__FIX_JOBS = __FIX_JOBS,\
-}", '@'.."Havoc.store.models.jobs.model")) setfenv(fn, newEnv("Havoc.store.models.jobs.model")) return fn() end)
+newModule("jobs.model", "ModuleScript", "Havoc.store.models.jobs.model", "Havoc.store.models", function () local fn = assert(loadstring("-- Compiled with roblox-ts v1.2.7", '@'.."Havoc.store.models.jobs.model")) setfenv(fn, newEnv("Havoc.store.models.jobs.model")) return fn() end)
 
 newModule("options.model", "ModuleScript", "Havoc.store.models.options.model", "Havoc.store.models", function () local fn = assert(loadstring("-- Compiled with roblox-ts v1.2.7\
 local __FIX_OPTIONS = true\
@@ -4264,6 +4286,10 @@ local initialState = {\
 \9},\
 \9facebang = {\
 \9\9active = false,\
+\9\9sliders = {\
+\9\9\9angle = 180,\
+\9\9\9distance = 2.5,\
+\9\9},\
 \9},\
 \9rejoinServer = {\
 \9\9active = false,\
@@ -4274,14 +4300,13 @@ local initialState = {\
 }\
 local jobsReducer = Rodux.createReducer(initialState, {\
 \9[\"jobs/setJobActive\"] = function(state, action)\
-\9\9local jobName = action.jobName\
 \9\9local _object = {}\
 \9\9for _k, _v in pairs(state) do\
 \9\9\9_object[_k] = _v\
 \9\9end\
-\9\9local _left = jobName\
+\9\9local _left = action.jobName\
 \9\9local _object_1 = {}\
-\9\9for _k, _v in pairs(state[jobName]) do\
+\9\9for _k, _v in pairs(state[action.jobName]) do\
 \9\9\9_object_1[_k] = _v\
 \9\9end\
 \9\9_object_1.active = action.active\
@@ -4289,20 +4314,42 @@ local jobsReducer = Rodux.createReducer(initialState, {\
 \9\9return _object\
 \9end,\
 \9[\"jobs/setJobValue\"] = function(state, action)\
-\9\9local jobName = action.jobName\
-\9\9local currentJob = state[jobName]\
 \9\9local _object = {}\
 \9\9for _k, _v in pairs(state) do\
 \9\9\9_object[_k] = _v\
 \9\9end\
-\9\9local _left = jobName\
+\9\9local _left = action.jobName\
 \9\9local _object_1 = {}\
-\9\9for _k, _v in pairs(currentJob) do\
+\9\9for _k, _v in pairs(state[action.jobName]) do\
 \9\9\9_object_1[_k] = _v\
 \9\9end\
 \9\9_object_1.value = action.value\
 \9\9_object[_left] = _object_1\
 \9\9return _object\
+\9end,\
+\9[\"jobs/setJobSlider\"] = function(state, action)\
+\9\9local job = state[action.jobName]\
+\9\9if job.sliders ~= nil then\
+\9\9\9local _object = {}\
+\9\9\9for _k, _v in pairs(state) do\
+\9\9\9\9_object[_k] = _v\
+\9\9\9end\
+\9\9\9local _left = action.jobName\
+\9\9\9local _object_1 = {}\
+\9\9\9for _k, _v in pairs(job) do\
+\9\9\9\9_object_1[_k] = _v\
+\9\9\9end\
+\9\9\9local _left_1 = \"sliders\"\
+\9\9\9local _object_2 = {}\
+\9\9\9for _k, _v in pairs(job.sliders) do\
+\9\9\9\9_object_2[_k] = _v\
+\9\9\9end\
+\9\9\9_object_2[action.slider] = action.value\
+\9\9\9_object_1[_left_1] = _object_2\
+\9\9\9_object[_left] = _object_1\
+\9\9\9return _object\
+\9\9end\
+\9\9return state\
 \9end,\
 })\
 return {\
@@ -8090,18 +8137,23 @@ local function SliderComponent(props)\
 \9local _binding_1 = useState(false)\
 \9local hovered = _binding_1[1]\
 \9local setHovered = _binding_1[2]\
-\9local accent = theme.highlight[props.jobName]\
+\9local highlightColors = theme.highlight\
+\9local _condition = highlightColors[props.jobName]\
+\9if _condition == nil then\
+\9\9_condition = theme.foreground\
+\9end\
+\9local accent = _condition\
 \9local _result\
 \9if job.active then\
 \9\9_result = accent\
 \9else\
 \9\9local _result_1\
 \9\9if hovered then\
-\9\9\9local _condition = theme.button.backgroundHovered\
-\9\9\9if _condition == nil then\
-\9\9\9\9_condition = theme.button.background:Lerp(accent, 0.1)\
+\9\9\9local _condition_1 = theme.button.backgroundHovered\
+\9\9\9if _condition_1 == nil then\
+\9\9\9\9_condition_1 = theme.button.background:Lerp(accent, 0.1)\
 \9\9\9end\
-\9\9\9_result_1 = _condition\
+\9\9\9_result_1 = _condition_1\
 \9\9else\
 \9\9\9_result_1 = theme.button.background\
 \9\9end\
@@ -8133,8 +8185,8 @@ local function SliderComponent(props)\
 \9\9}, {\
 \9\9\9Roact.createElement(\"TextLabel\", {\
 \9\9\9\9Font = \"GothamBold\",\
-\9\9\9\9Text = value:map(function(value)\
-\9\9\9\9\9return tostring(math.round(value)) .. (\" \" .. props.units)\
+\9\9\9\9Text = value:map(function(v)\
+\9\9\9\9\9return tostring(math.round(v)) .. (\" \" .. props.units)\
 \9\9\9\9end),\
 \9\9\9\9TextSize = 15,\
 \9\9\9\9TextColor3 = theme.slider.foreground,\
@@ -8149,12 +8201,11 @@ local function SliderComponent(props)\
 \9\9\9onActivate = function()\
 \9\9\9\9return dispatch(setJobActive(props.jobName, not job.active))\
 \9\9\9end,\
-\9\9\9onHover = function(hovered)\
-\9\9\9\9if hovered then\
-\9\9\9\9\9setHovered(true)\
+\9\9\9onHover = function(isHovered)\
+\9\9\9\9setHovered(isHovered)\
+\9\9\9\9if isHovered then\
 \9\9\9\9\9dispatch(setHint(props.hint))\
 \9\9\9\9else\
-\9\9\9\9\9setHovered(false)\
 \9\9\9\9\9dispatch(clearHint())\
 \9\9\9\9end\
 \9\9\9end,\
@@ -8345,7 +8396,16 @@ local function ServerAction(_param)\
 \9local dispatch = useAppDispatch()\
 \9local theme = useTheme(\"home\").server[action == \"switchServer\" and \"switchButton\" or \"rejoinButton\"]\
 \9local active = useAppSelector(function(state)\
-\9\9return state.jobs[action].active\
+\9\9local job = state.jobs[action]\
+\9\9local _result = job\
+\9\9if _result ~= nil then\
+\9\9\9_result = _result.active\
+\9\9end\
+\9\9local _condition = _result\
+\9\9if _condition == nil then\
+\9\9\9_condition = false\
+\9\9end\
+\9\9return _condition\
 \9end)\
 \9local _binding = useState(false)\
 \9local hovered = _binding[1]\
@@ -8372,12 +8432,11 @@ local function ServerAction(_param)\
 \9\9onActivate = function()\
 \9\9\9return dispatch(setJobActive(action, not active))\
 \9\9end,\
-\9\9onHover = function(hovered)\
-\9\9\9if hovered then\
-\9\9\9\9setHovered(true)\
+\9\9onHover = function(isHovered)\
+\9\9\9setHovered(isHovered)\
+\9\9\9if isHovered then\
 \9\9\9\9dispatch(setHint(hint))\
 \9\9\9else\
-\9\9\9\9setHovered(false)\
 \9\9\9\9dispatch(clearHint())\
 \9\9\9end\
 \9\9end,\
@@ -9355,7 +9414,9 @@ local function Shortcuts()\
 \9\9\9\9}),\
 \9\9\9\9Roact.createElement(ShortcutItem, {\
 \9\9\9\9\9onActivate = function()\
-\9\9\9\9\9\9dispatch(setJobActive(\"flight\", not store:getState().jobs.flight.active))\
+\9\9\9\9\9\9local state = store:getState()\
+\9\9\9\9\9\9local job = state.jobs.flight\
+\9\9\9\9\9\9dispatch(setJobActive(\"flight\", not job.active))\
 \9\9\9\9\9end,\
 \9\9\9\9\9onSelect = setSelectedItem,\
 \9\9\9\9\9selectedItem = selectedItem,\
@@ -9365,7 +9426,9 @@ local function Shortcuts()\
 \9\9\9\9}),\
 \9\9\9\9Roact.createElement(ShortcutItem, {\
 \9\9\9\9\9onActivate = function()\
-\9\9\9\9\9\9dispatch(setJobActive(\"freecam\", not store:getState().jobs.freecam.active))\
+\9\9\9\9\9\9local state = store:getState()\
+\9\9\9\9\9\9local job = state.jobs.freecam\
+\9\9\9\9\9\9dispatch(setJobActive(\"freecam\", not job.active))\
 \9\9\9\9\9end,\
 \9\9\9\9\9onSelect = setSelectedItem,\
 \9\9\9\9\9selectedItem = selectedItem,\
@@ -9375,7 +9438,9 @@ local function Shortcuts()\
 \9\9\9\9}),\
 \9\9\9\9Roact.createElement(ShortcutItem, {\
 \9\9\9\9\9onActivate = function()\
-\9\9\9\9\9\9dispatch(setJobActive(\"ghost\", not store:getState().jobs.ghost.active))\
+\9\9\9\9\9\9local state = store:getState()\
+\9\9\9\9\9\9local job = state.jobs.ghost\
+\9\9\9\9\9\9dispatch(setJobActive(\"ghost\", not job.active))\
 \9\9\9\9\9end,\
 \9\9\9\9\9onSelect = setSelectedItem,\
 \9\9\9\9\9selectedItem = selectedItem,\
@@ -9385,7 +9450,9 @@ local function Shortcuts()\
 \9\9\9\9}),\
 \9\9\9\9Roact.createElement(ShortcutItem, {\
 \9\9\9\9\9onActivate = function()\
-\9\9\9\9\9\9dispatch(setJobActive(\"walkSpeed\", not store:getState().jobs.walkSpeed.active))\
+\9\9\9\9\9\9local state = store:getState()\
+\9\9\9\9\9\9local job = state.jobs.walkSpeed\
+\9\9\9\9\9\9dispatch(setJobActive(\"walkSpeed\", not job.active))\
 \9\9\9\9\9end,\
 \9\9\9\9\9onSelect = setSelectedItem,\
 \9\9\9\9\9selectedItem = selectedItem,\
@@ -9395,7 +9462,9 @@ local function Shortcuts()\
 \9\9\9\9}),\
 \9\9\9\9Roact.createElement(ShortcutItem, {\
 \9\9\9\9\9onActivate = function()\
-\9\9\9\9\9\9dispatch(setJobActive(\"jumpHeight\", not store:getState().jobs.jumpHeight.active))\
+\9\9\9\9\9\9local state = store:getState()\
+\9\9\9\9\9\9local job = state.jobs.jumpHeight\
+\9\9\9\9\9\9dispatch(setJobActive(\"jumpHeight\", not job.active))\
 \9\9\9\9\9end,\
 \9\9\9\9\9onSelect = setSelectedItem,\
 \9\9\9\9\9selectedItem = selectedItem,\
@@ -9405,7 +9474,9 @@ local function Shortcuts()\
 \9\9\9\9}),\
 \9\9\9\9Roact.createElement(ShortcutItem, {\
 \9\9\9\9\9onActivate = function()\
-\9\9\9\9\9\9dispatch(setJobActive(\"facebang\", not store:getState().jobs.facebang.active))\
+\9\9\9\9\9\9local state = store:getState()\
+\9\9\9\9\9\9local job = state.jobs.facebang\
+\9\9\9\9\9\9dispatch(setJobActive(\"facebang\", not job.active))\
 \9\9\9\9\9end,\
 \9\9\9\9\9onSelect = setSelectedItem,\
 \9\9\9\9\9selectedItem = selectedItem,\
