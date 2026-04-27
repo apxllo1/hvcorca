@@ -1,10 +1,9 @@
 import { RunService, Players, Workspace } from "@rbxts/services";
-import store from "store/store"; // Fixed: Removed curly braces for default export
-import { Job } from "store/models/jobs.model"; // Added: Import Job type for safety
+import { store } from "store/store"; // Added back the curly braces
+import { Job } from "store/models/jobs.model"; // Import the type for casting
 
 const lp = Players.LocalPlayer;
 
-// Exact values from your facebang.lua
 const OFFSET_HEIGHT = 0.8;
 const TELEPORT_DISTANCE = 1.9;
 
@@ -34,16 +33,15 @@ const enableActions = (char: Model) => {
 		humanoid.AutoRotate = true;
 		humanoid.ChangeState(Enum.HumanoidStateType.GettingUp);
 	}
-	// Only reset gravity if it's currently 0 to avoid overriding other scripts
 	if (Workspace.Gravity === 0) Workspace.Gravity = 196.2;
 };
 
 RunService.Stepped.Connect(() => {
 	const state = store.getState();
 	
-	// Fixed: Cast to Job to prevent "Property active does not exist" error
-	const facebangJob = state.jobs.facebang as Job | undefined;
-	const isActive = facebangJob?.active;
+	// FIX: Use 'as Job' to tell TypeScript that facebang has an 'active' property
+	const job = state.jobs.facebang as Job | undefined;
+	const isActive = job?.active;
 
 	const char = lp.Character;
 	if (!char) return;
@@ -57,7 +55,7 @@ RunService.Stepped.Connect(() => {
 
 	const hrp = char.FindFirstChild("HumanoidRootPart") as Part;
 	
-	// Get the target player from the store
+	// FIX: Pulling the target ID from the correct state location
 	const targetUserId = state.dashboard.apps.playerSelected;
 	const target = Players.GetPlayerByUserId(tonumber(targetUserId) || 0);
 
