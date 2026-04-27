@@ -14,14 +14,24 @@ function MiscPage() {
 			BorderSizePixel={0}
 			ScrollBarThickness={2}
 		>
-			<uilistlayout Padding={new UDim(0, 10)} SortOrder="LayoutOrder" />
-			
-			<ActionButton 
-				action="facebang" 
-				theme={theme} 
-				size={new UDim2(1, 0, 0, 45)} 
-				canDeactivate 
+			<uilistlayout 
+				Padding={new UDim(0, 10)} 
+				SortOrder="LayoutOrder" 
+				HorizontalAlignment="Center"
 			/>
+			
+			{/* We use this Frame to set the size so the ActionButton doesn't error out */}
+			<frame 
+				Key="FacebangContainer"
+				Size={new UDim2(1, 0, 0, 45)} 
+				BackgroundTransparency={1}
+			>
+				<ActionButton 
+					action="facebang" 
+					theme={theme} 
+					canDeactivate 
+				/>
+			</frame>
 		</scrollingframe>
 	);
 }
