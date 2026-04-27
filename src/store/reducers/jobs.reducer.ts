@@ -1,6 +1,6 @@
 import Rodux from "@rbxts/rodux";
 import { JobsAction } from "store/actions/jobs.action";
-import { JobsState } from "../models/jobs.model";
+import { JobsState, JobWithSliders, JobWithValue } from "../models/jobs.model";
 
 const initialState: JobsState = {
 	flight: { value: 60, active: false },
@@ -17,15 +17,21 @@ const initialState: JobsState = {
 	kill: { active: false },
 	spectate: { active: false },
 
-	// 1. Initialized as false so it doesn't run until you "pick and choose"
-	facebang: { active: false, sliders: {} },
+	// FIXED: Added the sliders object to match the JobWithSliders interface
+	facebang: { 
+		active: false, 
+		sliders: {
+			angle: 180,
+			distance: 2.5
+		} 
+	},
 
 	rejoinServer: { active: false },
 	switchServer: { active: false },
 };
 
 export const jobsReducer = Rodux.createReducer<JobsState, JobsAction>(initialState, {
-	"jobs/setJobActive": (state, action) => {
+	setJobActive: (state, action) => {
 		const jobName = action.jobName as keyof JobsState;
 		return {
 			...state,
@@ -35,16 +41,33 @@ export const jobsReducer = Rodux.createReducer<JobsState, JobsAction>(initialSta
 			},
 		};
 	},
-	"jobs/setJobValue": (state, action) => {
+
+	setJobValue: (state, action) => {
 		const jobName = action.jobName as keyof JobsState;
-		// 2. Added a safety check to ensure we only update values for jobs that HAVE values
-		const currentJob = state[jobName];
+		const currentJob = state[jobName] as JobWithValue<number>;
 		
 		return {
 			...state,
 			[jobName]: {
 				...currentJob,
 				value: action.value,
+			},
+		};
+	},
+
+	// ADDED: Logic to handle slider updates (Angle/Distance)
+	setJobSlider: (state, action) => {
+		const jobName = action.jobName as keyof JobsState;
+		const currentJob = state[jobName] as JobWithSliders;
+
+		return {
+			...state,
+			[jobName]: {
+				...currentJob,
+				sliders: {
+					...currentJob.sliders,
+					[action.slider]: action.value,
+				},
 			},
 		};
 	},
