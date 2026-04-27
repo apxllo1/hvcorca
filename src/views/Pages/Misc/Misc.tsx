@@ -1,96 +1,65 @@
 import Roact from "@rbxts/roact";
 import { hooked, useState } from "@rbxts/roact-hooked";
-import ActionButton from "components/ActionButton";
 import { useTheme } from "hooks/use-theme";
-import { JobsState } from "store/models/jobs.model";
+import FacebangModal from "./FacebangModal";
 
 function MiscPage() {
 	const theme = useTheme("home").profile;
-	const [searchText, setSearchText] = useState("");
-
-	// This is your command registry. Adding new ones here automatically
-	// creates the UI and handles the search/scrolling logic.
-	const commands = [
-		{ 
-			name: "Facebang", 
-			action: "facebang", 
-			hint: "Teleport to target's face", 
-			icon: "rbxassetid://10734950309" 
-		},
-	];
+	const [modalVisible, setModalVisible] = useState(false);
 
 	return (
 		<frame Size={new UDim2(1, 0, 1, 0)} BackgroundTransparency={1}>
 			<uipadding PaddingTop={new UDim(0, 20)} PaddingLeft={new UDim(0, 20)} PaddingRight={new UDim(0, 20)} />
-			<uilistlayout Padding={new UDim(0, 15)} SortOrder="LayoutOrder" HorizontalAlignment="Center" />
-
-			{/* Search Bar - Essential for iPad users with many commands */}
-			<textbox
-				Size={new UDim2(1, 0, 0, 40)}
+			
+			<textbutton
+				Text="Open Facebang Settings"
+				Size={new UDim2(1, 0, 0, 50)}
 				BackgroundColor3={theme.button.background}
-				BackgroundTransparency={0.5}
-				Text={searchText}
-				PlaceholderText="Search commands..."
-				PlaceholderColor3={Color3.fromRGB(200, 200, 200)}
 				TextColor3={theme.button.foreground}
-				Font={Enum.Font.Gotham}
-				TextSize={14}
-				Change={{
-					Text: (rbx) => setSearchText(rbx.Text),
-				}}
+				Font={Enum.Font.GothamBold}
+				TextSize={16}
+				Event={{ Activated: () => setModalVisible(true) }}
 			>
 				<uicorner CornerRadius={new UDim(0, 8)} />
-				<uistroke Color={theme.button.background} Thickness={1} Transparency={0.8} />
-			</textbox>
+			</textbutton>
 
-			{/* Scrolling List - Prevents UI clipping when list gets long */}
-			<scrollingframe
-				Size={new UDim2(1, 0, 1, -60)}
-				BackgroundTransparency={1}
-				BorderSizePixel={0}
-				ScrollBarThickness={2}
-				ScrollBarImageColor3={theme.button.foreground}
-				CanvasSize={new UDim2(0, 0, 0, 0)}
-				AutomaticCanvasSize="Y"
+			<FacebangModal 
+				isVisible={modalVisible} 
+				onClose={() => setModalVisible(false)} 
+			/>
+		</frame>
+	);
+}
+
+export default hooked(MiscPage);import Roact from "@rbxts/roact";
+import { hooked, useState } from "@rbxts/roact-hooked";
+import { useTheme } from "hooks/use-theme";
+import FacebangModal from "./FacebangModal";
+
+function MiscPage() {
+	const theme = useTheme("home").profile;
+	const [modalVisible, setModalVisible] = useState(false);
+
+	return (
+		<frame Size={new UDim2(1, 0, 1, 0)} BackgroundTransparency={1}>
+			<uipadding PaddingTop={new UDim(0, 20)} PaddingLeft={new UDim(0, 20)} PaddingRight={new UDim(0, 20)} />
+			
+			<textbutton
+				Text="Open Facebang Settings"
+				Size={new UDim2(1, 0, 0, 50)}
+				BackgroundColor3={theme.button.background}
+				TextColor3={theme.button.foreground}
+				Font={Enum.Font.GothamBold}
+				TextSize={16}
+				Event={{ Activated: () => setModalVisible(true) }}
 			>
-				<uilistlayout Padding={new UDim(0, 10)} SortOrder="LayoutOrder" />
+				<uicorner CornerRadius={new UDim(0, 8)} />
+			</textbutton>
 
-				{commands
-					.filter((cmd) => cmd.name.lower().find(searchText.lower()) !== undefined)
-					.map((cmd) => (
-						<frame
-							Key={cmd.name}
-							Size={new UDim2(1, 0, 0, 60)}
-							BackgroundColor3={theme.button.background}
-							BackgroundTransparency={0.7}
-						>
-							<uicorner CornerRadius={new UDim(0, 8)} />
-							<uipadding PaddingLeft={new UDim(0, 10)} PaddingRight={new UDim(0, 10)} />
-							<uilistlayout FillDirection="Horizontal" VerticalAlignment="Center" Padding={new UDim(0, 15)} />
-
-							{/* The Toggle Button */}
-							<ActionButton
-								action={cmd.action as keyof JobsState}
-								theme={theme}
-								hint={cmd.hint}
-								image={cmd.icon}
-								position={new UDim2(0, 0, 0, 0)}
-								canDeactivate
-							/>
-
-							{/* Command Label */}
-							<textlabel
-								Text={cmd.name.upper()}
-								Size={new UDim2(1, -60, 1, 0)}
-								BackgroundTransparency={1}
-								TextColor3={theme.button.foreground}
-								Font={Enum.Font.GothamBold}
-								TextSize={14}
-								TextXAlignment="Left"
-							/>
-						</frame>
-					))}
-			</scrollingframe>
+			<FacebangModal 
+				isVisible={modalVisible} 
+				onClose={() => setModalVisible(false)} 
+			/>
 		</frame>
 	);
 }
