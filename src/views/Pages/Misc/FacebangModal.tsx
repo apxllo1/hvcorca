@@ -14,7 +14,7 @@ export default function FacebangModal({ isVisible, onClose }: FacebangProps) {
 	const dispatch = useDispatch();
 
 	// If the UI isn't supposed to be visible, return nothing
-	if (!isVisible) return <frag />;
+	if (!isVisible) return <></>;
 
 	const renderSlider = (label: string, value: string, percent: number, onUpdate: (val: number) => void) => {
 		return (
