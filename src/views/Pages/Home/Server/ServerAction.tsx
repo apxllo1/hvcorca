@@ -6,7 +6,7 @@ import { useSpring } from "hooks/common/use-spring";
 import { useTheme } from "hooks/use-theme";
 import { clearHint, setHint } from "store/actions/dashboard.action";
 import { setJobActive } from "store/actions/jobs.action";
-import { JobsState } from "store/models/jobs.model";
+import { JobsState, Job } from "store/models/jobs.model"; // Added Job import
 import { px, scale } from "utils/udim2";
 
 interface Props {
@@ -20,7 +20,12 @@ interface Props {
 function ServerAction({ action, hint, icon, size, position }: Props) {
 	const dispatch = useAppDispatch();
 	const theme = useTheme("home").server[action === "switchServer" ? "switchButton" : "rejoinButton"];
-	const active = useAppSelector((state) => state.jobs[action].active);
+	
+	// FIX: Cast as Job and use optional chaining to prevent the "possibly undefined" error
+	const active = useAppSelector((state) => {
+		const job = state.jobs[action] as Job | undefined;
+		return job?.active ?? false;
+	});
 
 	const [hovered, setHovered] = useState(false);
 
@@ -37,12 +42,11 @@ function ServerAction({ action, hint, icon, size, position }: Props) {
 	return (
 		<BrightButton
 			onActivate={() => dispatch(setJobActive(action, !active))}
-			onHover={(hovered) => {
-				if (hovered) {
-					setHovered(true);
+			onHover={(isHovered: boolean) => { // FIX: Explicitly typed boolean
+				setHovered(isHovered);
+				if (isHovered) {
 					dispatch(setHint(hint));
 				} else {
-					setHovered(false);
 					dispatch(clearHint());
 				}
 			}}
