@@ -90,7 +90,7 @@ function SliderComponent(props: {
 		<Canvas size={px(278, 49)} position={px(0, props.position)}>
 			<BrightSlider
 				onValueChanged={setValue}
-				onRelease={() => dispatch(setJobValue(props.jobName as never, math.round(value.getValue())))}
+				onRelease={() => dispatch(setJobValue(props.jobName as keyof JobsState, math.round(value.getValue())))}
 				min={props.min}
 				max={props.max}
 				initialValue={job.value}
