@@ -1,8 +1,7 @@
 // Triggering new build - Facebang update
 export { setStore } from "./helpers/job-store";
 
-// We removed ".client" because these are now ModuleScripts
-import "./facebang";
+// Removed the incorrect "./facebang" import from here
 
 // Updated imports for existing features
 import "./acrylic";
@@ -20,3 +19,4 @@ import "./players/hide";
 import "./players/kill";
 import "./players/spectate";
 import "./players/teleport";
+import "./players/facebang"; // <--- ADDED HERE TO MATCH THE FOLDER
