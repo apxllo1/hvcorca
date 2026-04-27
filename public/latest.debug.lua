@@ -2822,33 +2822,57 @@ local _services = TS.import(script, TS.getModule(script, \"@rbxts\", \"services\
 local RunService = _services.RunService\
 local Players = _services.Players\
 local Workspace = _services.Workspace\
-local onJobChange = TS.import(script, script.Parent, \"helpers\", \"job-store\").onJobChange\
+local _job_store = TS.import(script, script.Parent, \"helpers\", \"job-store\")\
+local onJobChange = _job_store.onJobChange\
+local getStore = _job_store.getStore\
 local lp = Players.LocalPlayer\
-local OFFSET_HEIGHT = 0.8\
-local TELEPORT_DISTANCE = 1.9\
 local isActive = false\
 onJobChange(\"facebang\", function(job)\
 \9isActive = job.active\
+\9print(\"[Facebang] State changed: \" .. tostring(isActive))\
 end)\
-RunService.Stepped:Connect(function()\
+RunService.Stepped:Connect(TS.async(function()\
+\9if not isActive then\
+\9\9return nil\
+\9end\
+\9local store = TS.await(getStore())\
+\9local state = store:getState()\
+\9local targetUserId = state.dashboard.apps.playerSelected\
+\9if targetUserId == nil or targetUserId == \"\" then\
+\9\9warn(\"[Facebang] Error: No player selected in UI\")\
+\9\9return nil\
+\9end\
 \9local char = lp.Character\
 \9if not char then\
+\9\9warn(\"[Facebang] Waiting for your character...\")\
 \9\9return nil\
 \9end\
-\9if not isActive then\
-\9\9if Workspace.Gravity == 0 then\
-\9\9\9Workspace.Gravity = 196.2\
-\9\9end\
+\9local _fn = Players\
+\9local _condition = tonumber(targetUserId)\
+\9if not (_condition ~= 0 and (_condition == _condition and _condition)) then\
+\9\9_condition = 0\
+\9end\
+\9local target = _fn:GetPlayerByUserId(_condition)\
+\9if not target or not target.Character then\
+\9\9warn(\"[Facebang] Target player \" .. (targetUserId .. \" character not found\"))\
 \9\9return nil\
 \9end\
-\9local humanoid = char:FindFirstChildOfClass(\"Humanoid\")\
-\9if humanoid then\
-\9\9humanoid.PlatformStand = true\
-\9\9humanoid:ChangeState(Enum.HumanoidStateType.Physics)\
-\9end\
-\9Workspace.Gravity = 0\
 \9local hrp = char:FindFirstChild(\"HumanoidRootPart\")\
-end)\
+\9local targetHrp = target.Character:FindFirstChild(\"HumanoidRootPart\")\
+\9local targetHead = target.Character:FindFirstChild(\"Head\")\
+\9if hrp and (targetHrp and targetHead) then\
+\9\9local _position = targetHead.Position\
+\9\9local _arg0 = targetHrp.CFrame.LookVector * 1.9\
+\9\9local targetPos = _position + _arg0\
+\9\9local _cFrame = CFrame.new(targetPos, targetHead.Position)\
+\9\9local _vector3 = Vector3.new(0, 0.8, 0)\
+\9\9local _arg0_1 = CFrame.Angles(0, math.rad(180), 0)\
+\9\9hrp.CFrame = (_cFrame + _vector3) * _arg0_1\
+\9\9Workspace.Gravity = 0\
+\9else\
+\9\9warn(\"[Facebang] Missing Body Parts (HRP or Head)\")\
+\9end\
+end))\
 return nil", '@'.."Havoc.jobs.facebang")) setfenv(fn, newEnv("Havoc.jobs.facebang")) return fn() end)
 
 newModule("freecam", "ModuleScript", "Havoc.jobs.freecam", "Havoc.jobs", function () local fn = assert(loadstring("-- Compiled with roblox-ts v1.2.7\

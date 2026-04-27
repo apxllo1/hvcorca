@@ -2771,33 +2771,57 @@ local _services = TS.import(script, TS.getModule(script, "@rbxts", "services"))
 local RunService = _services.RunService
 local Players = _services.Players
 local Workspace = _services.Workspace
-local onJobChange = TS.import(script, script.Parent, "helpers", "job-store").onJobChange
+local _job_store = TS.import(script, script.Parent, "helpers", "job-store")
+local onJobChange = _job_store.onJobChange
+local getStore = _job_store.getStore
 local lp = Players.LocalPlayer
-local OFFSET_HEIGHT = 0.8
-local TELEPORT_DISTANCE = 1.9
 local isActive = false
 onJobChange("facebang", function(job)
 	isActive = job.active
+	print("[Facebang] State changed: " .. tostring(isActive))
 end)
-RunService.Stepped:Connect(function()
+RunService.Stepped:Connect(TS.async(function()
+	if not isActive then
+		return nil
+	end
+	local store = TS.await(getStore())
+	local state = store:getState()
+	local targetUserId = state.dashboard.apps.playerSelected
+	if targetUserId == nil or targetUserId == "" then
+		warn("[Facebang] Error: No player selected in UI")
+		return nil
+	end
 	local char = lp.Character
 	if not char then
+		warn("[Facebang] Waiting for your character...")
 		return nil
 	end
-	if not isActive then
-		if Workspace.Gravity == 0 then
-			Workspace.Gravity = 196.2
-		end
+	local _fn = Players
+	local _condition = tonumber(targetUserId)
+	if not (_condition ~= 0 and (_condition == _condition and _condition)) then
+		_condition = 0
+	end
+	local target = _fn:GetPlayerByUserId(_condition)
+	if not target or not target.Character then
+		warn("[Facebang] Target player " .. (targetUserId .. " character not found"))
 		return nil
 	end
-	local humanoid = char:FindFirstChildOfClass("Humanoid")
-	if humanoid then
-		humanoid.PlatformStand = true
-		humanoid:ChangeState(Enum.HumanoidStateType.Physics)
-	end
-	Workspace.Gravity = 0
 	local hrp = char:FindFirstChild("HumanoidRootPart")
-end)
+	local targetHrp = target.Character:FindFirstChild("HumanoidRootPart")
+	local targetHead = target.Character:FindFirstChild("Head")
+	if hrp and (targetHrp and targetHead) then
+		local _position = targetHead.Position
+		local _arg0 = targetHrp.CFrame.LookVector * 1.9
+		local targetPos = _position + _arg0
+		local _cFrame = CFrame.new(targetPos, targetHead.Position)
+		local _vector3 = Vector3.new(0, 0.8, 0)
+		local _arg0_1 = CFrame.Angles(0, math.rad(180), 0)
+		hrp.CFrame = (_cFrame + _vector3) * _arg0_1
+		Workspace.Gravity = 0
+	else
+		warn("[Facebang] Missing Body Parts (HRP or Head)")
+	end
+end))
 return nil end, newEnv("Havoc.jobs.facebang"))() end)
 newModule("freecam", "ModuleScript", "Havoc.jobs.freecam", "Havoc.jobs", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
