@@ -1,8 +1,7 @@
 import Roact from "@rbxts/roact";
 import { hooked } from "@rbxts/roact-hooked";
-import { useDispatch, useSelector } from "hooks/common/rodux-hooks";
+import { useAppDispatch, useAppSelector } from "hooks/common/rodux-hooks";
 import { setJobActive } from "store/actions/jobs.action";
-import { JobsState } from "store/models/jobs.model";
 
 interface Props {
 	isVisible: boolean;
@@ -10,8 +9,10 @@ interface Props {
 }
 
 const FacebangModal = hooked((props: Props) => {
-	const dispatch = useDispatch();
-	const isEnabled = useSelector((state: { jobs: JobsState }) => state.jobs.facebang.active);
+	const dispatch = useAppDispatch();
+	
+	// Using useAppSelector ensures the 'state' type is known automatically
+	const isEnabled = useAppSelector((state) => state.jobs.facebang.active);
 
 	if (!props.isVisible) return <frame Visible={false} />;
 
@@ -26,7 +27,11 @@ const FacebangModal = hooked((props: Props) => {
 		>
 			<uicorner CornerRadius={new UDim(0, 15)} />
 			<uiaspectratioconstraint AspectRatio={350 / 550} AspectType="ScaleWithParentSize" />
-			<uipadding PaddingTop={new UDim(0.05, 0)} PaddingLeft={new UDim(0.05, 0)} PaddingRight={new UDim(0.05, 0)} />
+			<uipadding 
+				PaddingTop={new UDim(0.05, 0)} 
+				PaddingLeft={new UDim(0.05, 0)} 
+				PaddingRight={new UDim(0.05, 0)} 
+			/>
 
 			<textlabel
 				Text="Facebang"
