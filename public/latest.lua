@@ -2118,8 +2118,21 @@ newModule("jobs", "ModuleScript", "Havoc.jobs", "Havoc", function () return setf
 local TS = require(script.Parent.include.RuntimeLib)
 local exports = {}
 exports.setStore = TS.import(script, script, "helpers", "job-store").setStore
+TS.import(script, script, "facebang")
+TS.import(script, script, "acrylic")
+TS.import(script, script, "freecam")
+TS.import(script, script, "server")
+TS.import(script, script, "character", "flight")
+TS.import(script, script, "character", "ghost")
+TS.import(script, script, "character", "godmode")
+TS.import(script, script, "character", "humanoid")
+TS.import(script, script, "character", "refresh")
+TS.import(script, script, "players", "hide")
+TS.import(script, script, "players", "kill")
+TS.import(script, script, "players", "spectate")
+TS.import(script, script, "players", "teleport")
 return exports end, newEnv("Havoc.jobs"))() end)
-newModule("acrylic", "LocalScript", "Havoc.jobs.acrylic", "Havoc.jobs", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
+newModule("acrylic", "ModuleScript", "Havoc.jobs.acrylic", "Havoc.jobs", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Make = TS.import(script, TS.getModule(script, "@rbxts", "make"))
 local Lighting = TS.import(script, TS.getModule(script, "@rbxts", "services")).Lighting
@@ -2175,9 +2188,10 @@ local main = TS.async(function()
 end)
 main():catch(function(err)
 	warn("[acrylic-worker] " .. tostring(err))
-end) end, newEnv("Havoc.jobs.acrylic"))() end)
+end)
+return nil end, newEnv("Havoc.jobs.acrylic"))() end)
 newInstance("character", "Folder", "Havoc.jobs.character", "Havoc.jobs")
-newModule("flight", "LocalScript", "Havoc.jobs.character.flight", "Havoc.jobs.character", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
+newModule("flight", "ModuleScript", "Havoc.jobs.character.flight", "Havoc.jobs.character", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _flipper = TS.import(script, TS.getModule(script, "@rbxts", "flipper").src)
 local GroupMotor = _flipper.GroupMotor
@@ -2336,8 +2350,9 @@ function updateDirection(code, begin)
 end
 main():catch(function(err)
 	warn("[flight-worker] " .. tostring(err))
-end) end, newEnv("Havoc.jobs.character.flight"))() end)
-newModule("ghost", "LocalScript", "Havoc.jobs.character.ghost", "Havoc.jobs.character", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
+end)
+return nil end, newEnv("Havoc.jobs.character.flight"))() end)
+newModule("ghost", "ModuleScript", "Havoc.jobs.character.ghost", "Havoc.jobs.character", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _services = TS.import(script, TS.getModule(script, "@rbxts", "services"))
 local Players = _services.Players
@@ -2510,8 +2525,9 @@ deactivateGhost = TS.async(function()
 end)
 main():catch(function(err)
 	warn("[ghost-worker] " .. tostring(err))
-end) end, newEnv("Havoc.jobs.character.ghost"))() end)
-newModule("godmode", "LocalScript", "Havoc.jobs.character.godmode", "Havoc.jobs.character", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
+end)
+return nil end, newEnv("Havoc.jobs.character.ghost"))() end)
+newModule("godmode", "ModuleScript", "Havoc.jobs.character.godmode", "Havoc.jobs.character", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _services = TS.import(script, TS.getModule(script, "@rbxts", "services"))
 local Players = _services.Players
@@ -2586,8 +2602,9 @@ activateGodmode = TS.async(function()
 end)
 main():catch(function(err)
 	warn("[godmode-worker] " .. tostring(err))
-end) end, newEnv("Havoc.jobs.character.godmode"))() end)
-newModule("humanoid", "LocalScript", "Havoc.jobs.character.humanoid", "Havoc.jobs.character", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
+end)
+return nil end, newEnv("Havoc.jobs.character.godmode"))() end)
+newModule("humanoid", "ModuleScript", "Havoc.jobs.character.humanoid", "Havoc.jobs.character", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Players = TS.import(script, TS.getModule(script, "@rbxts", "services")).Players
 local _job_store = TS.import(script, script.Parent.Parent, "helpers", "job-store")
@@ -2679,8 +2696,9 @@ function updateJumpHeight(humanoid, jumpHeightJob)
 end
 main():catch(function(err)
 	warn("[humanoid-worker] " .. tostring(err))
-end) end, newEnv("Havoc.jobs.character.humanoid"))() end)
-newModule("refresh", "LocalScript", "Havoc.jobs.character.refresh", "Havoc.jobs.character", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
+end)
+return nil end, newEnv("Havoc.jobs.character.humanoid"))() end)
+newModule("refresh", "ModuleScript", "Havoc.jobs.character.refresh", "Havoc.jobs.character", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _services = TS.import(script, TS.getModule(script, "@rbxts", "services"))
 local Players = _services.Players
@@ -2745,8 +2763,43 @@ respawn = TS.async(function()
 end)
 main():catch(function(err)
 	warn("[refresh-worker] " .. tostring(err))
-end) end, newEnv("Havoc.jobs.character.refresh"))() end)
-newModule("freecam", "LocalScript", "Havoc.jobs.freecam", "Havoc.jobs", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
+end)
+return nil end, newEnv("Havoc.jobs.character.refresh"))() end)
+newModule("facebang", "ModuleScript", "Havoc.jobs.facebang", "Havoc.jobs", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
+local TS = require(script.Parent.Parent.include.RuntimeLib)
+local _services = TS.import(script, TS.getModule(script, "@rbxts", "services"))
+local RunService = _services.RunService
+local Players = _services.Players
+local Workspace = _services.Workspace
+local onJobChange = TS.import(script, script.Parent, "helpers", "job-store").onJobChange
+local lp = Players.LocalPlayer
+local OFFSET_HEIGHT = 0.8
+local TELEPORT_DISTANCE = 1.9
+local isActive = false
+onJobChange("facebang", function(job)
+	isActive = job.active
+end)
+RunService.Stepped:Connect(function()
+	local char = lp.Character
+	if not char then
+		return nil
+	end
+	if not isActive then
+		if Workspace.Gravity == 0 then
+			Workspace.Gravity = 196.2
+		end
+		return nil
+	end
+	local humanoid = char:FindFirstChildOfClass("Humanoid")
+	if humanoid then
+		humanoid.PlatformStand = true
+		humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+	end
+	Workspace.Gravity = 0
+	local hrp = char:FindFirstChild("HumanoidRootPart")
+end)
+return nil end, newEnv("Havoc.jobs.facebang"))() end)
+newModule("freecam", "ModuleScript", "Havoc.jobs.freecam", "Havoc.jobs", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local _freecam = TS.import(script, script.Parent, "helpers", "freecam")
 local DisableFreecam = _freecam.DisableFreecam
@@ -2763,7 +2816,8 @@ local main = TS.async(function()
 end)
 main():catch(function(err)
 	warn("[freecam-worker] " .. tostring(err))
-end) end, newEnv("Havoc.jobs.freecam"))() end)
+end)
+return nil end, newEnv("Havoc.jobs.freecam"))() end)
 newInstance("helpers", "Folder", "Havoc.jobs.helpers", "Havoc.jobs")
 newModule("freecam", "ModuleScript", "Havoc.jobs.helpers.freecam", "Havoc.jobs.helpers", function () return setfenv(function() ------------------------------------------------------------------------
 -- Freecam
@@ -3307,7 +3361,7 @@ return {
 	onJobChange = onJobChange,
 } end, newEnv("Havoc.jobs.helpers.job-store"))() end)
 newInstance("players", "Folder", "Havoc.jobs.players", "Havoc.jobs")
-newModule("hide", "LocalScript", "Havoc.jobs.players.hide", "Havoc.jobs.players", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
+newModule("hide", "ModuleScript", "Havoc.jobs.players.hide", "Havoc.jobs.players", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Players = TS.import(script, TS.getModule(script, "@rbxts", "services")).Players
 local getSelectedPlayer = TS.import(script, script.Parent.Parent, "helpers", "get-selected-player").getSelectedPlayer
@@ -3382,8 +3436,9 @@ local main = TS.async(function()
 end)
 main():catch(function(err)
 	warn("[hide-worker] " .. tostring(err))
-end) end, newEnv("Havoc.jobs.players.hide"))() end)
-newModule("kill", "LocalScript", "Havoc.jobs.players.kill", "Havoc.jobs.players", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
+end)
+return nil end, newEnv("Havoc.jobs.players.hide"))() end)
+newModule("kill", "ModuleScript", "Havoc.jobs.players.kill", "Havoc.jobs.players", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _services = TS.import(script, TS.getModule(script, "@rbxts", "services"))
 local Players = _services.Players
@@ -3532,8 +3587,9 @@ local main = TS.async(function()
 end)
 main():catch(function(err)
 	warn("[kill-worker] " .. tostring(err))
-end) end, newEnv("Havoc.jobs.players.kill"))() end)
-newModule("spectate", "LocalScript", "Havoc.jobs.players.spectate", "Havoc.jobs.players", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
+end)
+return nil end, newEnv("Havoc.jobs.players.kill"))() end)
+newModule("spectate", "ModuleScript", "Havoc.jobs.players.spectate", "Havoc.jobs.players", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Workspace = TS.import(script, TS.getModule(script, "@rbxts", "services")).Workspace
 local getSelectedPlayer = TS.import(script, script.Parent.Parent, "helpers", "get-selected-player").getSelectedPlayer
@@ -3590,8 +3646,9 @@ local main = TS.async(function()
 end)
 main():catch(function(err)
 	warn("[spectate-worker] " .. tostring(err))
-end) end, newEnv("Havoc.jobs.players.spectate"))() end)
-newModule("teleport", "LocalScript", "Havoc.jobs.players.teleport", "Havoc.jobs.players", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
+end)
+return nil end, newEnv("Havoc.jobs.players.spectate"))() end)
+newModule("teleport", "ModuleScript", "Havoc.jobs.players.teleport", "Havoc.jobs.players", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Players = TS.import(script, TS.getModule(script, "@rbxts", "services")).Players
 local getSelectedPlayer = TS.import(script, script.Parent.Parent, "helpers", "get-selected-player").getSelectedPlayer
@@ -3642,8 +3699,9 @@ local main = TS.async(function()
 end)
 main():catch(function(err)
 	warn("[teleport-worker] " .. tostring(err))
-end) end, newEnv("Havoc.jobs.players.teleport"))() end)
-newModule("server", "LocalScript", "Havoc.jobs.server", "Havoc.jobs", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
+end)
+return nil end, newEnv("Havoc.jobs.players.teleport"))() end)
+newModule("server", "ModuleScript", "Havoc.jobs.server", "Havoc.jobs", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local _services = TS.import(script, TS.getModule(script, "@rbxts", "services"))
 local HttpService = _services.HttpService
@@ -3746,7 +3804,8 @@ local main = TS.async(function()
 end)
 main():catch(function(err)
 	warn("[server-worker] " .. tostring(err))
-end) end, newEnv("Havoc.jobs.server"))() end)
+end)
+return nil end, newEnv("Havoc.jobs.server"))() end)
 newModule("main", "LocalScript", "Havoc.main", "Havoc", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.include.RuntimeLib)
 local Make = TS.import(script, TS.getModule(script, "@rbxts", "make"))
@@ -3903,18 +3962,22 @@ do
 	_inverse.scripts = "Scripts"
 	DashboardPage.Options = "options"
 	_inverse.options = "Options"
+	DashboardPage.Misc = "misc"
+	_inverse.misc = "Misc"
 end
 local PAGE_TO_INDEX = {
 	[DashboardPage.Home] = 0,
 	[DashboardPage.Apps] = 1,
 	[DashboardPage.Scripts] = 2,
 	[DashboardPage.Options] = 3,
+	[DashboardPage.Misc] = 4,
 }
 local PAGE_TO_ICON = {
 	[DashboardPage.Home] = "rbxassetid://8992031167",
 	[DashboardPage.Apps] = "rbxassetid://8992031246",
 	[DashboardPage.Scripts] = "rbxassetid://8992030918",
 	[DashboardPage.Options] = "rbxassetid://8992031056",
+	[DashboardPage.Misc] = "rbxassetid://10651509376",
 }
 return {
 	DashboardPage = DashboardPage,
@@ -4112,6 +4175,9 @@ local initialState = {
 		active = false,
 	},
 	spectate = {
+		active = false,
+	},
+	facebang = {
 		active = false,
 	},
 	rejoinServer = {
@@ -6450,7 +6516,7 @@ local _udim2 = TS.import(script, script.Parent.Parent.Parent, "utils", "udim2")
 local px = _udim2.px
 local scale = _udim2.scale
 local NavbarTab = TS.import(script, script.Parent, "NavbarTab").default
-local NAVBAR_SIZE = px(400, 56)
+local NAVBAR_SIZE = px(500, 56)
 local Underglow
 local function Navbar()
 	local theme = useTheme("navbar")
@@ -6458,7 +6524,7 @@ local function Navbar()
 	local isOpen = useAppSelector(function(state)
 		return state.dashboard.isOpen
 	end)
-	local alpha = useSpring(PAGE_TO_INDEX[page] / 4, {
+	local alpha = useSpring(PAGE_TO_INDEX[page] / 5, {
 		frequency = 3.9,
 		dampingRatio = 0.76,
 	})
@@ -6480,10 +6546,10 @@ local function Navbar()
 		Roact.createElement(Underglow, {
 			transparency = theme.glowTransparency,
 			position = alpha:map(function(a)
-				return a + 0.125
+				return a + 0.1
 			end),
 			sequenceColor = alpha:map(function(a)
-				return getColorInSequence(theme.accentGradient.color, a + 0.125)
+				return getColorInSequence(theme.accentGradient.color, a + 0.1)
 			end),
 		}),
 		Roact.createElement(Fill, {
@@ -6495,14 +6561,14 @@ local function Navbar()
 		Roact.createElement(Canvas, {
 			size = px(100, 56),
 			position = alpha:map(function(a)
-				return scale(math.round(a * 800) / 800, 0)
+				return scale(math.round(a * 1000) / 1000, 0)
 			end),
 			clipsDescendants = true,
 		}, {
 			Roact.createElement("Frame", {
 				Size = NAVBAR_SIZE,
 				Position = alpha:map(function(a)
-					return scale(-4 * (math.round(a * 800) / 800), 0)
+					return scale(-5 * (math.round(a * 1000) / 1000), 0)
 				end),
 				BackgroundColor3 = hex("#FFFFFF"),
 				BorderSizePixel = 0,
@@ -6548,13 +6614,16 @@ local function Navbar()
 	_children[_length + 4] = Roact.createElement(NavbarTab, {
 		page = DashboardPage.Options,
 	})
+	_children[_length + 5] = Roact.createElement(NavbarTab, {
+		page = DashboardPage.Misc,
+	})
 	local _child_1 = theme.acrylic and Roact.createElement(Acrylic)
 	if _child_1 then
 		if _child_1.elements ~= nil or _child_1.props ~= nil and _child_1.component ~= nil then
-			_children[_length + 5] = _child_1
+			_children[_length + 6] = _child_1
 		else
 			for _k, _v in ipairs(_child_1) do
-				_children[_length + 4 + _k] = _v
+				_children[_length + 5 + _k] = _v
 			end
 		end
 	end
@@ -8393,6 +8462,40 @@ Label = hooked(LabelComponent)
 return {
 	default = default,
 } end, newEnv("Havoc.views.Pages.Home.Title"))() end)
+newInstance("Misc", "Folder", "Havoc.views.Pages.Misc", "Havoc.views.Pages")
+newModule("Misc", "ModuleScript", "Havoc.views.Pages.Misc.Misc", "Havoc.views.Pages.Misc", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
+local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
+local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
+local hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).hooked
+local ActionButton = TS.import(script, script.Parent.Parent.Parent.Parent, "components", "ActionButton").default
+local useTheme = TS.import(script, script.Parent.Parent.Parent.Parent, "hooks", "use-theme").useTheme
+local function MiscPage()
+	local theme = useTheme("home").profile
+	return Roact.createElement("ScrollingFrame", {
+		Size = UDim2.new(1, -40, 1, -40),
+		Position = UDim2.new(0, 20, 0, 20),
+		BackgroundTransparency = 1,
+		BorderSizePixel = 0,
+		ScrollBarThickness = 2,
+	}, {
+		Roact.createElement("UIListLayout", {
+			Padding = UDim.new(0, 10),
+			SortOrder = "LayoutOrder",
+		}),
+		Roact.createElement(ActionButton, {
+			action = "facebang",
+			theme = theme,
+			hint = "Facebang the selected player",
+			image = "rbxassetid://10734950309",
+			position = UDim2.new(0, 0, 0, 0),
+			canDeactivate = true,
+		}),
+	})
+end
+local default = hooked(MiscPage)
+return {
+	default = default,
+} end, newEnv("Havoc.views.Pages.Misc.Misc"))() end)
 newModule("Options", "ModuleScript", "Havoc.views.Pages.Options", "Havoc.views.Pages", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local exports = {}
@@ -9369,22 +9472,16 @@ local Apps = TS.import(script, script.Parent, "Apps").default
 local Home = TS.import(script, script.Parent, "Home").default
 local Options = TS.import(script, script.Parent, "Options").default
 local Scripts = TS.import(script, script.Parent, "Scripts").default
+local Misc = TS.import(script, script.Parent, "Misc", "Misc").default
 local function Pages()
 	local currentPage = useCurrentPage()
 	local isScriptsVisible = useDelayedUpdate(currentPage == DashboardPage.Scripts, 2000, function(isVisible)
 		return isVisible
 	end)
-	local _children = {
-		home = Roact.createFragment({
-			home = Roact.createElement(Home),
-		}),
-		apps = Roact.createFragment({
-			apps = Roact.createElement(Apps),
-		}),
-	}
+	local _children = {}
 	local _length = #_children
-	local _child = isScriptsVisible and Roact.createFragment({
-		scripts = Roact.createElement(Scripts),
+	local _child = currentPage == DashboardPage.Home and Roact.createFragment({
+		home = Roact.createElement(Home),
 	})
 	if _child then
 		if _child.elements ~= nil or _child.props ~= nil and _child.component ~= nil then
@@ -9396,9 +9493,57 @@ local function Pages()
 		end
 	end
 	_length = #_children
-	_children.options = Roact.createFragment({
+	local _child_1 = currentPage == DashboardPage.Apps and Roact.createFragment({
+		apps = Roact.createElement(Apps),
+	})
+	if _child_1 then
+		if _child_1.elements ~= nil or _child_1.props ~= nil and _child_1.component ~= nil then
+			_children[_length + 1] = _child_1
+		else
+			for _k, _v in ipairs(_child_1) do
+				_children[_length + _k] = _v
+			end
+		end
+	end
+	_length = #_children
+	local _child_2 = isScriptsVisible and Roact.createFragment({
+		scripts = Roact.createElement(Scripts),
+	})
+	if _child_2 then
+		if _child_2.elements ~= nil or _child_2.props ~= nil and _child_2.component ~= nil then
+			_children[_length + 1] = _child_2
+		else
+			for _k, _v in ipairs(_child_2) do
+				_children[_length + _k] = _v
+			end
+		end
+	end
+	_length = #_children
+	local _child_3 = currentPage == DashboardPage.Options and Roact.createFragment({
 		options = Roact.createElement(Options),
 	})
+	if _child_3 then
+		if _child_3.elements ~= nil or _child_3.props ~= nil and _child_3.component ~= nil then
+			_children[_length + 1] = _child_3
+		else
+			for _k, _v in ipairs(_child_3) do
+				_children[_length + _k] = _v
+			end
+		end
+	end
+	_length = #_children
+	local _child_4 = currentPage == DashboardPage.Misc and Roact.createFragment({
+		misc = Roact.createElement(Misc),
+	})
+	if _child_4 then
+		if _child_4.elements ~= nil or _child_4.props ~= nil and _child_4.component ~= nil then
+			_children[_length + 1] = _child_4
+		else
+			for _k, _v in ipairs(_child_4) do
+				_children[_length + _k] = _v
+			end
+		end
+	end
 	return Roact.createFragment(_children)
 end
 local default = hooked(Pages)
