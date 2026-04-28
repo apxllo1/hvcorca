@@ -20,10 +20,10 @@ export function endTimer(name: string) {
 
 	const diff = os.clock() - startTime;
 	const count = debugCounter[name] ?? 0;
-	
+
 	print(`\n[Havoc Timer: ${name} #${count}]\nExecution: ${math.floor(diff * 10000) / 10} ms\n`);
-	
-	delete (startTimes as any)[name];
+
+	(startTimes as any)[name] = undefined;
 }
 
 /**
@@ -36,10 +36,10 @@ export const logger = {
 		warn(`\n---------- CRITICAL ERROR ----------\n${msg}\n------------------------------------\n`);
 	},
 	debug: (msg: string) => {
-		if ((_G as any)["__DEV__"]) { 
+		if ((_G as any)["__DEV__"]) {
 			print(`[DEBUG]: ${msg}`);
 		}
-	}
+	},
 };
 
 /**
@@ -47,7 +47,7 @@ export const logger = {
  */
 export function logPerformance() {
 	const mem = Stats.GetTotalMemoryUsageMb();
-	
+
 	print(`\n--- Havoc Performance ---`);
 	print(`Memory: ${math.floor(mem)} MB`);
 	print(`Lua GC: ${math.floor(collectgarbage("count"))} KB`);
