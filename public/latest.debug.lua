@@ -1408,7 +1408,7 @@ local function useCurrentPage()
 end
 local function useIsPageOpen(page)
 	return useAppSelector(function(state)
-		return state.dashboard.isOpen and state.dashboard.page == page
+		return state.dashboard.page == page
 	end)
 end
 return {
