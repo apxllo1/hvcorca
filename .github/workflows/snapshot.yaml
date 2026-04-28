@@ -7,60 +7,74 @@ on:
       - 'src/**'
   schedule:
     - cron: "0 0 * * *"
+
 jobs:
   bundle-snapshot:
     runs-on: ubuntu-22.04
+    permissions:
+      contents: write # Needed to push the snapshot back to the repo
     steps:
       - uses: actions/checkout@v4
         with:
           ref: "master"
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
+
       - name: Get current date
         id: date
-        run: echo "date=$(date +'%yd%ja')" >> $GITHUB_OUTPUT
+        run: echo "date=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
+
       - name: Install OpenSSL 1.1
         run: |
           wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb
           sudo dpkg -i libssl1.1_1.1.1f-1ubuntu2_amd64.deb
-      - name: Install Rojo
+
+      - name: Install Tools (Aftman)
         uses: ok-nick/setup-aftman@v0.4.2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Install Remodel
         run: |
           curl -L --fail --retry 3 --retry-delay 2 \
             https://github.com/rojo-rbx/remodel/releases/download/v0.11.0/remodel-0.11.0-linux-x86_64.zip \
             -o remodel.zip
-          if ! unzip -t remodel.zip > /dev/null 2>&1; then
-            echo "Downloaded file is not a valid ZIP, retrying..."
-            rm -f remodel.zip
-            curl -L --fail --retry 3 --retry-delay 2 \
-              https://github.com/rojo-rbx/remodel/releases/download/v0.11.0/remodel-0.11.0-linux-x86_64.zip \
-              -o remodel.zip
-          fi
           unzip remodel.zip
           chmod +x remodel
           sudo mv remodel /usr/local/bin/remodel
+
       - name: Install NPM dependencies
         run: npm install
-      - name: Compile roblox-ts
-        run: npm run compile
-      - name: Build model
-        run: npm run build
+
+      - name: Compile & Build
+        run: |
+          npm run compile
+          npm run build
+
       - name: Bundle modules
         run: |
           remodel run ci/bundle.lua public/latest.lua ${{ steps.date.outputs.date }} minify
           remodel run ci/bundle.lua public/latest.debug.lua ${{ steps.date.outputs.date }}-dbg debug
-      - name: Commit latest
+
+      - name: Commit and Force Sync
         run: |
-          git config user.name "github-actions"
+          git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add public/latest.lua public/latest.debug.lua
-          git commit -m "🔥 Snapshot ${{ steps.date.outputs.date }}" || echo "Nothing to commit"
-          git fetch origin master
-          git rebase origin/master
-          git push origin master
+          
+          # Only commit if there are changes
+          if ! git diff --cached --quiet; then
+            git commit -m "🔥 Snapshot ${{ steps.date.outputs.date }}"
+            
+            # The Magic Fix: Pull, Rebase, and Push
+            git fetch origin master
+            git rebase origin/master --autostash
+            git push origin master
+          else
+            echo "No changes to commit."
+          fi
