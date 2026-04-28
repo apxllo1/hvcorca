@@ -20,11 +20,7 @@ function MiscPage() {
 
 	return (
 		<frame Key="MiscPage" Size={new UDim2(1, 0, 1, 0)} BackgroundTransparency={1}>
-			<uipadding
-				PaddingTop={new UDim(0, 20)}
-				PaddingLeft={new UDim(0, 20)}
-				PaddingRight={new UDim(0, 20)}
-			/>
+			<uipadding PaddingTop={new UDim(0, 20)} PaddingLeft={new UDim(0, 20)} PaddingRight={new UDim(0, 20)} />
 
 			{/* Scrollable content area */}
 			<scrollingframe
@@ -47,9 +43,7 @@ function MiscPage() {
 					Text="Facebang Settings"
 					Size={new UDim2(1, 0, 0, 55)}
 					BackgroundColor3={
-						isHovered
-							? theme.button.background.Lerp(new Color3(1, 1, 1), 0.05)
-							: theme.button.background
+						isHovered ? theme.button.background.Lerp(new Color3(1, 1, 1), 0.05) : theme.button.background
 					}
 					TextColor3={theme.button.foreground}
 					Font={Enum.Font.GothamBold}
