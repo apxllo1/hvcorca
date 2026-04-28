@@ -7,14 +7,18 @@ local raw_arg2 = args[2]
 
 local input_file, output_file
 
--- If the user swapped the order (put .lua first), we fix it for them
-if raw_arg1 and raw_arg1:find("%.lua$") then
-    input_file = raw_arg2
-    output_file = raw_arg1
-else
-    input_file = raw_arg1 or "Havoc.rbxm"
-    output_file = raw_arg2 or "latest.lua"
+-- Scans all arguments to find the right files regardless of order
+for _, v in ipairs(args) do
+    if v:find("%.rbxm$") then
+        input_file = v
+    elseif v:find("%.lua$") then
+        output_file = v
+    end
 end
+
+-- Fallbacks if the CLI doesn't provide them clearly
+input_file = input_file or "Havoc.rbxm"
+output_file = output_file or "latest.lua"
 
 -- 2. Final validation before reading
 if not input_file or not input_file:find("%.rbxm$") then
@@ -35,7 +39,11 @@ if not model_data or #model_data == 0 then
 end
 
 local model = model_data[1]
-local file = io.open(output_file, "w")
+local file, err = io.open(output_file, "w")
+
+if not file then
+    error("Could not open output file: " .. tostring(err))
+end
 
 file:write("--[[\n    Havoc Studios Bundler (Richie-Style)\n--]]\n\n")
 file:write("local function start()\n")
@@ -48,15 +56,18 @@ file:write("    hInit, hMod, hInst, hEnv = (function()\n")
 file:write(runtime)
 file:write("\n    end)();\n\n")
 
+-- Recursive function to pack instances
 local function walk(parent)
     for _, object in ipairs(parent:GetChildren()) do
         local name = string.format("%q", object.Name)
         local path = string.format("%q", object:GetFullName())
         local parentPath = string.format("%q", parent:GetFullName())
         
-        if object:IsA("LuaSourceContainer") then
+        -- FIX: Use remodel.isA instead of object:IsA
+        if remodel.isA(object, "LuaSourceContainer") then
             local source = object.Source
-            source = source:gsub("%]%]", "] ]") -- Prevent double bracket syntax break
+            -- Escape double brackets to prevent syntax errors in the final bundle
+            source = source:gsub("%]%]", "] ]")
             
             file:write(string.format("    hMod(%s, %q, %s, %s, function()\n", name, object.ClassName, path, parentPath))
             file:write("        return (function(...)\n")
@@ -65,14 +76,19 @@ local function walk(parent)
         else
             file:write(string.format("    hInst(%s, %q, %s, %s);\n", name, object.ClassName, path, parentPath))
         end
+        
+        -- Recurse into children
         walk(object)
     end
 end
 
+-- Start the walk from the root model
 walk(model)
 
 file:write("\n    hInit();\n")
 file:write("end\n\nstart();")
 file:close()
+
 print("------------------------------------------")
 print("SUCCESS: Final bundle ready in " .. output_file)
+print("------------------------------------------")
