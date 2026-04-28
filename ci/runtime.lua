@@ -177,3 +177,4 @@ local function init(env)
         end
     end
 end
+return init, newModule, newInstance, newEnv
