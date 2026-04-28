@@ -28,7 +28,9 @@ function MiscPage() {
 				<textbutton
 					Text="Facebang Settings"
 					Size={new UDim2(1, 0, 0, 50)}
-					BackgroundColor3={isHovered ? theme.button.background.Lerp(new Color3(1, 1, 1), 0.1) : theme.button.background}
+					BackgroundColor3={
+						isHovered ? theme.button.background.Lerp(new Color3(1, 1, 1), 0.1) : theme.button.background
+					}
 					TextColor3={theme.button.foreground}
 					Font={Enum.Font.GothamBold}
 					TextSize={16}
@@ -52,7 +54,7 @@ function MiscPage() {
 			{modalVisible && (
 				<frame
 					Key="ModalOverlay"
-					Size={new UDim2(1, 40, 1, 40)} 
+					Size={new UDim2(1, 40, 1, 40)}
 					Position={new UDim2(0, -20, 0, -20)}
 					BackgroundColor3={new Color3(0, 0, 0)}
 					BackgroundTransparency={0.5}
@@ -60,7 +62,7 @@ function MiscPage() {
 					Event={{
 						InputBegan: (_, input) => {
 							if (input.UserInputType === Enum.UserInputType.MouseButton1) setModalVisible(false);
-						}
+						},
 					}}
 				>
 					<FacebangModal isVisible={modalVisible} onClose={() => setModalVisible(false)} />
