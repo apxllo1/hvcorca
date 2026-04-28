@@ -6,7 +6,7 @@ import FacebangModal from "./FacebangModal";
 function MiscPage() {
 	const themeData = useTheme("home");
 	const theme = themeData?.profile;
-	
+
 	const [modalVisible, setModalVisible] = useState(false);
 	const [isHovered, setHovered] = useState(false);
 
@@ -17,11 +17,7 @@ function MiscPage() {
 
 	return (
 		<frame Key="MiscPage" Size={new UDim2(1, 0, 1, 0)} BackgroundTransparency={1}>
-			<uipadding 
-				PaddingTop={new UDim(0, 20)} 
-				PaddingLeft={new UDim(0, 20)} 
-				PaddingRight={new UDim(0, 20)} 
-			/>
+			<uipadding PaddingTop={new UDim(0, 20)} PaddingLeft={new UDim(0, 20)} PaddingRight={new UDim(0, 20)} />
 
 			<scrollingframe
 				Key="ContentScroll"
@@ -33,9 +29,9 @@ function MiscPage() {
 				ClipsDescendants={true}
 				ZIndex={1}
 			>
-				<uilistlayout 
-					Padding={new UDim(0, 12)} 
-					SortOrder={Enum.SortOrder.LayoutOrder} 
+				<uilistlayout
+					Padding={new UDim(0, 12)}
+					SortOrder={Enum.SortOrder.LayoutOrder}
 					HorizontalAlignment={Enum.HorizontalAlignment.Center}
 				/>
 
