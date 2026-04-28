@@ -5,27 +5,29 @@ import { JobWithSliders } from "store/models/jobs.model";
 let connection: RBXScriptConnection | undefined;
 
 onJobChange("facebang", (job, state) => {
-	// 1. Clean up previous connection to prevent "Ghost" movement
+	// 1. Always clean up the previous connection first
 	if (connection) {
 		connection.Disconnect();
 		connection = undefined;
 	}
 
+	// 2. Safety: If job is null or not active, stop here (Disconnects the loop)
+	if (!job || !job.active) return;
+
 	const sliderJob = job as unknown as JobWithSliders;
+	if (!sliderJob.sliders) return;
 
-	// Safety: Ensure job and sliders exist before proceeding
-	if (!sliderJob || !sliderJob.active || !sliderJob.sliders) return;
-
-	// 2. Identify the target from the state
+	// 3. Identify the target
 	const targetName = state.dashboard.apps.playerSelected;
-	const targetPlayer = targetName !== undefined ? Players.FindFirstChild(targetName) : undefined;
+	const targetPlayer = targetName !== undefined ? Players.FindFirstChild(targetName) as Player : undefined;
 
+	// Don't bang yourself or a non-existent player
 	if (!targetPlayer || targetPlayer === Players.LocalPlayer) return;
 
-	// 3. High-performance Heartbeat loop
+	// 4. High-performance Heartbeat loop
 	connection = RunService.Heartbeat.Connect(() => {
 		const localChar = Players.LocalPlayer.Character;
-		const targetChar = (targetPlayer as Player).Character;
+		const targetChar = targetPlayer.Character;
 
 		if (!localChar || !targetChar) return;
 
@@ -33,17 +35,17 @@ onJobChange("facebang", (job, state) => {
 		const targetRoot = targetChar.FindFirstChild("HumanoidRootPart") as BasePart | undefined;
 		const humanoid = localChar.FindFirstChildOfClass("Humanoid");
 
-		// Guard against dying or missing parts
 		if (localRoot && targetRoot && humanoid && humanoid.Health > 0) {
 			const { angle, distance } = sliderJob.sliders;
 
-			// MAXIMIZED CALCULATION:
-			// We calculate the position behind the target and apply the custom rotation angle
+			// Correct roblox-ts CFrame multiplication syntax
 			const offset = new CFrame(0, 0, distance);
 			const rotation = CFrame.Angles(0, math.rad(angle), 0);
-			const goalCFrame = targetRoot.CFrame.ToWorldSpace(offset).mul(rotation);
+			
+			// In TS, we multiply CFrames using the * operator
+			const goalCFrame = targetRoot.CFrame.mul(offset).mul(rotation);
 
-			// Use a fast Lerp (0.5) for "snappy" but non-glitchy following
+			// Snappy follow logic
 			localRoot.CFrame = localRoot.CFrame.Lerp(goalCFrame, 0.5);
 		}
 	});
