@@ -68,35 +68,36 @@ local function main()
     
     f:write("--[[ Havoc Bundle: " .. VERSION .. " ]]\n\n")
     
-    -- FIX: DECLARE THESE UP TOP SO THE WHOLE BUNDLE CAN SEE THEM
-    f:write("local init, newModule, newInstance, newEnv\n\n")
-    
+    -- 1. Create a wrapper function for the start process
     f:write("local function start()\n")
+    f:write("    local runEnv = (getfenv and getfenv()) or _G or shared\n\n")
     
-    -- 1. DEFINE RUNTIME
-    f:write(runtime .. "\n\n")
-
-    -- FIX: BIND THE LOCALS FROM RUNTIME TO OUR DECLARED VARIABLES
-    -- This ensures that 'walk' below isn't calling nil
-    f:write("    init, newModule, newInstance, newEnv = init, newModule, newInstance, newEnv\n\n")
+    -- 2. Define the runtime as a self-returning block
+    -- This ensures that local functions inside runtime.lua are captured correctly
+    f:write("    local init, newModule, newInstance, newEnv = (function()\n")
+    f:write(runtime .. "\n")
+    f:write("        return init, newModule, newInstance, newEnv\n")
+    f:write("    end)()\n\n")
     
-    -- 2. INITIALIZE
-    f:write("    local runEnv = (getfenv and getfenv()) or _G or shared\n")
-    f:write("    if init then init(runEnv) end\n\n")
+    -- 3. Safety check before running init
+    f:write("    if not init then warn('[Havoc] Critical: Init function missing from runtime!') return end\n")
+    f:write("    init(runEnv)\n\n")
     
-    -- 3. NOW WRITE THE INSTANCES
+    -- 4. Write the UI structure (they now safely use the variables captured above)
     walk(model, f)
     
     f:write("    print('[Havoc]: Runtime initialized successfully.')\n")
     f:write("end\n\n")
     
+    -- 5. Final Execute
     f:write("local success, err = pcall(start)\n")
     f:write("if not success then\n")
     f:write("    warn('[Havoc Critical]: Bundle failed to load! Error: ' .. tostring(err))\n")
     f:write("end\n")
 
     f:close()
-    print("[CI] Bundle completed with Scoping Fix.")
+
+    print("[CI] Bundle completed via Scoped Return Logic.")
 end
 
 main()
