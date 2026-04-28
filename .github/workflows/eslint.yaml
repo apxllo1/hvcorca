@@ -1,4 +1,4 @@
-name: ESLint
+name: ESLint Auto-Fix
 
 on:
   push:
@@ -9,6 +9,9 @@ on:
 jobs:
   ESLint:
     runs-on: ubuntu-latest
+    # This permission is required for the bot to save fixed code back to your repo
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@v4
@@ -21,5 +24,13 @@ jobs:
       - name: Install NPM dependencies
         run: npm install
 
-      - name: Run ESLint
-        run: npx eslint src/
+      - name: Run ESLint Fix
+        # The --fix flag repairs brackets, semicolons, and spacing automatically
+        run: npx eslint src/ --ext .ts,.tsx --fix || true
+
+      - name: Commit Fixed Code
+        # This step pushes the "repaired" code back to your branch
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "🤖 Bot: Fixed formatting and brackets"
+          branch: ${{ github.head_ref || github.ref_name }}
