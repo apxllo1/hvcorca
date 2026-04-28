@@ -19,7 +19,7 @@ onJobChange("facebang", (job, state) => {
 
 	// 3. Identify the target
 	const targetName = state.dashboard.apps.playerSelected;
-	const targetPlayer = targetName !== undefined ? Players.FindFirstChild(targetName) as Player : undefined;
+	const targetPlayer = targetName !== undefined ? (Players.FindFirstChild(targetName) as Player) : undefined;
 
 	// Don't bang yourself or a non-existent player
 	if (!targetPlayer || targetPlayer === Players.LocalPlayer) return;
@@ -41,7 +41,7 @@ onJobChange("facebang", (job, state) => {
 			// Correct roblox-ts CFrame multiplication syntax
 			const offset = new CFrame(0, 0, distance);
 			const rotation = CFrame.Angles(0, math.rad(angle), 0);
-			
+
 			// In TS, we multiply CFrames using the * operator
 			const goalCFrame = targetRoot.CFrame.mul(offset).mul(rotation);
 
