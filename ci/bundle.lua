@@ -20,10 +20,11 @@ local function writeModule(object, file)
     
     local className = string.format("%q", object.ClassName)
 
-    file:write(string.format("    newModule(%s, %s, %s, %s, function ()\n", name, className, path, parentStr))
+    -- Use the Global reference directly to prevent 'nil' errors during UI initialization
+    file:write(string.format("    _G.Havoc_NewModule(%s, %s, %s, %s, function ()\n", name, className, path, parentStr))
     file:write("        return setfenv(function()\n")
     file:write(source)
-    file:write("\n        end, newEnv(" .. path .. "))()\n    end)\n\n")
+    file:write("\n        end, _G.Havoc_NewEnv(" .. path .. "))()\n    end)\n\n")
 end
 
 local function writeInstance(object, file)
@@ -34,7 +35,7 @@ local function writeInstance(object, file)
         and string.format("%q", object.Parent:GetFullName()) 
         or "nil"
     
-    file:write(string.format("    newInstance(%s, %q, %s, %s)\n", name, object.ClassName, path, parentStr))
+    file:write(string.format("    _G.Havoc_NewInstance(%s, %q, %s, %s)\n", name, object.ClassName, path, parentStr))
 end
 
 local function walk(root, file)
@@ -73,21 +74,16 @@ local function main()
     f:write("local function start()\n")
     f:write("    local runEnv = (getfenv and getfenv()) or _G or shared\n\n")
     
-    -- Execute Runtime block to populate _G
-    f:write("    -- Execute Runtime\n")
-    f:write("    (function()\n" .. runtime .. "\n    end)()\n\n")
+    -- 1. Execute the Runtime isolated block. This populates _G.Havoc_Init, etc.
+    f:write("    (function()\n")
+    f:write(runtime .. "\n")
+    f:write("    end)()\n\n")
     
-    -- Pull functions from Global to local scope for the generated UI code
-    f:write("    local init = _G.Havoc_Init\n")
-    f:write("    local newModule = _G.Havoc_NewModule\n")
-    f:write("    local newInstance = _G.Havoc_NewInstance\n")
-    f:write("    local newEnv = _G.Havoc_NewEnv\n\n")
+    -- 2. Verify and Run Init
+    f:write("    if not _G.Havoc_Init then warn('[Havoc Critical]: Handshake Failed') return end\n")
+    f:write("    _G.Havoc_Init(runEnv)\n\n")
     
-    -- Safety check
-    f:write("    if not init then warn('[Havoc Critical]: Handshake Failed - Functions not found in _G') return end\n")
-    f:write("    init(runEnv)\n\n")
-    
-    -- Write the UI and Scripts
+    -- 3. Generate the UI/Instance tree
     walk(model, f)
     
     f:write("    print('[Havoc]: " .. VERSION .. " initialized successfully.')\n")
