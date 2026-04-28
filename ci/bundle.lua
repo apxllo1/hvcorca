@@ -68,20 +68,23 @@ local function main()
     
     f:write("--[[ Havoc Bundle: " .. VERSION .. " ]]\n\n")
     
-    -- FORWARD DECLARATIONS: Prevents 'attempt to call a nil value' by 
-    -- ensuring these names exist in the scope before runtime.lua populates them.
+    -- FIX: DECLARE THESE UP TOP SO THE WHOLE BUNDLE CAN SEE THEM
     f:write("local init, newModule, newInstance, newEnv\n\n")
     
     f:write("local function start()\n")
-    f:write("    local runEnv = (getfenv and getfenv()) or _G or shared\n\n")
     
-    -- 1. DEFINE RUNTIME (This populates the variables declared above)
+    -- 1. DEFINE RUNTIME
     f:write(runtime .. "\n\n")
+
+    -- FIX: BIND THE LOCALS FROM RUNTIME TO OUR DECLARED VARIABLES
+    -- This ensures that 'walk' below isn't calling nil
+    f:write("    init, newModule, newInstance, newEnv = init, newModule, newInstance, newEnv\n\n")
     
-    -- 2. INITIALIZE (This must happen before the instances/modules are created)
+    -- 2. INITIALIZE
+    f:write("    local runEnv = (getfenv and getfenv()) or _G or shared\n")
     f:write("    if init then init(runEnv) end\n\n")
     
-    -- 3. WRITE INSTANCES (They now have access to newInstance/newModule)
+    -- 3. NOW WRITE THE INSTANCES
     walk(model, f)
     
     f:write("    print('[Havoc]: Runtime initialized successfully.')\n")
@@ -93,8 +96,7 @@ local function main()
     f:write("end\n")
 
     f:close()
-
-    print("[CI] Bundle completed via BFS Stream Write.")
+    print("[CI] Bundle completed with Scoping Fix.")
 end
 
 main()
