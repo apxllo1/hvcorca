@@ -20,6 +20,7 @@ local function writeModule(object, file)
     
     local className = string.format("%q", object.ClassName)
 
+    -- Using _G calls directly in the generated code for maximum stability
     file:write(string.format("    _G.Havoc_NewModule(%s, %s, %s, %s, function ()\n", name, className, path, parentStr))
     file:write("        return setfenv(function()\n")
     file:write(source)
@@ -62,42 +63,49 @@ local function main()
     local model = remodel.readModelFile(ROJO_INPUT)[1]
     local runtime = remodel.readFile(RUNTIME_FILE)
     
+    -- Inject Version
     runtime = string.gsub(runtime, "__VERSION__", string.format("%q", VERSION))
     
     remodel.createDirAll(string.match(OUTPUT_PATH, "^(.*)[/\\]"))
     local f = io.open(OUTPUT_PATH, "w")
     
     f:write("--[[\n    Havoc Studios Bundler\n    Version: " .. VERSION .. "\n--]]\n\n")
+    
     f:write("local function start()\n")
-    -- Added semicolon to prevent Ambiguous Syntax error
+    -- FIX 1: Semicolon prevents the "Ambiguous Syntax" parser error
     f:write("    local runEnv = (getfenv and getfenv()) or _G or shared;\n\n")
     
     f:write("    -- 1. Execute Runtime (Populates _G)\n")
     f:write("    (function()\n" .. runtime .. "\n    end)();\n\n")
     
-    -- Added sync loop to prevent 'nil' call errors
+    -- FIX 2: SYNC LOOP prevents the 'nil' call error at the bottom of the script
+    -- It forces the executor to wait until the global table is actually updated
     f:write("    local attempts = 0\n")
     f:write("    while not _G.Havoc_Init and attempts < 100 do\n")
     f:write("        attempts = attempts + 1\n")
-    f:write("        if _G.task then _G.task.wait() end\n")
+    f:write("        local w = (_G.task and _G.task.wait) or (wait)\n")
+    f:write("        if w then w() end\n")
     f:write("    end\n\n")
 
     f:write("    -- 2. Validate Handshake\n")
     f:write("    if not _G.Havoc_Init then warn('[Havoc Critical]: Handshake Failed') return end\n")
     f:write("    _G.Havoc_Init(runEnv)\n\n")
     
+    -- 3. The Walk (UI/Instance Generation)
     walk(model, f)
     
     f:write("    print('[Havoc]: " .. VERSION .. " initialized successfully.')\n")
     f:write("end\n\n")
     
+    -- Execute the start block safely with pcall
     f:write("local success, err = pcall(start)\n")
     f:write("if not success then\n")
     f:write("    warn('[Havoc Critical]: Bundle execution failed! Error: ' .. tostring(err))\n")
     f:write("end\n")
 
     f:close()
-    print("[CI] Bundle completed via Hard-Linked Sync Logic.")
+
+    print("[CI] Bundle completed with Semicolon + Sync Logic.")
 end
 
 main()
