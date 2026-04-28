@@ -18,7 +18,7 @@ onJobChange("facebang", (job, state) => {
 
 	// 3. Identify the target
 	const targetName = state.dashboard.apps.playerSelected;
-	const targetPlayer = targetName !== undefined ? Players.FindFirstChild(targetName) as Player : undefined;
+	const targetPlayer = targetName !== undefined ? (Players.FindFirstChild(targetName) as Player) : undefined;
 
 	if (!targetPlayer || targetPlayer === Players.LocalPlayer) return;
 
@@ -37,9 +37,9 @@ onJobChange("facebang", (job, state) => {
 			const { angle, distance } = sliderJob.sliders;
 
 			// Optimized CFrame math for TS
-			const goalCFrame = targetRoot.CFrame
-				.mul(new CFrame(0, 0, distance))
-				.mul(CFrame.Angles(0, math.rad(angle), 0));
+			const goalCFrame = targetRoot.CFrame.mul(new CFrame(0, 0, distance)).mul(
+				CFrame.Angles(0, math.rad(angle), 0),
+			);
 
 			localRoot.CFrame = localRoot.CFrame.Lerp(goalCFrame, 0.5);
 		}
