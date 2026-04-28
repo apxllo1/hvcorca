@@ -8,7 +8,7 @@ function MiscPage() {
 	// 1. We use the "apps" theme to match the Players tab styling
 	const themeData = useTheme("apps");
 	const theme = themeData?.players; // Targeting the same theme sub-category as Players.tsx
-	
+
 	const [modalVisible, setModalVisible] = useState(false);
 	const [isHovered, setHovered] = useState(false);
 
@@ -18,11 +18,7 @@ function MiscPage() {
 
 	return (
 		<frame Key="MiscPage" Size={new UDim2(1, 0, 1, 0)} BackgroundTransparency={1}>
-			<uipadding 
-				PaddingTop={new UDim(0, 20)} 
-				PaddingLeft={new UDim(0, 20)} 
-				PaddingRight={new UDim(0, 20)} 
-			/>
+			<uipadding PaddingTop={new UDim(0, 20)} PaddingLeft={new UDim(0, 20)} PaddingRight={new UDim(0, 20)} />
 
 			<scrollingframe
 				Key="ContentScroll"
@@ -33,9 +29,9 @@ function MiscPage() {
 				AutomaticCanvasSize={Enum.AutomaticSize.Y}
 				ZIndex={1}
 			>
-				<uilistlayout 
-					Padding={new UDim(0, 12)} 
-					SortOrder={Enum.SortOrder.LayoutOrder} 
+				<uilistlayout
+					Padding={new UDim(0, 12)}
+					SortOrder={Enum.SortOrder.LayoutOrder}
 					HorizontalAlignment={Enum.HorizontalAlignment.Center}
 				/>
 
