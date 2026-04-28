@@ -1,4 +1,5 @@
 import Roact from "@rbxts/roact";
+import { hooked } from "@rbxts/roact-hooked"; // Use hooked for consistent functional components
 import { useSelector, useDispatch } from "hooks/common/rodux-hooks";
 import { setJobActive, setJobSlider } from "store/actions/jobs.action";
 import { JobWithSliders } from "store/models/jobs.model";
@@ -8,17 +9,13 @@ interface FacebangProps {
 	onClose: () => void;
 }
 
-export function FacebangModal({ isVisible, onClose }: FacebangProps) {
+// Wrapping in 'hooked' allows you to use hooks safely if needed later
+const FacebangModal = hooked(({ isVisible, onClose }: FacebangProps) => {
 	const job = useSelector((state) => state.jobs.facebang) as JobWithSliders | undefined;
 	const dispatch = useDispatch();
 
-	// 1. Fixed the Overload error by removing 'Key' from the props table
-	// 2. Added safety check for 'job'
-	if (!isVisible || !job) {
-		return Roact.createElement("Frame", {
-			Visible: false,
-		});
-	}
+	// Return an empty fragment if not visible or job missing
+	if (!isVisible || !job) return <></>;
 
 	const renderSlider = (label: string, value: string, percent: number, onUpdate: (val: number) => void) => {
 		return (
@@ -49,22 +46,30 @@ export function FacebangModal({ isVisible, onClose }: FacebangProps) {
 					BackgroundColor3={Color3.fromRGB(15, 15, 15)}
 					AutoButtonColor={false}
 					Event={{
-						MouseButton1Click: (rbx) => {
+						// Improved MouseButton1Down logic
+						MouseButton1Down: (rbx) => {
 							const mouse = game.GetService("Players").LocalPlayer.GetMouse();
-							const relativeX = mouse.X - rbx.AbsolutePosition.X;
-							const newPercent = math.clamp(relativeX / rbx.AbsoluteSize.X, 0, 1);
-							onUpdate(newPercent);
+							const update = () => {
+								const relativeX = mouse.X - rbx.AbsolutePosition.X;
+								const newPercent = math.clamp(relativeX / rbx.AbsoluteSize.X, 0, 1);
+								onUpdate(newPercent);
+							};
+							
+							update(); // Initial click update
 						},
 					}}
 				>
 					<uicorner CornerRadius={new UDim(0, 6)} />
 					<uistroke Color={Color3.fromRGB(30, 30, 30)} Thickness={1} />
+					
+					{/* The Progress Bar */}
 					<frame
 						Size={new UDim2(percent, 0, 1, 0)}
 						BackgroundColor3={Color3.fromRGB(235, 76, 105)}
 						BorderSizePixel={0}
 					>
 						<uicorner CornerRadius={new UDim(0, 6)} />
+						{/* The Knob */}
 						<frame
 							Size={new UDim2(0, 4, 0, 16)}
 							Position={new UDim2(1, -2, 0.5, -8)}
@@ -81,9 +86,9 @@ export function FacebangModal({ isVisible, onClose }: FacebangProps) {
 
 	return (
 		<frame
-			Key="Main"
-			Size={new UDim2(0, 350, 0, 500)}
-			Position={new UDim2(0.5, -175, 0.5, -250)}
+			Key="MainModal"
+			Size={new UDim2(0, 350, 0, 420)} // Adjusted height to fit content better
+			Position={new UDim2(0.5, -175, 0.5, -210)}
 			BackgroundColor3={Color3.fromRGB(10, 10, 10)}
 			BorderSizePixel={0}
 			Active={true}
@@ -102,18 +107,10 @@ export function FacebangModal({ isVisible, onClose }: FacebangProps) {
 				TextXAlignment="Left"
 			/>
 
-			<frame
-				Size={new UDim2(1, -40, 0, 1)}
-				Position={new UDim2(0, 20, 0, 55)}
-				BackgroundColor3={Color3.fromRGB(235, 76, 105)}
-				BackgroundTransparency={0.6}
-				BorderSizePixel={0}
-			/>
-
 			<textbutton
 				Text="✕"
 				Size={new UDim2(0, 30, 0, 30)}
-				Position={new UDim2(1, -45, 0, 15)}
+				Position={new UDim2(1, -40, 0, 15)}
 				BackgroundTransparency={1}
 				TextColor3={Color3.fromRGB(150, 150, 150)}
 				Font={Enum.Font.GothamBold}
@@ -121,6 +118,7 @@ export function FacebangModal({ isVisible, onClose }: FacebangProps) {
 				Event={{ MouseButton1Click: onClose }}
 			/>
 
+			{/* Status & Toggle */}
 			<frame Size={new UDim2(1, -40, 0, 80)} Position={new UDim2(0, 20, 0, 75)} BackgroundTransparency={1}>
 				<textlabel
 					Text={job.active ? "STATUS: RUNNING" : "STATUS: READY"}
@@ -144,14 +142,11 @@ export function FacebangModal({ isVisible, onClose }: FacebangProps) {
 					}}
 				>
 					<uicorner CornerRadius={new UDim(0, 8)} />
-					<uistroke
-						Color={job.active ? Color3.fromRGB(255, 255, 255) : Color3.fromRGB(40, 40, 40)}
-						Transparency={0.8}
-					/>
 				</textbutton>
 			</frame>
 
-			<frame Size={new UDim2(1, 0, 0, 300)} Position={new UDim2(0, 20, 0, 175)} BackgroundTransparency={1}>
+			{/* Sliders Container */}
+			<frame Size={new UDim2(1, 0, 0, 200)} Position={new UDim2(0, 20, 0, 175)} BackgroundTransparency={1}>
 				<uilistlayout Padding={new UDim(0, 10)} SortOrder={Enum.SortOrder.LayoutOrder} />
 				{renderSlider(
 					"Interaction Distance",
@@ -165,6 +160,6 @@ export function FacebangModal({ isVisible, onClose }: FacebangProps) {
 			</frame>
 		</frame>
 	);
-}
+});
 
 export default FacebangModal;
