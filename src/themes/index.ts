@@ -10,14 +10,9 @@ import { Theme } from "./theme.interface";
  * We filter the array to ensure that if an import fails (returns undefined),
  * the UI dropdown doesn't break.
  */
-const themes: Theme[] = [
-	crimson,
-	darkTheme,
-	lightTheme,
-	frostedGlass,
-	obsidian,
-	highContrast,
-].filter((t): t is Theme => t !== undefined);
+const themes: Theme[] = [crimson, darkTheme, lightTheme, frostedGlass, obsidian, highContrast].filter(
+	(t): t is Theme => t !== undefined,
+);
 
 /**
  * Returns the validated list of themes for the UI.
