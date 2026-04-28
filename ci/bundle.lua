@@ -42,7 +42,6 @@ local function walk(root, file)
     while #queue > 0 do
         local object = table.remove(queue, 1)
         
-        -- Logic fix: Ensure we don't try to parent the root to itself
         if object.Parent and object.Parent.ClassName ~= "DataModel" then
             if object.ClassName == "LocalScript" or object.ClassName == "ModuleScript" then
                 writeModule(object, file)
@@ -69,22 +68,25 @@ local function main()
     
     f:write("--[[ Havoc Bundle: " .. VERSION .. " ]]\n\n")
     
-    f:write("local function start()\n")
+    -- FORWARD DECLARATIONS: Prevents 'attempt to call a nil value' by 
+    -- ensuring these names exist in the scope before runtime.lua populates them.
+    f:write("local init, newModule, newInstance, newEnv\n\n")
     
-    -- 1. DEFINE RUNTIME FIRST (This creates newInstance, newModule, etc.)
+    f:write("local function start()\n")
+    f:write("    local runEnv = (getfenv and getfenv()) or _G or shared\n\n")
+    
+    -- 1. DEFINE RUNTIME (This populates the variables declared above)
     f:write(runtime .. "\n\n")
     
-    -- 2. INITIALIZE THE RUNTIME ENVIRONMENT
-    f:write("    local runEnv = (getfenv and getfenv()) or _G or shared\n")
-    f:write("    init(runEnv)\n\n")
+    -- 2. INITIALIZE (This must happen before the instances/modules are created)
+    f:write("    if init then init(runEnv) end\n\n")
     
-    -- 3. NOW WRITE THE INSTANCES (They will find the functions defined above)
+    -- 3. WRITE INSTANCES (They now have access to newInstance/newModule)
     walk(model, f)
     
     f:write("    print('[Havoc]: Runtime initialized successfully.')\n")
     f:write("end\n\n")
     
-    -- Execute with error handling
     f:write("local success, err = pcall(start)\n")
     f:write("if not success then\n")
     f:write("    warn('[Havoc Critical]: Bundle failed to load! Error: ' .. tostring(err))\n")
