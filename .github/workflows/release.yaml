@@ -5,7 +5,6 @@ on:
     branches: [master]
     paths:
       - 'src/**'
-
 jobs:
   bundle-release:
     runs-on: ubuntu-22.04
@@ -17,22 +16,18 @@ jobs:
           repository: ${{ github.event.repository.full_name }}
           ref: "master"
           fetch-depth: 0
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-
       - name: Install OpenSSL 1.1
         run: |
           wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb
           sudo dpkg -i libssl1.1_1.1.1f-1ubuntu2_amd64.deb
-
       - name: Install Rojo
         uses: ok-nick/setup-aftman@v0.4.2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Install Remodel
         run: |
           curl -L --fail --retry 3 --retry-delay 2 \
@@ -41,27 +36,31 @@ jobs:
           unzip remodel.zip
           chmod +x remodel
           sudo mv remodel /usr/local/bin/remodel
-
       - name: Install NPM dependencies
         run: npm install
-
       - name: Compile roblox-ts
         run: npm run compile
-
+      - name: Debug compiled output
+        run: |
+          echo "=== out/ contents ==="
+          ls -la out/ || echo "out/ does not exist!"
+          echo "=== out/ recursive ==="
+          find out/ -type f | sort || echo "find failed"
+          echo "=== src/ contents ==="
+          ls -la src/
+          echo "=== App.lua check ==="
+          cat out/App.lua 2>/dev/null || echo "out/App.lua not found"
+          cat out/App/init.lua 2>/dev/null || echo "out/App/init.lua not found either"
       - name: Build model
         run: npm run build
-
       - name: Bundle modules
         run: |
-          # FIX: Input (Havoc.rbxm) MUST come before Output (public/latest.lua)
           remodel run ci/bundle.lua Havoc.rbxm public/latest.lua release minify
           remodel run ci/bundle.lua Havoc.rbxm public/latest.debug.lua release-dbg debug
-
       - name: Commit latest
         uses: EndBug/add-and-commit@v9
         with:
           default_author: github_actions
-          # Ensure directory exists before adding
-          add: "public" 
+          add: "public"
           message: "🔥 Auto-build Release from src push"
           push: '--force'
