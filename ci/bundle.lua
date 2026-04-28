@@ -66,13 +66,28 @@ local function main()
     remodel.createDirAll(string.match(OUTPUT_PATH, "^(.*)[/\\]"))
     local f = io.open(OUTPUT_PATH, "w")
     
-    f:write("-- Havoc Bundle Generated for " .. VERSION .. "\n")
+    f:write("--[[ Havoc Bundle: " .. VERSION .. " ]]\n\n")
+    
+    -- Wrap everything in a function to protect scope
+    f:write("local function start()\n")
     f:write(runtime .. "\n\n")
     
+    -- Write all the instances and modules
     walk(model, f)
     
-    -- THIS IS THE FIX: We pass getfenv() to ensure the runtime has Roblox globals
-    f:write("\ninit(getfenv())\n") 
+    -- ENVIRONMENT CAPTURE: Finding the Roblox globals
+    f:write("\n    -- Capture the best available environment\n")
+    f:write("    local runEnv = (getfenv and getfenv()) or _G or shared\n")
+    f:write("    init(runEnv)\n")
+    f:write("    print('[Havoc]: Runtime initialized successfully.')\n")
+    f:write("end\n\n")
+    
+    -- Execute with error handling
+    f:write("local success, err = pcall(start)\n")
+    f:write("if not success then\n")
+    f:write("    warn('[Havoc Critical]: Bundle failed to load! Error: ' .. tostring(err))\n")
+    f:write("end\n")
+
     f:close()
 
     print("[CI] Bundle completed via BFS Stream Write.")
