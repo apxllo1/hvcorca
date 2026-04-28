@@ -15,8 +15,8 @@ export function FacebangModal({ isVisible, onClose }: FacebangProps) {
 	// 1. Fixed the Overload error by removing 'Key' from the props table
 	// 2. Added safety check for 'job'
 	if (!isVisible || !job) {
-		return Roact.createElement("Frame", { 
-			Visible: false 
+		return Roact.createElement("Frame", {
+			Visible: false,
 		});
 	}
 
