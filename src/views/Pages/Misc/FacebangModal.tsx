@@ -13,7 +13,7 @@ export function FacebangModal({ isVisible, onClose }: FacebangProps) {
 	const dispatch = useDispatch();
 
 	if (!isVisible) {
-		return Roact.createElement("frame", { Visible: false });
+		return Roact.createElement("Frame", { Visible: false });
 	}
 
 	const renderSlider = (label: string, value: string, percent: number, onUpdate: (val: number) => void) => {
