@@ -44,36 +44,53 @@ file:write(string.format(
     string.format("%q", model.Name), model.ClassName, rootPath
 ))
 
+-- Subtrees that should never be bundled as modules
+local SKIP_NAMES = { include = true, node_modules = true }
+
 local function walk(parent)
     for _, object in ipairs(parent:GetChildren()) do
-        local name = string.format("%q", object.Name)
-        local path = string.format("%q", object:GetFullName())
+        local name       = string.format("%q", object.Name)
+        local path       = string.format("%q", object:GetFullName())
         local parentPath = string.format("%q", parent:GetFullName())
-        local class = object.ClassName
+        local class      = object.ClassName
+        local isScript   = (class == "ModuleScript" or class == "LocalScript")
 
-        local isScript = (class == "ModuleScript" or class == "LocalScript")
-
-        if isScript then
+        if SKIP_NAMES[object.Name] then
+            -- These are runtime/include containers — recurse but emit as plain instances
+            file:write(string.format("    hInst(%s, %q, %s, %s);\n", name, class, path, parentPath))
+            walk(object)
+        elseif isScript then
             local success, source = pcall(function() return object.Source end)
 
             if not success or source == nil then
+                -- Remodel genuinely cannot read Source — hard fail
                 file:close()
                 error(string.format(
                     "[BUNDLE ERROR] Source inaccessible for %s (%s). Cannot produce valid bundle.",
                     object:GetFullName(), class
                 ))
+            elseif source == "" then
+                -- Empty source = roblox-ts init container stub, treat as plain instance
+                print(string.format(
+                    "[WARN] Empty source for %s (%s) — emitting as hInst container.",
+                    object:GetFullName(), class
+                ))
+                file:write(string.format("    hInst(%s, %q, %s, %s);\n", name, class, path, parentPath))
+                walk(object)
+            else
+                -- Normal script with real source
+                source = source:gsub("%]%]", "] ]")
+                file:write(string.format("    hMod(%s, %q, %s, %s, function()\n", name, class, path, parentPath))
+                file:write("        return (function(...)\n")
+                file:write(source)
+                file:write("\n        end)\n    end);\n")
+                walk(object)
             end
-
-            source = source:gsub("%]%]", "] ]")
-            file:write(string.format("    hMod(%s, %q, %s, %s, function()\n", name, class, path, parentPath))
-            file:write("        return (function(...)\n")
-            file:write(source)
-            file:write("\n        end)\n    end);\n")
         else
+            -- Non-script instance (Folder, UI, etc.)
             file:write(string.format("    hInst(%s, %q, %s, %s);\n", name, class, path, parentPath))
+            walk(object)
         end
-
-        walk(object)
     end
 end
 
