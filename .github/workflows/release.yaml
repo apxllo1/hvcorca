@@ -53,6 +53,11 @@ jobs:
           cat out/App/init.lua 2>/dev/null || echo "out/App/init.lua not found either"
       - name: Build model
         run: npm run build
+      - name: Debug rbxm contents
+        run: |
+          echo "=== Havoc.rbxm file size ==="
+          ls -la Havoc.rbxm
+          remodel run ci/debug-rbxm.lua
       - name: Bundle modules
         run: |
           remodel run ci/bundle.lua Havoc.rbxm public/latest.lua release minify
