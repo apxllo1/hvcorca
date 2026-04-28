@@ -6,21 +6,21 @@ import { startTimer, endTimer, logger, logPerformance } from "utils/debug";
 const DISPLAY_ORDER = 7;
 
 function App() {
-    // 1. Start the Timer right when the UI component begins to mount
-    startTimer("Havoc_UI_Mount");
-    logger.info("Havoc UI is mounting...");
+	// 1. Start the Timer right when the UI component begins to mount
+	startTimer("Havoc_UI_Mount");
+	logger.info("Havoc UI is mounting...");
 
-    const element = (
-        <screengui IgnoreGuiInset ResetOnSpawn={false} ZIndexBehavior="Sibling" DisplayOrder={DISPLAY_ORDER}>
-            <Dashboard />
-        </screengui>
-    );
+	const element = (
+		<screengui IgnoreGuiInset ResetOnSpawn={false} ZIndexBehavior="Sibling" DisplayOrder={DISPLAY_ORDER}>
+			<Dashboard />
+		</screengui>
+	);
 
-    // 2. End the timer and log performance
-    endTimer("Havoc_UI_Mount");
-    logPerformance();
+	// 2. End the timer and log performance
+	endTimer("Havoc_UI_Mount");
+	logPerformance();
 
-    return element;
+	return element;
 }
 
 export default App;
