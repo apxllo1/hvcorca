@@ -47,7 +47,7 @@ const FacebangModal = hooked(({ isVisible, onClose }: FacebangProps) => {
 					Event={{
 						MouseButton1Down: (rbx) => {
 							const mouse = Players.LocalPlayer.GetMouse();
-							
+
 							// Connection for smooth dragging
 							const moveConn = RunService.RenderStepped.Connect(() => {
 								const relativeX = mouse.X - rbx.AbsolutePosition.X;
@@ -155,11 +155,8 @@ const FacebangModal = hooked(({ isVisible, onClose }: FacebangProps) => {
 					job.sliders.distance / 15,
 					(p) => dispatch(setJobSlider("facebang", "distance", p * 15)),
 				)}
-				{renderSlider(
-					"Rotation Angle", 
-					`${math.round(job.sliders.angle)}°`, 
-					job.sliders.angle / 360, 
-					(p) => dispatch(setJobSlider("facebang", "angle", p * 360))
+				{renderSlider("Rotation Angle", `${math.round(job.sliders.angle)}°`, job.sliders.angle / 360, (p) =>
+					dispatch(setJobSlider("facebang", "angle", p * 360)),
 				)}
 			</frame>
 		</frame>
