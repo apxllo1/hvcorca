@@ -12,7 +12,7 @@ jobs:
   bundle-snapshot:
     runs-on: ubuntu-22.04
     permissions:
-      contents: write # Needed to push the snapshot back to the repo
+      contents: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -58,20 +58,21 @@ jobs:
 
       - name: Bundle modules
         run: |
-          remodel run ci/bundle.lua public/latest.lua ${{ steps.date.outputs.date }} minify
-          remodel run ci/bundle.lua public/latest.debug.lua ${{ steps.date.outputs.date }}-dbg debug
+          # FIX: Havoc.rbxm must come BEFORE the .lua output path
+          remodel run ci/bundle.lua Havoc.rbxm public/latest.lua ${{ steps.date.outputs.date }} minify
+          remodel run ci/bundle.lua Havoc.rbxm public/latest.debug.lua ${{ steps.date.outputs.date }}-dbg debug
 
       - name: Commit and Force Sync
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          
+          # Create public folder if it doesn't exist to prevent git add errors
+          mkdir -p public
           git add public/latest.lua public/latest.debug.lua
           
-          # Only commit if there are changes
           if ! git diff --cached --quiet; then
             git commit -m "🔥 Snapshot ${{ steps.date.outputs.date }}"
-            
-            # The Magic Fix: Pull, Rebase, and Push
             git fetch origin master
             git rebase origin/master --autostash
             git push origin master
