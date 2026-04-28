@@ -32,10 +32,10 @@ function App() {
 	}, []);
 
 	return (
-		<screengui 
-			IgnoreGuiInset 
-			ResetOnSpawn={false} 
-			ZIndexBehavior={Enum.ZIndexBehavior.Sibling} 
+		<screengui
+			IgnoreGuiInset
+			ResetOnSpawn={false}
+			ZIndexBehavior={Enum.ZIndexBehavior.Sibling}
 			DisplayOrder={DISPLAY_ORDER}
 		>
 			<Dashboard />
