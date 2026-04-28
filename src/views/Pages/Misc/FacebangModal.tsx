@@ -14,6 +14,10 @@ export function FacebangModal({ isVisible, onClose }: FacebangProps) {
 	const dispatch = useDispatch();
 
 	if (!isVisible || !job) {
+		return Roact.createElement("Frame", {
+			Visible: false,
+		});
+	}
 		return Roact.createElement("Frame", { Visible: false, Key: "Hidden" });
 	}
 
