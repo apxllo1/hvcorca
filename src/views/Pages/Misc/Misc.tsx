@@ -1,28 +1,34 @@
 import Roact from "@rbxts/roact";
 import { hooked, useState, useCallback } from "@rbxts/roact-hooked";
+import Card from "components/Card";
 import { useTheme } from "hooks/use-theme";
+import { DashboardPage } from "store/models/dashboard.model";
+import { px } from "utils/udim2";
 import FacebangModal from "./FacebangModal";
 
 function MiscPage() {
-	const themeData = useTheme("apps");
-	const theme = themeData?.players;
+	const theme = useTheme("apps").players;
 
 	const [modalVisible, setModalVisible] = useState(false);
 	const [isHovered, setHovered] = useState(false);
 
-	const toggleModal = useCallback(() => setModalVisible((prev) => !prev), []);
 	const openModal = useCallback(() => setModalVisible(true), []);
 	const closeModal = useCallback(() => setModalVisible(false), []);
 
-	if (!theme) {
-		return <frame Key="Loading" BackgroundTransparency={1} Size={new UDim2(1, 0, 1, 0)} />;
-	}
-
 	return (
-		<frame Key="MiscPage" Size={new UDim2(1, 0, 1, 0)} BackgroundTransparency={1}>
-			<uipadding PaddingTop={new UDim(0, 20)} PaddingLeft={new UDim(0, 20)} PaddingRight={new UDim(0, 20)} />
+		<Card
+			index={2}
+			page={DashboardPage.Apps}
+			theme={theme}
+			size={px(326, 648)}
+			position={new UDim2(0, 0, 1, 0)}
+		>
+			<uipadding
+				PaddingTop={new UDim(0, 20)}
+				PaddingLeft={new UDim(0, 20)}
+				PaddingRight={new UDim(0, 20)}
+			/>
 
-			{/* Scrollable content area */}
 			<scrollingframe
 				Key="ContentScroll"
 				Size={new UDim2(1, 0, 1, 0)}
@@ -43,7 +49,9 @@ function MiscPage() {
 					Text="Facebang Settings"
 					Size={new UDim2(1, 0, 0, 55)}
 					BackgroundColor3={
-						isHovered ? theme.button.background.Lerp(new Color3(1, 1, 1), 0.05) : theme.button.background
+						isHovered
+							? theme.button.background.Lerp(new Color3(1, 1, 1), 0.05)
+							: theme.button.background
 					}
 					TextColor3={theme.button.foreground}
 					Font={Enum.Font.GothamBold}
@@ -65,7 +73,6 @@ function MiscPage() {
 				</textbutton>
 			</scrollingframe>
 
-			{/* Modal overlay — only mounted when visible */}
 			{modalVisible && (
 				<textbutton
 					Key="ModalOverlay"
@@ -83,7 +90,7 @@ function MiscPage() {
 					<FacebangModal isVisible={modalVisible} onClose={closeModal} />
 				</textbutton>
 			)}
-		</frame>
+		</Card>
 	);
 }
 
