@@ -14,7 +14,6 @@ function MiscPage() {
 		<frame Size={new UDim2(1, 0, 1, 0)} BackgroundTransparency={1}>
 			<uipadding PaddingTop={new UDim(0, 20)} PaddingLeft={new UDim(0, 20)} PaddingRight={new UDim(0, 20)} />
 
-			{/* The Scrolling Content */}
 			<scrollingframe
 				Size={new UDim2(1, 0, 1, 0)}
 				BackgroundTransparency={1}
@@ -22,6 +21,8 @@ function MiscPage() {
 				CanvasSize={new UDim2(0, 0, 0, 0)}
 				AutomaticCanvasSize={Enum.AutomaticSize.Y}
 				ClipsDescendants={true}
+				// Improvement: Lower ZIndex so Modal always wins
+				ZIndex={1}
 			>
 				<uilistlayout Padding={new UDim(0, 10)} SortOrder={Enum.SortOrder.LayoutOrder} />
 
@@ -50,10 +51,19 @@ function MiscPage() {
 				</textbutton>
 			</scrollingframe>
 
-			{/* Rendered outside the scrolling frame so it doesn't 
-				get clipped or moved by the UIListLayout 
+			{/* Improvement: Use a CanvasGroup or Frame with high ZIndex 
+				to ensure the modal blocks inputs to the background.
 			*/}
-			{modalVisible && <FacebangModal isVisible={modalVisible} onClose={() => setModalVisible(false)} />}
+			{modalVisible && (
+				<frame
+					Size={new UDim2(1, 40, 1, 40)} // Slight offset to cover padding
+					Position={new UDim2(0, -20, 0, -20)}
+					BackgroundTransparency={1}
+					ZIndex={10}
+				>
+					<FacebangModal isVisible={modalVisible} onClose={() => setModalVisible(false)} />
+				</frame>
+			)}
 		</frame>
 	);
 }
