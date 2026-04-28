@@ -8,7 +8,7 @@
         "**/*.d.lua"
     ],
     "tree": {
-        "$className": "DataModel",
+        "$className": "Folder",
         "Havoc": {
             "$path": "out",
             "include": {
