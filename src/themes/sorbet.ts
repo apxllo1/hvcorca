@@ -1,5 +1,5 @@
-import { Theme, ViewTheme } from "./theme.interface"; // Changed to relative path just in case
-import { hex } from "../utils/color3"; // Changed to relative path just in case
+import { Theme, ViewTheme } from "./theme.interface";
+import { hex } from "../utils/color3";
 
 const redAccent = hex("#C6428E");
 const blueAccent = hex("#484fd7");
@@ -18,7 +18,6 @@ const view: ViewTheme = {
 	outlined: false,
 	foreground: hex("#ffffff"),
 	background: background,
-	backgroundGradient: undefined,
 	transparency: 0,
 	dropshadow: background,
 	dropshadowTransparency: 0.3,
@@ -230,6 +229,3 @@ export const darkTheme: Theme = {
 		},
 	},
 };
-
-// FORCED EXPORT: This ensures rbxtsc doesn't skip the file contents
-export const __FORCE_BUNDLE = true;
