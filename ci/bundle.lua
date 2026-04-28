@@ -61,38 +61,39 @@ end
 local function main()
     local model = remodel.readModelFile(ROJO_INPUT)[1]
     local runtime = remodel.readFile(RUNTIME_FILE)
+    
+    -- Inject Version
     runtime = string.gsub(runtime, "__VERSION__", string.format("%q", VERSION))
     
     remodel.createDirAll(string.match(OUTPUT_PATH, "^(.*)[/\\]"))
     local f = io.open(OUTPUT_PATH, "w")
     
-    f:write("--[[ Havoc Bundle: " .. VERSION .. " ]]\n\n")
+    f:write("--[[\n    Havoc Studios Bundler\n    Version: " .. VERSION .. "\n--]]\n\n")
     
-    -- 1. Create a wrapper function for the start process
     f:write("local function start()\n")
     f:write("    local runEnv = (getfenv and getfenv()) or _G or shared\n\n")
     
-    -- 2. Define the runtime as a self-returning block
-    -- This ensures that local functions inside runtime.lua are captured correctly
+    -- THE BRIDGE: We wrap the runtime code in a function and CAPTURE the returns.
+    -- This ensures that the functions inside runtime.lua survive injection and 
+    -- are accessible to the 'walk' generated code below.
     f:write("    local init, newModule, newInstance, newEnv = (function()\n")
     f:write(runtime .. "\n")
-    f:write("        return init, newModule, newInstance, newEnv\n")
     f:write("    end)()\n\n")
     
-    -- 3. Safety check before running init
-    f:write("    if not init then warn('[Havoc] Critical: Init function missing from runtime!') return end\n")
+    -- Safety check: verify the runtime actually returned the functions
+    f:write("    if not init then warn('[Havoc Critical]: Runtime failed to return init function!') return end\n")
     f:write("    init(runEnv)\n\n")
     
-    -- 4. Write the UI structure (they now safely use the variables captured above)
+    -- Write the UI and Scripts
     walk(model, f)
     
-    f:write("    print('[Havoc]: Runtime initialized successfully.')\n")
+    f:write("    print('[Havoc]: " .. VERSION .. " initialized successfully.')\n")
     f:write("end\n\n")
     
-    -- 5. Final Execute
+    -- Execute the start block safely
     f:write("local success, err = pcall(start)\n")
     f:write("if not success then\n")
-    f:write("    warn('[Havoc Critical]: Bundle failed to load! Error: ' .. tostring(err))\n")
+    f:write("    warn('[Havoc Critical]: Bundle execution failed! Error: ' .. tostring(err))\n")
     f:write("end\n")
 
     f:close()
