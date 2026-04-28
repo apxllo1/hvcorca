@@ -44,7 +44,7 @@ local function writeModule(object, output)
 	local id = object:GetFullName()
 	local source = remodel.getRawProperty(object, "Source")
 	
-	-- CLEANUP: Ensure source doesn't have a trailing comment that eats the 'end'
+	-- CRITICAL: Prevent comment-bleed by ensuring code doesn't end on a comment line
 	source = source .. "\n"
 
 	local path = string.format("%q", id)
@@ -60,7 +60,7 @@ local function writeModule(object, output)
 			"end)\n"
 		table.insert(output, def)
 	else
-		-- WRAP: Using a more robust wrapper for compiled TS code
+		-- Robust wrapper for compiled TS code
 		local def = "newModule(" .. name .. ", " .. className .. ", " .. path .. ", " .. parent .. ", function ()\n" ..
 			"return setfenv(function()\n" ..
 			source .. "\n" ..
@@ -105,7 +105,7 @@ local function main()
 
 	local runtime = string.gsub(remodel.readFile(RUNTIME_FILE), "__VERSION__", string.format("%q", VERSION))
 	
-	-- Join modules with massive separation to prevent "Merging" errors
+	-- Massive separation to keep the minifier happy
 	local final_source = table.concat(output, "\n\n")
 
 	if MINIFY then
@@ -115,7 +115,7 @@ local function main()
 	local result = {
 		runtime,
 		final_source,
-		"\ninit()\n" -- Ensure init() is on its own clean line
+		"\ninit()\n" 
 	}
 
 	if VERBOSE then
@@ -125,7 +125,6 @@ local function main()
 
 	remodel.createDirAll(string.match(OUTPUT_PATH, "^(.*)[/\\]"))
 	
-	-- FINAL CONCAT: The big one
 	local bundle_data = table.concat(result, "\n\n")
 	
 	remodel.writeFile(OUTPUT_PATH, bundle_data)
