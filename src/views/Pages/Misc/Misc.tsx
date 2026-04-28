@@ -12,47 +12,43 @@ function MiscPage() {
 
 	return (
 		<frame Size={new UDim2(1, 0, 1, 0)} BackgroundTransparency={1}>
-			<uipadding 
-				PaddingTop={new UDim(0, 20)} 
-				PaddingLeft={new UDim(0, 20)} 
-				PaddingRight={new UDim(0, 20)} 
-			/>
-			<scrollingframe 
-				Size={new UDim2(1, 0, 1, 0)} 
-				BackgroundTransparency={1} 
+			<uipadding PaddingTop={new UDim(0, 20)} PaddingLeft={new UDim(0, 20)} PaddingRight={new UDim(0, 20)} />
+			<scrollingframe
+				Size={new UDim2(1, 0, 1, 0)}
+				BackgroundTransparency={1}
 				ScrollBarThickness={2}
 				CanvasSize={new UDim2(0, 0, 0, 0)}
 				AutomaticCanvasSize={Enum.AutomaticSize.Y}
 			>
 				<uilistlayout Padding={new UDim(0, 10)} SortOrder={Enum.SortOrder.LayoutOrder} />
-				
+
 				<textbutton
 					Text="Facebang Settings"
 					Size={new UDim2(1, 0, 0, 50)}
-					BackgroundColor3={isHovered ? theme.button.background.Lerp(new Color3(1, 1, 1), 0.1) : theme.button.background}
+					BackgroundColor3={
+						isHovered ? theme.button.background.Lerp(new Color3(1, 1, 1), 0.1) : theme.button.background
+					}
 					TextColor3={theme.button.foreground}
 					Font={Enum.Font.GothamBold}
 					TextSize={16}
 					AutoButtonColor={false}
-					Event={{ 
+					Event={{
 						Activated: toggleModal,
 						MouseEnter: () => setHovered(true),
-						MouseLeave: () => setHovered(false)
+						MouseLeave: () => setHovered(false),
 					}}
 				>
 					<uicorner CornerRadius={new UDim(0, 8)} />
-					<uistroke 
-						Thickness={1.5} 
-						Color={theme.button.background.Lerp(new Color3(1, 1, 1), 0.2)} 
-						Transparency={isHovered ? 0 : 0.5} 
+					<uistroke
+						Thickness={1.5}
+						Color={theme.button.background.Lerp(new Color3(1, 1, 1), 0.2)}
+						Transparency={isHovered ? 0 : 0.5}
 						ApplyStrokeMode={Enum.ApplyStrokeMode.Border}
 					/>
 				</textbutton>
 			</scrollingframe>
 
-			{modalVisible && (
-				<FacebangModal isVisible={modalVisible} onClose={() => setModalVisible(false)} />
-			)}
+			{modalVisible && <FacebangModal isVisible={modalVisible} onClose={() => setModalVisible(false)} />}
 		</frame>
 	);
 }
