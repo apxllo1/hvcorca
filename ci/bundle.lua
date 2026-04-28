@@ -20,7 +20,6 @@ local function writeModule(object, file)
     
     local className = string.format("%q", object.ClassName)
 
-    -- Using the LOCAL variable names defined in the start() function
     file:write(string.format("    hMod(%s, %s, %s, %s, function ()\n", name, className, path, parentStr))
     file:write("        return setfenv(function()\n")
     file:write(source)
@@ -71,31 +70,20 @@ local function main()
     f:write("--[[\n    Havoc Studios Bundler\n    Version: " .. VERSION .. "\n--]]\n\n")
     f:write("local function start()\n")
     f:write("    local runEnv = (getfenv and getfenv()) or _G or shared;\n")
-    -- Define locals to catch the runtime returns
     f:write("    local hInit, hMod, hInst, hEnv;\n\n")
     
-    f:write("    -- 1. Execute Runtime & Capture Functions\n")
+    f:write("    -- 1. Load Engine\n")
     f:write("    hInit, hMod, hInst, hEnv = (function()\n" .. runtime .. "\n    end)();\n\n")
     
-    -- Sync Logic: Ensure the capture worked
-    f:write("    local attempts = 0;\n")
-    f:write("    while not hInit and attempts < 50 do\n")
-    f:write("        attempts = attempts + 1;\n")
-    f:write("        local w = (task and task.wait) or (wait);\n")
-    f:write("        if w then w() end;\n")
-    f:write("    end;\n\n")
-
-    f:write("    -- 2. Populate Global Handshake for external use\n")
-    f:write("    _G.Havoc_Init = hInit;\n")
-    f:write("    _G.Havoc_NewModule = hMod;\n")
-    f:write("    _G.Havoc_NewInstance = hInst;\n")
-    f:write("    _G.Havoc_NewEnv = hEnv;\n\n")
+    f:write("    if not hInit then warn('[Havoc Critical]: Engine failed to load') return end;\n\n")
     
-    f:write("    if not hInit then warn('[Havoc Critical]: Handshake Failed') return end;\n")
-    f:write("    hInit(runEnv);\n\n")
-    
-    -- 3. Walk and generate UI code
+    -- IMPORTANT: We build the UI tree BEFORE we call hInit
+    f:write("    -- 2. Build UI Tree\n")
     walk(model, f)
+    
+    -- IMPORTANT: hInit goes at the VERY BOTTOM so it can see all the modules we just registered
+    f:write("\n    -- 3. Initialize Engine\n")
+    f:write("    hInit(runEnv);\n\n")
     
     f:write("    print('[Havoc]: " .. VERSION .. " initialized successfully.');\n")
     f:write("end\n\n")
@@ -106,7 +94,7 @@ local function main()
     f:write("end\n")
 
     f:close()
-    print("[CI] SUPER-SYNC Bundle completed successfully.")
+    print("[CI] Finalized Build Logic Generated.")
 end
 
 main()
