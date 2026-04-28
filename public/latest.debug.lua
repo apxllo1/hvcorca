@@ -3690,18 +3690,15 @@ onJobChange(\"facebang\", function(job, state)\
 \9\9connection:Disconnect()\
 \9\9connection = nil\
 \9end\
+\9if not job or not job.active then\
+\9\9return nil\
+\9end\
 \9local sliderJob = job\
-\9if not sliderJob or (not sliderJob.active or not sliderJob.sliders) then\
+\9if not sliderJob.sliders then\
 \9\9return nil\
 \9end\
 \9local targetName = state.dashboard.apps.playerSelected\
-\9local _result\
-\9if targetName ~= nil then\
-\9\9_result = Players:FindFirstChild(targetName)\
-\9else\
-\9\9_result = nil\
-\9end\
-\9local targetPlayer = _result\
+\9local targetPlayer = targetName ~= nil and Players:FindFirstChild(targetName) or nil\
 \9if not targetPlayer or targetPlayer == Players.LocalPlayer then\
 \9\9return nil\
 \9end\
@@ -3720,7 +3717,7 @@ onJobChange(\"facebang\", function(job, state)\
 \9\9\9local distance = _binding.distance\
 \9\9\9local offset = CFrame.new(0, 0, distance)\
 \9\9\9local rotation = CFrame.Angles(0, math.rad(angle), 0)\
-\9\9\9local goalCFrame = targetRoot.CFrame:ToWorldSpace(offset) * rotation\
+\9\9\9local goalCFrame = targetRoot.CFrame * offset * rotation\
 \9\9\9localRoot.CFrame = localRoot.CFrame:Lerp(goalCFrame, 0.5)\
 \9\9end\
 \9end)\
