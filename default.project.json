@@ -2,14 +2,15 @@
 	"name": "Havoc",
 	"globIgnorePaths": [
 		"**/package.json",
-		"**/tsconfig.json"
+		"**/tsconfig.json",
+		"**/src/**"
 	],
 	"tree": {
-		"$path": "out",
-		"include": {
-			"$path": "include",
-			"node_modules": {
-				"$path": "node_modules/@rbxts"
+		"$className": "DataModel",
+		"Havoc": {
+			"$path": "out",
+			"include": {
+				"$path": "include"
 			}
 		}
 	}
