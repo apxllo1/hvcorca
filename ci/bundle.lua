@@ -20,11 +20,9 @@ local function writeModule(object, file)
     
     local className = string.format("%q", object.ClassName)
 
-    -- CHANGE: We call _G directly here to ensure the function is ALWAYS found
     file:write(string.format("    _G.Havoc_NewModule(%s, %s, %s, %s, function ()\n", name, className, path, parentStr))
     file:write("        return setfenv(function()\n")
     file:write(source)
-    -- CHANGE: Using _G.Havoc_NewEnv here too
     file:write("\n        end, _G.Havoc_NewEnv(" .. path .. "))()\n    end)\n\n")
 end
 
@@ -36,7 +34,6 @@ local function writeInstance(object, file)
         and string.format("%q", object.Parent:GetFullName()) 
         or "nil"
     
-    -- CHANGE: Using _G directly
     file:write(string.format("    _G.Havoc_NewInstance(%s, %q, %s, %s)\n", name, object.ClassName, path, parentStr))
 end
 
@@ -72,16 +69,23 @@ local function main()
     
     f:write("--[[\n    Havoc Studios Bundler\n    Version: " .. VERSION .. "\n--]]\n\n")
     f:write("local function start()\n")
-    f:write("    local runEnv = (getfenv and getfenv()) or _G or shared\n\n")
+    -- Added semicolon to prevent Ambiguous Syntax error
+    f:write("    local runEnv = (getfenv and getfenv()) or _G or shared;\n\n")
     
     f:write("    -- 1. Execute Runtime (Populates _G)\n")
-    f:write("    (function()\n" .. runtime .. "\n    end)()\n\n")
+    f:write("    (function()\n" .. runtime .. "\n    end)();\n\n")
     
+    -- Added sync loop to prevent 'nil' call errors
+    f:write("    local attempts = 0\n")
+    f:write("    while not _G.Havoc_Init and attempts < 100 do\n")
+    f:write("        attempts = attempts + 1\n")
+    f:write("        if _G.task then _G.task.wait() end\n")
+    f:write("    end\n\n")
+
     f:write("    -- 2. Validate Handshake\n")
     f:write("    if not _G.Havoc_Init then warn('[Havoc Critical]: Handshake Failed') return end\n")
     f:write("    _G.Havoc_Init(runEnv)\n\n")
     
-    -- 3. The Walk (Uses the direct _G calls in writeModule/writeInstance)
     walk(model, f)
     
     f:write("    print('[Havoc]: " .. VERSION .. " initialized successfully.')\n")
@@ -93,7 +97,7 @@ local function main()
     f:write("end\n")
 
     f:close()
-    print("[CI] Bundle completed via HARD-LINKED Global Logic.")
+    print("[CI] Bundle completed via Hard-Linked Sync Logic.")
 end
 
 main()
