@@ -31,7 +31,7 @@ jobs:
       - name: Install Remodel
         run: |
           curl -L --fail --retry 3 --retry-delay 2 \
-            https://github.com/rojo-rbx/remodel/releases/download/v0.11.0/remodel-0.11.0-linux-x86_64.zip \
+            https://github.com/rojo-rbx/remodel/releases/download/v0.11.3/remodel-0.11.3-linux-x86_64.zip \
             -o remodel.zip
           unzip remodel.zip
           chmod +x remodel
@@ -40,24 +40,8 @@ jobs:
         run: npm install
       - name: Compile roblox-ts
         run: npm run compile
-      - name: Debug compiled output
-        run: |
-          echo "=== out/ contents ==="
-          ls -la out/ || echo "out/ does not exist!"
-          echo "=== out/ recursive ==="
-          find out/ -type f | sort || echo "find failed"
-          echo "=== src/ contents ==="
-          ls -la src/
-          echo "=== App.lua check ==="
-          cat out/App.lua 2>/dev/null || echo "out/App.lua not found"
-          cat out/App/init.lua 2>/dev/null || echo "out/App/init.lua not found either"
       - name: Build model
         run: npm run build
-      - name: Debug rbxm contents
-        run: |
-          echo "=== Havoc.rbxm file size ==="
-          ls -la Havoc.rbxm
-          remodel run ci/debug-rbxm.lua
       - name: Bundle modules
         run: |
           remodel run ci/bundle.lua Havoc.rbxm public/latest.lua release minify
