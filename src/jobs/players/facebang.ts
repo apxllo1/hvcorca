@@ -5,26 +5,24 @@ import { JobWithSliders } from "store/models/jobs.model";
 let connection: RBXScriptConnection | undefined;
 
 onJobChange("facebang", (job, state) => {
-	// 1. Always clean up the previous connection first
+	// 1. Clean up previous connection
 	if (connection) {
 		connection.Disconnect();
 		connection = undefined;
 	}
 
-	// 2. Safety: If job is null or not active, stop here (Disconnects the loop)
-	if (!job || !job.active) return;
-
 	const sliderJob = job as unknown as JobWithSliders;
-	if (!sliderJob.sliders) return;
+
+	// 2. Safety check: If job is null or disabled, stop here
+	if (!sliderJob || !sliderJob.active || !sliderJob.sliders) return;
 
 	// 3. Identify the target
 	const targetName = state.dashboard.apps.playerSelected;
-	const targetPlayer = targetName !== undefined ? (Players.FindFirstChild(targetName) as Player) : undefined;
+	const targetPlayer = targetName !== undefined ? Players.FindFirstChild(targetName) as Player : undefined;
 
-	// Don't bang yourself or a non-existent player
 	if (!targetPlayer || targetPlayer === Players.LocalPlayer) return;
 
-	// 4. High-performance Heartbeat loop
+	// 4. Start the loop
 	connection = RunService.Heartbeat.Connect(() => {
 		const localChar = Players.LocalPlayer.Character;
 		const targetChar = targetPlayer.Character;
@@ -38,14 +36,11 @@ onJobChange("facebang", (job, state) => {
 		if (localRoot && targetRoot && humanoid && humanoid.Health > 0) {
 			const { angle, distance } = sliderJob.sliders;
 
-			// Correct roblox-ts CFrame multiplication syntax
-			const offset = new CFrame(0, 0, distance);
-			const rotation = CFrame.Angles(0, math.rad(angle), 0);
+			// Optimized CFrame math for TS
+			const goalCFrame = targetRoot.CFrame
+				.mul(new CFrame(0, 0, distance))
+				.mul(CFrame.Angles(0, math.rad(angle), 0));
 
-			// In TS, we multiply CFrames using the * operator
-			const goalCFrame = targetRoot.CFrame.mul(offset).mul(rotation);
-
-			// Snappy follow logic
 			localRoot.CFrame = localRoot.CFrame.Lerp(goalCFrame, 0.5);
 		}
 	});
