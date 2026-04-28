@@ -1,26 +1,41 @@
 import Roact from "@rbxts/roact";
+import { Stats } from "@rbxts/services";
 import Dashboard from "./views/Dashboard";
 import { startTimer, endTimer, logger, logPerformance } from "utils/debug";
 
-// Above topbar, below prompts
 const DISPLAY_ORDER = 7;
 
 function App() {
-	// 1. Start the Timer right when the UI component begins to mount
-	startTimer("Havoc_UI_Mount");
-	logger.info("Havoc UI is mounting...");
+	// We use useEffect to ensure this logic ONLY runs once when the UI first appears
+	Roact.useEffect(() => {
+		startTimer("Havoc_UI_Mount");
+		logger.info("Havoc UI mounting sequence initiated...");
 
-	const element = (
-		<screengui IgnoreGuiInset ResetOnSpawn={false} ZIndexBehavior="Sibling" DisplayOrder={DISPLAY_ORDER}>
+		// The "Pulse" check to ensure the script stays alive
+		const thread = task.spawn(() => {
+			while (task.wait(5)) {
+				const mem = math.floor(Stats.GetTotalMemoryUsageMb());
+				print(`[Havoc Pulse]: Main UI Active. Memory: ${mem}MB`);
+			}
+		});
+
+		endTimer("Havoc_UI_Mount");
+		logPerformance();
+
+		// Cleanup: stops the pulse if the UI is ever destroyed
+		return () => task.cancel(thread);
+	}, []);
+
+	return (
+		<screengui 
+			IgnoreGuiInset 
+			ResetOnSpawn={false} 
+			ZIndexBehavior={Enum.ZIndexBehavior.Sibling} 
+			DisplayOrder={DISPLAY_ORDER}
+		>
 			<Dashboard />
 		</screengui>
 	);
-
-	// 2. End the timer and log performance
-	endTimer("Havoc_UI_Mount");
-	logPerformance();
-
-	return element;
 }
 
 export default App;
