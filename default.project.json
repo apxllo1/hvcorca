@@ -1,20 +1,22 @@
 {
-	"name": "Havoc",
-	"globIgnorePaths": [
-		"**/package.json",
-		"**/tsconfig.json",
-		"**/src/**"
-	],
-	"tree": {
-		"$className": "DataModel",
-		"Havoc": {
-			"$path": "out",
-			"include": {
-				"$path": "include",
-				"node_modules": {
-					"$path": "node_modules/@rbxts"
-				}
-			}
-		}
-	}
+    "name": "Havoc",
+    "globIgnorePaths": [
+        "**/package.json",
+        "**/tsconfig.json",
+        "**/src/**",
+        "**/*.spec.lua",
+        "**/*.d.lua"
+    ],
+    "tree": {
+        "$className": "DataModel",
+        "Havoc": {
+            "$path": "out",
+            "include": {
+                "$path": "include",
+                "node_modules": {
+                    "$path": "node_modules/@rbxts"
+                }
+            }
+        }
+    }
 }
