@@ -43,19 +43,20 @@ local function walk(parent)
         local name = string.format("%q", object.Name)
         local path = string.format("%q", object:GetFullName())
         local parentPath = string.format("%q", parent:GetFullName())
-        
-        -- FIX: Use .ClassName directly. 
-        -- This covers ModuleScript, Script, and LocalScript without using IsA/isA.
         local class = object.ClassName
-        if class == "ModuleScript" or class == "Script" or class == "LocalScript" then
-            local source = object.Source
-            source = source:gsub("%]%]", "] ]")
+        
+        -- Safe Source Check: Some instances claim to be scripts but don't have Source accessible
+        local success, source = pcall(function() return object.Source end)
+        
+        if success and source then
+            source = source:gsub("%]%]", "] ]") -- Escape double brackets
             
             file:write(string.format("    hMod(%s, %q, %s, %s, function()\n", name, class, path, parentPath))
             file:write("        return (function(...)\n")
             file:write(source)
             file:write("\n        end)\n    end);\n")
         else
+            -- If it has no source (Folders, UI elements, or failed pcall), treat as Instance
             file:write(string.format("    hInst(%s, %q, %s, %s);\n", name, class, path, parentPath))
         end
         
