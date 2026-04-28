@@ -44,11 +44,8 @@ local function writeModule(object, output)
 	local id = object:GetFullName()
 	local source = remodel.getRawProperty(object, "Source")
 	
-	-- FIX: Ensure source has a trailing newline so 'end)' doesn't get commented out
-	-- or stuck to the last line of code.
-	if not string.find(source, "\n$") then
-		source = source .. "\n"
-	end
+	-- CLEANUP: Ensure source doesn't have a trailing comment that eats the 'end'
+	source = source .. "\n"
 
 	local path = string.format("%q", id)
 	local parent = object.Parent and string.format("%q", object.Parent:GetFullName()) or "nil"
@@ -56,22 +53,19 @@ local function writeModule(object, output)
 	local className = string.format("%q", object.ClassName)
 
 	if DEBUG_MODE then
-		local def = table.concat({
-			"newModule(" .. name .. ", " .. className .. ", " .. path .. ", " .. parent .. ", function ()",
-			"local fn = assert(loadstring(" .. string.format("%q", source) .. ", '@'.." .. path .. "))",
-			"setfenv(fn, newEnv(" .. path .. "))",
-			"return fn()",
-			"end)",
-		}, "\n") -- Changed to newline for safer bundling
+		local def = "newModule(" .. name .. ", " .. className .. ", " .. path .. ", " .. parent .. ", function ()\n" ..
+			"local fn = assert(loadstring(" .. string.format("%q", source) .. ", '@'.." .. path .. "))\n" ..
+			"setfenv(fn, newEnv(" .. path .. "))\n" ..
+			"return fn()\n" ..
+			"end)\n"
 		table.insert(output, def)
 	else
-		local def = table.concat({
-			"newModule(" .. name .. ", " .. className .. ", " .. path .. ", " .. parent .. ", function ()",
-			"return setfenv(function()",
-			source,
-			"end, newEnv(" .. path .. "))()",
-			"end)",
-		}, "\n") -- Changed to newline for safer bundling
+		-- WRAP: Using a more robust wrapper for compiled TS code
+		local def = "newModule(" .. name .. ", " .. className .. ", " .. path .. ", " .. parent .. ", function ()\n" ..
+			"return setfenv(function()\n" ..
+			source .. "\n" ..
+			"end, newEnv(" .. path .. "))()\n" ..
+			"end)\n"
 		table.insert(output, def)
 	end
 end
@@ -83,7 +77,7 @@ local function writeInstance(object, output)
 	local name = string.format("%q", object.Name)
 	local className = string.format("%q", object.ClassName)
 
-	local def = "newInstance(" .. name .. ", " .. className .. ", " .. path .. ", " .. parent .. ")"
+	local def = "newInstance(" .. name .. ", " .. className .. ", " .. path .. ", " .. parent .. ")\n"
 	table.insert(output, def)
 end
 
@@ -111,7 +105,7 @@ local function main()
 
 	local runtime = string.gsub(remodel.readFile(RUNTIME_FILE), "__VERSION__", string.format("%q", VERSION))
 	
-	-- Join modules with double newlines to prevent EOF errors
+	-- Join modules with massive separation to prevent "Merging" errors
 	local final_source = table.concat(output, "\n\n")
 
 	if MINIFY then
@@ -121,18 +115,22 @@ local function main()
 	local result = {
 		runtime,
 		final_source,
-		"init()"
+		"\ninit()\n" -- Ensure init() is on its own clean line
 	}
 
 	if VERBOSE then
 		table.insert(result, 2, "local START_TIME = os.clock()")
-		table.insert(result, "print(\"[CI \" .. VERSION .. \"] Havoc run in \" .. (os.clock() - START_TIME) * 1000 .. \" ms\")")
+		table.insert(result, "print(\"[CI \" .. " .. string.format("%q", VERSION) .. " .. \"] Havoc run in \" .. (os.clock() - START_TIME) * 1000 .. \" ms\")")
 	end
 
 	remodel.createDirAll(string.match(OUTPUT_PATH, "^(.*)[/\\]"))
-	remodel.writeFile(OUTPUT_PATH, table.concat(result, "\n\n"))
+	
+	-- FINAL CONCAT: The big one
+	local bundle_data = table.concat(result, "\n\n")
+	
+	remodel.writeFile(OUTPUT_PATH, bundle_data)
 
-	print("[CI " .. VERSION .. "] Bundle written to " .. OUTPUT_PATH)
+	print("[CI " .. VERSION .. "] Bundle written: " .. #bundle_data .. " bytes to " .. OUTPUT_PATH)
 end
 
 main()
