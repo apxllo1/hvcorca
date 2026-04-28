@@ -2,7 +2,7 @@
 	"name": "havoc",
 	"version": "1.0.6",
 	"scripts": {
-		"compile": "npx rbxtsc --verbose --type=model",
+		"compile": "npx rbxtsc --verbose",
 		"watch": "npx rbxtsc -w",
 		"build": "rojo build default.project.json --output \"Havoc.rbxm\"",
 		"serve": "rojo serve place.project.json",
