@@ -1,5 +1,5 @@
 import Roact from "@rbxts/roact";
-import { hooked } from "@rbxts/roact-hooked"; // Use hooked for consistent functional components
+import { hooked } from "@rbxts/roact-hooked";
 import { useSelector, useDispatch } from "hooks/common/rodux-hooks";
 import { setJobActive, setJobSlider } from "store/actions/jobs.action";
 import { JobWithSliders } from "store/models/jobs.model";
@@ -9,12 +9,10 @@ interface FacebangProps {
 	onClose: () => void;
 }
 
-// Wrapping in 'hooked' allows you to use hooks safely if needed later
 const FacebangModal = hooked(({ isVisible, onClose }: FacebangProps) => {
-	const job = useSelector((state) => state.jobs.facebang) as JobWithSliders | undefined;
+	const job = useSelector((state) => (state.jobs as any).facebang) as JobWithSliders | undefined;
 	const dispatch = useDispatch();
 
-	// Return an empty fragment if not visible or job missing
 	if (!isVisible || !job) return <></>;
 
 	const renderSlider = (label: string, value: string, percent: number, onUpdate: (val: number) => void) => {
@@ -22,7 +20,7 @@ const FacebangModal = hooked(({ isVisible, onClose }: FacebangProps) => {
 			<frame Key={label} Size={new UDim2(1, -40, 0, 65)} BackgroundTransparency={1}>
 				<textlabel
 					Text={label.upper()}
-					Size={new UDim2(0, 100, 0, 20)}
+					Size={new UDim2(1, 0, 0, 20)}
 					BackgroundTransparency={1}
 					TextColor3={Color3.fromRGB(180, 180, 180)}
 					Font={Enum.Font.GothamBold}
@@ -31,8 +29,7 @@ const FacebangModal = hooked(({ isVisible, onClose }: FacebangProps) => {
 				/>
 				<textlabel
 					Text={value}
-					Size={new UDim2(0, 100, 0, 20)}
-					Position={new UDim2(1, -100, 0, 0)}
+					Size={new UDim2(1, 0, 0, 20)}
 					BackgroundTransparency={1}
 					TextColor3={Color3.fromRGB(235, 76, 105)}
 					Font={Enum.Font.GothamBold}
@@ -46,38 +43,22 @@ const FacebangModal = hooked(({ isVisible, onClose }: FacebangProps) => {
 					BackgroundColor3={Color3.fromRGB(15, 15, 15)}
 					AutoButtonColor={false}
 					Event={{
-						// Improved MouseButton1Down logic
 						MouseButton1Down: (rbx) => {
 							const mouse = game.GetService("Players").LocalPlayer.GetMouse();
-							const update = () => {
-								const relativeX = mouse.X - rbx.AbsolutePosition.X;
-								const newPercent = math.clamp(relativeX / rbx.AbsoluteSize.X, 0, 1);
-								onUpdate(newPercent);
-							};
-
-							update(); // Initial click update
+							const relativeX = mouse.X - rbx.AbsolutePosition.X;
+							const newPercent = math.clamp(relativeX / rbx.AbsoluteSize.X, 0, 1);
+							onUpdate(newPercent);
 						},
 					}}
 				>
 					<uicorner CornerRadius={new UDim(0, 6)} />
 					<uistroke Color={Color3.fromRGB(30, 30, 30)} Thickness={1} />
-
-					{/* The Progress Bar */}
 					<frame
 						Size={new UDim2(percent, 0, 1, 0)}
 						BackgroundColor3={Color3.fromRGB(235, 76, 105)}
 						BorderSizePixel={0}
 					>
 						<uicorner CornerRadius={new UDim(0, 6)} />
-						{/* The Knob */}
-						<frame
-							Size={new UDim2(0, 4, 0, 16)}
-							Position={new UDim2(1, -2, 0.5, -8)}
-							BackgroundColor3={Color3.fromRGB(255, 255, 255)}
-							BorderSizePixel={0}
-						>
-							<uicorner CornerRadius={new UDim(1, 0)} />
-						</frame>
 					</frame>
 				</textbutton>
 			</frame>
@@ -86,8 +67,8 @@ const FacebangModal = hooked(({ isVisible, onClose }: FacebangProps) => {
 
 	return (
 		<frame
-			Key="MainModal"
-			Size={new UDim2(0, 350, 0, 420)} // Adjusted height to fit content better
+			Key="Main"
+			Size={new UDim2(0, 350, 0, 420)}
 			Position={new UDim2(0.5, -175, 0.5, -210)}
 			BackgroundColor3={Color3.fromRGB(10, 10, 10)}
 			BorderSizePixel={0}
@@ -98,7 +79,7 @@ const FacebangModal = hooked(({ isVisible, onClose }: FacebangProps) => {
 
 			<textlabel
 				Text="FACEBANG CONFIG"
-				Size={new UDim2(0, 200, 0, 60)}
+				Size={new UDim2(1, -40, 0, 60)}
 				Position={new UDim2(0, 20, 0, 0)}
 				BackgroundTransparency={1}
 				TextColor3={Color3.fromRGB(255, 255, 255)}
@@ -118,21 +99,10 @@ const FacebangModal = hooked(({ isVisible, onClose }: FacebangProps) => {
 				Event={{ MouseButton1Click: onClose }}
 			/>
 
-			{/* Status & Toggle */}
 			<frame Size={new UDim2(1, -40, 0, 80)} Position={new UDim2(0, 20, 0, 75)} BackgroundTransparency={1}>
-				<textlabel
-					Text={job.active ? "STATUS: RUNNING" : "STATUS: READY"}
-					Size={new UDim2(1, 0, 0, 20)}
-					BackgroundTransparency={1}
-					TextColor3={job.active ? Color3.fromRGB(235, 76, 105) : Color3.fromRGB(120, 120, 120)}
-					Font={Enum.Font.GothamBold}
-					TextSize={11}
-					TextXAlignment="Left"
-				/>
 				<textbutton
 					Text={job.active ? "TERMINATE" : "ACTIVATE"}
 					Size={new UDim2(1, 0, 0, 45)}
-					Position={new UDim2(0, 0, 0, 25)}
 					BackgroundColor3={job.active ? Color3.fromRGB(235, 76, 105) : Color3.fromRGB(20, 20, 20)}
 					Font={Enum.Font.GothamBold}
 					TextColor3={Color3.fromRGB(255, 255, 255)}
@@ -145,17 +115,19 @@ const FacebangModal = hooked(({ isVisible, onClose }: FacebangProps) => {
 				</textbutton>
 			</frame>
 
-			{/* Sliders Container */}
-			<frame Size={new UDim2(1, 0, 0, 200)} Position={new UDim2(0, 20, 0, 175)} BackgroundTransparency={1}>
-				<uilistlayout Padding={new UDim(0, 10)} SortOrder={Enum.SortOrder.LayoutOrder} />
+			<frame Size={new UDim2(1, -40, 0, 200)} Position={new UDim2(0, 20, 0, 175)} BackgroundTransparency={1}>
+				<uilistlayout Padding={new UDim(0, 15)} SortOrder={Enum.SortOrder.LayoutOrder} />
 				{renderSlider(
 					"Interaction Distance",
 					`${math.round(job.sliders.distance * 10) / 10} studs`,
 					job.sliders.distance / 15,
 					(p) => dispatch(setJobSlider("facebang", "distance", p * 15)),
 				)}
-				{renderSlider("Rotation Angle", `${math.round(job.sliders.angle)}°`, job.sliders.angle / 360, (p) =>
-					dispatch(setJobSlider("facebang", "angle", p * 360)),
+				{renderSlider(
+					"Rotation Angle",
+					`${math.round(job.sliders.angle)}°`,
+					job.sliders.angle / 360,
+					(p) => dispatch(setJobSlider("facebang", "angle", p * 360)),
 				)}
 			</frame>
 		</frame>
