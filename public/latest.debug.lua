@@ -1,193 +1,121 @@
---[[ Havoc Bundle: 20260428-dbg ]]
-
-local init, newModule, newInstance, newEnv
+--[[
+    Havoc Studios Bundler
+    Version: dev-dbg
+--]]
 
 local function start()
+    local runEnv = (getfenv and getfenv()) or _G or shared
+
+    local init, newModule, newInstance, newEnv = (function()
 --[[
     Havoc Studios Runtime Engine
-    Handles Instance creation, Module resolution, and Environment Sandboxing.
+    Optimized for Scoped Return Logic
 --]]
 
 local Instance, game, task, require, setmetatable, pcall, error, warn
+local instanceFromId, idFromInstance, modules, currentlyLoading = {}, {}, {}, {}
 
-local instanceFromId = {}
-local idFromInstance = {}
-local modules = {}
-local currentlyLoading = {}
-
--- Module resolution logic to handle circular dependencies
+-- Module resolution
 local function validateRequire(module, caller)
     currentlyLoading[caller] = module
-    local currentModule = module
-    local depth = 0
+    local currentModule, depth = module, 0
     if not modules[module] then
         while currentModule do
             depth = depth + 1
             currentModule = currentlyLoading[currentModule]
-            if currentModule == module then
-                local str = currentModule.Name
-                for _ = 1, depth do
-                    currentModule = currentlyLoading[currentModule]
-                    str = str .. "  ⇒ " .. currentModule.Name
-                end
-                error("Circular dependency detected: " .. str, 2)
-            end
+            if currentModule == module then error("Circular dependency detected", 2) end
         end
     end
-    return function ()
-        if currentlyLoading[caller] == module then
-            currentlyLoading[caller] = nil
-        end
-    end
+    return function() if currentlyLoading[caller] == module then currentlyLoading[caller] = nil end end
 end
 
 local function loadModule(obj, this)
     local cleanup = this and validateRequire(obj, this)
     local module = modules[obj]
-    
-    if module.isLoaded then
-        if cleanup then cleanup() end
-        return module.value
-    else
-        local success, result = pcall(module.fn)
-        if not success then
-            error("\n[Havoc] Failed to load module: " .. obj:GetFullName() .. "\n[!] Error: " .. tostring(result), 0)
-        end
-        module.value = result
-        module.isLoaded = true
-        if cleanup then cleanup() end
-        return result
-    end
+    if module.isLoaded then if cleanup then cleanup() end return module.value end
+    local success, result = pcall(module.fn)
+    if not success then error("\n[Havoc] Failed: " .. obj:GetFullName() .. "\nError: " .. tostring(result), 0) end
+    module.value, module.isLoaded = result, true
+    if cleanup then cleanup() end
+    return result
 end
 
 local function requireModuleInternal(target, this)
-    if modules[target] and target:IsA("ModuleScript") then
-        return loadModule(target, this)
-    else
-        return require(target)
-    end
+    if modules[target] and target:IsA("ModuleScript") then return loadModule(target, this) end
+    return require(target)
 end
 
--- Generates a sandboxed environment for each script/module
 local function newEnv(id)
     local success, env = pcall(getfenv, 0)
-    if not success then env = _G end
-    
     return setmetatable({
-        VERSION = "20260428-dbg",
+        VERSION = "dev-dbg",
         script = instanceFromId[id],
-        require = function (module)
-            return requireModuleInternal(module, instanceFromId[id])
-        end,
-    }, {
-        __index = env,
-        __metatable = "This metatable is locked",
-    })
+        require = function(module) return requireModuleInternal(module, instanceFromId[id]) end,
+    }, { __index = env or _G })
 end
 
--- safeNew: Ensures Instance.new works even on restricted executors
 local function safeNew(className)
     local constructor = (Instance and Instance.new) or (_G.Instance and _G.Instance.new)
-    
-    -- Fallback: Metatable reflection
     if not constructor and game then
         local mt = getmetatable(game)
-        if mt and mt.__index and mt.__index.new then
-            constructor = mt.__index.new
-        end
+        if mt and mt.__index and mt.__index.new then constructor = mt.__index.new end
     end
-
-    -- Ultimate Fallback: Registry Search
     if not constructor and debug and debug.getregistry then
         for _, v in pairs(debug.getregistry()) do
-            if type(v) == "table" and v.new and type(v.new) == "function" then
-                constructor = v.new
-                break
-            end
+            if type(v) == "table" and v.new and type(v.new) == "function" then constructor = v.new break end
         end
     end
-
-    if not constructor then 
-        error("[Havoc Critical]: Instance.new not found. Executor is unsupported.", 0) 
-    end
-    
+    if not constructor then error("[Havoc Critical]: Instance.new not found.", 0) end
     return constructor(className)
 end
 
--- Function to register new modules
 local function newModule(name, className, path, parent, fn)
-    local instance = safeNew(className)
-    instance.Name = name
-    if parent and instanceFromId[parent] then
-        instance.Parent = instanceFromId[parent]
-    end
-    instanceFromId[path] = instance
-    idFromInstance[instance] = path
-    modules[instance] = {
-        fn = fn,
-        isLoaded = false,
-        value = nil,
-    }
+    local inst = safeNew(className)
+    inst.Name = name
+    if parent and instanceFromId[parent] then inst.Parent = instanceFromId[parent] end
+    instanceFromId[path], idFromInstance[inst], modules[inst] = inst, path, { fn = fn, isLoaded = false }
 end
 
--- Function to register standard instances (Folders, Frames, etc.)
 local function newInstance(name, className, path, parent)
-    local instance = safeNew(className)
-    instance.Name = name
-    if parent and instanceFromId[parent] then
-        instance.Parent = instanceFromId[parent]
-    end
-    instanceFromId[path] = instance
-    idFromInstance[instance] = path
+    local inst = safeNew(className)
+    inst.Name = name
+    if parent and instanceFromId[parent] then inst.Parent = instanceFromId[parent] end
+    instanceFromId[path], idFromInstance[inst] = inst, path
 end
 
--- Runtime Initialization
 local function init(env)
     local e = env or getfenv() or _G
-    
-    -- Global Capture
-    Instance = e.Instance or _G.Instance or shared.Instance
-    game = e.game or _G.game or shared.game
-    task = e.task or _G.task or shared.task
-    require = e.require or _G.require
-    setmetatable = e.setmetatable or _G.setmetatable
-    pcall = e.pcall or _G.pcall
-    error = e.error or _G.error
-    warn = e.warn or _G.warn
+    Instance, game, task, require, setmetatable, pcall, error, warn = e.Instance or _G.Instance, e.game or _G.game, e.task or _G.task, e.require or _G.require, e.setmetatable or _G.setmetatable, e.pcall or _G.pcall, e.error or _G.error, e.warn or _G.warn
 
-    -- Secondary Metatable Recovery for Instance
     if not Instance and game then
         local mt = getmetatable(game)
-        if mt and mt.__index then
-            Instance = mt.__index
-        end
+        if mt and mt.__index then Instance = mt.__index end
     end
 
     if not game then return end
     
-    -- Ensure game is ready
-    if not game:IsLoaded() then 
-        game.Loaded:Wait() 
-    end
+    -- Safety wrap for game loading
+    pcall(function()
+        if game.IsLoaded and not game:IsLoaded() then game.Loaded:Wait() end
+    end)
     
-    -- Auto-run LocalScripts after they are bundled
     for object in pairs(modules) do
         if object:IsA("LocalScript") and not object.Disabled then
             task.spawn(function()
                 local success, err = pcall(loadModule, object)
-                if not success then
-                    warn("[Havoc Runtime Error]: " .. tostring(err))
-                end
+                if not success then warn("[Havoc Runtime Error]: " .. tostring(err)) end
             end)
         end
     end
 end
 
+-- MANDATORY FOR BUNDLER
+return init, newModule, newInstance, newEnv
 
-    init, newModule, newInstance, newEnv = init, newModule, newInstance, newEnv
+    end)()
 
-    local runEnv = (getfenv and getfenv()) or _G or shared
-    if init then init(runEnv) end
+    if not init then warn('[Havoc Critical]: Runtime failed to return init function!') return end
+    init(runEnv)
 
     newInstance("Havoc", "Folder", "Havoc", nil)
     newModule("App", "ModuleScript", "Havoc.App", "Havoc", function ()
@@ -7673,13 +7601,13 @@ onJobChange("facebang", function(job, state)
 			local _arg0_1 = CFrame.Angles(0, math.rad(angle), 0)
 			local targetPos = _cFrame_2 * _cFrame_3 * _arg0_1
 			local start = tick()
-			while isRunning and (tick() - start) < speed do
+			while isRunning and tick() - start < speed do
 				local alpha = math.min((tick() - start) / speed, 1)
 				localRoot.CFrame = basePos:Lerp(targetPos, ease(alpha))
 				RunService.RenderStepped:Wait()
 			end
 			start = tick()
-			while isRunning and (tick() - start) < speed do
+			while isRunning and tick() - start < speed do
 				local alpha = math.min((tick() - start) / speed, 1)
 				localRoot.CFrame = targetPos:Lerp(basePos, ease(alpha))
 				RunService.RenderStepped:Wait()
@@ -9819,11 +9747,15 @@ local useDispatch = _rodux_hooks.useDispatch
 local _jobs_action = TS.import(script, script.Parent.Parent.Parent.Parent, "store", "actions", "jobs.action")
 local setJobActive = _jobs_action.setJobActive
 local setJobSlider = _jobs_action.setJobSlider
+local _services = TS.import(script, TS.getModule(script, "@rbxts", "services"))
+local RunService = _services.RunService
+local UserInputService = _services.UserInputService
+local Players = _services.Players
 local FacebangModal = hooked(function(_param)
 	local isVisible = _param.isVisible
 	local onClose = _param.onClose
 	local job = useSelector(function(state)
-		return (state.jobs).facebang
+		return state.jobs.facebang
 	end)
 	local dispatch = useDispatch()
 	if not isVisible or not job then
@@ -9837,7 +9769,7 @@ local FacebangModal = hooked(function(_param)
 			}, {
 				Roact.createElement("TextLabel", {
 					Text = string.upper(label),
-					Size = UDim2.new(1, 0, 0, 20),
+					Size = UDim2.new(0, 100, 0, 20),
 					BackgroundTransparency = 1,
 					TextColor3 = Color3.fromRGB(180, 180, 180),
 					Font = Enum.Font.GothamBold,
@@ -9846,7 +9778,8 @@ local FacebangModal = hooked(function(_param)
 				}),
 				Roact.createElement("TextLabel", {
 					Text = value,
-					Size = UDim2.new(1, 0, 0, 20),
+					Size = UDim2.new(0, 100, 0, 20),
+					Position = UDim2.new(1, -100, 0, 0),
 					BackgroundTransparency = 1,
 					TextColor3 = Color3.fromRGB(235, 76, 105),
 					Font = Enum.Font.GothamBold,
@@ -9860,10 +9793,19 @@ local FacebangModal = hooked(function(_param)
 					BackgroundColor3 = Color3.fromRGB(15, 15, 15),
 					AutoButtonColor = false,
 					[Roact.Event.MouseButton1Down] = function(rbx)
-						local mouse = game:GetService("Players").LocalPlayer:GetMouse()
-						local relativeX = mouse.X - rbx.AbsolutePosition.X
-						local newPercent = math.clamp(relativeX / rbx.AbsoluteSize.X, 0, 1)
-						onUpdate(newPercent)
+						local mouse = Players.LocalPlayer:GetMouse()
+						local moveConn = RunService.RenderStepped:Connect(function()
+							local relativeX = mouse.X - rbx.AbsolutePosition.X
+							local newPercent = math.clamp(relativeX / rbx.AbsoluteSize.X, 0, 1)
+							onUpdate(newPercent)
+						end)
+						local releaseConn
+						releaseConn = UserInputService.InputEnded:Connect(function(input)
+							if input.UserInputType == Enum.UserInputType.MouseButton1 then
+								moveConn:Disconnect()
+								releaseConn:Disconnect()
+							end
+						end)
 					end,
 				}, {
 					Roact.createElement("UICorner", {
@@ -9881,13 +9823,23 @@ local FacebangModal = hooked(function(_param)
 						Roact.createElement("UICorner", {
 							CornerRadius = UDim.new(0, 6),
 						}),
+						Roact.createElement("Frame", {
+							Size = UDim2.new(0, 4, 0, 16),
+							Position = UDim2.new(1, -2, 0.5, -8),
+							BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+							BorderSizePixel = 0,
+						}, {
+							Roact.createElement("UICorner", {
+								CornerRadius = UDim.new(1, 0),
+							}),
+						}),
 					}),
 				}),
 			}),
 		})
 	end
 	return Roact.createFragment({
-		Main = Roact.createElement("Frame", {
+		MainModal = Roact.createElement("Frame", {
 			Size = UDim2.new(0, 350, 0, 420),
 			Position = UDim2.new(0.5, -175, 0.5, -210),
 			BackgroundColor3 = Color3.fromRGB(10, 10, 10),
@@ -9903,7 +9855,7 @@ local FacebangModal = hooked(function(_param)
 			}),
 			Roact.createElement("TextLabel", {
 				Text = "FACEBANG CONFIG",
-				Size = UDim2.new(1, -40, 0, 60),
+				Size = UDim2.new(0, 200, 0, 60),
 				Position = UDim2.new(0, 20, 0, 0),
 				BackgroundTransparency = 1,
 				TextColor3 = Color3.fromRGB(255, 255, 255),
@@ -9926,9 +9878,19 @@ local FacebangModal = hooked(function(_param)
 				Position = UDim2.new(0, 20, 0, 75),
 				BackgroundTransparency = 1,
 			}, {
+				Roact.createElement("TextLabel", {
+					Text = job.active and "STATUS: RUNNING" or "STATUS: READY",
+					Size = UDim2.new(1, 0, 0, 20),
+					BackgroundTransparency = 1,
+					TextColor3 = job.active and Color3.fromRGB(235, 76, 105) or Color3.fromRGB(120, 120, 120),
+					Font = Enum.Font.GothamBold,
+					TextSize = 11,
+					TextXAlignment = "Left",
+				}),
 				Roact.createElement("TextButton", {
 					Text = job.active and "TERMINATE" or "ACTIVATE",
 					Size = UDim2.new(1, 0, 0, 45),
+					Position = UDim2.new(0, 0, 0, 25),
 					BackgroundColor3 = job.active and Color3.fromRGB(235, 76, 105) or Color3.fromRGB(20, 20, 20),
 					Font = Enum.Font.GothamBold,
 					TextColor3 = Color3.fromRGB(255, 255, 255),
@@ -9943,12 +9905,12 @@ local FacebangModal = hooked(function(_param)
 				}),
 			}),
 			Roact.createElement("Frame", {
-				Size = UDim2.new(1, -40, 0, 200),
+				Size = UDim2.new(1, 0, 0, 200),
 				Position = UDim2.new(0, 20, 0, 175),
 				BackgroundTransparency = 1,
 			}, {
 				Roact.createElement("UIListLayout", {
-					Padding = UDim.new(0, 15),
+					Padding = UDim.new(0, 10),
 					SortOrder = Enum.SortOrder.LayoutOrder,
 				}),
 				renderSlider("Interaction Distance", tostring(math.round(job.sliders.distance * 10) / 10) .. " studs", job.sliders.distance / 15, function(p)
@@ -19085,10 +19047,10 @@ return {
     end)
 
     newInstance("types", "Folder", "Havoc.include.node_modules.make.node_modules.@rbxts.compiler-types.types", "Havoc.include.node_modules.make.node_modules.@rbxts.compiler-types")
-    print('[Havoc]: Runtime initialized successfully.')
+    print('[Havoc]: dev-dbg initialized successfully.')
 end
 
 local success, err = pcall(start)
 if not success then
-    warn('[Havoc Critical]: Bundle failed to load! Error: ' .. tostring(err))
+    warn('[Havoc Critical]: Bundle execution failed! Error: ' .. tostring(err))
 end
