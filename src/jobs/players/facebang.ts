@@ -12,13 +12,13 @@ onJobChange("facebang", (job, state) => {
 	}
 
 	const sliderJob = job as unknown as JobWithSliders;
-	
+
 	// Safety: Ensure job and sliders exist before proceeding
 	if (!sliderJob || !sliderJob.active || !sliderJob.sliders) return;
 
 	// 2. Identify the target from the state
 	const targetName = state.dashboard.apps.playerSelected;
-	const targetPlayer = targetName ? Players.FindFirstChild(targetName) : undefined;
+	const targetPlayer = targetName !== undefined ? Players.FindFirstChild(targetName) : undefined;
 
 	if (!targetPlayer || targetPlayer === Players.LocalPlayer) return;
 
@@ -36,10 +36,10 @@ onJobChange("facebang", (job, state) => {
 		// Guard against dying or missing parts
 		if (localRoot && targetRoot && humanoid && humanoid.Health > 0) {
 			const { angle, distance } = sliderJob.sliders;
-			
+
 			// MAXIMIZED CALCULATION:
 			// We calculate the position behind the target and apply the custom rotation angle
-			const offset = new CFrame(0, 0, distance); 
+			const offset = new CFrame(0, 0, distance);
 			const rotation = CFrame.Angles(0, math.rad(angle), 0);
 			const goalCFrame = targetRoot.CFrame.ToWorldSpace(offset).mul(rotation);
 
