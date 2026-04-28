@@ -45,16 +45,16 @@ onJobChange("facebang", (job, state) => {
 
 	task.spawn(() => {
 		const localRoot = localChar.WaitForChild("HumanoidRootPart") as BasePart;
-		
+
 		// Use a local reference to the job data that we can update
 		while (isRunning) {
 			const targetChar = targetPlayer.Character;
 			const targetHead = targetChar?.FindFirstChild("Head") as BasePart | undefined;
-			
+
 			// If target leaves or dies, wait or exit
 			if (!targetHead || !targetChar) {
 				task.wait(0.5);
-				continue; 
+				continue;
 			}
 
 			setPhysicsEnabled(localChar, false);
@@ -69,19 +69,19 @@ onJobChange("facebang", (job, state) => {
 			// Pre-calculate rotations to save CPU cycles
 			const rotation = CFrame.Angles(0, math.rad(angle), 0);
 			const offset = new CFrame(0, HEIGHT_OFFSET, DEPTH_OFFSET);
-			
+
 			const baseCFrame = targetHead.CFrame.mul(offset).mul(rotation);
 			const peakCFrame = baseCFrame.mul(new CFrame(0, 0, -dist));
 
 			// Sub-loop: Forward & Back (The "Bang")
 			// We split the alpha (0 to 1) to handle the full stroke in one timer
 			const startTime = tick();
-			while (isRunning && tick() - startTime < (speed * 2)) {
+			while (isRunning && tick() - startTime < speed * 2) {
 				const elapsed = tick() - startTime;
 				const isPushing = elapsed < speed;
-				
+
 				// Calculate alpha for the current half-stroke
-				const alpha = isPushing ? (elapsed / speed) : 1 - ((elapsed - speed) / speed);
+				const alpha = isPushing ? elapsed / speed : 1 - (elapsed - speed) / speed;
 				const smoothAlpha = ease(math.clamp(alpha, 0, 1));
 
 				// Check if character still exists before applying CFrame
