@@ -1,12 +1,14 @@
 import Roact from "@rbxts/roact";
 import { hooked, useState, useCallback } from "@rbxts/roact-hooked";
 import { useTheme } from "hooks/use-theme";
+import { DashboardPage } from "store/models/dashboard.model"; // Sync with Players tab
 import FacebangModal from "./FacebangModal";
 
 function MiscPage() {
-	const themeData = useTheme("home");
-	const theme = themeData?.profile;
-
+	// 1. We use the "apps" theme to match the Players tab styling
+	const themeData = useTheme("apps");
+	const theme = themeData?.players; // Targeting the same theme sub-category as Players.tsx
+	
 	const [modalVisible, setModalVisible] = useState(false);
 	const [isHovered, setHovered] = useState(false);
 
@@ -16,7 +18,11 @@ function MiscPage() {
 
 	return (
 		<frame Key="MiscPage" Size={new UDim2(1, 0, 1, 0)} BackgroundTransparency={1}>
-			<uipadding PaddingTop={new UDim(0, 20)} PaddingLeft={new UDim(0, 20)} PaddingRight={new UDim(0, 20)} />
+			<uipadding 
+				PaddingTop={new UDim(0, 20)} 
+				PaddingLeft={new UDim(0, 20)} 
+				PaddingRight={new UDim(0, 20)} 
+			/>
 
 			<scrollingframe
 				Key="ContentScroll"
@@ -25,15 +31,15 @@ function MiscPage() {
 				ScrollBarThickness={2}
 				CanvasSize={new UDim2(0, 0, 0, 0)}
 				AutomaticCanvasSize={Enum.AutomaticSize.Y}
-				ClipsDescendants={true}
 				ZIndex={1}
 			>
-				<uilistlayout
-					Padding={new UDim(0, 12)}
-					SortOrder={Enum.SortOrder.LayoutOrder}
+				<uilistlayout 
+					Padding={new UDim(0, 12)} 
+					SortOrder={Enum.SortOrder.LayoutOrder} 
 					HorizontalAlignment={Enum.HorizontalAlignment.Center}
 				/>
 
+				{/* 2. Modified Button to use the "Players" theme colors for consistency */}
 				<textbutton
 					Key="FacebangButton"
 					Text="Facebang Settings"
@@ -45,7 +51,6 @@ function MiscPage() {
 					Font={Enum.Font.GothamBold}
 					TextSize={16}
 					AutoButtonColor={false}
-					LayoutOrder={1}
 					Event={{
 						Activated: toggleModal,
 						MouseEnter: () => setHovered(true),
@@ -58,11 +63,10 @@ function MiscPage() {
 						Color={theme.button.background.Lerp(new Color3(1, 1, 1), 0.15)}
 						Transparency={isHovered ? 0.2 : 0.6}
 					/>
-					<uiaspectratioconstraint AspectRatio={8} DominantAxis={Enum.DominantAxis.Width} />
 				</textbutton>
 			</scrollingframe>
 
-			{/* Changed back to 'frame' to fix the TS2339 error */}
+			{/* 3. The Modal Layer */}
 			{modalVisible && (
 				<frame
 					Key="ModalOverlay"
@@ -72,12 +76,14 @@ function MiscPage() {
 					BackgroundTransparency={0.4}
 					ZIndex={10}
 					Event={{
-						// Added explicit types to fix TS7006 (Implicit Any)
 						InputBegan: (instance: Frame, input: InputObject) => {
 							if (input.UserInputType === Enum.UserInputType.MouseButton1) setModalVisible(false);
 						},
 					}}
 				>
+					{/* PRO TIP: If FacebangModal needs to know WHICH player is selected,
+						you would pass the 'Selection' info here from the store.
+					*/}
 					<FacebangModal isVisible={modalVisible} onClose={() => setModalVisible(false)} />
 				</frame>
 			)}
