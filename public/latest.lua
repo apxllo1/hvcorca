@@ -1,4 +1,4 @@
---[[ Havoc Bundle: dev ]]
+--[[ Havoc Bundle: 20260428 ]]
 
 local init, newModule, newInstance, newEnv
 
@@ -74,7 +74,7 @@ local function newEnv(id)
     if not success then env = _G end
     
     return setmetatable({
-        VERSION = "dev",
+        VERSION = "20260428",
         script = instanceFromId[id],
         require = function (module)
             return requireModuleInternal(module, instanceFromId[id])
