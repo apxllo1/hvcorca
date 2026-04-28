@@ -3696,7 +3696,7 @@ onJobChange(\"facebang\", function(job, state)\
 \9end\
 \9local targetName = state.dashboard.apps.playerSelected\
 \9local _result\
-\9if targetName then\
+\9if targetName ~= nil then\
 \9\9_result = Players:FindFirstChild(targetName)\
 \9else\
 \9\9_result = nil\
