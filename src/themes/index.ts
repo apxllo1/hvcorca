@@ -7,14 +7,7 @@ import { crimson } from "./crimson";
 import { Theme } from "./theme.interface";
 
 // Using a standard Array for the UI selector
-const themes: Theme[] = [
-	crimson, 
-	darkTheme, 
-	lightTheme, 
-	frostedGlass, 
-	obsidian, 
-	highContrast
-];
+const themes: Theme[] = [crimson, darkTheme, lightTheme, frostedGlass, obsidian, highContrast];
 
 /**
  * Returns all themes for the UI dropdown menu.
