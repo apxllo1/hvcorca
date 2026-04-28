@@ -9797,13 +9797,14 @@ return {
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
+local hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).hooked
 local _rodux_hooks = TS.import(script, script.Parent.Parent.Parent.Parent, "hooks", "common", "rodux-hooks")
 local useSelector = _rodux_hooks.useSelector
 local useDispatch = _rodux_hooks.useDispatch
 local _jobs_action = TS.import(script, script.Parent.Parent.Parent.Parent, "store", "actions", "jobs.action")
 local setJobActive = _jobs_action.setJobActive
 local setJobSlider = _jobs_action.setJobSlider
-local function FacebangModal(_param)
+local FacebangModal = hooked(function(_param)
 	local isVisible = _param.isVisible
 	local onClose = _param.onClose
 	local job = useSelector(function(state)
@@ -9811,9 +9812,7 @@ local function FacebangModal(_param)
 	end)
 	local dispatch = useDispatch()
 	if not isVisible or not job then
-		return Roact.createElement("Frame", {
-			Visible = false,
-		})
+		return Roact.createFragment()
 	end
 	local renderSlider = function(label, value, percent, onUpdate)
 		return Roact.createFragment({
@@ -9846,11 +9845,14 @@ local function FacebangModal(_param)
 					Position = UDim2.new(0, 0, 0, 24),
 					BackgroundColor3 = Color3.fromRGB(15, 15, 15),
 					AutoButtonColor = false,
-					[Roact.Event.MouseButton1Click] = function(rbx)
+					[Roact.Event.MouseButton1Down] = function(rbx)
 						local mouse = game:GetService("Players").LocalPlayer:GetMouse()
-						local relativeX = mouse.X - rbx.AbsolutePosition.X
-						local newPercent = math.clamp(relativeX / rbx.AbsoluteSize.X, 0, 1)
-						onUpdate(newPercent)
+						local update = function()
+							local relativeX = mouse.X - rbx.AbsolutePosition.X
+							local newPercent = math.clamp(relativeX / rbx.AbsoluteSize.X, 0, 1)
+							onUpdate(newPercent)
+						end
+						update()
 					end,
 				}, {
 					Roact.createElement("UICorner", {
@@ -9884,9 +9886,9 @@ local function FacebangModal(_param)
 		})
 	end
 	return Roact.createFragment({
-		Main = Roact.createElement("Frame", {
-			Size = UDim2.new(0, 350, 0, 500),
-			Position = UDim2.new(0.5, -175, 0.5, -250),
+		MainModal = Roact.createElement("Frame", {
+			Size = UDim2.new(0, 350, 0, 420),
+			Position = UDim2.new(0.5, -175, 0.5, -210),
 			BackgroundColor3 = Color3.fromRGB(10, 10, 10),
 			BorderSizePixel = 0,
 			Active = true,
@@ -9908,17 +9910,10 @@ local function FacebangModal(_param)
 				TextSize = 18,
 				TextXAlignment = "Left",
 			}),
-			Roact.createElement("Frame", {
-				Size = UDim2.new(1, -40, 0, 1),
-				Position = UDim2.new(0, 20, 0, 55),
-				BackgroundColor3 = Color3.fromRGB(235, 76, 105),
-				BackgroundTransparency = 0.6,
-				BorderSizePixel = 0,
-			}),
 			Roact.createElement("TextButton", {
 				Text = "✕",
 				Size = UDim2.new(0, 30, 0, 30),
-				Position = UDim2.new(1, -45, 0, 15),
+				Position = UDim2.new(1, -40, 0, 15),
 				BackgroundTransparency = 1,
 				TextColor3 = Color3.fromRGB(150, 150, 150),
 				Font = Enum.Font.GothamBold,
@@ -9954,14 +9949,10 @@ local function FacebangModal(_param)
 					Roact.createElement("UICorner", {
 						CornerRadius = UDim.new(0, 8),
 					}),
-					Roact.createElement("UIStroke", {
-						Color = job.active and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(40, 40, 40),
-						Transparency = 0.8,
-					}),
 				}),
 			}),
 			Roact.createElement("Frame", {
-				Size = UDim2.new(1, 0, 0, 300),
+				Size = UDim2.new(1, 0, 0, 200),
 				Position = UDim2.new(0, 20, 0, 175),
 				BackgroundTransparency = 1,
 			}, {
@@ -9978,10 +9969,9 @@ local function FacebangModal(_param)
 			}),
 		}),
 	})
-end
+end)
 local default = FacebangModal
 return {
-	FacebangModal = FacebangModal,
 	default = default,
 }
 
