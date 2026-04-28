@@ -1,6 +1,6 @@
 --[[
     Havoc Studios Bundler
-    Version: 20260428-dbg
+    Version: dev-dbg
 --]]
 
 local function start()
@@ -50,7 +50,7 @@ end
 local function newEnv(id)
     local success, env = pcall(getfenv, 0)
     return setmetatable({
-        VERSION = "20260428-dbg",
+        VERSION = "dev-dbg",
         script = instanceFromId[id],
         require = function(module) return requireModuleInternal(module, instanceFromId[id]) end,
     }, { __index = env or _G })
@@ -19090,7 +19090,7 @@ return {
     end);
 
     hInst("types", "Folder", "Havoc.include.node_modules.make.node_modules.@rbxts.compiler-types.types", "Havoc.include.node_modules.make.node_modules.@rbxts.compiler-types");
-    print('[Havoc]: 20260428-dbg initialized successfully.');
+    print('[Havoc]: dev-dbg initialized successfully.');
 end
 
 local success, err = pcall(start);
