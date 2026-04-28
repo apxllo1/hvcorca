@@ -1,135 +1,58 @@
 local PARAMS = {...}
-
-local function getFlag(flag)
-	for _, v in ipairs(PARAMS) do
-		if v == flag then
-			return true
-		end
-	end
-	return false
-end
+local function getFlag(f) for _, v in ipairs(PARAMS) do if v == f then return true end end return false end
 
 local OUTPUT_PATH = assert(PARAMS[1], "No output path specified")
 local VERSION = assert(PARAMS[2], "No version specified")
-local DEBUG_MODE = getFlag("debug")
-local VERBOSE = getFlag("verbose")
 local MINIFY = getFlag("minify")
 
 local ROJO_INPUT = "Havoc.rbxm"
 local RUNTIME_FILE = "ci/runtime.lua"
-local BUNDLE_TEMP = "ci/bundle.tmp"
 
----Convert some specific snippets to work in luamin.
-local function transformInput(source)
-	source = string.gsub(source, "([%w_]+)%s*([%+%-%*/%%^%.]%.?)=%s*", "%1 = %1 %2")
-	source = string.gsub(source, "(%s+)continue(%s+)", "%1__CONTINUE__()%2")
-	return source
+local function writeModule(object, file)
+    local id = object:GetFullName()
+    local source = remodel.getRawProperty(object, "Source")
+    source = source .. "\n" -- Prevent comment bleed
+
+    local path, name = string.format("%q", id), string.format("%q", object.Name)
+    local parent = object.Parent and string.format("%q", object.Parent:GetFullName()) or "nil"
+    local className = string.format("%q", object.ClassName)
+
+    -- Write directly to file handle to save memory
+    file:write(string.format("newModule(%s, %s, %s, %s, function ()\n", name, className, path, parent))
+    file:write("return setfenv(function()\n")
+    file:write(source)
+    file:write("\nend, newEnv(" .. path .. "))()\nend)\n\n")
 end
 
-local function transformOutput(source)
-	source = string.gsub(source, "%.%.%.:", "(...):")
-	source = string.gsub(source, "__CONTINUE__%(%)", "continue;")
-	return source
+local function writeInstance(object, file)
+    local path, name = string.format("%q", object:GetFullName()), string.format("%q", object.Name)
+    local parent = object.Parent and string.format("%q", object.Parent:GetFullName()) or "nil"
+    file:write(string.format("newInstance(%s, %s, %s, %s)\n", name, string.format("%q", object.ClassName), path, parent))
 end
 
-local function minify(source)
-	remodel.writeFile(BUNDLE_TEMP, transformInput(source))
-	os.execute("node ci/minify.js")
-	local output = remodel.readFile(BUNDLE_TEMP)
-	os.remove(BUNDLE_TEMP)
-	return transformOutput(output)
-end
-
-local function writeModule(object, output)
-	local id = object:GetFullName()
-	local source = remodel.getRawProperty(object, "Source")
-	
-	-- CRITICAL: Prevent comment-bleed by ensuring code doesn't end on a comment line
-	source = source .. "\n"
-
-	local path = string.format("%q", id)
-	local parent = object.Parent and string.format("%q", object.Parent:GetFullName()) or "nil"
-	local name = string.format("%q", object.Name)
-	local className = string.format("%q", object.ClassName)
-
-	if DEBUG_MODE then
-		local def = "newModule(" .. name .. ", " .. className .. ", " .. path .. ", " .. parent .. ", function ()\n" ..
-			"local fn = assert(loadstring(" .. string.format("%q", source) .. ", '@'.." .. path .. "))\n" ..
-			"setfenv(fn, newEnv(" .. path .. "))\n" ..
-			"return fn()\n" ..
-			"end)\n"
-		table.insert(output, def)
-	else
-		-- Robust wrapper for compiled TS code
-		local def = "newModule(" .. name .. ", " .. className .. ", " .. path .. ", " .. parent .. ", function ()\n" ..
-			"return setfenv(function()\n" ..
-			source .. "\n" ..
-			"end, newEnv(" .. path .. "))()\n" ..
-			"end)\n"
-		table.insert(output, def)
-	end
-end
-
-local function writeInstance(object, output)
-	local id = object:GetFullName()
-	local path = string.format("%q", id)
-	local parent = object.Parent and string.format("%q", object.Parent:GetFullName()) or "nil"
-	local name = string.format("%q", object.Name)
-	local className = string.format("%q", object.ClassName)
-
-	local def = "newInstance(" .. name .. ", " .. className .. ", " .. path .. ", " .. parent .. ")\n"
-	table.insert(output, def)
-end
-
-local function writeInstanceTree(object, output)
-	if object.ClassName == "LocalScript" or object.ClassName == "ModuleScript" then
-		writeModule(object, output)
-	else
-		writeInstance(object, output)
-	end
-
-	for _, child in ipairs(object:GetChildren()) do
-		writeInstanceTree(child, output)
-	end
+local function walk(object, file)
+    if object.ClassName == "LocalScript" or object.ClassName == "ModuleScript" then
+        writeModule(object, file)
+    else
+        writeInstance(object, file)
+    end
+    for _, child in ipairs(object:GetChildren()) do walk(child, file) end
 end
 
 local function main()
-	local output = {}
-	local success, model = pcall(function() return remodel.readModelFile(ROJO_INPUT)[1] end)
-	
-	if not success or not model then
-		error("Failed to read " .. ROJO_INPUT .. ". Make sure Rojo build finished first!")
-	end
+    local model = remodel.readModelFile(ROJO_INPUT)[1]
+    local runtime = string.gsub(remodel.readFile(RUNTIME_FILE), "__VERSION__", string.format("%q", VERSION))
+    
+    -- Open file for writing immediately
+    remodel.createDirAll(string.match(OUTPUT_PATH, "^(.*)[/\\]"))
+    local f = io.open(OUTPUT_PATH, "w")
+    
+    f:write(runtime .. "\n\n")
+    walk(model, f)
+    f:write("\ninit()\n")
+    f:close()
 
-	writeInstanceTree(model, output)
-
-	local runtime = string.gsub(remodel.readFile(RUNTIME_FILE), "__VERSION__", string.format("%q", VERSION))
-	
-	-- Massive separation to keep the minifier happy
-	local final_source = table.concat(output, "\n\n")
-
-	if MINIFY then
-		final_source = minify(final_source)
-	end
-
-	local result = {
-		runtime,
-		final_source,
-		"\ninit()\n" 
-	}
-
-	if VERBOSE then
-		table.insert(result, 2, "local START_TIME = os.clock()")
-		table.insert(result, "print(\"[CI \" .. " .. string.format("%q", VERSION) .. " .. \"] Havoc run in \" .. (os.clock() - START_TIME) * 1000 .. \" ms\")")
-	end
-
-	remodel.createDirAll(string.match(OUTPUT_PATH, "^(.*)[/\\]"))
-	
-	local bundle_data = table.concat(result, "\n\n")
-	
-	remodel.writeFile(OUTPUT_PATH, bundle_data)
-
-	print("[CI " .. VERSION .. "] Bundle written: " .. #bundle_data .. " bytes to " .. OUTPUT_PATH)
+    print("[CI] Bundle completed via Stream Write.")
 end
 
 main()
