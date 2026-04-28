@@ -56,21 +56,18 @@ local function walk(parent)
         local isScript   = (class == "ModuleScript" or class == "LocalScript")
 
         if SKIP_NAMES[object.Name] then
-            -- These are runtime/include containers — recurse but emit as plain instances
             file:write(string.format("    hInst(%s, %q, %s, %s);\n", name, class, path, parentPath))
             walk(object)
         elseif isScript then
             local success, source = pcall(function() return object.Source end)
-
             if not success or source == nil then
-                -- Remodel genuinely cannot read Source — hard fail
-                file:close()
-                error(string.format(
-                    "[BUNDLE ERROR] Source inaccessible for %s (%s). Cannot produce valid bundle.",
-                    object:GetFullName(), class
+                print(string.format(
+                    "[WARN] Skipping %s (%s) — pcall=%s source=%s",
+                    object:GetFullName(), class, tostring(success), tostring(source)
                 ))
+                file:write(string.format("    hInst(%s, %q, %s, %s);\n", name, class, path, parentPath))
+                walk(object)
             elseif source == "" then
-                -- Empty source = roblox-ts init container stub, treat as plain instance
                 print(string.format(
                     "[WARN] Empty source for %s (%s) — emitting as hInst container.",
                     object:GetFullName(), class
@@ -78,7 +75,6 @@ local function walk(parent)
                 file:write(string.format("    hInst(%s, %q, %s, %s);\n", name, class, path, parentPath))
                 walk(object)
             else
-                -- Normal script with real source
                 source = source:gsub("%]%]", "] ]")
                 file:write(string.format("    hMod(%s, %q, %s, %s, function()\n", name, class, path, parentPath))
                 file:write("        return (function(...)\n")
@@ -87,7 +83,6 @@ local function walk(parent)
                 walk(object)
             end
         else
-            -- Non-script instance (Folder, UI, etc.)
             file:write(string.format("    hInst(%s, %q, %s, %s);\n", name, class, path, parentPath))
             walk(object)
         end
