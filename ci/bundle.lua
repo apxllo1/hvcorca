@@ -20,10 +20,11 @@ local function writeModule(object, file)
     
     local className = string.format("%q", object.ClassName)
 
-    -- Use the Global reference directly to prevent 'nil' errors during UI initialization
+    -- CHANGE: We call _G directly here to ensure the function is ALWAYS found
     file:write(string.format("    _G.Havoc_NewModule(%s, %s, %s, %s, function ()\n", name, className, path, parentStr))
     file:write("        return setfenv(function()\n")
     file:write(source)
+    -- CHANGE: Using _G.Havoc_NewEnv here too
     file:write("\n        end, _G.Havoc_NewEnv(" .. path .. "))()\n    end)\n\n")
 end
 
@@ -35,6 +36,7 @@ local function writeInstance(object, file)
         and string.format("%q", object.Parent:GetFullName()) 
         or "nil"
     
+    -- CHANGE: Using _G directly
     file:write(string.format("    _G.Havoc_NewInstance(%s, %q, %s, %s)\n", name, object.ClassName, path, parentStr))
 end
 
@@ -63,41 +65,35 @@ local function main()
     local model = remodel.readModelFile(ROJO_INPUT)[1]
     local runtime = remodel.readFile(RUNTIME_FILE)
     
-    -- Inject Version
     runtime = string.gsub(runtime, "__VERSION__", string.format("%q", VERSION))
     
     remodel.createDirAll(string.match(OUTPUT_PATH, "^(.*)[/\\]"))
     local f = io.open(OUTPUT_PATH, "w")
     
     f:write("--[[\n    Havoc Studios Bundler\n    Version: " .. VERSION .. "\n--]]\n\n")
-    
     f:write("local function start()\n")
     f:write("    local runEnv = (getfenv and getfenv()) or _G or shared\n\n")
     
-    -- 1. Execute the Runtime isolated block. This populates _G.Havoc_Init, etc.
-    f:write("    (function()\n")
-    f:write(runtime .. "\n")
-    f:write("    end)()\n\n")
+    f:write("    -- 1. Execute Runtime (Populates _G)\n")
+    f:write("    (function()\n" .. runtime .. "\n    end)()\n\n")
     
-    -- 2. Verify and Run Init
+    f:write("    -- 2. Validate Handshake\n")
     f:write("    if not _G.Havoc_Init then warn('[Havoc Critical]: Handshake Failed') return end\n")
     f:write("    _G.Havoc_Init(runEnv)\n\n")
     
-    -- 3. Generate the UI/Instance tree
+    -- 3. The Walk (Uses the direct _G calls in writeModule/writeInstance)
     walk(model, f)
     
     f:write("    print('[Havoc]: " .. VERSION .. " initialized successfully.')\n")
     f:write("end\n\n")
     
-    -- Execute the start block safely
     f:write("local success, err = pcall(start)\n")
     f:write("if not success then\n")
     f:write("    warn('[Havoc Critical]: Bundle execution failed! Error: ' .. tostring(err))\n")
     f:write("end\n")
 
     f:close()
-
-    print("[CI] Bundle completed via Global Handshake Logic.")
+    print("[CI] Bundle completed via HARD-LINKED Global Logic.")
 end
 
 main()
