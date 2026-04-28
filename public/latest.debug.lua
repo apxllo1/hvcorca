@@ -4449,6 +4449,37 @@ return {\
 \9configureStore = configureStore,\
 }", '@'.."Havoc.store.store")) setfenv(fn, newEnv("Havoc.store.store")) return fn() end)
 
+newModule("theme", "ModuleScript", "Havoc.theme", "Havoc", function () local fn = assert(loadstring("-- Compiled with roblox-ts v1.2.7\
+local UI_COLORS = {\
+\9Accent = Color3.fromRGB(235, 76, 105),\
+\9AccentDark = Color3.fromRGB(150, 40, 60),\
+\9MainBG = Color3.fromRGB(10, 10, 10),\
+\9SectionBG = Color3.fromRGB(15, 15, 15),\
+\9ElementBG = Color3.fromRGB(20, 20, 20),\
+\9Border = Color3.fromRGB(35, 35, 35),\
+\9Hover = Color3.fromRGB(45, 45, 45),\
+\9TextMain = Color3.fromRGB(255, 255, 255),\
+\9TextDim = Color3.fromRGB(180, 180, 180),\
+\9TextDark = Color3.fromRGB(120, 120, 120),\
+}\
+local UI_ANIMATION = {\
+\9SpringDamping = 0.8,\
+\9SpringFrequency = 2.5,\
+\9FastSpeed = 0.1,\
+\9DefaultSpeed = 0.25,\
+}\
+local UI_LAYOUT = {\
+\9Padding = UDim.new(0, 20),\
+\9Spacing = UDim.new(0, 10),\
+\9CornerRadius = UDim.new(0, 8),\
+\9HeaderHeight = 60,\
+}\
+return {\
+\9UI_COLORS = UI_COLORS,\
+\9UI_ANIMATION = UI_ANIMATION,\
+\9UI_LAYOUT = UI_LAYOUT,\
+}", '@'.."Havoc.theme")) setfenv(fn, newEnv("Havoc.theme")) return fn() end)
+
 newModule("themes", "ModuleScript", "Havoc.themes", "Havoc", function () local fn = assert(loadstring("-- Compiled with roblox-ts v1.2.7\
 local TS = require(script.Parent.include.RuntimeLib)\
 local darkTheme = TS.import(script, script, \"sorbet\").darkTheme\
