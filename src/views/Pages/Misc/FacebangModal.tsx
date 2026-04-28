@@ -56,7 +56,7 @@ export function FacebangModal({ isVisible, onClose }: FacebangProps) {
 				>
 					<uicorner CornerRadius={new UDim(0, 6)} />
 					<uistroke Color={Color3.fromRGB(35, 35, 35)} Thickness={1} />
-					
+
 					{/* Background fill */}
 					<frame
 						Size={new UDim2(percent, 0, 1, 0)}
@@ -64,7 +64,7 @@ export function FacebangModal({ isVisible, onClose }: FacebangProps) {
 						BorderSizePixel={0}
 					>
 						<uicorner CornerRadius={new UDim(0, 6)} />
-						
+
 						{/* Professional Knob Handle */}
 						<frame
 							Size={new UDim2(0, 6, 0, 20)}
