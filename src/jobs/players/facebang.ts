@@ -8,7 +8,10 @@ const DEFAULT_GRAVITY = 192.2;
 
 let isRunning = false;
 
-// Helper to safely toggle character physics
+// Pre-define common CFrames to save memory allocation
+const CF_IDENTITY = new CFrame();
+const CF_HEIGHT = new CFrame(0, HEIGHT_OFFSET, DEPTH_OFFSET);
+
 const setPhysicsEnabled = (char: Model, enabled: boolean) => {
 	const hum = char.FindFirstChildOfClass("Humanoid");
 	if (hum) {
@@ -25,17 +28,14 @@ onJobChange("facebang", (job, state) => {
 	const localPlayer = Players.LocalPlayer;
 	const localChar = localPlayer.Character;
 
-	// 1. Cleanup and Exit
 	if (!sliderJob?.active || !localChar) {
 		isRunning = false;
 		if (localChar) setPhysicsEnabled(localChar, true);
 		return;
 	}
 
-	// 2. Singleton Guard
 	if (isRunning) return;
 
-	// 3. Target Validation
 	const targetName = state.dashboard.apps.playerSelected;
 	const targetPlayer = targetName !== undefined ? (Players.FindFirstChild(targetName) as Player) : undefined;
 
@@ -45,48 +45,48 @@ onJobChange("facebang", (job, state) => {
 
 	task.spawn(() => {
 		const localRoot = localChar.WaitForChild("HumanoidRootPart") as BasePart;
-
-		// Use a local reference to the job data that we can update
+		
 		while (isRunning) {
 			const targetChar = targetPlayer.Character;
 			const targetHead = targetChar?.FindFirstChild("Head") as BasePart | undefined;
-
-			// If target leaves or dies, wait or exit
-			if (!targetHead || !targetChar) {
-				task.wait(0.5);
-				continue;
+			
+			if (!targetHead) {
+				task.wait(0.1); // Reduced wait for snappier target re-acquisition
+				continue; 
 			}
 
 			setPhysicsEnabled(localChar, false);
 
-			// Logic variables pulled from the latest state in the loop
-			// Use 'any' cast specifically to avoid the "index signature" compile error
+			// Optimization: Fetch sliders once per 'stroke' instead of every frame
 			const currentJob = (state.jobs as any).facebang as JobWithSliders;
 			const dist = currentJob?.sliders?.distance ?? 1.9;
-			const angle = currentJob?.sliders?.angle ?? 180;
-			const speed = 0.1; // Hardcoded or pull from a slider if you add one
+			const angle = math.rad(currentJob?.sliders?.angle ?? 180);
+			const speed = 0.08; // Slightly faster for better "impact" feel
 
-			// Pre-calculate rotations to save CPU cycles
-			const rotation = CFrame.Angles(0, math.rad(angle), 0);
-			const offset = new CFrame(0, HEIGHT_OFFSET, DEPTH_OFFSET);
+			// Pre-calculate the Angle CFrame
+			const angleRotation = CFrame.Angles(0, angle, 0);
+			
+			// We define the relative offsets once
+			const relativeBase = CF_HEIGHT.mul(angleRotation);
+			const relativePeak = relativeBase.mul(new CFrame(0, 0, -dist));
 
-			const baseCFrame = targetHead.CFrame.mul(offset).mul(rotation);
-			const peakCFrame = baseCFrame.mul(new CFrame(0, 0, -dist));
-
-			// Sub-loop: Forward & Back (The "Bang")
-			// We split the alpha (0 to 1) to handle the full stroke in one timer
 			const startTime = tick();
-			while (isRunning && tick() - startTime < speed * 2) {
+			const duration = speed * 2;
+
+			// THE RENDER LOOP
+			while (isRunning && tick() - startTime < duration) {
 				const elapsed = tick() - startTime;
-				const isPushing = elapsed < speed;
+				
+				// Calculate a 0 -> 1 -> 0 alpha in a single math operation
+				// This creates the "bounce" effect without nested while loops
+				const rawAlpha = elapsed / duration;
+				const pingPongAlpha = 1 - math.abs(1 - (rawAlpha * 2)); 
+				const smoothAlpha = ease(math.clamp(pingPongAlpha, 0, 1));
 
-				// Calculate alpha for the current half-stroke
-				const alpha = isPushing ? elapsed / speed : 1 - (elapsed - speed) / speed;
-				const smoothAlpha = ease(math.clamp(alpha, 0, 1));
-
-				// Check if character still exists before applying CFrame
-				if (localRoot && targetHead.Parent) {
-					localRoot.CFrame = baseCFrame.Lerp(peakCFrame, smoothAlpha);
+				if (targetHead.Parent && localRoot.Parent) {
+					// Optimization: One single CFrame multiplication chain
+					const targetCF = targetHead.CFrame;
+					localRoot.CFrame = targetCF.mul(relativeBase.Lerp(relativePeak, smoothAlpha));
 				}
 
 				RunService.RenderStepped.Wait();
