@@ -21,7 +21,6 @@ function MiscPage() {
 				CanvasSize={new UDim2(0, 0, 0, 0)}
 				AutomaticCanvasSize={Enum.AutomaticSize.Y}
 				ClipsDescendants={true}
-				// Improvement: Lower ZIndex so Modal always wins
 				ZIndex={1}
 			>
 				<uilistlayout Padding={new UDim(0, 10)} SortOrder={Enum.SortOrder.LayoutOrder} />
@@ -51,15 +50,23 @@ function MiscPage() {
 				</textbutton>
 			</scrollingframe>
 
-			{/* Improvement: Use a CanvasGroup or Frame with high ZIndex 
-				to ensure the modal blocks inputs to the background.
-			*/}
+			{/* FULL TRIGGER: The Modal Layer */}
 			{modalVisible && (
 				<frame
-					Size={new UDim2(1, 40, 1, 40)} // Slight offset to cover padding
+					Key="ModalOverlay"
+					Size={new UDim2(1, 40, 1, 40)} 
 					Position={new UDim2(0, -20, 0, -20)}
-					BackgroundTransparency={1}
+					BackgroundColor3={new Color3(0, 0, 0)}
+					BackgroundTransparency={0.5} // Dims the background
 					ZIndex={10}
+					Event={{
+						// Optional: Clicking the dim area closes the modal
+						InputBegan: (_, input) => {
+							if (input.UserInputType === Enum.UserInputType.MouseButton1) {
+								setModalVisible(false);
+							}
+						}
+					}}
 				>
 					<FacebangModal isVisible={modalVisible} onClose={() => setModalVisible(false)} />
 				</frame>
