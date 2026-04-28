@@ -1,6 +1,6 @@
 --[[
     Havoc Studios Bundler
-    Version: dev-dbg
+    Version: 20260428-dbg
 --]]
 
 local function start()
@@ -11,13 +11,13 @@ local function start()
     hInit, hMod, hInst, hEnv = (function()
 --[[
     Havoc Studios Runtime Engine
-    FINAL EMERGENCY FIX: Global Handshake Logic
---]]
+    FINAL EMERGENCY FIX: Local-to-Global Sync Logic
+]]
 
 local Instance, game, task, require, setmetatable, pcall, error, warn
 local instanceFromId, idFromInstance, modules, currentlyLoading = {}, {}, {}, {}
 
--- Module resolution
+-- Module resolution logic
 local function validateRequire(module, caller)
     currentlyLoading[caller] = module
     local currentModule, depth = module, 0
@@ -28,95 +28,131 @@ local function validateRequire(module, caller)
             if currentModule == module then error("Circular dependency detected", 2) end
         end
     end
-    return function() if currentlyLoading[caller] == module then currentlyLoading[caller] = nil end end
+    return function() 
+        if currentlyLoading[caller] == module then currentlyLoading[caller] = nil end 
+    end
 end
 
 local function loadModule(obj, this)
     local cleanup = this and validateRequire(obj, this)
     local module = modules[obj]
-    if module.isLoaded then if cleanup then cleanup() end return module.value end
+    if not module then error("Module not found in Havoc registry: " .. tostring(obj), 2) end
+    
+    if module.isLoaded then 
+        if cleanup then cleanup() end 
+        return module.value 
+    end
+    
     local success, result = pcall(module.fn)
-    if not success then error("\n[Havoc] Failed: " .. obj:GetFullName() .. "\nError: " .. tostring(result), 0) end
+    if not success then 
+        error("\n[Havoc] Execution Failed: " .. obj:GetFullName() .. "\nError: " .. tostring(result), 0) 
+    end
+    
     module.value, module.isLoaded = result, true
     if cleanup then cleanup() end
     return result
 end
 
 local function requireModuleInternal(target, this)
-    if modules[target] and target:IsA("ModuleScript") then return loadModule(target, this) end
+    if modules[target] and target:IsA("ModuleScript") then 
+        return loadModule(target, this) 
+    end
     return require(target)
 end
 
+-- Environment Factory
 local function newEnv(id)
     local success, env = pcall(getfenv, 0)
+    local scriptObj = instanceFromId[id]
+    
     return setmetatable({
-        VERSION = "dev-dbg",
-        script = instanceFromId[id],
-        require = function(module) return requireModuleInternal(module, instanceFromId[id]) end,
-    }, { __index = env or _G })
+        VERSION = "20260428-dbg",
+        script = scriptObj,
+        require = function(module) 
+            return requireModuleInternal(module, scriptObj) 
+        end,
+    }, { 
+        __index = env or _G 
+    })
 end
 
+-- Robust Instance Constructor
 local function safeNew(className)
     local constructor = (Instance and Instance.new) or (_G.Instance and _G.Instance.new)
-    if not constructor and game then
-        local mt = getmetatable(game)
-        if mt and mt.__index and mt.__index.new then constructor = mt.__index.new end
+    
+    if not constructor then
+        -- Fallback to game metatable for high-end executors
+        local success, result = pcall(function() return game.Instance.new end)
+        if success then constructor = result end
     end
-    if not constructor and debug and debug.getregistry then
-        for _, v in pairs(debug.getregistry()) do
-            if type(v) == "table" and v.new and type(v.new) == "function" then constructor = v.new break end
-        end
+    
+    if not constructor then 
+        error("[Havoc Critical]: Instance.new not found in this environment.", 0) 
     end
-    if not constructor then error("[Havoc Critical]: Instance.new not found.", 0) end
     return constructor(className)
 end
 
 local function newModule(name, className, path, parent, fn)
     local inst = safeNew(className)
     inst.Name = name
-    if parent and instanceFromId[parent] then inst.Parent = instanceFromId[parent] end
-    instanceFromId[path], idFromInstance[inst], modules[inst] = inst, path, { fn = fn, isLoaded = false }
+    if parent and instanceFromId[parent] then 
+        inst.Parent = instanceFromId[parent] 
+    end
+    instanceFromId[path] = inst
+    idFromInstance[inst] = path
+    modules[inst] = { fn = fn, isLoaded = false }
 end
 
 local function newInstance(name, className, path, parent)
     local inst = safeNew(className)
     inst.Name = name
-    if parent and instanceFromId[parent] then inst.Parent = instanceFromId[parent] end
-    instanceFromId[path], idFromInstance[inst] = inst, path
+    if parent and instanceFromId[parent] then 
+        inst.Parent = instanceFromId[parent] 
+    end
+    instanceFromId[path] = inst
+    idFromInstance[inst] = path
 end
 
 local function init(env)
     local e = env or getfenv() or _G
-    Instance, game, task, require, setmetatable, pcall, error, warn = e.Instance or _G.Instance, e.game or _G.game, e.task or _G.task, e.require or _G.require, e.setmetatable or _G.setmetatable, e.pcall or _G.pcall, e.error or _G.error, e.warn or _G.warn
-
-    if not Instance and game then
-        local mt = getmetatable(game)
-        if mt and mt.__index then Instance = mt.__index end
-    end
+    
+    -- Sync standard libraries
+    Instance = e.Instance or _G.Instance
+    game = e.game or _G.game
+    task = e.task or _G.task
+    require = e.require or _G.require
+    setmetatable = e.setmetatable or _G.setmetatable
+    pcall = e.pcall or _G.pcall
+    error = e.error or _G.error
+    warn = e.warn or _G.warn
 
     if not game then return end
     
+    -- Wait for game to load if necessary
     pcall(function()
-        if game.IsLoaded and not game:IsLoaded() then game.Loaded:Wait() end
+        if not game:IsLoaded() then game.Loaded:Wait() end
     end)
     
+    -- Auto-run LocalScripts
     for object in pairs(modules) do
         if object:IsA("LocalScript") and not object.Disabled then
             task.spawn(function()
                 local success, err = pcall(loadModule, object)
-                if not success then warn("[Havoc Runtime Error]: " .. tostring(err)) end
+                if not success then 
+                    warn("[Havoc Runtime Error]: " .. tostring(err)) 
+                end
             end)
         end
     end
 end
 
--- CRITICAL: Force exposure to Global to stop the "nil" errors permanently
+-- Expose to Global table for handshake
 _G.Havoc_Init = init
 _G.Havoc_NewModule = newModule
 _G.Havoc_NewInstance = newInstance
 _G.Havoc_NewEnv = newEnv
 
--- Return them anyway for the bundler to capture
+-- IMPORTANT: This return must match the hInit, hMod, hInst, hEnv capture in bundle.lua
 return init, newModule, newInstance, newEnv
 
     end)();
@@ -9970,7 +10006,12 @@ local useCallback = _roact_hooked.useCallback
 local useTheme = TS.import(script, script.Parent.Parent.Parent.Parent, "hooks", "use-theme").useTheme
 local FacebangModal = TS.import(script, script.Parent, "FacebangModal").default
 local function MiscPage()
-	local theme = useTheme("home").profile
+	local themeData = useTheme("home")
+	local _theme = themeData
+	if _theme ~= nil then
+		_theme = _theme.profile
+	end
+	local theme = _theme
 	local _binding = useState(false)
 	local modalVisible = _binding[1]
 	local setModalVisible = _binding[2]
@@ -9982,6 +10023,14 @@ local function MiscPage()
 			return not prev
 		end)
 	end, {})
+	if not theme then
+		return Roact.createFragment({
+			Loading = Roact.createElement("Frame", {
+				BackgroundTransparency = 1,
+				Size = UDim2.new(1, 0, 1, 0),
+			}),
+		})
+	end
 	local _attributes = {
 		Size = UDim2.new(1, 0, 1, 0),
 		BackgroundTransparency = 1,
@@ -9992,7 +10041,7 @@ local function MiscPage()
 			PaddingLeft = UDim.new(0, 20),
 			PaddingRight = UDim.new(0, 20),
 		}),
-		Roact.createElement("ScrollingFrame", {
+		ContentScroll = Roact.createElement("ScrollingFrame", {
 			Size = UDim2.new(1, 0, 1, 0),
 			BackgroundTransparency = 1,
 			ScrollBarThickness = 2,
@@ -10002,17 +10051,19 @@ local function MiscPage()
 			ZIndex = 1,
 		}, {
 			Roact.createElement("UIListLayout", {
-				Padding = UDim.new(0, 10),
+				Padding = UDim.new(0, 12),
 				SortOrder = Enum.SortOrder.LayoutOrder,
+				HorizontalAlignment = Enum.HorizontalAlignment.Center,
 			}),
-			Roact.createElement("TextButton", {
+			FacebangButton = Roact.createElement("TextButton", {
 				Text = "Facebang Settings",
-				Size = UDim2.new(1, 0, 0, 50),
-				BackgroundColor3 = isHovered and theme.button.background:Lerp(Color3.new(1, 1, 1), 0.1) or theme.button.background,
+				Size = UDim2.new(1, 0, 0, 55),
+				BackgroundColor3 = isHovered and theme.button.background:Lerp(Color3.new(1, 1, 1), 0.05) or theme.button.background,
 				TextColor3 = theme.button.foreground,
 				Font = Enum.Font.GothamBold,
 				TextSize = 16,
 				AutoButtonColor = false,
+				LayoutOrder = 1,
 				[Roact.Event.Activated] = toggleModal,
 				[Roact.Event.MouseEnter] = function()
 					return setHovered(true)
@@ -10022,12 +10073,16 @@ local function MiscPage()
 				end,
 			}, {
 				Roact.createElement("UICorner", {
-					CornerRadius = UDim.new(0, 8),
+					CornerRadius = UDim.new(0, 10),
 				}),
 				Roact.createElement("UIStroke", {
-					Thickness = 1.5,
-					Color = theme.button.background:Lerp(Color3.new(1, 1, 1), 0.2),
-					Transparency = isHovered and 0 or 0.5,
+					Thickness = 2,
+					Color = theme.button.background:Lerp(Color3.new(1, 1, 1), 0.15),
+					Transparency = isHovered and 0.2 or 0.6,
+				}),
+				Roact.createElement("UIAspectRatioConstraint", {
+					AspectRatio = 8,
+					DominantAxis = Enum.DominantAxis.Width,
 				}),
 			}),
 		}),
@@ -10038,9 +10093,9 @@ local function MiscPage()
 			Size = UDim2.new(1, 40, 1, 40),
 			Position = UDim2.new(0, -20, 0, -20),
 			BackgroundColor3 = Color3.new(0, 0, 0),
-			BackgroundTransparency = 0.5,
+			BackgroundTransparency = 0.4,
 			ZIndex = 10,
-			[Roact.Event.InputBegan] = function(_, input)
+			[Roact.Event.InputBegan] = function(instance, input)
 				if input.UserInputType == Enum.UserInputType.MouseButton1 then
 					setModalVisible(false)
 				end
@@ -10063,7 +10118,9 @@ local function MiscPage()
 			end
 		end
 	end
-	return Roact.createElement("Frame", _attributes, _children)
+	return Roact.createFragment({
+		MiscPage = Roact.createElement("Frame", _attributes, _children),
+	})
 end
 local default = hooked(MiscPage)
 return {
@@ -19090,7 +19147,7 @@ return {
     end);
 
     hInst("types", "Folder", "Havoc.include.node_modules.make.node_modules.@rbxts.compiler-types.types", "Havoc.include.node_modules.make.node_modules.@rbxts.compiler-types");
-    print('[Havoc]: dev-dbg initialized successfully.');
+    print('[Havoc]: 20260428-dbg initialized successfully.');
 end
 
 local success, err = pcall(start);
