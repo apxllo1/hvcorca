@@ -1,10 +1,8 @@
---[[ Havoc Bundle: 20260428-dbg ]]
+--[[ Havoc Bundle: dev-dbg ]]
 
 local init, newModule, newInstance, newEnv
 
 local function start()
-    local runEnv = (getfenv and getfenv()) or _G or shared
-
 --[[
     Havoc Studios Runtime Engine
     Handles Instance creation, Module resolution, and Environment Sandboxing.
@@ -76,7 +74,7 @@ local function newEnv(id)
     if not success then env = _G end
     
     return setmetatable({
-        VERSION = "20260428-dbg",
+        VERSION = "dev-dbg",
         script = instanceFromId[id],
         require = function (module)
             return requireModuleInternal(module, instanceFromId[id])
@@ -186,6 +184,9 @@ local function init(env)
 end
 
 
+    init, newModule, newInstance, newEnv = init, newModule, newInstance, newEnv
+
+    local runEnv = (getfenv and getfenv()) or _G or shared
     if init then init(runEnv) end
 
     newInstance("Havoc", "Folder", "Havoc", nil)
@@ -7577,34 +7578,23 @@ local RunService = _services.RunService
 local Players = _services.Players
 local Workspace = _services.Workspace
 local onJobChange = TS.import(script, script.Parent.Parent, "helpers", "job-store").onJobChange
-local DEPTH_OFFSET = -0.7
 local HEIGHT_OFFSET = 0.8
-local THRUST_DISTANCE = 1.9
+local DEPTH_OFFSET = -0.7
 local DEFAULT_GRAVITY = 192.2
 local isRunning = false
 local disablePhysics = function(char)
 	local hum = char:FindFirstChildOfClass("Humanoid")
-	local anim = char:FindFirstChild("Animate")
-	if anim then
-		anim.Disabled = true
-	end
 	if hum then
 		hum.PlatformStand = true
 		hum.AutoRotate = false
-		hum:ChangeState(Enum.HumanoidStateType.Physics)
 	end
 	Workspace.Gravity = 0
 end
 local enablePhysics = function(char)
 	local hum = char:FindFirstChildOfClass("Humanoid")
-	local anim = char:FindFirstChild("Animate")
-	if anim then
-		anim.Disabled = false
-	end
 	if hum then
 		hum.PlatformStand = false
 		hum.AutoRotate = true
-		hum:ChangeState(Enum.HumanoidStateType.GettingUp)
 	end
 	Workspace.Gravity = DEFAULT_GRAVITY
 end
@@ -7620,13 +7610,16 @@ onJobChange("facebang", function(job, state)
 	end
 	local _condition = not _result
 	if not _condition then
-		_condition = not sliderJob.sliders or not localChar
+		_condition = not localChar
 	end
 	if _condition then
 		isRunning = false
 		if localChar then
 			enablePhysics(localChar)
 		end
+		return nil
+	end
+	if isRunning then
 		return nil
 	end
 	local targetName = state.dashboard.apps.playerSelected
@@ -7643,9 +7636,13 @@ onJobChange("facebang", function(job, state)
 		return nil
 	end
 	isRunning = true
-	local thread = coroutine.create(function()
+	task.spawn(function()
 		local localRoot = localChar:WaitForChild("HumanoidRootPart")
-		while isRunning and sliderJob.active do
+		while isRunning do
+			local currentJob = (state.jobs).facebang
+			if not currentJob or not currentJob.active then
+				break
+			end
 			local _result_2 = targetPlayer.Character
 			if _result_2 ~= nil then
 				_result_2 = _result_2:FindFirstChild("Head")
@@ -7656,38 +7653,43 @@ onJobChange("facebang", function(job, state)
 				continue
 			end
 			disablePhysics(localChar)
-			local _condition_2 = sliderJob.sliders.distance
-			if not (_condition_2 ~= 0 and (_condition_2 == _condition_2 and _condition_2)) then
-				_condition_2 = THRUST_DISTANCE
+			local _condition_2 = currentJob.sliders.distance
+			if _condition_2 == nil then
+				_condition_2 = 1.9
 			end
 			local td = _condition_2
+			local _condition_3 = currentJob.sliders.angle
+			if _condition_3 == nil then
+				_condition_3 = 180
+			end
+			local angle = _condition_3
 			local speed = 0.1
 			local _cFrame = targetHead.CFrame
 			local _cFrame_1 = CFrame.new(0, HEIGHT_OFFSET, DEPTH_OFFSET)
-			local _arg0 = CFrame.Angles(0, math.rad(180), 0)
+			local _arg0 = CFrame.Angles(0, math.rad(angle), 0)
 			local basePos = _cFrame * _cFrame_1 * _arg0
 			local _cFrame_2 = targetHead.CFrame
 			local _cFrame_3 = CFrame.new(0, HEIGHT_OFFSET, DEPTH_OFFSET - td)
-			local _arg0_1 = CFrame.Angles(0, math.rad(180), 0)
+			local _arg0_1 = CFrame.Angles(0, math.rad(angle), 0)
 			local targetPos = _cFrame_2 * _cFrame_3 * _arg0_1
 			local start = tick()
-			while isRunning and tick() - start < speed do
+			while isRunning and (tick() - start) < speed do
 				local alpha = math.min((tick() - start) / speed, 1)
 				localRoot.CFrame = basePos:Lerp(targetPos, ease(alpha))
 				RunService.RenderStepped:Wait()
 			end
 			start = tick()
-			while isRunning and tick() - start < speed do
+			while isRunning and (tick() - start) < speed do
 				local alpha = math.min((tick() - start) / speed, 1)
 				localRoot.CFrame = targetPos:Lerp(basePos, ease(alpha))
 				RunService.RenderStepped:Wait()
 			end
 		end
+		isRunning = false
 		if localChar then
 			enablePhysics(localChar)
 		end
 	end)
-	task.spawn(thread)
 end)
 return nil
 
