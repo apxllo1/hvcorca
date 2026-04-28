@@ -77,16 +77,34 @@ local function newEnv(id)
     })
 end
 
--- NEW: Helper to safely create instances with debug info
+-- FIXED: safeNew using Reflection Fallback
 local function safeNew(className)
-    local Inst = Instance or _G.Instance
-    if not Inst then error("[Havoc Critical]: Instance global is NIL", 0) end
-    if type(Inst) ~= "table" and type(Inst) ~= "userdata" then 
-        error("[Havoc Critical]: Instance is a " .. type(Inst) .. ", not a table!", 0) 
-    end
-    if not Inst.new then error("[Havoc Critical]: Instance.new is NIL (Environment Blocked)", 0) end
+    -- Try the primary variable first
+    local constructor = (Instance and Instance.new) or (_G.Instance and _G.Instance.new)
     
-    return Inst.new(className)
+    -- FALLBACK: If .new is missing, reflect it from the game's metatable
+    if not constructor and game then
+        local mt = getmetatable(game)
+        if mt and mt.__index and mt.__index.new then
+            constructor = mt.__index.new
+        end
+    end
+
+    -- ULTIMATE FALLBACK: Search Registry (Only if debug is available)
+    if not constructor and debug and debug.getregistry then
+        for _, v in pairs(debug.getregistry()) do
+            if type(v) == "table" and v.new and type(v.new) == "function" then
+                constructor = v.new
+                break
+            end
+        end
+    end
+
+    if not constructor then 
+        error("[Havoc Critical]: Instance.new not found in Environment or Metatable. Executor is too restricted.", 0) 
+    end
+    
+    return constructor(className)
 end
 
 local function newModule(name, className, path, parent, fn)
@@ -114,11 +132,10 @@ local function newInstance(name, className, path, parent)
     idFromInstance[instance] = path
 end
 
--- Initialization with Deep Search
+-- Initialization with Metatable Recovery
 local function init(env)
     local e = env or getfenv() or _G
     
-    -- Deep Search: Look in passed env, then _G, then shared
     Instance = e.Instance or _G.Instance or shared.Instance
     game = e.game or _G.game or shared.game
     task = e.task or _G.task or shared.task
@@ -128,14 +145,16 @@ local function init(env)
     error = e.error or _G.error
     warn = e.warn or _G.warn
 
-    if not game or not game.IsLoaded then
-        -- If game is missing, we can't even wait for load
-        return
+    -- If Instance is still nil, try to recover it from the game metatable
+    if not Instance and game then
+        local mt = getmetatable(game)
+        if mt and mt.__index then
+            Instance = mt.__index
+        end
     end
 
-    if not game:IsLoaded() then
-        game.Loaded:Wait()
-    end
+    if not game or not game.IsLoaded then return end
+    if not game:IsLoaded() then game.Loaded:Wait() end
     
     for object in pairs(modules) do
         if object:IsA("LocalScript") and not object.Disabled then
