@@ -5,7 +5,7 @@
 --
 -- Author: 0866
 -- License: MIT
--- Version: "26d118a"
+-- Version: "dev"
 -- GitHub: https://github.com/richie0866/orca
 --]]
 
@@ -106,7 +106,7 @@ end
 ---@return table<string, any> environment
 local function newEnv(id)
 	return setmetatable({
-		VERSION = "26d118a",
+		VERSION = "dev",
 		script = instanceFromId[id],
 		require = function (module)
 			return requireModuleInternal(module, instanceFromId[id])
@@ -8589,7 +8589,9 @@ local function FacebangModal(_param)
 	end)
 	local dispatch = useDispatch()
 	if not isVisible then
-		return Roact.createFragment()
+		return Roact.createElement("Frame", {
+			Visible = false,
+		})
 	end
 	local renderSlider = function(label, value, percent, onUpdate)
 		return Roact.createFragment({
