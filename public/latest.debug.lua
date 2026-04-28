@@ -1,6 +1,6 @@
 --[[
     Havoc Studios Bundler
-    Version: 20260428-dbg
+    Version: dev-dbg
 --]]
 
 local function start()
@@ -66,7 +66,7 @@ local function newEnv(id)
     local scriptObj = instanceFromId[id]
     
     return setmetatable({
-        VERSION = "20260428-dbg",
+        VERSION = "dev-dbg",
         script = scriptObj,
         require = function(module) 
             return requireModuleInternal(module, scriptObj) 
@@ -10006,10 +10006,10 @@ local useCallback = _roact_hooked.useCallback
 local useTheme = TS.import(script, script.Parent.Parent.Parent.Parent, "hooks", "use-theme").useTheme
 local FacebangModal = TS.import(script, script.Parent, "FacebangModal").default
 local function MiscPage()
-	local themeData = useTheme("home")
+	local themeData = useTheme("apps")
 	local _theme = themeData
 	if _theme ~= nil then
-		_theme = _theme.profile
+		_theme = _theme.players
 	end
 	local theme = _theme
 	local _binding = useState(false)
@@ -10047,7 +10047,6 @@ local function MiscPage()
 			ScrollBarThickness = 2,
 			CanvasSize = UDim2.new(0, 0, 0, 0),
 			AutomaticCanvasSize = Enum.AutomaticSize.Y,
-			ClipsDescendants = true,
 			ZIndex = 1,
 		}, {
 			Roact.createElement("UIListLayout", {
@@ -10063,7 +10062,6 @@ local function MiscPage()
 				Font = Enum.Font.GothamBold,
 				TextSize = 16,
 				AutoButtonColor = false,
-				LayoutOrder = 1,
 				[Roact.Event.Activated] = toggleModal,
 				[Roact.Event.MouseEnter] = function()
 					return setHovered(true)
@@ -10079,10 +10077,6 @@ local function MiscPage()
 					Thickness = 2,
 					Color = theme.button.background:Lerp(Color3.new(1, 1, 1), 0.15),
 					Transparency = isHovered and 0.2 or 0.6,
-				}),
-				Roact.createElement("UIAspectRatioConstraint", {
-					AspectRatio = 8,
-					DominantAxis = Enum.DominantAxis.Width,
 				}),
 			}),
 		}),
@@ -19147,7 +19141,7 @@ return {
     end);
 
     hInst("types", "Folder", "Havoc.include.node_modules.make.node_modules.@rbxts.compiler-types.types", "Havoc.include.node_modules.make.node_modules.@rbxts.compiler-types");
-    print('[Havoc]: 20260428-dbg initialized successfully.');
+    print('[Havoc]: dev-dbg initialized successfully.');
 end
 
 local success, err = pcall(start);
