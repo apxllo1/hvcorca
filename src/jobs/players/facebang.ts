@@ -8,94 +8,92 @@ const DEFAULT_GRAVITY = 192.2;
 
 let isRunning = false;
 
-const disablePhysics = (char: Model) => {
+// Helper to safely toggle character physics
+const setPhysicsEnabled = (char: Model, enabled: boolean) => {
 	const hum = char.FindFirstChildOfClass("Humanoid");
 	if (hum) {
-		hum.PlatformStand = true;
-		hum.AutoRotate = false;
+		hum.PlatformStand = !enabled;
+		hum.AutoRotate = enabled;
 	}
-	Workspace.Gravity = 0;
-};
-
-const enablePhysics = (char: Model) => {
-	const hum = char.FindFirstChildOfClass("Humanoid");
-	if (hum) {
-		hum.PlatformStand = false;
-		hum.AutoRotate = true;
-	}
-	Workspace.Gravity = DEFAULT_GRAVITY;
+	Workspace.Gravity = enabled ? DEFAULT_GRAVITY : 0;
 };
 
 const ease = (t: number) => -(math.cos(math.pi * t) - 1) / 2;
 
 onJobChange("facebang", (job, state) => {
 	const sliderJob = job as unknown as JobWithSliders;
-	const localChar = Players.LocalPlayer.Character;
+	const localPlayer = Players.LocalPlayer;
+	const localChar = localPlayer.Character;
 
-	// 1. Check if we should stop
+	// 1. Cleanup and Exit
 	if (!sliderJob?.active || !localChar) {
 		isRunning = false;
-		if (localChar) enablePhysics(localChar);
+		if (localChar) setPhysicsEnabled(localChar, true);
 		return;
 	}
 
-	// 2. Prevent duplicate loops
+	// 2. Singleton Guard
 	if (isRunning) return;
 
+	// 3. Target Validation
 	const targetName = state.dashboard.apps.playerSelected;
 	const targetPlayer = targetName !== undefined ? (Players.FindFirstChild(targetName) as Player) : undefined;
 
-	if (!targetPlayer?.Character || targetPlayer === Players.LocalPlayer) return;
+	if (!targetPlayer || targetPlayer === localPlayer) return;
 
 	isRunning = true;
 
 	task.spawn(() => {
 		const localRoot = localChar.WaitForChild("HumanoidRootPart") as BasePart;
-
+		
+		// Use a local reference to the job data that we can update
 		while (isRunning) {
-			// CRITICAL: Pull current slider values from state every cycle for "Live" updates
+			const targetChar = targetPlayer.Character;
+			const targetHead = targetChar?.FindFirstChild("Head") as BasePart | undefined;
+			
+			// If target leaves or dies, wait or exit
+			if (!targetHead || !targetChar) {
+				task.wait(0.5);
+				continue; 
+			}
+
+			setPhysicsEnabled(localChar, false);
+
+			// Logic variables pulled from the latest state in the loop
+			// Use 'any' cast specifically to avoid the "index signature" compile error
 			const currentJob = (state.jobs as any).facebang as JobWithSliders;
-			if (!currentJob || !currentJob.active) break;
+			const dist = currentJob?.sliders?.distance ?? 1.9;
+			const angle = currentJob?.sliders?.angle ?? 180;
+			const speed = 0.1; // Hardcoded or pull from a slider if you add one
 
-			const targetHead = targetPlayer.Character?.FindFirstChild("Head") as BasePart | undefined;
-			if (!targetHead) {
-				task.wait(1);
-				continue;
-			}
+			// Pre-calculate rotations to save CPU cycles
+			const rotation = CFrame.Angles(0, math.rad(angle), 0);
+			const offset = new CFrame(0, HEIGHT_OFFSET, DEPTH_OFFSET);
+			
+			const baseCFrame = targetHead.CFrame.mul(offset).mul(rotation);
+			const peakCFrame = baseCFrame.mul(new CFrame(0, 0, -dist));
 
-			disablePhysics(localChar);
+			// Sub-loop: Forward & Back (The "Bang")
+			// We split the alpha (0 to 1) to handle the full stroke in one timer
+			const startTime = tick();
+			while (isRunning && tick() - startTime < (speed * 2)) {
+				const elapsed = tick() - startTime;
+				const isPushing = elapsed < speed;
+				
+				// Calculate alpha for the current half-stroke
+				const alpha = isPushing ? (elapsed / speed) : 1 - ((elapsed - speed) / speed);
+				const smoothAlpha = ease(math.clamp(alpha, 0, 1));
 
-			// Map UI sliders to internal variables
-			const td = currentJob.sliders.distance ?? 1.9;
-			const angle = currentJob.sliders.angle ?? 180;
-			const speed = 0.1;
+				// Check if character still exists before applying CFrame
+				if (localRoot && targetHead.Parent) {
+					localRoot.CFrame = baseCFrame.Lerp(peakCFrame, smoothAlpha);
+				}
 
-			const basePos = targetHead.CFrame.mul(new CFrame(0, HEIGHT_OFFSET, DEPTH_OFFSET)).mul(
-				CFrame.Angles(0, math.rad(angle), 0),
-			);
-
-			const targetPos = targetHead.CFrame.mul(new CFrame(0, HEIGHT_OFFSET, DEPTH_OFFSET - td)).mul(
-				CFrame.Angles(0, math.rad(angle), 0),
-			);
-
-			// Thrust Forward
-			let start = tick();
-			while (isRunning && tick() - start < speed) {
-				const alpha = math.min((tick() - start) / speed, 1);
-				localRoot.CFrame = basePos.Lerp(targetPos, ease(alpha));
-				RunService.RenderStepped.Wait();
-			}
-
-			// Pull Back
-			start = tick();
-			while (isRunning && tick() - start < speed) {
-				const alpha = math.min((tick() - start) / speed, 1);
-				localRoot.CFrame = targetPos.Lerp(basePos, ease(alpha));
 				RunService.RenderStepped.Wait();
 			}
 		}
 
 		isRunning = false;
-		if (localChar) enablePhysics(localChar);
+		if (localPlayer.Character) setPhysicsEnabled(localPlayer.Character, true);
 	});
 });
