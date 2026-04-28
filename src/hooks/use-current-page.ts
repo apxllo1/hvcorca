@@ -6,7 +6,7 @@ export function useCurrentPage() {
 }
 
 export function useIsPageOpen(page: DashboardPage) {
-	// We removed state.dashboard.isOpen so the tab stays "Active" 
+	// We removed state.dashboard.isOpen so the tab stays "Active"
 	// even when the UI is toggled shut.
 	return useAppSelector((state) => state.dashboard.page === page);
 }

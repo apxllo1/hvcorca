@@ -54,14 +54,14 @@ const FacebangModal = hooked(({ isVisible, onClose }: FacebangProps) => {
 								const newPercent = math.clamp(relativeX / rbx.AbsoluteSize.X, 0, 1);
 								onUpdate(newPercent);
 							};
-							
+
 							update(); // Initial click update
 						},
 					}}
 				>
 					<uicorner CornerRadius={new UDim(0, 6)} />
 					<uistroke Color={Color3.fromRGB(30, 30, 30)} Thickness={1} />
-					
+
 					{/* The Progress Bar */}
 					<frame
 						Size={new UDim2(percent, 0, 1, 0)}
