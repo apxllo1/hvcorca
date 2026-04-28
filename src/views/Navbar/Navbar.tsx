@@ -54,11 +54,7 @@ function Navbar() {
 				transparency={theme.transparency}
 			/>
 
-			<Canvas
-				size={px(100, 56)}
-				position={alpha.map((a) => scale(a, 0))}
-				clipsDescendants
-			>
+			<Canvas size={px(100, 56)} position={alpha.map((a) => scale(a, 0))} clipsDescendants>
 				<frame
 					Size={NAVBAR_SIZE}
 					Position={alpha.map((a) => scale(-a, 0))}
