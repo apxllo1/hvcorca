@@ -42,7 +42,7 @@ function NavbarTab({ page }: Props) {
 				ImageColor3={theme.foreground}
 				ImageTransparency={useSpring(isActive ? 0 : isHovered ? 0.3 : 0.6, {
 					frequency: 4,
-					dampingRatio: 1
+					dampingRatio: 1,
 				})}
 				Size={px(24, 24)} // Slightly smaller icons often look cleaner in a 5-tab row
 				Position={scale(0.5, 0.5)}
