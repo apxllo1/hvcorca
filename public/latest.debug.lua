@@ -9823,7 +9823,7 @@ local FacebangModal = hooked(function(_param)
 	local isVisible = _param.isVisible
 	local onClose = _param.onClose
 	local job = useSelector(function(state)
-		return state.jobs.facebang
+		return (state.jobs).facebang
 	end)
 	local dispatch = useDispatch()
 	if not isVisible or not job then
@@ -9837,7 +9837,7 @@ local FacebangModal = hooked(function(_param)
 			}, {
 				Roact.createElement("TextLabel", {
 					Text = string.upper(label),
-					Size = UDim2.new(0, 100, 0, 20),
+					Size = UDim2.new(1, 0, 0, 20),
 					BackgroundTransparency = 1,
 					TextColor3 = Color3.fromRGB(180, 180, 180),
 					Font = Enum.Font.GothamBold,
@@ -9846,8 +9846,7 @@ local FacebangModal = hooked(function(_param)
 				}),
 				Roact.createElement("TextLabel", {
 					Text = value,
-					Size = UDim2.new(0, 100, 0, 20),
-					Position = UDim2.new(1, -100, 0, 0),
+					Size = UDim2.new(1, 0, 0, 20),
 					BackgroundTransparency = 1,
 					TextColor3 = Color3.fromRGB(235, 76, 105),
 					Font = Enum.Font.GothamBold,
@@ -9862,12 +9861,9 @@ local FacebangModal = hooked(function(_param)
 					AutoButtonColor = false,
 					[Roact.Event.MouseButton1Down] = function(rbx)
 						local mouse = game:GetService("Players").LocalPlayer:GetMouse()
-						local update = function()
-							local relativeX = mouse.X - rbx.AbsolutePosition.X
-							local newPercent = math.clamp(relativeX / rbx.AbsoluteSize.X, 0, 1)
-							onUpdate(newPercent)
-						end
-						update()
+						local relativeX = mouse.X - rbx.AbsolutePosition.X
+						local newPercent = math.clamp(relativeX / rbx.AbsoluteSize.X, 0, 1)
+						onUpdate(newPercent)
 					end,
 				}, {
 					Roact.createElement("UICorner", {
@@ -9885,23 +9881,13 @@ local FacebangModal = hooked(function(_param)
 						Roact.createElement("UICorner", {
 							CornerRadius = UDim.new(0, 6),
 						}),
-						Roact.createElement("Frame", {
-							Size = UDim2.new(0, 4, 0, 16),
-							Position = UDim2.new(1, -2, 0.5, -8),
-							BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-							BorderSizePixel = 0,
-						}, {
-							Roact.createElement("UICorner", {
-								CornerRadius = UDim.new(1, 0),
-							}),
-						}),
 					}),
 				}),
 			}),
 		})
 	end
 	return Roact.createFragment({
-		MainModal = Roact.createElement("Frame", {
+		Main = Roact.createElement("Frame", {
 			Size = UDim2.new(0, 350, 0, 420),
 			Position = UDim2.new(0.5, -175, 0.5, -210),
 			BackgroundColor3 = Color3.fromRGB(10, 10, 10),
@@ -9917,7 +9903,7 @@ local FacebangModal = hooked(function(_param)
 			}),
 			Roact.createElement("TextLabel", {
 				Text = "FACEBANG CONFIG",
-				Size = UDim2.new(0, 200, 0, 60),
+				Size = UDim2.new(1, -40, 0, 60),
 				Position = UDim2.new(0, 20, 0, 0),
 				BackgroundTransparency = 1,
 				TextColor3 = Color3.fromRGB(255, 255, 255),
@@ -9940,19 +9926,9 @@ local FacebangModal = hooked(function(_param)
 				Position = UDim2.new(0, 20, 0, 75),
 				BackgroundTransparency = 1,
 			}, {
-				Roact.createElement("TextLabel", {
-					Text = job.active and "STATUS: RUNNING" or "STATUS: READY",
-					Size = UDim2.new(1, 0, 0, 20),
-					BackgroundTransparency = 1,
-					TextColor3 = job.active and Color3.fromRGB(235, 76, 105) or Color3.fromRGB(120, 120, 120),
-					Font = Enum.Font.GothamBold,
-					TextSize = 11,
-					TextXAlignment = "Left",
-				}),
 				Roact.createElement("TextButton", {
 					Text = job.active and "TERMINATE" or "ACTIVATE",
 					Size = UDim2.new(1, 0, 0, 45),
-					Position = UDim2.new(0, 0, 0, 25),
 					BackgroundColor3 = job.active and Color3.fromRGB(235, 76, 105) or Color3.fromRGB(20, 20, 20),
 					Font = Enum.Font.GothamBold,
 					TextColor3 = Color3.fromRGB(255, 255, 255),
@@ -9967,12 +9943,12 @@ local FacebangModal = hooked(function(_param)
 				}),
 			}),
 			Roact.createElement("Frame", {
-				Size = UDim2.new(1, 0, 0, 200),
+				Size = UDim2.new(1, -40, 0, 200),
 				Position = UDim2.new(0, 20, 0, 175),
 				BackgroundTransparency = 1,
 			}, {
 				Roact.createElement("UIListLayout", {
-					Padding = UDim.new(0, 10),
+					Padding = UDim.new(0, 15),
 					SortOrder = Enum.SortOrder.LayoutOrder,
 				}),
 				renderSlider("Interaction Distance", tostring(math.round(job.sliders.distance * 10) / 10) .. " studs", job.sliders.distance / 15, function(p)
