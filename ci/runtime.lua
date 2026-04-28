@@ -1,6 +1,6 @@
 --[[
     Havoc Studios Runtime Engine
-    Optimized for Scoped Return Logic
+    FINAL EMERGENCY FIX: Global Handshake Logic
 --]]
 
 local Instance, game, task, require, setmetatable, pcall, error, warn
@@ -85,7 +85,6 @@ local function init(env)
 
     if not game then return end
     
-    -- Safety wrap for game loading
     pcall(function()
         if game.IsLoaded and not game:IsLoaded() then game.Loaded:Wait() end
     end)
@@ -100,5 +99,11 @@ local function init(env)
     end
 end
 
--- MANDATORY FOR BUNDLER
+-- CRITICAL: Force exposure to Global to stop the "nil" errors permanently
+_G.Havoc_Init = init
+_G.Havoc_NewModule = newModule
+_G.Havoc_NewInstance = newInstance
+_G.Havoc_NewEnv = newEnv
+
+-- Return them anyway for the bundler to capture
 return init, newModule, newInstance, newEnv
