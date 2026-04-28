@@ -8,7 +8,7 @@
 		"serve": "rojo serve place.project.json",
 		"lint": "eslint src --ext .ts,.tsx",
 		"fix": "eslint src --ext .ts,.tsx --fix",
-		"bundle": "npm run compile && npm run build && remodel run ci/bundle.lua Havoc.rbxm latest.lua dev",
+		"bundle": "npm run compile && npm run build && remodel run ci/bundle.lua Havoc.rbxm latest.lua",
 		"bundle:dbg": "npm run compile && npm run build && remodel run ci/bundle.lua Havoc.rbxm latest.lua debug",
 		"bundle:min": "npm run compile && npm run build && remodel run ci/bundle.lua Havoc.rbxm latest.lua minify"
 	},
