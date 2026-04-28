@@ -73,15 +73,18 @@ local function main()
     f:write("local function start()\n")
     f:write("    local runEnv = (getfenv and getfenv()) or _G or shared\n\n")
     
-    -- THE BRIDGE: We wrap the runtime code in a function and CAPTURE the returns.
-    -- This ensures that the functions inside runtime.lua survive injection and 
-    -- are accessible to the 'walk' generated code below.
-    f:write("    local init, newModule, newInstance, newEnv = (function()\n")
-    f:write(runtime .. "\n")
-    f:write("    end)()\n\n")
+    -- Execute Runtime block to populate _G
+    f:write("    -- Execute Runtime\n")
+    f:write("    (function()\n" .. runtime .. "\n    end)()\n\n")
     
-    -- Safety check: verify the runtime actually returned the functions
-    f:write("    if not init then warn('[Havoc Critical]: Runtime failed to return init function!') return end\n")
+    -- Pull functions from Global to local scope for the generated UI code
+    f:write("    local init = _G.Havoc_Init\n")
+    f:write("    local newModule = _G.Havoc_NewModule\n")
+    f:write("    local newInstance = _G.Havoc_NewInstance\n")
+    f:write("    local newEnv = _G.Havoc_NewEnv\n\n")
+    
+    -- Safety check
+    f:write("    if not init then warn('[Havoc Critical]: Handshake Failed - Functions not found in _G') return end\n")
     f:write("    init(runEnv)\n\n")
     
     -- Write the UI and Scripts
@@ -98,7 +101,7 @@ local function main()
 
     f:close()
 
-    print("[CI] Bundle completed via Scoped Return Logic.")
+    print("[CI] Bundle completed via Global Handshake Logic.")
 end
 
 main()
