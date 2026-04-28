@@ -1,6 +1,6 @@
 import { JobsState, InferJobValue } from "store/models/jobs.model";
 
-export type JobsAction = 
+export type JobsAction =
 	| { type: "jobs/setJobActive"; jobName: keyof JobsState; active: boolean }
 	| { type: "jobs/setJobValue"; jobName: keyof JobsState; value: unknown }
 	| { type: "jobs/setJobSlider"; jobName: keyof JobsState; slider: string; value: number };

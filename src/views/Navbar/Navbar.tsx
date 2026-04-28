@@ -41,7 +41,7 @@ function Navbar() {
 				gradient={theme.dropshadowGradient}
 				transparency={theme.transparency}
 			/>
-			
+
 			{/* 3. Updated math (0.1) to keep the underglow centered under the 5th tab */}
 			<Underglow
 				transparency={theme.glowTransparency}

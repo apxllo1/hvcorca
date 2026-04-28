@@ -20,7 +20,7 @@ interface Props {
 
 function ActionButton({ action, hint, theme, image, position, canDeactivate }: Props) {
 	const dispatch = useAppDispatch();
-	
+
 	// FIX: Cast as Job and use optional chaining to prevent "possibly undefined" error
 	const active = useAppSelector((state) => {
 		const job = state.jobs[action] as Job | undefined;
@@ -41,7 +41,7 @@ function ActionButton({ action, hint, theme, image, position, canDeactivate }: P
 			: theme.button.background,
 		{},
 	);
-	
+
 	const foreground = useSpring(
 		active && theme.button.foregroundAccent ? theme.button.foregroundAccent : theme.button.foreground,
 		{},
@@ -56,7 +56,8 @@ function ActionButton({ action, hint, theme, image, position, canDeactivate }: P
 					dispatch(setJobActive(action, true));
 				}
 			}}
-			onHover={(isHovered: boolean) => { // FIX: Explicitly typed 'boolean'
+			onHover={(isHovered: boolean) => {
+				// FIX: Explicitly typed 'boolean'
 				setHovered(isHovered);
 				if (isHovered) {
 					dispatch(setHint(hint));

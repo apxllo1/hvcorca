@@ -47,9 +47,7 @@ function Scripts() {
 
 			{/* NOVOLINE */}
 			<ScriptCard
-				onActivate={() =>
-					runScriptFromUrl("https://novoline.pro", "Novoline")
-				}
+				onActivate={() => runScriptFromUrl("https://novoline.pro", "Novoline")}
 				index={1}
 				backgroundImage="rbxassetid://127094516248328"
 				backgroundImageSize={new Vector2(1021, 1023)}
@@ -72,9 +70,7 @@ function Scripts() {
 
 			{/* ONYX */}
 			<ScriptCard
-				onActivate={() =>
-					runScriptFromUrl("https://onyxv2.lol/main.lua", "ONYX")
-				}
+				onActivate={() => runScriptFromUrl("https://onyxv2.lol/main.lua", "ONYX")}
 				index={5}
 				backgroundImage="rbxassetid://8992291779"
 				backgroundImageSize={new Vector2(818, 1023)}

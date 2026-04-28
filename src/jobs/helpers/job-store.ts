@@ -37,11 +37,11 @@ export async function onJobChange<K extends keyof JobsState>(
 
 	return store.changed.connect((newState) => {
 		const job = newState.jobs[jobName];
-		
+
 		// FIX: Use double-casting (as unknown as Record) to satisfy strict overlap checks
 		if (job !== undefined && lastJob !== undefined) {
-			const currentJobObj = (job as unknown) as Record<string, unknown>;
-			const lastJobObj = (lastJob as unknown) as Record<string, unknown>;
+			const currentJobObj = job as unknown as Record<string, unknown>;
+			const lastJobObj = lastJob as unknown as Record<string, unknown>;
 
 			if (!shallowEqual(currentJobObj, lastJobObj)) {
 				lastJob = job;

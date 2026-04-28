@@ -1,4 +1,9 @@
-import { TypedUseSelectorHook, useDispatch as useBaseDispatch, useSelector as useBaseSelector, useStore as useBaseStore } from "@rbxts/roact-rodux-hooked";
+import {
+	TypedUseSelectorHook,
+	useDispatch as useBaseDispatch,
+	useSelector as useBaseSelector,
+	useStore as useBaseStore,
+} from "@rbxts/roact-rodux-hooked";
 import { RootState } from "store/store";
 import { Store } from "@rbxts/rodux";
 

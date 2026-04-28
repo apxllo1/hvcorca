@@ -119,7 +119,8 @@ function SliderComponent(props: {
 
 			<BrightButton
 				onActivate={() => dispatch(setJobActive(props.jobName, !job.active))}
-				onHover={(isHovered: boolean) => { // Explicit type to prevent 'any' error
+				onHover={(isHovered: boolean) => {
+					// Explicit type to prevent 'any' error
 					setHovered(isHovered);
 					if (isHovered) {
 						dispatch(setHint(props.hint));

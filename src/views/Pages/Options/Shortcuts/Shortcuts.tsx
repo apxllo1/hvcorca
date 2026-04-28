@@ -12,7 +12,7 @@ import { RootState } from "store/store"; // Import RootState to fix 'unknown' er
 import { px, scale } from "utils/udim2";
 import ShortcutItem, { ENTRY_HEIGHT, PADDING } from "./ShortcutItem";
 
-const ENTRY_COUNT = 7; 
+const ENTRY_COUNT = 7;
 
 function Shortcuts() {
 	const store = useAppStore();

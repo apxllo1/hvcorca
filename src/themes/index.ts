@@ -7,14 +7,7 @@ import { crimson } from "./crimson";
 import { Theme } from "./theme.interface";
 
 // We keep this as an Array so .size() and .find() work in your UI
-const themes: Theme[] = [
-    crimson, 
-    darkTheme, 
-    lightTheme, 
-    frostedGlass, 
-    obsidian, 
-    highContrast
-];
+const themes: Theme[] = [crimson, darkTheme, lightTheme, frostedGlass, obsidian, highContrast];
 
 export function getThemes() {
 	return themes;

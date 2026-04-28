@@ -22,7 +22,7 @@ function Pages() {
 			{currentPage === DashboardPage.Apps && <Apps Key="apps" />}
 			{isScriptsVisible && <Scripts Key="scripts" />}
 			{currentPage === DashboardPage.Options && <Options Key="options" />}
-			
+
 			{/* Added the Misc Page routing here */}
 			{currentPage === DashboardPage.Misc && <Misc Key="misc" />}
 		</>

@@ -20,7 +20,7 @@ interface Props {
 function ServerAction({ action, hint, icon, size, position }: Props) {
 	const dispatch = useAppDispatch();
 	const theme = useTheme("home").server[action === "switchServer" ? "switchButton" : "rejoinButton"];
-	
+
 	// FIX: Cast as Job and use optional chaining to prevent the "possibly undefined" error
 	const active = useAppSelector((state) => {
 		const job = state.jobs[action] as Job | undefined;
@@ -42,7 +42,8 @@ function ServerAction({ action, hint, icon, size, position }: Props) {
 	return (
 		<BrightButton
 			onActivate={() => dispatch(setJobActive(action, !active))}
-			onHover={(isHovered: boolean) => { // FIX: Explicitly typed boolean
+			onHover={(isHovered: boolean) => {
+				// FIX: Explicitly typed boolean
 				setHovered(isHovered);
 				if (isHovered) {
 					dispatch(setHint(hint));
