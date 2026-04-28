@@ -1,5 +1,11 @@
-local input_file = arg[1] or "Havoc.rbxm"
-local output_file = arg[2] or "latest.lua"
+-- bundle.lua
+local args = arg or {...} or {} -- Supports both Remodel 'arg' and standard Lua '...'
+
+-- Check if a specific argument was passed
+local input_file = args[1] or "Havoc.rbxm"
+local output_file = args[2] or "latest.lua"
+
+print("Starting bundle for: " .. input_file)
 
 local model = remodel.readModelFile(input_file)[1]
 local file = io.open(output_file, "w")
