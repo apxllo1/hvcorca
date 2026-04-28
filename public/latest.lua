@@ -4,7 +4,7 @@
 --]]
 
 local function start()
-    local runEnv = (getfenv and getfenv()) or _G or shared
+    local runEnv = (getfenv and getfenv()) or _G or shared;
 
     -- 1. Execute Runtime (Populates _G)
     (function()
@@ -118,7 +118,13 @@ _G.Havoc_NewEnv = newEnv
 -- Return them anyway for the bundler to capture
 return init, newModule, newInstance, newEnv
 
-    end)()
+    end)();
+
+    local attempts = 0
+    while not _G.Havoc_Init and attempts < 100 do
+        attempts = attempts + 1
+        if _G.task then _G.task.wait() end
+    end
 
     -- 2. Validate Handshake
     if not _G.Havoc_Init then warn('[Havoc Critical]: Handshake Failed') return end
@@ -9986,6 +9992,7 @@ local function MiscPage()
 			CanvasSize = UDim2.new(0, 0, 0, 0),
 			AutomaticCanvasSize = Enum.AutomaticSize.Y,
 			ClipsDescendants = true,
+			ZIndex = 1,
 		}, {
 			Roact.createElement("UIListLayout", {
 				Padding = UDim.new(0, 10),
@@ -10019,11 +10026,18 @@ local function MiscPage()
 		}),
 	}
 	local _length = #_children
-	local _child = modalVisible and (Roact.createElement(FacebangModal, {
-		isVisible = modalVisible,
-		onClose = function()
-			return setModalVisible(false)
-		end,
+	local _child = modalVisible and (Roact.createElement("Frame", {
+		Size = UDim2.new(1, 40, 1, 40),
+		Position = UDim2.new(0, -20, 0, -20),
+		BackgroundTransparency = 1,
+		ZIndex = 10,
+	}, {
+		Roact.createElement(FacebangModal, {
+			isVisible = modalVisible,
+			onClose = function()
+				return setModalVisible(false)
+			end,
+		}),
 	}))
 	if _child then
 		if _child.elements ~= nil or _child.props ~= nil and _child.component ~= nil then
