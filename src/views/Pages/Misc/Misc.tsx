@@ -1,25 +1,32 @@
 import Roact from "@rbxts/roact";
 import { hooked, useState, useCallback } from "@rbxts/roact-hooked";
 import { useTheme } from "hooks/use-theme";
-import { DashboardPage } from "store/models/dashboard.model"; // Sync with Players tab
 import FacebangModal from "./FacebangModal";
 
 function MiscPage() {
-	// 1. We use the "apps" theme to match the Players tab styling
 	const themeData = useTheme("apps");
-	const theme = themeData?.players; // Targeting the same theme sub-category as Players.tsx
+	const theme = themeData?.players;
 
 	const [modalVisible, setModalVisible] = useState(false);
 	const [isHovered, setHovered] = useState(false);
 
 	const toggleModal = useCallback(() => setModalVisible((prev) => !prev), []);
+	const openModal = useCallback(() => setModalVisible(true), []);
+	const closeModal = useCallback(() => setModalVisible(false), []);
 
-	if (!theme) return <frame Key="Loading" BackgroundTransparency={1} Size={new UDim2(1, 0, 1, 0)} />;
+	if (!theme) {
+		return <frame Key="Loading" BackgroundTransparency={1} Size={new UDim2(1, 0, 1, 0)} />;
+	}
 
 	return (
 		<frame Key="MiscPage" Size={new UDim2(1, 0, 1, 0)} BackgroundTransparency={1}>
-			<uipadding PaddingTop={new UDim(0, 20)} PaddingLeft={new UDim(0, 20)} PaddingRight={new UDim(0, 20)} />
+			<uipadding
+				PaddingTop={new UDim(0, 20)}
+				PaddingLeft={new UDim(0, 20)}
+				PaddingRight={new UDim(0, 20)}
+			/>
 
+			{/* Scrollable content area */}
 			<scrollingframe
 				Key="ContentScroll"
 				Size={new UDim2(1, 0, 1, 0)}
@@ -35,20 +42,22 @@ function MiscPage() {
 					HorizontalAlignment={Enum.HorizontalAlignment.Center}
 				/>
 
-				{/* 2. Modified Button to use the "Players" theme colors for consistency */}
 				<textbutton
 					Key="FacebangButton"
 					Text="Facebang Settings"
 					Size={new UDim2(1, 0, 0, 55)}
 					BackgroundColor3={
-						isHovered ? theme.button.background.Lerp(new Color3(1, 1, 1), 0.05) : theme.button.background
+						isHovered
+							? theme.button.background.Lerp(new Color3(1, 1, 1), 0.05)
+							: theme.button.background
 					}
 					TextColor3={theme.button.foreground}
 					Font={Enum.Font.GothamBold}
 					TextSize={16}
 					AutoButtonColor={false}
+					ZIndex={1}
 					Event={{
-						Activated: toggleModal,
+						Activated: openModal,
 						MouseEnter: () => setHovered(true),
 						MouseLeave: () => setHovered(false),
 					}}
@@ -62,26 +71,23 @@ function MiscPage() {
 				</textbutton>
 			</scrollingframe>
 
-			{/* 3. The Modal Layer */}
+			{/* Modal overlay — only mounted when visible */}
 			{modalVisible && (
-				<frame
+				<textbutton
 					Key="ModalOverlay"
+					Text=""
 					Size={new UDim2(1, 40, 1, 40)}
 					Position={new UDim2(0, -20, 0, -20)}
 					BackgroundColor3={new Color3(0, 0, 0)}
 					BackgroundTransparency={0.4}
+					AutoButtonColor={false}
 					ZIndex={10}
 					Event={{
-						InputBegan: (instance: Frame, input: InputObject) => {
-							if (input.UserInputType === Enum.UserInputType.MouseButton1) setModalVisible(false);
-						},
+						Activated: closeModal,
 					}}
 				>
-					{/* PRO TIP: If FacebangModal needs to know WHICH player is selected,
-						you would pass the 'Selection' info here from the store.
-					*/}
-					<FacebangModal isVisible={modalVisible} onClose={() => setModalVisible(false)} />
-				</frame>
+					<FacebangModal isVisible={modalVisible} onClose={closeModal} />
+				</textbutton>
 			)}
 		</frame>
 	);
