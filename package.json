@@ -5,6 +5,8 @@
 		"watch": "npx rbxtsc -w",
 		"build": "rojo build default.project.json --output \"Havoc.rbxm\"",
 		"serve": "rojo serve place.project.json",
+		"lint": "eslint src --ext .ts,.tsx",
+		"fix": "eslint src --ext .ts,.tsx --fix",
 		"bundle": "npm run build && remodel run ci/bundle.lua public/dev.lua dev verbose",
 		"bundle:dbg": "npm run build && remodel run ci/bundle.lua public/dev.lua dev_dbg debug verbose",
 		"bundle:min": "npm run build && remodel run ci/bundle.lua public/dev.lua dev_min minify verbose"
