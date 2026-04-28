@@ -14,7 +14,6 @@ import { getColorInSequence, hex } from "utils/color3";
 import { px, scale } from "utils/udim2";
 import NavbarTab from "./NavbarTab";
 
-// 500px wide allows each of the 5 tabs to be exactly 100px wide
 const NAVBAR_SIZE = px(500, 56);
 
 function Navbar() {
@@ -22,22 +21,17 @@ function Navbar() {
 	const page = useCurrentPage();
 	const isOpen = useAppSelector((state) => state.dashboard.isOpen);
 
-	/**
-	 * MATH FIX: PAGE_TO_INDEX[page] / 4
-	 * With 5 tabs (0, 1, 2, 3, 4), dividing by 4 ensures that:
-	 * Index 0 = 0.0 (First Tab)
-	 * Index 4 = 1.0 (Last Tab)
-	 */
+	// Normalizing for 5 tabs: (Index / (Total - 1)) -> Index / 4
 	const alpha = useSpring(PAGE_TO_INDEX[page] / 4, { frequency: 3.9, dampingRatio: 0.76 });
 
 	return (
 		<frame
+			Key="Navbar"
 			Size={NAVBAR_SIZE}
 			Position={useSpring(isOpen ? new UDim2(0.5, 0, 1, -20) : new UDim2(0.5, 0, 1, 100), {})}
 			AnchorPoint={new Vector2(0.5, 1)}
 			BackgroundTransparency={1}
 		>
-			{/* Shadows */}
 			<Glow
 				radius={GlowRadius.Size146}
 				size={new UDim2(1, 80, 0, 146)}
@@ -47,14 +41,12 @@ function Navbar() {
 				transparency={theme.transparency}
 			/>
 
-			{/* Underglow - Centered purely by alpha now */}
 			<Underglow
 				transparency={theme.glowTransparency}
 				position={alpha}
 				sequenceColor={alpha.map((a) => getColorInSequence(theme.accentGradient.color, a))}
 			/>
 
-			{/* Body Background */}
 			<Fill
 				color={theme.background}
 				gradient={theme.backgroundGradient}
@@ -62,8 +54,11 @@ function Navbar() {
 				transparency={theme.transparency}
 			/>
 
-			{/* Sliding Accent Light */}
-			<Canvas size={px(100, 56)} position={alpha.map((a) => scale(a, 0))} clipsDescendants>
+			<Canvas
+				size={px(100, 56)}
+				position={alpha.map((a) => scale(a, 0))}
+				clipsDescendants
+			>
 				<frame
 					Size={NAVBAR_SIZE}
 					Position={alpha.map((a) => scale(-a, 0))}
@@ -79,17 +74,15 @@ function Navbar() {
 				</frame>
 			</Canvas>
 
-			{/* Border Layer */}
 			{theme.outlined && <Border Key="border" color={theme.foreground} radius={8} transparency={0.8} />}
 
-			{/* The 5 Navigation Tabs */}
+			{/* Render all 5 tabs defined in DashboardPage */}
 			<NavbarTab page={DashboardPage.Home} />
 			<NavbarTab page={DashboardPage.Apps} />
 			<NavbarTab page={DashboardPage.Scripts} />
 			<NavbarTab page={DashboardPage.Options} />
 			<NavbarTab page={DashboardPage.Misc} />
 
-			{/* Acrylic Blur Effect */}
 			{theme.acrylic && <Acrylic />}
 		</frame>
 	);
@@ -104,6 +97,7 @@ function Underglow(props: {
 }) {
 	return (
 		<imagelabel
+			Key="Underglow"
 			Image="rbxassetid://8992238178"
 			ImageColor3={props.sequenceColor}
 			ImageTransparency={props.transparency}
