@@ -20,10 +20,10 @@ local function writeModule(object, file)
     
     local className = string.format("%q", object.ClassName)
 
-    file:write(string.format("newModule(%s, %s, %s, %s, function ()\n", name, className, path, parentStr))
-    file:write("    return setfenv(function()\n")
+    file:write(string.format("    newModule(%s, %s, %s, %s, function ()\n", name, className, path, parentStr))
+    file:write("        return setfenv(function()\n")
     file:write(source)
-    file:write("\n    end, newEnv(" .. path .. "))()\nend)\n\n")
+    file:write("\n        end, newEnv(" .. path .. "))()\n    end)\n\n")
 end
 
 local function writeInstance(object, file)
@@ -34,7 +34,7 @@ local function writeInstance(object, file)
         and string.format("%q", object.Parent:GetFullName()) 
         or "nil"
     
-    file:write(string.format("newInstance(%s, %q, %s, %s)\n", name, object.ClassName, path, parentStr))
+    file:write(string.format("    newInstance(%s, %q, %s, %s)\n", name, object.ClassName, path, parentStr))
 end
 
 local function walk(root, file)
@@ -42,6 +42,7 @@ local function walk(root, file)
     while #queue > 0 do
         local object = table.remove(queue, 1)
         
+        -- Logic fix: Ensure we don't try to parent the root to itself
         if object.Parent and object.Parent.ClassName ~= "DataModel" then
             if object.ClassName == "LocalScript" or object.ClassName == "ModuleScript" then
                 writeModule(object, file)
@@ -68,17 +69,18 @@ local function main()
     
     f:write("--[[ Havoc Bundle: " .. VERSION .. " ]]\n\n")
     
-    -- Wrap everything in a function to protect scope
     f:write("local function start()\n")
+    
+    -- 1. DEFINE RUNTIME FIRST (This creates newInstance, newModule, etc.)
     f:write(runtime .. "\n\n")
     
-    -- Write all the instances and modules
+    -- 2. INITIALIZE THE RUNTIME ENVIRONMENT
+    f:write("    local runEnv = (getfenv and getfenv()) or _G or shared\n")
+    f:write("    init(runEnv)\n\n")
+    
+    -- 3. NOW WRITE THE INSTANCES (They will find the functions defined above)
     walk(model, f)
     
-    -- ENVIRONMENT CAPTURE: Finding the Roblox globals
-    f:write("\n    -- Capture the best available environment\n")
-    f:write("    local runEnv = (getfenv and getfenv()) or _G or shared\n")
-    f:write("    init(runEnv)\n")
     f:write("    print('[Havoc]: Runtime initialized successfully.')\n")
     f:write("end\n\n")
     
