@@ -1,7 +1,25 @@
+# IDE & System
 /.idea
+.DS_Store
+Thumbs.db
+
+# Dependencies
 /node_modules
-/out
 /include
+
+# Build Outputs
+/out
+/dist
 /public/dev.lua
 *.rbxm
 *.rbxmx
+Havoc.rbxm
+
+# CI & Temporary Files (CRITICAL for your setup)
+*.tmp
+bundle.tmp
+*.log
+npm-debug.log*
+
+# roblox-ts
+tsconfig.tsbuildinfo
