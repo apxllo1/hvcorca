@@ -9025,31 +9025,36 @@ local function NavbarTab(_param)
 	local _binding = useState(false)
 	local isHovered = _binding[1]
 	local setHovered = _binding[2]
-	return Roact.createElement("TextButton", {
-		Text = "",
-		AutoButtonColor = false,
-		Active = not isActive,
-		Size = TAB_SIZE,
-		Position = scale(PAGE_TO_INDEX[page] / 4, 0),
-		BackgroundTransparency = 1,
-		[Roact.Event.Activated] = function()
-			return dispatch(setDashboardPage(page))
-		end,
-		[Roact.Event.MouseEnter] = function()
-			return setHovered(true)
-		end,
-		[Roact.Event.MouseLeave] = function()
-			return setHovered(false)
-		end,
-	}, {
-		Roact.createElement("ImageLabel", {
-			Image = PAGE_TO_ICON[page],
-			ImageColor3 = theme.foreground,
-			ImageTransparency = useSpring(isActive and 0 or (isHovered and 0.5 or 0.75), {}),
-			Size = px(36, 36),
-			Position = scale(0.5, 0.5),
-			AnchorPoint = Vector2.new(0.5, 0.5),
+	return Roact.createFragment({
+		[page] = Roact.createElement("TextButton", {
+			Text = "",
+			AutoButtonColor = false,
+			Active = not isActive,
+			Size = TAB_SIZE,
+			Position = scale(PAGE_TO_INDEX[page] / 4, 0),
 			BackgroundTransparency = 1,
+			[Roact.Event.Activated] = function()
+				return dispatch(setDashboardPage(page))
+			end,
+			[Roact.Event.MouseEnter] = function()
+				return setHovered(true)
+			end,
+			[Roact.Event.MouseLeave] = function()
+				return setHovered(false)
+			end,
+		}, {
+			Roact.createElement("ImageLabel", {
+				Image = PAGE_TO_ICON[page],
+				ImageColor3 = theme.foreground,
+				ImageTransparency = useSpring(isActive and 0 or (isHovered and 0.3 or 0.6), {
+					frequency = 4,
+					dampingRatio = 1,
+				}),
+				Size = px(24, 24),
+				Position = scale(0.5, 0.5),
+				AnchorPoint = Vector2.new(0.5, 0.5),
+				BackgroundTransparency = 1,
+			}),
 		}),
 	})
 end
