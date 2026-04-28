@@ -11,18 +11,13 @@ import { Theme } from "./theme.interface";
  * Note: If any of these imports are broken, the array will contain 'undefined',
  * so we filter them out to prevent UI crashes.
  */
-const themes: Theme[] = [
-	crimson,
-	darkTheme,
-	lightTheme,
-	frostedGlass,
-	obsidian,
-	highContrast,
-].filter((t) => t !== undefined);
+const themes: Theme[] = [crimson, darkTheme, lightTheme, frostedGlass, obsidian, highContrast].filter(
+	(t) => t !== undefined,
+);
 
 /**
  * Returns the list of all available themes for the UI dropdown.
- * @returns {Theme[]} 
+ * @returns {Theme[]}
  */
 export function getThemes(): Theme[] {
 	return themes;
