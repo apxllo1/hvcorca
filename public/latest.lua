@@ -8757,8 +8757,10 @@ local function FacebangModal(_param)
 		}),
 	})
 end
+local default = FacebangModal
 return {
-	default = FacebangModal,
+	FacebangModal = FacebangModal,
+	default = default,
 } end, newEnv("Havoc.views.Pages.Misc.FacebangModal"))() end)
 newModule("Misc", "ModuleScript", "Havoc.views.Pages.Misc.Misc", "Havoc.views.Pages.Misc", function () return setfenv(function() -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)

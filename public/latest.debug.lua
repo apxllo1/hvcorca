@@ -8894,8 +8894,10 @@ local function FacebangModal(_param)\
 \9\9}),\
 \9})\
 end\
+local default = FacebangModal\
 return {\
-\9default = FacebangModal,\
+\9FacebangModal = FacebangModal,\
+\9default = default,\
 }", '@'.."Havoc.views.Pages.Misc.FacebangModal")) setfenv(fn, newEnv("Havoc.views.Pages.Misc.FacebangModal")) return fn() end)
 
 newModule("Misc", "ModuleScript", "Havoc.views.Pages.Misc.Misc", "Havoc.views.Pages.Misc", function () local fn = assert(loadstring("-- Compiled with roblox-ts v1.2.7\
