@@ -1,21 +1,46 @@
-const debugCounter: Record<string, number> = {};
-const startTimes: Record<string, number> = {};
+import Roact from "@rbxts/roact";
+import { useEffect } from "@rbxts/roact-hooked"; // Standalone hook import
+import { Stats } from "@rbxts/services";
+import Dashboard from "./views/Dashboard";
+import { startTimer, endTimer, logger, logPerformance } from "utils/debug";
 
-export function startTimer(name: string) {
-	debugCounter[name] = (debugCounter[name] ?? 0) + 1;
-	startTimes[name] = os.clock();
+const DISPLAY_ORDER = 7;
+
+function App() {
+	// Logic inside useEffect only runs ONCE on mount
+	useEffect(() => {
+		startTimer("Havoc_UI_Mount");
+		logger.info("Havoc UI mounting sequence initiated...");
+
+		// The Pulse: Keeps printing every 5s to prove the thread is alive
+		let isRunning = true;
+		task.spawn(() => {
+			while (isRunning) {
+				const mem = math.floor(Stats.GetTotalMemoryUsageMb());
+				print(`[Havoc Pulse]: Main UI Active. Memory: ${mem}MB`);
+				task.wait(5);
+			}
+		});
+
+		endTimer("Havoc_UI_Mount");
+		logPerformance();
+
+		// Cleanup function: Triggered when the UI is closed/destroyed
+		return () => {
+			isRunning = false;
+		};
+	}, []);
+
+	return (
+		<screengui 
+			IgnoreGuiInset 
+			ResetOnSpawn={false} 
+			ZIndexBehavior={Enum.ZIndexBehavior.Sibling} 
+			DisplayOrder={DISPLAY_ORDER}
+		>
+			<Dashboard />
+		</screengui>
+	);
 }
 
-export function endTimer(name: string) {
-	const startTime = startTimes[name];
-	if (startTime === undefined) return;
-
-	const diff = os.clock() - startTime;
-	const count = debugCounter[name] ?? 0;
-	print(`\n[Havoc Timer: ${name} #${count}]\n${math.floor(diff * 10000) / 10} ms\n`);
-
-	// FIX: Use delete to satisfy the compiler
-	(startTimes as any)[name] = undefined;
-}
-
-// ... keep the rest of your logger and performance code the same
+export default App;
