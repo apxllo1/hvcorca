@@ -12,7 +12,7 @@ export default function FacebangModal({ isVisible, onClose }: FacebangProps) {
 	const job = useSelector((state) => state.jobs.facebang) as JobWithSliders;
 	const dispatch = useDispatch();
 
-	if (!isVisible) return <></>;
+	if (!isVisible) return Roact.createElement("Frame", { Visible: false });
 
 	const renderSlider = (label: string, value: string, percent: number, onUpdate: (val: number) => void) => {
 		return (
