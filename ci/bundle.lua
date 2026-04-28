@@ -10,7 +10,6 @@ for _, v in ipairs(args) do
         output_file = v
     end
 end
-
 input_file = input_file or "Havoc.rbxm"
 output_file = output_file or "latest.lua"
 
@@ -23,8 +22,8 @@ local model_data = remodel.readModelFile(input_file)
 if not model_data or #model_data == 0 then
     error("The model file " .. input_file .. " is empty or invalid.")
 end
-
 local model = model_data[1]
+
 local file, err = io.open(output_file, "w")
 if not file then error("Could not open output file: " .. tostring(err)) end
 
@@ -38,28 +37,42 @@ file:write("    hInit, hMod, hInst, hEnv = (function()\n")
 file:write(runtime)
 file:write("\n    end)();\n\n")
 
+-- Register the root container before walking
+local rootPath = string.format("%q", model:GetFullName())
+file:write(string.format(
+    "    hInst(%s, %q, %s, \"ROOT\");\n",
+    string.format("%q", model.Name), model.ClassName, rootPath
+))
+
 local function walk(parent)
     for _, object in ipairs(parent:GetChildren()) do
         local name = string.format("%q", object.Name)
         local path = string.format("%q", object:GetFullName())
         local parentPath = string.format("%q", parent:GetFullName())
         local class = object.ClassName
-        
-        -- Safe Source Check: Some instances claim to be scripts but don't have Source accessible
-        local success, source = pcall(function() return object.Source end)
-        
-        if success and source then
-            source = source:gsub("%]%]", "] ]") -- Escape double brackets
-            
+
+        local isScript = (class == "ModuleScript" or class == "LocalScript")
+
+        if isScript then
+            local success, source = pcall(function() return object.Source end)
+
+            if not success or source == nil then
+                file:close()
+                error(string.format(
+                    "[BUNDLE ERROR] Source inaccessible for %s (%s). Cannot produce valid bundle.",
+                    object:GetFullName(), class
+                ))
+            end
+
+            source = source:gsub("%]%]", "] ]")
             file:write(string.format("    hMod(%s, %q, %s, %s, function()\n", name, class, path, parentPath))
             file:write("        return (function(...)\n")
             file:write(source)
             file:write("\n        end)\n    end);\n")
         else
-            -- If it has no source (Folders, UI elements, or failed pcall), treat as Instance
             file:write(string.format("    hInst(%s, %q, %s, %s);\n", name, class, path, parentPath))
         end
-        
+
         walk(object)
     end
 end
