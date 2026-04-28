@@ -54,7 +54,7 @@ function MiscPage() {
 			{modalVisible && (
 				<frame
 					Key="ModalOverlay"
-					Size={new UDim2(1, 40, 1, 40)} 
+					Size={new UDim2(1, 40, 1, 40)}
 					Position={new UDim2(0, -20, 0, -20)}
 					BackgroundColor3={new Color3(0, 0, 0)}
 					BackgroundTransparency={0.5} // Dims the background
@@ -65,7 +65,7 @@ function MiscPage() {
 							if (input.UserInputType === Enum.UserInputType.MouseButton1) {
 								setModalVisible(false);
 							}
-						}
+						},
 					}}
 				>
 					<FacebangModal isVisible={modalVisible} onClose={() => setModalVisible(false)} />
