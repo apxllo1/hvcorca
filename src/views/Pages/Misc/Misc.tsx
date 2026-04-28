@@ -13,7 +13,7 @@ function MiscPage() {
 	return (
 		<frame Size={new UDim2(1, 0, 1, 0)} BackgroundTransparency={1}>
 			<uipadding PaddingTop={new UDim(0, 20)} PaddingLeft={new UDim(0, 20)} PaddingRight={new UDim(0, 20)} />
-			
+
 			{/* The Scrolling Content */}
 			<scrollingframe
 				Size={new UDim2(1, 0, 1, 0)}
@@ -53,12 +53,7 @@ function MiscPage() {
 			{/* Rendered outside the scrolling frame so it doesn't 
 				get clipped or moved by the UIListLayout 
 			*/}
-			{modalVisible && (
-				<FacebangModal 
-					isVisible={modalVisible} 
-					onClose={() => setModalVisible(false)} 
-				/>
-			)}
+			{modalVisible && <FacebangModal isVisible={modalVisible} onClose={() => setModalVisible(false)} />}
 		</frame>
 	);
 }
