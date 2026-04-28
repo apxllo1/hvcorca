@@ -12,6 +12,7 @@ interface Props {
 	page: DashboardPage;
 }
 
+// With 5 tabs on a 500px navbar, each tab is exactly 100px wide
 const TAB_SIZE = px(100, 56);
 
 function NavbarTab({ page }: Props) {
@@ -22,10 +23,12 @@ function NavbarTab({ page }: Props) {
 
 	return (
 		<textbutton
+			Key={page}
 			Text=""
 			AutoButtonColor={false}
 			Active={!isActive}
 			Size={TAB_SIZE}
+			// MATH FIX: Dividing by 4 handles the 0, 0.25, 0.5, 0.75, 1.0 spacing for 5 buttons
 			Position={scale(PAGE_TO_INDEX[page] / 4, 0)}
 			BackgroundTransparency={1}
 			Event={{
@@ -37,8 +40,11 @@ function NavbarTab({ page }: Props) {
 			<imagelabel
 				Image={PAGE_TO_ICON[page]}
 				ImageColor3={theme.foreground}
-				ImageTransparency={useSpring(isActive ? 0 : isHovered ? 0.5 : 0.75, {})}
-				Size={px(36, 36)}
+				ImageTransparency={useSpring(isActive ? 0 : isHovered ? 0.3 : 0.6, {
+					frequency: 4,
+					dampingRatio: 1
+				})}
+				Size={px(24, 24)} // Slightly smaller icons often look cleaner in a 5-tab row
 				Position={scale(0.5, 0.5)}
 				AnchorPoint={new Vector2(0.5, 0.5)}
 				BackgroundTransparency={1}
