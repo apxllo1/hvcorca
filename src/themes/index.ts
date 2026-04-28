@@ -1,22 +1,35 @@
 import { darkTheme } from "./sorbet";
-import { frostedGlass } from "./frosted-glass"; // Fixed the typo here
+import { frostedGlass } from "./frosted-glass";
 import { highContrast } from "./high-contrast";
 import { lightTheme } from "./light-theme";
 import { obsidian } from "./obsidian";
 import { crimson } from "./crimson";
 import { Theme } from "./theme.interface";
 
-// Using a standard Array for the UI selector
-const themes: Theme[] = [crimson, darkTheme, lightTheme, frostedGlass, obsidian, highContrast];
+/**
+ * We keep this as a standard Array so .size() and .find() work in your UI.
+ * Note: If any of these imports are broken, the array will contain 'undefined',
+ * so we filter them out to prevent UI crashes.
+ */
+const themes: Theme[] = [
+	crimson,
+	darkTheme,
+	lightTheme,
+	frostedGlass,
+	obsidian,
+	highContrast,
+].filter((t) => t !== undefined);
 
 /**
- * Returns all themes for the UI dropdown menu.
+ * Returns the list of all available themes for the UI dropdown.
+ * @returns {Theme[]} 
  */
 export function getThemes(): Theme[] {
 	return themes;
 }
 
 /**
- * Re-export for the initial state/default theme.
+ * Re-export the default theme (Sorbet/Dark).
+ * This is used for the initial store state.
  */
 export { darkTheme };
