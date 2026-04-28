@@ -10,7 +10,7 @@ import { Theme } from "./theme.interface";
 const themes: Theme[] = [crimson, darkTheme, lightTheme, frostedGlass, obsidian, highContrast];
 
 /** * Returns the list of all available themes for the UI dropdown.
- * @returns {Theme[]} 
+ * @returns {Theme[]}
  */
 export function getThemes(): Theme[] {
 	return themes;
