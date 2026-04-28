@@ -20,12 +20,7 @@ interface SliderProps {
 // Extracted as a named hooked component so Roact can diff it properly
 const Slider = hooked(({ label, displayValue, percent, onUpdate }: SliderProps) => {
 	return (
-		<frame
-			Key={label}
-			Size={new UDim2(1, -40, 0, 65)}
-			BackgroundTransparency={1}
-			LayoutOrder={0}
-		>
+		<frame Key={label} Size={new UDim2(1, -40, 0, 65)} BackgroundTransparency={1} LayoutOrder={0}>
 			{/* Label */}
 			<textlabel
 				Key="SliderLabel"
@@ -114,15 +109,9 @@ const FacebangModal = hooked(({ isVisible, onClose }: FacebangProps) => {
 		if (job) dispatch(setJobActive("facebang", !job.active));
 	}, [job]);
 
-	const handleDistanceUpdate = useCallback(
-		(p: number) => dispatch(setJobSlider("facebang", "distance", p * 15)),
-		[],
-	);
+	const handleDistanceUpdate = useCallback((p: number) => dispatch(setJobSlider("facebang", "distance", p * 15)), []);
 
-	const handleAngleUpdate = useCallback(
-		(p: number) => dispatch(setJobSlider("facebang", "angle", p * 360)),
-		[],
-	);
+	const handleAngleUpdate = useCallback((p: number) => dispatch(setJobSlider("facebang", "angle", p * 360)), []);
 
 	if (!isVisible || !job) return <></>;
 
@@ -187,9 +176,7 @@ const FacebangModal = hooked(({ isVisible, onClose }: FacebangProps) => {
 					Text={job.active ? "STATUS: RUNNING" : "STATUS: READY"}
 					Size={new UDim2(1, 0, 0, 20)}
 					BackgroundTransparency={1}
-					TextColor3={
-						job.active ? Color3.fromRGB(235, 76, 105) : Color3.fromRGB(120, 120, 120)
-					}
+					TextColor3={job.active ? Color3.fromRGB(235, 76, 105) : Color3.fromRGB(120, 120, 120)}
 					Font={Enum.Font.GothamBold}
 					TextSize={11}
 					TextXAlignment={Enum.TextXAlignment.Left}
@@ -200,9 +187,7 @@ const FacebangModal = hooked(({ isVisible, onClose }: FacebangProps) => {
 					Text={job.active ? "TERMINATE" : "ACTIVATE"}
 					Size={new UDim2(1, 0, 0, 45)}
 					Position={new UDim2(0, 0, 0, 25)}
-					BackgroundColor3={
-						job.active ? Color3.fromRGB(235, 76, 105) : Color3.fromRGB(20, 20, 20)
-					}
+					BackgroundColor3={job.active ? Color3.fromRGB(235, 76, 105) : Color3.fromRGB(20, 20, 20)}
 					Font={Enum.Font.GothamBold}
 					TextColor3={Color3.fromRGB(255, 255, 255)}
 					TextSize={14}
