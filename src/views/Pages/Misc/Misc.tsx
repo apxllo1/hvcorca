@@ -16,18 +16,8 @@ function MiscPage() {
 	const closeModal = useCallback(() => setModalVisible(false), []);
 
 	return (
-		<Card
-			index={2}
-			page={DashboardPage.Apps}
-			theme={theme}
-			size={px(326, 648)}
-			position={new UDim2(0, 0, 1, 0)}
-		>
-			<uipadding
-				PaddingTop={new UDim(0, 20)}
-				PaddingLeft={new UDim(0, 20)}
-				PaddingRight={new UDim(0, 20)}
-			/>
+		<Card index={2} page={DashboardPage.Apps} theme={theme} size={px(326, 648)} position={new UDim2(0, 0, 1, 0)}>
+			<uipadding PaddingTop={new UDim(0, 20)} PaddingLeft={new UDim(0, 20)} PaddingRight={new UDim(0, 20)} />
 
 			<scrollingframe
 				Key="ContentScroll"
@@ -49,9 +39,7 @@ function MiscPage() {
 					Text="Facebang Settings"
 					Size={new UDim2(1, 0, 0, 55)}
 					BackgroundColor3={
-						isHovered
-							? theme.button.background.Lerp(new Color3(1, 1, 1), 0.05)
-							: theme.button.background
+						isHovered ? theme.button.background.Lerp(new Color3(1, 1, 1), 0.05) : theme.button.background
 					}
 					TextColor3={theme.button.foreground}
 					Font={Enum.Font.GothamBold}
