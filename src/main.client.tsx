@@ -8,13 +8,24 @@ import { toggleDashboard } from "store/actions/dashboard.action";
 import { configureStore } from "store/store";
 import App from "./App";
 
-const store = configureStore();
-setStore(store);
+const LOAD_GUARD = "_HAVOC_IS_LOADED";
+const MOUNT_TIMEOUT = 10;
 
 /**
- * Mounts the app and retrieve the UI instance.
+ * Prevents double-loading in auto-execution environments.
  */
-async function mount() {
+function checkAlreadyLoaded(): boolean {
+	if (getgenv && LOAD_GUARD in getgenv()) {
+		warn("[Havoc] Already loaded — skipping.");
+		return true;
+	}
+	return false;
+}
+
+/**
+ * Mounts the Roact tree and waits for the ScreenGui to appear.
+ */
+async function mount(store: ReturnType<typeof configureStore>): Promise<ScreenGui> {
 	const container = Make("Folder", {});
 	Roact.mount(
 		<Provider store={store}>
@@ -22,21 +33,25 @@ async function mount() {
 		</Provider>,
 		container,
 	);
-	return container.WaitForChild(1) as ScreenGui;
+	const app = container.WaitForChild(MOUNT_TIMEOUT) as ScreenGui | undefined;
+	if (!app) {
+		throw `[Havoc] Mount timed out after ${MOUNT_TIMEOUT}s — ScreenGui never appeared.`;
+	}
+	return app as ScreenGui;
 }
 
 /**
- * Renders the app to the screen. Protects it if possible.
- * TODO: Roact portals are a better way to do this?
+ * Parents the ScreenGui to the correct container.
+ * Prefers syn.protect_gui, then gethui, then CoreGui, then PlayerGui in dev.
  */
-function render(app: ScreenGui) {
-	const protect = syn ? syn.protect_gui : protect_gui;
+function render(app: ScreenGui): void {
+	const protect = syn?.protect_gui ?? protect_gui;
 	if (protect) {
-		protect(app);
+		pcall(() => protect(app));
 	}
 
 	if (IS_DEV) {
-		app.Parent = Players.LocalPlayer.WaitForChild("PlayerGui");
+		app.Parent = Players.LocalPlayer.WaitForChild("PlayerGui") as Instance;
 	} else if (gethui) {
 		app.Parent = gethui();
 	} else {
@@ -44,24 +59,28 @@ function render(app: ScreenGui) {
 	}
 }
 
-async function main() {
-	if (getgenv && "_ORCA_IS_LOADED" in getgenv()) {
-		throw "Orca is already loaded!";
-	}
+/**
+ * Entry point.
+ */
+async function main(): Promise<void> {
+	if (checkAlreadyLoaded()) return;
 
-	const app = await mount();
+	const store = configureStore();
+	setStore(store);
+
+	const app = await mount(store);
 	render(app);
 
-	// If 3 seconds passed since the game started, show the dashboard
+	// Auto-open dashboard if the game has been running for more than 3 seconds
 	if (time() > 3) {
 		task.defer(() => store.dispatch(toggleDashboard()));
 	}
 
 	if (getgenv) {
-		getgenv()._ORCA_IS_LOADED = true;
+		getgenv()[LOAD_GUARD] = true;
 	}
 }
 
-main().catch((err) => {
-	warn(`Orca failed to load: ${err}`);
+main().catch((err: unknown) => {
+	warn(`[Havoc] Failed to load: ${tostring(err)}`);
 });
