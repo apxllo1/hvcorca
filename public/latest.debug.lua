@@ -123,7 +123,8 @@ return init, newModule, newInstance, newEnv
     local attempts = 0
     while not _G.Havoc_Init and attempts < 100 do
         attempts = attempts + 1
-        if _G.task then _G.task.wait() end
+        local w = (_G.task and _G.task.wait) or (wait)
+        if w then w() end
     end
 
     -- 2. Validate Handshake
@@ -10026,17 +10027,25 @@ local function MiscPage()
 		}),
 	}
 	local _length = #_children
-	local _child = modalVisible and (Roact.createElement("Frame", {
-		Size = UDim2.new(1, 40, 1, 40),
-		Position = UDim2.new(0, -20, 0, -20),
-		BackgroundTransparency = 1,
-		ZIndex = 10,
-	}, {
-		Roact.createElement(FacebangModal, {
-			isVisible = modalVisible,
-			onClose = function()
-				return setModalVisible(false)
+	local _child = modalVisible and (Roact.createFragment({
+		ModalOverlay = Roact.createElement("Frame", {
+			Size = UDim2.new(1, 40, 1, 40),
+			Position = UDim2.new(0, -20, 0, -20),
+			BackgroundColor3 = Color3.new(0, 0, 0),
+			BackgroundTransparency = 0.5,
+			ZIndex = 10,
+			[Roact.Event.InputBegan] = function(_, input)
+				if input.UserInputType == Enum.UserInputType.MouseButton1 then
+					setModalVisible(false)
+				end
 			end,
+		}, {
+			Roact.createElement(FacebangModal, {
+				isVisible = modalVisible,
+				onClose = function()
+					return setModalVisible(false)
+				end,
+			}),
 		}),
 	}))
 	if _child then
