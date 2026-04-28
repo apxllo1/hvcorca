@@ -1,6 +1,6 @@
 --[[
     Havoc Studios Bundler
-    Version: dev
+    Version: 20260428
 --]]
 
 local function start()
@@ -48,7 +48,7 @@ end
 local function newEnv(id)
     local success, env = pcall(getfenv, 0)
     return setmetatable({
-        VERSION = "dev",
+        VERSION = "20260428",
         script = instanceFromId[id],
         require = function(module) return requireModuleInternal(module, instanceFromId[id]) end,
     }, { __index = env or _G })
@@ -19047,7 +19047,7 @@ return {
     end)
 
     newInstance("types", "Folder", "Havoc.include.node_modules.make.node_modules.@rbxts.compiler-types.types", "Havoc.include.node_modules.make.node_modules.@rbxts.compiler-types")
-    print('[Havoc]: dev initialized successfully.')
+    print('[Havoc]: 20260428 initialized successfully.')
 end
 
 local success, err = pcall(start)
