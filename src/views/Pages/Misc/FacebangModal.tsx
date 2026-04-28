@@ -8,11 +8,13 @@ interface FacebangProps {
 	onClose: () => void;
 }
 
-export default function FacebangModal({ isVisible, onClose }: FacebangProps) {
+export function FacebangModal({ isVisible, onClose }: FacebangProps) {
 	const job = useSelector((state) => state.jobs.facebang) as JobWithSliders;
 	const dispatch = useDispatch();
 
-	if (!isVisible) return Roact.createElement("Frame", { Visible: false });
+	if (!isVisible) {
+		return Roact.createElement("frame", { Visible: false });
+	}
 
 	const renderSlider = (label: string, value: string, percent: number, onUpdate: (val: number) => void) => {
 		return (
@@ -53,16 +55,12 @@ export default function FacebangModal({ isVisible, onClose }: FacebangProps) {
 				>
 					<uicorner CornerRadius={new UDim(0, 6)} />
 					<uistroke Color={Color3.fromRGB(30, 30, 30)} Thickness={1} />
-
-					{/* Progress Bar */}
 					<frame
 						Size={new UDim2(percent, 0, 1, 0)}
 						BackgroundColor3={Color3.fromRGB(235, 76, 105)}
 						BorderSizePixel={0}
 					>
 						<uicorner CornerRadius={new UDim(0, 6)} />
-
-						{/* Slider Knob */}
 						<frame
 							Size={new UDim2(0, 4, 0, 16)}
 							Position={new UDim2(1, -2, 0.5, -8)}
@@ -89,7 +87,6 @@ export default function FacebangModal({ isVisible, onClose }: FacebangProps) {
 			<uicorner CornerRadius={new UDim(0, 12)} />
 			<uistroke Color={Color3.fromRGB(35, 35, 35)} Thickness={1} />
 
-			{/* Header */}
 			<textlabel
 				Text="FACEBANG CONFIG"
 				Size={new UDim2(0, 200, 0, 60)}
@@ -101,7 +98,6 @@ export default function FacebangModal({ isVisible, onClose }: FacebangProps) {
 				TextXAlignment="Left"
 			/>
 
-			{/* Decorative Accent Line */}
 			<frame
 				Size={new UDim2(1, -40, 0, 1)}
 				Position={new UDim2(0, 20, 0, 55)}
@@ -121,7 +117,6 @@ export default function FacebangModal({ isVisible, onClose }: FacebangProps) {
 				Event={{ MouseButton1Click: onClose }}
 			/>
 
-			{/* Main Toggle Section */}
 			<frame Size={new UDim2(1, -40, 0, 80)} Position={new UDim2(0, 20, 0, 75)} BackgroundTransparency={1}>
 				<textlabel
 					Text={job.active ? "STATUS: RUNNING" : "STATUS: READY"}
@@ -152,17 +147,14 @@ export default function FacebangModal({ isVisible, onClose }: FacebangProps) {
 				</textbutton>
 			</frame>
 
-			{/* Settings List */}
 			<frame Size={new UDim2(1, 0, 0, 300)} Position={new UDim2(0, 20, 0, 175)} BackgroundTransparency={1}>
 				<uilistlayout Padding={new UDim(0, 10)} SortOrder={Enum.SortOrder.LayoutOrder} />
-
 				{renderSlider(
 					"Interaction Distance",
 					`${math.round(job.sliders.distance * 10) / 10} studs`,
 					job.sliders.distance / 15,
 					(p) => dispatch(setJobSlider("facebang", "distance", p * 15)),
 				)}
-
 				{renderSlider("Rotation Angle", `${math.round(job.sliders.angle)}°`, job.sliders.angle / 360, (p) =>
 					dispatch(setJobSlider("facebang", "angle", p * 360)),
 				)}
@@ -170,3 +162,5 @@ export default function FacebangModal({ isVisible, onClose }: FacebangProps) {
 		</frame>
 	);
 }
+
+export default FacebangModal;
