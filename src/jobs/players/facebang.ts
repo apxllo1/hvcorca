@@ -68,19 +68,19 @@ onJobChange("facebang", (job, state) => {
 			// Map UI sliders to internal variables
 			const td = currentJob.sliders.distance ?? 1.9;
 			const angle = currentJob.sliders.angle ?? 180;
-			const speed = 0.1; 
+			const speed = 0.1;
 
-			const basePos = targetHead.CFrame
-				.mul(new CFrame(0, HEIGHT_OFFSET, DEPTH_OFFSET))
-				.mul(CFrame.Angles(0, math.rad(angle), 0));
+			const basePos = targetHead.CFrame.mul(new CFrame(0, HEIGHT_OFFSET, DEPTH_OFFSET)).mul(
+				CFrame.Angles(0, math.rad(angle), 0),
+			);
 
-			const targetPos = targetHead.CFrame
-				.mul(new CFrame(0, HEIGHT_OFFSET, DEPTH_OFFSET - td))
-				.mul(CFrame.Angles(0, math.rad(angle), 0));
+			const targetPos = targetHead.CFrame.mul(new CFrame(0, HEIGHT_OFFSET, DEPTH_OFFSET - td)).mul(
+				CFrame.Angles(0, math.rad(angle), 0),
+			);
 
 			// Thrust Forward
 			let start = tick();
-			while (isRunning && (tick() - start) < speed) {
+			while (isRunning && tick() - start < speed) {
 				const alpha = math.min((tick() - start) / speed, 1);
 				localRoot.CFrame = basePos.Lerp(targetPos, ease(alpha));
 				RunService.RenderStepped.Wait();
@@ -88,7 +88,7 @@ onJobChange("facebang", (job, state) => {
 
 			// Pull Back
 			start = tick();
-			while (isRunning && (tick() - start) < speed) {
+			while (isRunning && tick() - start < speed) {
 				const alpha = math.min((tick() - start) / speed, 1);
 				localRoot.CFrame = targetPos.Lerp(basePos, ease(alpha));
 				RunService.RenderStepped.Wait();

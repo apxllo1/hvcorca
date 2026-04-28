@@ -123,11 +123,8 @@ const FacebangModal = hooked(({ isVisible, onClose }: FacebangProps) => {
 					job.sliders.distance / 15,
 					(p) => dispatch(setJobSlider("facebang", "distance", p * 15)),
 				)}
-				{renderSlider(
-					"Rotation Angle",
-					`${math.round(job.sliders.angle)}°`,
-					job.sliders.angle / 360,
-					(p) => dispatch(setJobSlider("facebang", "angle", p * 360)),
+				{renderSlider("Rotation Angle", `${math.round(job.sliders.angle)}°`, job.sliders.angle / 360, (p) =>
+					dispatch(setJobSlider("facebang", "angle", p * 360)),
 				)}
 			</frame>
 		</frame>
