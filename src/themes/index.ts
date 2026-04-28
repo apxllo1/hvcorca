@@ -6,25 +6,28 @@ import { obsidian } from "./obsidian";
 import { crimson } from "./crimson";
 import { Theme } from "./theme.interface";
 
-/**
- * We keep this as a standard Array so .size() and .find() work in your UI.
- * Note: If any of these imports are broken, the array will contain 'undefined',
- * so we filter them out to prevent UI crashes.
+/** * UI Theme Registry
+ * We filter the array to ensure that if an import fails (returns undefined),
+ * the UI dropdown doesn't break.
  */
-const themes: Theme[] = [crimson, darkTheme, lightTheme, frostedGlass, obsidian, highContrast].filter(
-	(t) => t !== undefined,
-);
+const themes: Theme[] = [
+	crimson,
+	darkTheme,
+	lightTheme,
+	frostedGlass,
+	obsidian,
+	highContrast,
+].filter((t): t is Theme => t !== undefined);
 
 /**
- * Returns the list of all available themes for the UI dropdown.
- * @returns {Theme[]}
+ * Returns the validated list of themes for the UI.
  */
 export function getThemes(): Theme[] {
 	return themes;
 }
 
 /**
- * Re-export the default theme (Sorbet/Dark).
- * This is used for the initial store state.
+ * Re-export the default theme for initial state configuration.
+ * Note: sorbet.ts MUST export 'darkTheme'.
  */
 export { darkTheme };
