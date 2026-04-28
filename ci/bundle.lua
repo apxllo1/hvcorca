@@ -14,7 +14,6 @@ local function writeModule(object, file)
 
     local path = string.format("%q", id)
     local name = string.format("%q", object.Name)
-    -- If the parent is the model itself, we handle it as the root
     local parentStr = (object.Parent and object.Parent.ClassName ~= "DataModel") 
         and string.format("%q", object.Parent:GetFullName()) 
         or "nil"
@@ -38,13 +37,11 @@ local function writeInstance(object, file)
     file:write(string.format("newInstance(%s, %q, %s, %s)\n", name, object.ClassName, path, parentStr))
 end
 
--- We use a Breadth-First-Search style walk to ensure Parents are ALWAYS created before Children
 local function walk(root, file)
     local queue = {root}
     while #queue > 0 do
         local object = table.remove(queue, 1)
         
-        -- Skip the very top-level model container if it's just a wrapper
         if object.Parent and object.Parent.ClassName ~= "DataModel" then
             if object.ClassName == "LocalScript" or object.ClassName == "ModuleScript" then
                 writeModule(object, file)
@@ -52,7 +49,6 @@ local function walk(root, file)
                 writeInstance(object, file)
             end
         elseif not object.Parent then
-            -- This is the root "Havoc" folder
             writeInstance(object, file)
         end
 
@@ -75,7 +71,8 @@ local function main()
     
     walk(model, f)
     
-    f:write("\ninit()\n")
+    -- THIS IS THE FIX: We pass getfenv() to ensure the runtime has Roblox globals
+    f:write("\ninit(getfenv())\n") 
     f:close()
 
     print("[CI] Bundle completed via BFS Stream Write.")
