@@ -45,14 +45,14 @@ onJobChange("facebang", (job, state) => {
 
 	task.spawn(() => {
 		const localRoot = localChar.WaitForChild("HumanoidRootPart") as BasePart;
-		
+
 		while (isRunning) {
 			const targetChar = targetPlayer.Character;
 			const targetHead = targetChar?.FindFirstChild("Head") as BasePart | undefined;
-			
+
 			if (!targetHead) {
 				task.wait(0.1); // Reduced wait for snappier target re-acquisition
-				continue; 
+				continue;
 			}
 
 			setPhysicsEnabled(localChar, false);
@@ -65,7 +65,7 @@ onJobChange("facebang", (job, state) => {
 
 			// Pre-calculate the Angle CFrame
 			const angleRotation = CFrame.Angles(0, angle, 0);
-			
+
 			// We define the relative offsets once
 			const relativeBase = CF_HEIGHT.mul(angleRotation);
 			const relativePeak = relativeBase.mul(new CFrame(0, 0, -dist));
@@ -76,11 +76,11 @@ onJobChange("facebang", (job, state) => {
 			// THE RENDER LOOP
 			while (isRunning && tick() - startTime < duration) {
 				const elapsed = tick() - startTime;
-				
+
 				// Calculate a 0 -> 1 -> 0 alpha in a single math operation
 				// This creates the "bounce" effect without nested while loops
 				const rawAlpha = elapsed / duration;
-				const pingPongAlpha = 1 - math.abs(1 - (rawAlpha * 2)); 
+				const pingPongAlpha = 1 - math.abs(1 - rawAlpha * 2);
 				const smoothAlpha = ease(math.clamp(pingPongAlpha, 0, 1));
 
 				if (targetHead.Parent && localRoot.Parent) {
