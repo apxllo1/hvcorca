@@ -6,18 +6,21 @@ import FacebangModal from "./FacebangModal";
 function MiscPage() {
 	const themeData = useTheme("home");
 	const theme = themeData?.profile;
-
+	
 	const [modalVisible, setModalVisible] = useState(false);
 	const [isHovered, setHovered] = useState(false);
 
 	const toggleModal = useCallback(() => setModalVisible((prev) => !prev), []);
 
-	// Safety check for theme initialization
 	if (!theme) return <frame Key="Loading" BackgroundTransparency={1} Size={new UDim2(1, 0, 1, 0)} />;
 
 	return (
 		<frame Key="MiscPage" Size={new UDim2(1, 0, 1, 0)} BackgroundTransparency={1}>
-			<uipadding PaddingTop={new UDim(0, 20)} PaddingLeft={new UDim(0, 20)} PaddingRight={new UDim(0, 20)} />
+			<uipadding 
+				PaddingTop={new UDim(0, 20)} 
+				PaddingLeft={new UDim(0, 20)} 
+				PaddingRight={new UDim(0, 20)} 
+			/>
 
 			<scrollingframe
 				Key="ContentScroll"
@@ -29,9 +32,9 @@ function MiscPage() {
 				ClipsDescendants={true}
 				ZIndex={1}
 			>
-				<uilistlayout
-					Padding={new UDim(0, 12)}
-					SortOrder={Enum.SortOrder.LayoutOrder}
+				<uilistlayout 
+					Padding={new UDim(0, 12)} 
+					SortOrder={Enum.SortOrder.LayoutOrder} 
 					HorizontalAlignment={Enum.HorizontalAlignment.Center}
 				/>
 
@@ -59,29 +62,28 @@ function MiscPage() {
 						Color={theme.button.background.Lerp(new Color3(1, 1, 1), 0.15)}
 						Transparency={isHovered ? 0.2 : 0.6}
 					/>
-					{/* Keeps the button from getting too tall on massive resolutions */}
 					<uiaspectratioconstraint AspectRatio={8} DominantAxis={Enum.DominantAxis.Width} />
 				</textbutton>
 			</scrollingframe>
 
-			{/* Modal Layer with CanvasGroup for better rendering/transparency control */}
+			{/* Changed back to 'frame' to fix the TS2339 error */}
 			{modalVisible && (
-				<canvasgroup
+				<frame
 					Key="ModalOverlay"
 					Size={new UDim2(1, 40, 1, 40)}
 					Position={new UDim2(0, -20, 0, -20)}
 					BackgroundColor3={new Color3(0, 0, 0)}
 					BackgroundTransparency={0.4}
 					ZIndex={10}
-					GroupTransparency={0}
 					Event={{
-						InputBegan: (_, input) => {
+						// Added explicit types to fix TS7006 (Implicit Any)
+						InputBegan: (instance: Frame, input: InputObject) => {
 							if (input.UserInputType === Enum.UserInputType.MouseButton1) setModalVisible(false);
 						},
 					}}
 				>
 					<FacebangModal isVisible={modalVisible} onClose={() => setModalVisible(false)} />
-				</canvasgroup>
+				</frame>
 			)}
 		</frame>
 	);
