@@ -1,15 +1,16 @@
 --[[
     Havoc Studios Bundler
-    Version: 20260428-dbg
+    Version: dev-dbg
 --]]
 
 local function start()
     local runEnv = (getfenv and getfenv()) or _G or shared
 
-    local init, newModule, newInstance, newEnv = (function()
+    -- Execute Runtime
+    (function()
 --[[
     Havoc Studios Runtime Engine
-    Optimized for Scoped Return Logic
+    FINAL EMERGENCY FIX: Global Handshake Logic
 --]]
 
 local Instance, game, task, require, setmetatable, pcall, error, warn
@@ -48,7 +49,7 @@ end
 local function newEnv(id)
     local success, env = pcall(getfenv, 0)
     return setmetatable({
-        VERSION = "20260428-dbg",
+        VERSION = "dev-dbg",
         script = instanceFromId[id],
         require = function(module) return requireModuleInternal(module, instanceFromId[id]) end,
     }, { __index = env or _G })
@@ -94,7 +95,6 @@ local function init(env)
 
     if not game then return end
     
-    -- Safety wrap for game loading
     pcall(function()
         if game.IsLoaded and not game:IsLoaded() then game.Loaded:Wait() end
     end)
@@ -109,12 +109,23 @@ local function init(env)
     end
 end
 
--- MANDATORY FOR BUNDLER
+-- CRITICAL: Force exposure to Global to stop the "nil" errors permanently
+_G.Havoc_Init = init
+_G.Havoc_NewModule = newModule
+_G.Havoc_NewInstance = newInstance
+_G.Havoc_NewEnv = newEnv
+
+-- Return them anyway for the bundler to capture
 return init, newModule, newInstance, newEnv
 
     end)()
 
-    if not init then warn('[Havoc Critical]: Runtime failed to return init function!') return end
+    local init = _G.Havoc_Init
+    local newModule = _G.Havoc_NewModule
+    local newInstance = _G.Havoc_NewInstance
+    local newEnv = _G.Havoc_NewEnv
+
+    if not init then warn('[Havoc Critical]: Handshake Failed - Functions not found in _G') return end
     init(runEnv)
 
     newInstance("Havoc", "Folder", "Havoc", nil)
@@ -1526,23 +1537,30 @@ local TS = require(script.Parent.Parent.include.RuntimeLib)
 local useAppSelector = TS.import(script, script.Parent, "common", "rodux-hooks").useAppSelector
 local getThemes = TS.import(script, script.Parent.Parent, "themes").getThemes
 local darkTheme = TS.import(script, script.Parent.Parent, "themes", "sorbet").darkTheme
+local _exp = getThemes()
+local _arg0 = function(t)
+	return { t.name, t }
+end
+-- ▼ ReadonlyArray.map ▼
+local _newValue = table.create(#_exp)
+for _k, _v in ipairs(_exp) do
+	_newValue[_k] = _arg0(_v, _k - 1, _exp)
+end
+-- ▲ ReadonlyArray.map ▲
+local _map = {}
+for _, _v in ipairs(_newValue) do
+	_map[_v[1]] = _v[2]
+end
+local THEME_MAP = _map
 local function useTheme(key)
 	return useAppSelector(function(state)
-		local _exp = getThemes()
-		local _arg0 = function(t)
-			return t.name == state.options.currentTheme
+		local themeName = state.options.currentTheme
+		local _condition = THEME_MAP[themeName]
+		if _condition == nil then
+			_condition = darkTheme
 		end
-		-- ▼ ReadonlyArray.find ▼
-		local _result = nil
-		for _i, _v in ipairs(_exp) do
-			if _arg0(_v, _i - 1, _exp) == true then
-				_result = _v
-				break
-			end
-		end
-		-- ▲ ReadonlyArray.find ▲
-		local theme = _result
-		return theme and theme[key] or darkTheme[key]
+		local theme = _condition
+		return theme[key]
 	end)
 end
 return {
@@ -19047,7 +19065,7 @@ return {
     end)
 
     newInstance("types", "Folder", "Havoc.include.node_modules.make.node_modules.@rbxts.compiler-types.types", "Havoc.include.node_modules.make.node_modules.@rbxts.compiler-types")
-    print('[Havoc]: 20260428-dbg initialized successfully.')
+    print('[Havoc]: dev-dbg initialized successfully.')
 end
 
 local success, err = pcall(start)
