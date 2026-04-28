@@ -3,7 +3,6 @@ local function getFlag(f) for _, v in ipairs(PARAMS) do if v == f then return tr
 
 local OUTPUT_PATH = assert(PARAMS[1], "No output path specified")
 local VERSION = assert(PARAMS[2], "No version specified")
-local MINIFY = getFlag("minify")
 
 local ROJO_INPUT = "Havoc.rbxm"
 local RUNTIME_FILE = "ci/runtime.lua"
@@ -11,48 +10,75 @@ local RUNTIME_FILE = "ci/runtime.lua"
 local function writeModule(object, file)
     local id = object:GetFullName()
     local source = remodel.getRawProperty(object, "Source")
-    source = source .. "\n" -- Prevent comment bleed
+    source = source .. "\n" 
 
-    local path, name = string.format("%q", id), string.format("%q", object.Name)
-    local parent = object.Parent and string.format("%q", object.Parent:GetFullName()) or "nil"
+    local path = string.format("%q", id)
+    local name = string.format("%q", object.Name)
+    -- If the parent is the model itself, we handle it as the root
+    local parentStr = (object.Parent and object.Parent.ClassName ~= "DataModel") 
+        and string.format("%q", object.Parent:GetFullName()) 
+        or "nil"
+    
     local className = string.format("%q", object.ClassName)
 
-    -- Write directly to file handle to save memory
-    file:write(string.format("newModule(%s, %s, %s, %s, function ()\n", name, className, path, parent))
-    file:write("return setfenv(function()\n")
+    file:write(string.format("newModule(%s, %s, %s, %s, function ()\n", name, className, path, parentStr))
+    file:write("    return setfenv(function()\n")
     file:write(source)
-    file:write("\nend, newEnv(" .. path .. "))()\nend)\n\n")
+    file:write("\n    end, newEnv(" .. path .. "))()\nend)\n\n")
 end
 
 local function writeInstance(object, file)
-    local path, name = string.format("%q", object:GetFullName()), string.format("%q", object.Name)
-    local parent = object.Parent and string.format("%q", object.Parent:GetFullName()) or "nil"
-    file:write(string.format("newInstance(%s, %s, %s, %s)\n", name, string.format("%q", object.ClassName), path, parent))
+    local id = object:GetFullName()
+    local path = string.format("%q", id)
+    local name = string.format("%q", object.Name)
+    local parentStr = (object.Parent and object.Parent.ClassName ~= "DataModel") 
+        and string.format("%q", object.Parent:GetFullName()) 
+        or "nil"
+    
+    file:write(string.format("newInstance(%s, %q, %s, %s)\n", name, object.ClassName, path, parentStr))
 end
 
-local function walk(object, file)
-    if object.ClassName == "LocalScript" or object.ClassName == "ModuleScript" then
-        writeModule(object, file)
-    else
-        writeInstance(object, file)
+-- We use a Breadth-First-Search style walk to ensure Parents are ALWAYS created before Children
+local function walk(root, file)
+    local queue = {root}
+    while #queue > 0 do
+        local object = table.remove(queue, 1)
+        
+        -- Skip the very top-level model container if it's just a wrapper
+        if object.Parent and object.Parent.ClassName ~= "DataModel" then
+            if object.ClassName == "LocalScript" or object.ClassName == "ModuleScript" then
+                writeModule(object, file)
+            else
+                writeInstance(object, file)
+            end
+        elseif not object.Parent then
+            -- This is the root "Havoc" folder
+            writeInstance(object, file)
+        end
+
+        for _, child in ipairs(object:GetChildren()) do
+            table.insert(queue, child)
+        end
     end
-    for _, child in ipairs(object:GetChildren()) do walk(child, file) end
 end
 
 local function main()
     local model = remodel.readModelFile(ROJO_INPUT)[1]
-    local runtime = string.gsub(remodel.readFile(RUNTIME_FILE), "__VERSION__", string.format("%q", VERSION))
+    local runtime = remodel.readFile(RUNTIME_FILE)
+    runtime = string.gsub(runtime, "__VERSION__", string.format("%q", VERSION))
     
-    -- Open file for writing immediately
     remodel.createDirAll(string.match(OUTPUT_PATH, "^(.*)[/\\]"))
     local f = io.open(OUTPUT_PATH, "w")
     
+    f:write("-- Havoc Bundle Generated for " .. VERSION .. "\n")
     f:write(runtime .. "\n\n")
+    
     walk(model, f)
+    
     f:write("\ninit()\n")
     f:close()
 
-    print("[CI] Bundle completed via Stream Write.")
+    print("[CI] Bundle completed via BFS Stream Write.")
 end
 
 main()
