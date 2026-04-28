@@ -9,13 +9,11 @@
     ],
     "tree": {
         "$className": "Folder",
-        "Havoc": {
-            "$path": "out",
-            "include": {
-                "$path": "include",
-                "node_modules": {
-                    "$path": "node_modules/@rbxts"
-                }
+        "$path": "out",
+        "include": {
+            "$path": "include",
+            "node_modules": {
+                "$path": "node_modules/@rbxts"
             }
         }
     }
