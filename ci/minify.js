@@ -7,20 +7,32 @@ const filePath = path.join(__dirname, "bundle.tmp");
 try {
     const source = fs.readFileSync(filePath, "utf8");
     
-    // Check if the source is empty to prevent luamin from crashing
     if (!source || source.trim().length === 0) {
-        console.error("[Minify] Source file is empty. Skipping minification.");
+        console.warn("[Minify] Source file is empty. Nothing to do.");
         process.exit(0);
     }
 
+    // Attempt minification
     const result = luamin.minify(source);
-    fs.writeFileSync(filePath, result);
     
-    console.log("[Minify] Successfully minified bundle.tmp");
+    // Check if result is suspiciously short compared to source
+    if (result.length < 10 && source.length > 100) {
+        throw new Error("Minification resulted in an empty/corrupt string.");
+    }
+
+    fs.writeFileSync(filePath, result);
+    console.log(`[Minify] Success! Reduced to ${result.length} bytes.`);
+
 } catch (err) {
-    // If minification fails, we don't want to break the whole build.
-    // We'll just use the un-minified code instead.
-    console.error("[Minify] Error during minification: ", err.message);
-    console.log("[Minify] Falling back to un-minified source.");
+    // CRITICAL: Log the full error so we can see it in GitHub Actions
+    console.error("--------------------------------------------------");
+    console.error("[Minify] FATAL ERROR:");
+    console.error(err); 
+    console.error("--------------------------------------------------");
+    
+    // We do NOT writeFileSync here. 
+    // By doing nothing, the original un-minified 'bundle.tmp' stays intact.
+    
+    console.log("[Minify] Keeping un-minified source as fallback.");
     process.exit(0); 
 }
