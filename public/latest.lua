@@ -3603,15 +3603,24 @@ end
 local ease = function(t)
 	return -(math.cos(math.pi * t) - 1) / 2
 end
+local speedToDuration = function(speed)
+	local clamped = math.clamp(speed, 0.1, 10)
+	return 0.5 / clamped
+end
 onJobChange("facebang", function(job, state)
 	local sliderJob = job
-	local localPlayer = Players.LocalPlayer
-	local localChar = localPlayer.Character
 	local _result = sliderJob
 	if _result ~= nil then
-		_result = _result.active
+		_result = _result.sliders
 	end
-	local _condition = not _result
+	local sliders = _result
+	local localPlayer = Players.LocalPlayer
+	local localChar = localPlayer.Character
+	local _result_1 = sliderJob
+	if _result_1 ~= nil then
+		_result_1 = _result_1.active
+	end
+	local _condition = not _result_1
 	if not _condition then
 		_condition = not localChar
 	end
@@ -3635,49 +3644,56 @@ onJobChange("facebang", function(job, state)
 		local localRoot = localChar:WaitForChild("HumanoidRootPart")
 		while isRunning do
 			local targetChar = targetPlayer.Character
-			local _result_1 = targetChar
-			if _result_1 ~= nil then
-				_result_1 = _result_1:FindFirstChild("Head")
+			local _result_2 = targetChar
+			if _result_2 ~= nil then
+				_result_2 = _result_2:FindFirstChild("Head")
 			end
-			local targetHead = _result_1
+			local targetHead = _result_2
 			if not targetHead then
 				task.wait(0.1)
 				continue
 			end
 			setPhysicsEnabled(localChar, false)
 			local currentJob = (state.jobs).facebang
-			local _result_2 = currentJob
-			if _result_2 ~= nil then
-				_result_2 = _result_2.sliders
-				if _result_2 ~= nil then
-					_result_2 = _result_2.distance
-				end
+			local _result_3 = currentJob
+			if _result_3 ~= nil then
+				_result_3 = _result_3.sliders
 			end
-			local _condition_1 = _result_2
+			local currentSliders = _result_3
+			local _result_4 = currentSliders
+			if _result_4 ~= nil then
+				_result_4 = _result_4.distance
+			end
+			local _condition_1 = _result_4
 			if _condition_1 == nil then
 				_condition_1 = 1.9
 			end
 			local dist = _condition_1
-			local _fn = math
-			local _result_3 = currentJob
-			if _result_3 ~= nil then
-				_result_3 = _result_3.sliders
-				if _result_3 ~= nil then
-					_result_3 = _result_3.angle
-				end
+			local _result_5 = currentSliders
+			if _result_5 ~= nil then
+				_result_5 = _result_5.speed
 			end
-			local _condition_2 = _result_3
+			local _condition_2 = _result_5
 			if _condition_2 == nil then
-				_condition_2 = 180
+				_condition_2 = 5
 			end
-			local angle = _fn.rad(_condition_2)
-			local speed = 0.08
+			local speed = _condition_2
+			local _fn = math
+			local _result_6 = currentSliders
+			if _result_6 ~= nil then
+				_result_6 = _result_6.angle
+			end
+			local _condition_3 = _result_6
+			if _condition_3 == nil then
+				_condition_3 = 180
+			end
+			local angle = _fn.rad(_condition_3)
+			local duration = speedToDuration(speed)
 			local angleRotation = CFrame.Angles(0, angle, 0)
 			local relativeBase = CF_HEIGHT * angleRotation
 			local _cFrame = CFrame.new(0, 0, -dist)
 			local relativePeak = relativeBase * _cFrame
 			local startTime = tick()
-			local duration = speed * 2
 			while isRunning and tick() - startTime < duration do
 				local elapsed = tick() - startTime
 				local rawAlpha = elapsed / duration
