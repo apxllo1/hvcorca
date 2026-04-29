@@ -28,7 +28,7 @@ jobs:
         uses: ok-nick/setup-aftman@v0.4.2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-      -- name: Install Remodel
+      - name: Install Remodel
   run: |
     curl -L --fail --retry 3 --retry-delay 2 \
       https://github.com/rojo-rbx/remodel/releases/download/v0.11.0/remodel-0.11.0-linux-x86_64.zip \
