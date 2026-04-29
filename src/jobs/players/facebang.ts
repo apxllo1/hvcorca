@@ -8,7 +8,6 @@ const DEFAULT_GRAVITY = 192.2;
 
 let isRunning = false;
 
-// Pre-define common CFrames to save memory allocation
 const CF_IDENTITY = new CFrame();
 const CF_HEIGHT = new CFrame(0, HEIGHT_OFFSET, DEPTH_OFFSET);
 
@@ -23,8 +22,20 @@ const setPhysicsEnabled = (char: Model, enabled: boolean) => {
 
 const ease = (t: number) => -(math.cos(math.pi * t) - 1) / 2;
 
+// Maps speed slider (0-10) to a duration value
+// Higher speed = lower duration = faster strokes
+const speedToDuration = (speed: number) => {
+	const clamped = math.clamp(speed, 0.1, 10);
+	// At speed 5 (default) => 0.16s, at 10 => 0.05s, at 0.1 => ~0.8s
+	return 0.5 / clamped;
+};
+
 onJobChange("facebang", (job, state) => {
 	const sliderJob = job as unknown as JobWithSliders;
+	const sliders = sliderJob?.sliders as
+		| { distance: number; speed: number; angle?: number }
+		| undefined;
+
 	const localPlayer = Players.LocalPlayer;
 	const localChar = localPlayer.Character;
 
@@ -37,7 +48,10 @@ onJobChange("facebang", (job, state) => {
 	if (isRunning) return;
 
 	const targetName = state.dashboard.apps.playerSelected;
-	const targetPlayer = targetName !== undefined ? (Players.FindFirstChild(targetName) as Player) : undefined;
+	const targetPlayer =
+		targetName !== undefined
+			? (Players.FindFirstChild(targetName) as Player)
+			: undefined;
 
 	if (!targetPlayer || targetPlayer === localPlayer) return;
 
@@ -51,40 +65,38 @@ onJobChange("facebang", (job, state) => {
 			const targetHead = targetChar?.FindFirstChild("Head") as BasePart | undefined;
 
 			if (!targetHead) {
-				task.wait(0.1); // Reduced wait for snappier target re-acquisition
+				task.wait(0.1);
 				continue;
 			}
 
 			setPhysicsEnabled(localChar, false);
 
-			// Optimization: Fetch sliders once per 'stroke' instead of every frame
-			const currentJob = (state.jobs as any).facebang as JobWithSliders;
-			const dist = currentJob?.sliders?.distance ?? 1.9;
-			const angle = math.rad(currentJob?.sliders?.angle ?? 180);
-			const speed = 0.08; // Slightly faster for better "impact" feel
+			// Pull latest slider values each stroke
+			const currentJob = (state.jobs as unknown as Record<string, JobWithSliders>)
+				.facebang;
+			const currentSliders = currentJob?.sliders as
+				| { distance: number; speed: number; angle?: number }
+				| undefined;
 
-			// Pre-calculate the Angle CFrame
+			const dist = currentSliders?.distance ?? 1.9;
+			const speed = currentSliders?.speed ?? 5;
+			const angle = math.rad(currentSliders?.angle ?? 180);
+			const duration = speedToDuration(speed);
+
 			const angleRotation = CFrame.Angles(0, angle, 0);
-
-			// We define the relative offsets once
 			const relativeBase = CF_HEIGHT.mul(angleRotation);
 			const relativePeak = relativeBase.mul(new CFrame(0, 0, -dist));
 
 			const startTime = tick();
-			const duration = speed * 2;
 
-			// THE RENDER LOOP
+			// Render loop for one stroke
 			while (isRunning && tick() - startTime < duration) {
 				const elapsed = tick() - startTime;
-
-				// Calculate a 0 -> 1 -> 0 alpha in a single math operation
-				// This creates the "bounce" effect without nested while loops
 				const rawAlpha = elapsed / duration;
 				const pingPongAlpha = 1 - math.abs(1 - rawAlpha * 2);
 				const smoothAlpha = ease(math.clamp(pingPongAlpha, 0, 1));
 
 				if (targetHead.Parent && localRoot.Parent) {
-					// Optimization: One single CFrame multiplication chain
 					const targetCF = targetHead.CFrame;
 					localRoot.CFrame = targetCF.mul(relativeBase.Lerp(relativePeak, smoothAlpha));
 				}
