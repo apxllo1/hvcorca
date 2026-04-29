@@ -36,10 +36,11 @@ file:write("    hInit, hMod, hInst, hEnv = (function()\n")
 file:write(runtime)
 file:write("\n    end)();\n\n")
 
+-- Register root as a Folder parented to ROOT
 local rootPath = string.format("%q", model:GetFullName())
 file:write(string.format(
-    "    hInst(%s, %q, %s, \"ROOT\");\n",
-    string.format("%q", model.Name), model.ClassName, rootPath
+    "    hInst(%s, \"Folder\", %s, \"ROOT\");\n",
+    string.format("%q", model.Name), rootPath
 ))
 
 local SKIP_NAMES = { include = true, node_modules = true }
