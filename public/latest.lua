@@ -11350,58 +11350,3281 @@ return {
         end)
     end);
     hInst("include", "Folder", "Havoc.include", "Havoc");
-    hInst("Promise", "ModuleScript", "Havoc.include.Promise", "Havoc.include");
-    hInst("RuntimeLib", "ModuleScript", "Havoc.include.RuntimeLib", "Havoc.include");
+    hMod("Promise", "ModuleScript", "Havoc.include.Promise", "Havoc.include", function()
+        return (function(...)
+--[[
+	An implementation of Promises similar to Promise/A+.
+] ]
+
+local ERROR_NON_PROMISE_IN_LIST = "Non-promise value passed into %s at index %s"
+local ERROR_NON_LIST = "Please pass a list of promises to %s"
+local ERROR_NON_FUNCTION = "Please pass a handler function to %s!"
+local MODE_KEY_METATABLE = {__mode = "k"}
+
+--[[
+	Creates an enum dictionary with some metamethods to prevent common mistakes.
+] ]
+local function makeEnum(enumName, members)
+	local enum = {}
+
+	for _, memberName in ipairs(members) do
+		enum[memberName] = memberName
+	end
+
+	return setmetatable(enum, {
+		__index = function(_, k)
+			error(string.format("%s is not in %s!", k, enumName), 2)
+		end,
+		__newindex = function()
+			error(string.format("Creating new members in %s is not allowed!", enumName), 2)
+		end,
+	})
+end
+
+--[[
+	An object to represent runtime errors that occur during execution.
+	Promises that experience an error like this will be rejected with
+	an instance of this object.
+] ]
+local Error do
+	Error = {
+		Kind = makeEnum("Promise.Error.Kind", {
+			"ExecutionError",
+			"AlreadyCancelled",
+			"NotResolvedInTime",
+			"TimedOut",
+		}),
+	}
+	Error.__index = Error
+
+	function Error.new(options, parent)
+		options = options or {}
+		return setmetatable({
+			error = tostring(options.error) or "[This error has no error text.]",
+			trace = options.trace,
+			context = options.context,
+			kind = options.kind,
+			parent = parent,
+			createdTick = os.clock(),
+			createdTrace = debug.traceback(),
+		}, Error)
+	end
+
+	function Error.is(anything)
+		if type(anything) == "table" then
+			local metatable = getmetatable(anything)
+
+			if type(metatable) == "table" then
+				return rawget(anything, "error") ~= nil and type(rawget(metatable, "extend")) == "function"
+			end
+		end
+
+		return false
+	end
+
+	function Error.isKind(anything, kind)
+		assert(kind ~= nil, "Argument #2 to Promise.Error.isKind must not be nil")
+
+		return Error.is(anything) and anything.kind == kind
+	end
+
+	function Error:extend(options)
+		options = options or {}
+
+		options.kind = options.kind or self.kind
+
+		return Error.new(options, self)
+	end
+
+	function Error:getErrorChain()
+		local runtimeErrors = { self }
+
+		while runtimeErrors[#runtimeErrors].parent do
+			table.insert(runtimeErrors, runtimeErrors[#runtimeErrors].parent)
+		end
+
+		return runtimeErrors
+	end
+
+	function Error:__tostring()
+		local errorStrings = {
+			string.format("-- Promise.Error(%s) --", self.kind or "?"),
+		}
+
+		for _, runtimeError in ipairs(self:getErrorChain()) do
+			table.insert(errorStrings, table.concat({
+				runtimeError.trace or runtimeError.error,
+				runtimeError.context,
+			}, "\n"))
+		end
+
+		return table.concat(errorStrings, "\n")
+	end
+end
+
+--[[
+	Packs a number of arguments into a table and returns its length.
+
+	Used to cajole varargs without dropping sparse values.
+] ]
+local function pack(...)
+	return select("#", ...), { ... }
+end
+
+--[[
+	Returns first value (success), and packs all following values.
+] ]
+local function packResult(success, ...)
+	return success, select("#", ...), { ... }
+end
+
+
+local function makeErrorHandler(traceback)
+	assert(traceback ~= nil)
+
+	return function(err)
+		-- If the error object is already a table, forward it directly.
+		-- Should we extend the error here and add our own trace?
+
+		if type(err) == "table" then
+			return err
+		end
+
+		return Error.new({
+			error = err,
+			kind = Error.Kind.ExecutionError,
+			trace = debug.traceback(tostring(err), 2),
+			context = "Promise created at:\n\n" .. traceback,
+		})
+	end
+end
+
+--[[
+	Calls a Promise executor with error handling.
+] ]
+local function runExecutor(traceback, callback, ...)
+	return packResult(xpcall(callback, makeErrorHandler(traceback), ...))
+end
+
+--[[
+	Creates a function that invokes a callback with correct error handling and
+	resolution mechanisms.
+] ]
+local function createAdvancer(traceback, callback, resolve, reject)
+	return function(...)
+		local ok, resultLength, result = runExecutor(traceback, callback, ...)
+
+		if ok then
+			resolve(unpack(result, 1, resultLength))
+		else
+			reject(result[1])
+		end
+	end
+end
+
+local function isEmpty(t)
+	return next(t) == nil
+end
+
+local Promise = {
+	Error = Error,
+	Status = makeEnum("Promise.Status", {"Started", "Resolved", "Rejected", "Cancelled"}),
+	_getTime = os.clock,
+	_timeEvent = game:GetService("RunService").Heartbeat,
+}
+Promise.prototype = {}
+Promise.__index = Promise.prototype
+
+--[[
+	Constructs a new Promise with the given initializing callback.
+
+	This is generally only called when directly wrapping a non-promise API into
+	a promise-based version.
+
+	The callback will receive 'resolve' and 'reject' methods, used to start
+	invoking the promise chain.
+
+	Second parameter, parent, is used internally for tracking the "parent" in a
+	promise chain. External code shouldn't need to worry about this.
+] ]
+function Promise._new(traceback, callback, parent)
+	if parent ~= nil and not Promise.is(parent) then
+		error("Argument #2 to Promise.new must be a promise or nil", 2)
+	end
+
+	local self = {
+		-- Used to locate where a promise was created
+		_source = traceback,
+
+		_status = Promise.Status.Started,
+
+		-- A table containing a list of all results, whether success or failure.
+		-- Only valid if _status is set to something besides Started
+		_values = nil,
+
+		-- Lua doesn't like sparse arrays very much, so we explicitly store the
+		-- length of _values to handle middle nils.
+		_valuesLength = -1,
+
+		-- Tracks if this Promise has no error observers..
+		_unhandledRejection = true,
+
+		-- Queues representing functions we should invoke when we update!
+		_queuedResolve = {},
+		_queuedReject = {},
+		_queuedFinally = {},
+
+		-- The function to run when/if this promise is cancelled.
+		_cancellationHook = nil,
+
+		-- The "parent" of this promise in a promise chain. Required for
+		-- cancellation propagation upstream.
+		_parent = parent,
+
+		-- Consumers are Promises that have chained onto this one.
+		-- We track them for cancellation propagation downstream.
+		_consumers = setmetatable({}, MODE_KEY_METATABLE),
+	}
+
+	if parent and parent._status == Promise.Status.Started then
+		parent._consumers[self] = true
+	end
+
+	setmetatable(self, Promise)
+
+	local function resolve(...)
+		self:_resolve(...)
+	end
+
+	local function reject(...)
+		self:_reject(...)
+	end
+
+	local function onCancel(cancellationHook)
+		if cancellationHook then
+			if self._status == Promise.Status.Cancelled then
+				cancellationHook()
+			else
+				self._cancellationHook = cancellationHook
+			end
+		end
+
+		return self._status == Promise.Status.Cancelled
+	end
+
+	coroutine.wrap(function()
+		local ok, _, result = runExecutor(
+			self._source,
+			callback,
+			resolve,
+			reject,
+			onCancel
+		)
+
+		if not ok then
+			reject(result[1])
+		end
+	end)()
+
+	return self
+end
+
+function Promise.new(executor)
+	return Promise._new(debug.traceback(nil, 2), executor)
+end
+
+function Promise:__tostring()
+	return string.format("Promise(%s)", self:getStatus())
+end
+
+--[[
+	Promise.new, except pcall on a new thread is automatic.
+] ]
+function Promise.defer(callback)
+	local traceback = debug.traceback(nil, 2)
+	local promise
+	promise = Promise._new(traceback, function(resolve, reject, onCancel)
+		local connection
+		connection = Promise._timeEvent:Connect(function()
+			connection:Disconnect()
+			local ok, _, result = runExecutor(traceback, callback, resolve, reject, onCancel)
+
+			if not ok then
+				reject(result[1])
+			end
+		end)
+	end)
+
+	return promise
+end
+
+-- Backwards compatibility
+Promise.async = Promise.defer
+
+--[[
+	Create a promise that represents the immediately resolved value.
+] ]
+function Promise.resolve(...)
+	local length, values = pack(...)
+	return Promise._new(debug.traceback(nil, 2), function(resolve)
+		resolve(unpack(values, 1, length))
+	end)
+end
+
+--[[
+	Create a promise that represents the immediately rejected value.
+] ]
+function Promise.reject(...)
+	local length, values = pack(...)
+	return Promise._new(debug.traceback(nil, 2), function(_, reject)
+		reject(unpack(values, 1, length))
+	end)
+end
+
+--[[
+	Runs a non-promise-returning function as a Promise with the
+  given arguments.
+] ]
+function Promise._try(traceback, callback, ...)
+	local valuesLength, values = pack(...)
+
+	return Promise._new(traceback, function(resolve)
+		resolve(callback(unpack(values, 1, valuesLength)))
+	end)
+end
+
+--[[
+	Begins a Promise chain, turning synchronous errors into rejections.
+] ]
+function Promise.try(...)
+	return Promise._try(debug.traceback(nil, 2), ...)
+end
+
+--[[
+	Returns a new promise that:
+		* is resolved when all input promises resolve
+		* is rejected if ANY input promises reject
+] ]
+function Promise._all(traceback, promises, amount)
+	if type(promises) ~= "table" then
+		error(string.format(ERROR_NON_LIST, "Promise.all"), 3)
+	end
+
+	-- We need to check that each value is a promise here so that we can produce
+	-- a proper error rather than a rejected promise with our error.
+	for i, promise in pairs(promises) do
+		if not Promise.is(promise) then
+			error(string.format(ERROR_NON_PROMISE_IN_LIST, "Promise.all", tostring(i)), 3)
+		end
+	end
+
+	-- If there are no values then return an already resolved promise.
+	if #promises == 0 or amount == 0 then
+		return Promise.resolve({})
+	end
+
+	return Promise._new(traceback, function(resolve, reject, onCancel)
+		-- An array to contain our resolved values from the given promises.
+		local resolvedValues = {}
+		local newPromises = {}
+
+		-- Keep a count of resolved promises because just checking the resolved
+		-- values length wouldn't account for promises that resolve with nil.
+		local resolvedCount = 0
+		local rejectedCount = 0
+		local done = false
+
+		local function cancel()
+			for _, promise in ipairs(newPromises) do
+				promise:cancel()
+			end
+		end
+
+		-- Called when a single value is resolved and resolves if all are done.
+		local function resolveOne(i, ...)
+			if done then
+				return
+			end
+
+			resolvedCount = resolvedCount + 1
+
+			if amount == nil then
+				resolvedValues[i] = ...
+			else
+				resolvedValues[resolvedCount] = ...
+			end
+
+			if resolvedCount >= (amount or #promises) then
+				done = true
+				resolve(resolvedValues)
+				cancel()
+			end
+		end
+
+		onCancel(cancel)
+
+		-- We can assume the values inside `promises` are all promises since we
+		-- checked above.
+		for i, promise in ipairs(promises) do
+			newPromises[i] = promise:andThen(
+				function(...)
+					resolveOne(i, ...)
+				end,
+				function(...)
+					rejectedCount = rejectedCount + 1
+
+					if amount == nil or #promises - rejectedCount < amount then
+						cancel()
+						done = true
+
+						reject(...)
+					end
+				end
+			)
+		end
+
+		if done then
+			cancel()
+		end
+	end)
+end
+
+function Promise.all(promises)
+	return Promise._all(debug.traceback(nil, 2), promises)
+end
+
+function Promise.fold(list, callback, initialValue)
+	assert(type(list) == "table", "Bad argument #1 to Promise.fold: must be a table")
+	assert(type(callback) == "function", "Bad argument #2 to Promise.fold: must be a function")
+
+	local accumulator = Promise.resolve(initialValue)
+	return Promise.each(list, function(resolvedElement, i)
+		accumulator = accumulator:andThen(function(previousValueResolved)
+			return callback(previousValueResolved, resolvedElement, i)
+		end)
+	end):andThenReturn(accumulator)
+end
+
+function Promise.some(promises, amount)
+	assert(type(amount) == "number", "Bad argument #2 to Promise.some: must be a number")
+
+	return Promise._all(debug.traceback(nil, 2), promises, amount)
+end
+
+function Promise.any(promises)
+	return Promise._all(debug.traceback(nil, 2), promises, 1):andThen(function(values)
+		return values[1]
+	end)
+end
+
+function Promise.allSettled(promises)
+	if type(promises) ~= "table" then
+		error(string.format(ERROR_NON_LIST, "Promise.allSettled"), 2)
+	end
+
+	-- We need to check that each value is a promise here so that we can produce
+	-- a proper error rather than a rejected promise with our error.
+	for i, promise in pairs(promises) do
+		if not Promise.is(promise) then
+			error(string.format(ERROR_NON_PROMISE_IN_LIST, "Promise.allSettled", tostring(i)), 2)
+		end
+	end
+
+	-- If there are no values then return an already resolved promise.
+	if #promises == 0 then
+		return Promise.resolve({})
+	end
+
+	return Promise._new(debug.traceback(nil, 2), function(resolve, _, onCancel)
+		-- An array to contain our resolved values from the given promises.
+		local fates = {}
+		local newPromises = {}
+
+		-- Keep a count of resolved promises because just checking the resolved
+		-- values length wouldn't account for promises that resolve with nil.
+		local finishedCount = 0
+
+		-- Called when a single value is resolved and resolves if all are done.
+		local function resolveOne(i, ...)
+			finishedCount = finishedCount + 1
+
+			fates[i] = ...
+
+			if finishedCount >= #promises then
+				resolve(fates)
+			end
+		end
+
+		onCancel(function()
+			for _, promise in ipairs(newPromises) do
+				promise:cancel()
+			end
+		end)
+
+		-- We can assume the values inside `promises` are all promises since we
+		-- checked above.
+		for i, promise in ipairs(promises) do
+			newPromises[i] = promise:finally(
+				function(...)
+					resolveOne(i, ...)
+				end
+			)
+		end
+	end)
+end
+
+--[[
+	Races a set of Promises and returns the first one that resolves,
+	cancelling the others.
+] ]
+function Promise.race(promises)
+	assert(type(promises) == "table", string.format(ERROR_NON_LIST, "Promise.race"))
+
+	for i, promise in pairs(promises) do
+		assert(Promise.is(promise), string.format(ERROR_NON_PROMISE_IN_LIST, "Promise.race", tostring(i)))
+	end
+
+	return Promise._new(debug.traceback(nil, 2), function(resolve, reject, onCancel)
+		local newPromises = {}
+		local finished = false
+
+		local function cancel()
+			for _, promise in ipairs(newPromises) do
+				promise:cancel()
+			end
+		end
+
+		local function finalize(callback)
+			return function (...)
+				cancel()
+				finished = true
+				return callback(...)
+			end
+		end
+
+		if onCancel(finalize(reject)) then
+			return
+		end
+
+		for i, promise in ipairs(promises) do
+			newPromises[i] = promise:andThen(finalize(resolve), finalize(reject))
+		end
+
+		if finished then
+			cancel()
+		end
+	end)
+end
+
+--[[
+	Iterates serially over the given an array of values, calling the predicate callback on each before continuing.
+	If the predicate returns a Promise, we wait for that Promise to resolve before continuing to the next item
+	in the array. If the Promise the predicate returns rejects, the Promise from Promise.each is also rejected with
+	the same value.
+
+	Returns a Promise containing an array of the return values from the predicate for each item in the original list.
+] ]
+function Promise.each(list, predicate)
+	assert(type(list) == "table", string.format(ERROR_NON_LIST, "Promise.each"))
+	assert(type(predicate) == "function", string.format(ERROR_NON_FUNCTION, "Promise.each"))
+
+	return Promise._new(debug.traceback(nil, 2), function(resolve, reject, onCancel)
+		local results = {}
+		local promisesToCancel = {}
+
+		local cancelled = false
+
+		local function cancel()
+			for _, promiseToCancel in ipairs(promisesToCancel) do
+				promiseToCancel:cancel()
+			end
+		end
+
+		onCancel(function()
+			cancelled = true
+
+			cancel()
+		end)
+
+		-- We need to preprocess the list of values and look for Promises.
+		-- If we find some, we must register our andThen calls now, so that those Promises have a consumer
+		-- from us registered. If we don't do this, those Promises might get cancelled by something else
+		-- before we get to them in the series because it's not possible to tell that we plan to use it
+		-- unless we indicate it here.
+
+		local preprocessedList = {}
+
+		for index, value in ipairs(list) do
+			if Promise.is(value) then
+				if value:getStatus() == Promise.Status.Cancelled then
+					cancel()
+					return reject(Error.new({
+						error = "Promise is cancelled",
+						kind = Error.Kind.AlreadyCancelled,
+						context = string.format(
+							"The Promise that was part of the array at index %d passed into Promise.each was already cancelled when Promise.each began.\n\nThat Promise was created at:\n\n%s",
+							index,
+							value._source
+						),
+					}))
+				elseif value:getStatus() == Promise.Status.Rejected then
+					cancel()
+					return reject(select(2, value:await()))
+				end
+
+				-- Chain a new Promise from this one so we only cancel ours
+				local ourPromise = value:andThen(function(...)
+					return ...
+				end)
+
+				table.insert(promisesToCancel, ourPromise)
+				preprocessedList[index] = ourPromise
+			else
+				preprocessedList[index] = value
+			end
+		end
+
+		for index, value in ipairs(preprocessedList) do
+			if Promise.is(value) then
+				local success
+				success, value = value:await()
+
+				if not success then
+					cancel()
+					return reject(value)
+				end
+			end
+
+			if cancelled then
+				return
+			end
+
+			local predicatePromise = Promise.resolve(predicate(value, index))
+
+			table.insert(promisesToCancel, predicatePromise)
+
+			local success, result = predicatePromise:await()
+
+			if not success then
+				cancel()
+				return reject(result)
+			end
+
+			results[index] = result
+		end
+
+		resolve(results)
+	end)
+end
+
+--[[
+	Is the given object a Promise instance?
+] ]
+function Promise.is(object)
+	if type(object) ~= "table" then
+		return false
+	end
+
+	local objectMetatable = getmetatable(object)
+
+	if objectMetatable == Promise then
+		-- The Promise came from this library.
+		return true
+	elseif objectMetatable == nil then
+		-- No metatable, but we should still chain onto tables with andThen methods
+		return type(object.andThen) == "function"
+	elseif
+		type(objectMetatable) == "table"
+		and type(rawget(objectMetatable, "__index")) == "table"
+		and type(rawget(rawget(objectMetatable, "__index"), "andThen")) == "function"
+	then
+		-- Maybe this came from a different or older Promise library.
+		return true
+	end
+
+	return false
+end
+
+--[[
+	Converts a yielding function into a Promise-returning one.
+] ]
+function Promise.promisify(callback)
+	return function(...)
+		return Promise._try(debug.traceback(nil, 2), callback, ...)
+	end
+end
+
+--[[
+	Creates a Promise that resolves after given number of seconds.
+] ]
+do
+	-- uses a sorted doubly linked list (queue) to achieve O(1) remove operations and O(n) for insert
+
+	-- the initial node in the linked list
+	local first
+	local connection
+
+	function Promise.delay(seconds)
+		assert(type(seconds) == "number", "Bad argument #1 to Promise.delay, must be a number.")
+		-- If seconds is -INF, INF, NaN, or less than 1 / 60, assume seconds is 1 / 60.
+		-- This mirrors the behavior of wait()
+		if not (seconds >= 1 / 60) or seconds == math.huge then
+			seconds = 1 / 60
+		end
+
+		return Promise._new(debug.traceback(nil, 2), function(resolve, _, onCancel)
+			local startTime = Promise._getTime()
+			local endTime = startTime + seconds
+
+			local node = {
+				resolve = resolve,
+				startTime = startTime,
+				endTime = endTime,
+			}
+
+			if connection == nil then -- first is nil when connection is nil
+				first = node
+				connection = Promise._timeEvent:Connect(function()
+					local threadStart = Promise._getTime()
+
+					while first ~= nil and first.endTime < threadStart do
+						local current = first
+						first = current.next
+
+						if first == nil then
+							connection:Disconnect()
+							connection = nil
+						else
+							first.previous = nil
+						end
+
+						current.resolve(Promise._getTime() - current.startTime)
+					end
+				end)
+			else -- first is non-nil
+				if first.endTime < endTime then -- if `node` should be placed after `first`
+					-- we will insert `node` between `current` and `next`
+					-- (i.e. after `current` if `next` is nil)
+					local current = first
+					local next = current.next
+
+					while next ~= nil and next.endTime < endTime do
+						current = next
+						next = current.next
+					end
+
+					-- `current` must be non-nil, but `next` could be `nil` (i.e. last item in list)
+					current.next = node
+					node.previous = current
+
+					if next ~= nil then
+						node.next = next
+						next.previous = node
+					end
+				else
+					-- set `node` to `first`
+					node.next = first
+					first.previous = node
+					first = node
+				end
+			end
+
+			onCancel(function()
+				-- remove node from queue
+				local next = node.next
+
+				if first == node then
+					if next == nil then -- if `node` is the first and last
+						connection:Disconnect()
+						connection = nil
+					else -- if `node` is `first` and not the last
+						next.previous = nil
+					end
+					first = next
+				else
+					local previous = node.previous
+					-- since `node` is not `first`, then we know `previous` is non-nil
+					previous.next = next
+
+					if next ~= nil then
+						next.previous = previous
+					end
+				end
+			end)
+		end)
+	end
+end
+
+--[[
+	Rejects the promise after `seconds` seconds.
+] ]
+function Promise.prototype:timeout(seconds, rejectionValue)
+	local traceback = debug.traceback(nil, 2)
+
+	return Promise.race({
+		Promise.delay(seconds):andThen(function()
+			return Promise.reject(rejectionValue == nil and Error.new({
+				kind = Error.Kind.TimedOut,
+				error = "Timed out",
+				context = string.format(
+					"Timeout of %d seconds exceeded.\n:timeout() called at:\n\n%s",
+					seconds,
+					traceback
+				),
+			}) or rejectionValue)
+		end),
+		self,
+	})
+end
+
+function Promise.prototype:getStatus()
+	return self._status
+end
+
+--[[
+	Creates a new promise that receives the result of this promise.
+
+	The given callbacks are invoked depending on that result.
+] ]
+function Promise.prototype:_andThen(traceback, successHandler, failureHandler)
+	self._unhandledRejection = false
+
+	-- Create a new promise to follow this part of the chain
+	return Promise._new(traceback, function(resolve, reject)
+		-- Our default callbacks just pass values onto the next promise.
+		-- This lets success and failure cascade correctly!
+
+		local successCallback = resolve
+		if successHandler then
+			successCallback = createAdvancer(
+				traceback,
+				successHandler,
+				resolve,
+				reject
+			)
+		end
+
+		local failureCallback = reject
+		if failureHandler then
+			failureCallback = createAdvancer(
+				traceback,
+				failureHandler,
+				resolve,
+				reject
+			)
+		end
+
+		if self._status == Promise.Status.Started then
+			-- If we haven't resolved yet, put ourselves into the queue
+			table.insert(self._queuedResolve, successCallback)
+			table.insert(self._queuedReject, failureCallback)
+		elseif self._status == Promise.Status.Resolved then
+			-- This promise has already resolved! Trigger success immediately.
+			successCallback(unpack(self._values, 1, self._valuesLength))
+		elseif self._status == Promise.Status.Rejected then
+			-- This promise died a terrible death! Trigger failure immediately.
+			failureCallback(unpack(self._values, 1, self._valuesLength))
+		elseif self._status == Promise.Status.Cancelled then
+			-- We don't want to call the success handler or the failure handler,
+			-- we just reject this promise outright.
+			reject(Error.new({
+				error = "Promise is cancelled",
+				kind = Error.Kind.AlreadyCancelled,
+				context = "Promise created at\n\n" .. traceback,
+			}))
+		end
+	end, self)
+end
+
+function Promise.prototype:andThen(successHandler, failureHandler)
+	assert(
+		successHandler == nil or type(successHandler) == "function",
+		string.format(ERROR_NON_FUNCTION, "Promise:andThen")
+	)
+	assert(
+		failureHandler == nil or type(failureHandler) == "function",
+		string.format(ERROR_NON_FUNCTION, "Promise:andThen")
+	)
+
+	return self:_andThen(debug.traceback(nil, 2), successHandler, failureHandler)
+end
+
+--[[
+	Used to catch any errors that may have occurred in the promise.
+] ]
+function Promise.prototype:catch(failureCallback)
+	assert(
+		failureCallback == nil or type(failureCallback) == "function",
+		string.format(ERROR_NON_FUNCTION, "Promise:catch")
+	)
+	return self:_andThen(debug.traceback(nil, 2), nil, failureCallback)
+end
+
+--[[
+	Like andThen, but the value passed into the handler is also the
+	value returned from the handler.
+] ]
+function Promise.prototype:tap(tapCallback)
+	assert(type(tapCallback) == "function", string.format(ERROR_NON_FUNCTION, "Promise:tap"))
+	return self:_andThen(debug.traceback(nil, 2), function(...)
+		local callbackReturn = tapCallback(...)
+
+		if Promise.is(callbackReturn) then
+			local length, values = pack(...)
+			return callbackReturn:andThen(function()
+				return unpack(values, 1, length)
+			end)
+		end
+
+		return ...
+	end)
+end
+
+--[[
+	Calls a callback on `andThen` with specific arguments.
+] ]
+function Promise.prototype:andThenCall(callback, ...)
+	assert(type(callback) == "function", string.format(ERROR_NON_FUNCTION, "Promise:andThenCall"))
+	local length, values = pack(...)
+	return self:_andThen(debug.traceback(nil, 2), function()
+		return callback(unpack(values, 1, length))
+	end)
+end
+
+--[[
+	Shorthand for an andThen handler that returns the given value.
+] ]
+function Promise.prototype:andThenReturn(...)
+	local length, values = pack(...)
+	return self:_andThen(debug.traceback(nil, 2), function()
+		return unpack(values, 1, length)
+	end)
+end
+
+--[[
+	Cancels the promise, disallowing it from rejecting or resolving, and calls
+	the cancellation hook if provided.
+] ]
+function Promise.prototype:cancel()
+	if self._status ~= Promise.Status.Started then
+		return
+	end
+
+	self._status = Promise.Status.Cancelled
+
+	if self._cancellationHook then
+		self._cancellationHook()
+	end
+
+	if self._parent then
+		self._parent:_consumerCancelled(self)
+	end
+
+	for child in pairs(self._consumers) do
+		child:cancel()
+	end
+
+	self:_finalize()
+end
+
+--[[
+	Used to decrease the number of consumers by 1, and if there are no more,
+	cancel this promise.
+] ]
+function Promise.prototype:_consumerCancelled(consumer)
+	if self._status ~= Promise.Status.Started then
+		return
+	end
+
+	self._consumers[consumer] = nil
+
+	if next(self._consumers) == nil then
+		self:cancel()
+	end
+end
+
+--[[
+	Used to set a handler for when the promise resolves, rejects, or is
+	cancelled. Returns a new promise chained from this promise.
+] ]
+function Promise.prototype:_finally(traceback, finallyHandler, onlyOk)
+	if not onlyOk then
+		self._unhandledRejection = false
+	end
+
+	-- Return a promise chained off of this promise
+	return Promise._new(traceback, function(resolve, reject)
+		local finallyCallback = resolve
+		if finallyHandler then
+			finallyCallback = createAdvancer(
+				traceback,
+				finallyHandler,
+				resolve,
+				reject
+			)
+		end
+
+		if onlyOk then
+			local callback = finallyCallback
+			finallyCallback = function(...)
+				if self._status == Promise.Status.Rejected then
+					return resolve(self)
+				end
+
+				return callback(...)
+			end
+		end
+
+		if self._status == Promise.Status.Started then
+			-- The promise is not settled, so queue this.
+			table.insert(self._queuedFinally, finallyCallback)
+		else
+			-- The promise already settled or was cancelled, run the callback now.
+			finallyCallback(self._status)
+		end
+	end, self)
+end
+
+function Promise.prototype:finally(finallyHandler)
+	assert(
+		finallyHandler == nil or type(finallyHandler) == "function",
+		string.format(ERROR_NON_FUNCTION, "Promise:finally")
+	)
+	return self:_finally(debug.traceback(nil, 2), finallyHandler)
+end
+
+--[[
+	Calls a callback on `finally` with specific arguments.
+] ]
+function Promise.prototype:finallyCall(callback, ...)
+	assert(type(callback) == "function", string.format(ERROR_NON_FUNCTION, "Promise:finallyCall"))
+	local length, values = pack(...)
+	return self:_finally(debug.traceback(nil, 2), function()
+		return callback(unpack(values, 1, length))
+	end)
+end
+
+--[[
+	Shorthand for a finally handler that returns the given value.
+] ]
+function Promise.prototype:finallyReturn(...)
+	local length, values = pack(...)
+	return self:_finally(debug.traceback(nil, 2), function()
+		return unpack(values, 1, length)
+	end)
+end
+
+--[[
+	Similar to finally, except rejections are propagated through it.
+] ]
+function Promise.prototype:done(finallyHandler)
+	assert(
+		finallyHandler == nil or type(finallyHandler) == "function",
+		string.format(ERROR_NON_FUNCTION, "Promise:done")
+	)
+	return self:_finally(debug.traceback(nil, 2), finallyHandler, true)
+end
+
+--[[
+	Calls a callback on `done` with specific arguments.
+] ]
+function Promise.prototype:doneCall(callback, ...)
+	assert(type(callback) == "function", string.format(ERROR_NON_FUNCTION, "Promise:doneCall"))
+	local length, values = pack(...)
+	return self:_finally(debug.traceback(nil, 2), function()
+		return callback(unpack(values, 1, length))
+	end, true)
+end
+
+--[[
+	Shorthand for a done handler that returns the given value.
+] ]
+function Promise.prototype:doneReturn(...)
+	local length, values = pack(...)
+	return self:_finally(debug.traceback(nil, 2), function()
+		return unpack(values, 1, length)
+	end, true)
+end
+
+--[[
+	Yield until the promise is completed.
+
+	This matches the execution model of normal Roblox functions.
+] ]
+function Promise.prototype:awaitStatus()
+	self._unhandledRejection = false
+
+	if self._status == Promise.Status.Started then
+		local bindable = Instance.new("BindableEvent")
+
+		self:finally(function()
+			bindable:Fire()
+		end)
+
+		bindable.Event:Wait()
+		bindable:Destroy()
+	end
+
+	if self._status == Promise.Status.Resolved then
+		return self._status, unpack(self._values, 1, self._valuesLength)
+	elseif self._status == Promise.Status.Rejected then
+		return self._status, unpack(self._values, 1, self._valuesLength)
+	end
+
+	return self._status
+end
+
+local function awaitHelper(status, ...)
+	return status == Promise.Status.Resolved, ...
+end
+
+--[[
+	Calls awaitStatus internally, returns (isResolved, values...)
+] ]
+function Promise.prototype:await()
+	return awaitHelper(self:awaitStatus())
+end
+
+local function expectHelper(status, ...)
+	if status ~= Promise.Status.Resolved then
+		error((...) == nil and "Expected Promise rejected with no value." or (...), 3)
+	end
+
+	return ...
+end
+
+--[[
+	Calls await and only returns if the Promise resolves.
+	Throws if the Promise rejects or gets cancelled.
+] ]
+function Promise.prototype:expect()
+	return expectHelper(self:awaitStatus())
+end
+
+-- Backwards compatibility
+Promise.prototype.awaitValue = Promise.prototype.expect
+
+--[[
+	Intended for use in tests.
+
+	Similar to await(), but instead of yielding if the promise is unresolved,
+	_unwrap will throw. This indicates an assumption that a promise has
+	resolved.
+] ]
+function Promise.prototype:_unwrap()
+	if self._status == Promise.Status.Started then
+		error("Promise has not resolved or rejected.", 2)
+	end
+
+	local success = self._status == Promise.Status.Resolved
+
+	return success, unpack(self._values, 1, self._valuesLength)
+end
+
+function Promise.prototype:_resolve(...)
+	if self._status ~= Promise.Status.Started then
+		if Promise.is((...)) then
+			(...):_consumerCancelled(self)
+		end
+		return
+	end
+
+	-- If the resolved value was a Promise, we chain onto it!
+	if Promise.is((...)) then
+		-- Without this warning, arguments sometimes mysteriously disappear
+		if select("#", ...) > 1 then
+			local message = string.format(
+				"When returning a Promise from andThen, extra arguments are " ..
+				"discarded! See:\n\n%s",
+				self._source
+			)
+			warn(message)
+		end
+
+		local chainedPromise = ...
+
+		local promise = chainedPromise:andThen(
+			function(...)
+				self:_resolve(...)
+			end,
+			function(...)
+				local maybeRuntimeError = chainedPromise._values[1]
+
+				-- Backwards compatibility < v2
+				if chainedPromise._error then
+					maybeRuntimeError = Error.new({
+						error = chainedPromise._error,
+						kind = Error.Kind.ExecutionError,
+						context = "[No stack trace available as this Promise originated from an older version of the Promise library (< v2)]",
+					})
+				end
+
+				if Error.isKind(maybeRuntimeError, Error.Kind.ExecutionError) then
+					return self:_reject(maybeRuntimeError:extend({
+						error = "This Promise was chained to a Promise that errored.",
+						trace = "",
+						context = string.format(
+							"The Promise at:\n\n%s\n...Rejected because it was chained to the following Promise, which encountered an error:\n",
+							self._source
+						),
+					}))
+				end
+
+				self:_reject(...)
+			end
+		)
+
+		if promise._status == Promise.Status.Cancelled then
+			self:cancel()
+		elseif promise._status == Promise.Status.Started then
+			-- Adopt ourselves into promise for cancellation propagation.
+			self._parent = promise
+			promise._consumers[self] = true
+		end
+
+		return
+	end
+
+	self._status = Promise.Status.Resolved
+	self._valuesLength, self._values = pack(...)
+
+	-- We assume that these callbacks will not throw errors.
+	for _, callback in ipairs(self._queuedResolve) do
+		coroutine.wrap(callback)(...)
+	end
+
+	self:_finalize()
+end
+
+function Promise.prototype:_reject(...)
+	if self._status ~= Promise.Status.Started then
+		return
+	end
+
+	self._status = Promise.Status.Rejected
+	self._valuesLength, self._values = pack(...)
+
+	-- If there are any rejection handlers, call those!
+	if not isEmpty(self._queuedReject) then
+		-- We assume that these callbacks will not throw errors.
+		for _, callback in ipairs(self._queuedReject) do
+			coroutine.wrap(callback)(...)
+		end
+	else
+		-- At this point, no one was able to observe the error.
+		-- An error handler might still be attached if the error occurred
+		-- synchronously. We'll wait one tick, and if there are still no
+		-- observers, then we should put a message in the console.
+
+		local err = tostring((...))
+
+		coroutine.wrap(function()
+			Promise._timeEvent:Wait()
+
+			-- Someone observed the error, hooray!
+			if not self._unhandledRejection then
+				return
+			end
+
+			-- Build a reasonable message
+			local message = string.format(
+				"Unhandled Promise rejection:\n\n%s\n\n%s",
+				err,
+				self._source
+			)
+
+			if Promise.TEST then
+				-- Don't spam output when we're running tests.
+				return
+			end
+
+			warn(message)
+		end)()
+	end
+
+	self:_finalize()
+end
+
+--[[
+	Calls any :finally handlers. We need this to be a separate method and
+	queue because we must call all of the finally callbacks upon a success,
+	failure, *and* cancellation.
+] ]
+function Promise.prototype:_finalize()
+	for _, callback in ipairs(self._queuedFinally) do
+		-- Purposefully not passing values to callbacks here, as it could be the
+		-- resolved values, or rejected errors. If the developer needs the values,
+		-- they should use :andThen or :catch explicitly.
+		coroutine.wrap(callback)(self._status)
+	end
+
+	self._queuedFinally = nil
+	self._queuedReject = nil
+	self._queuedResolve = nil
+
+	-- Clear references to other Promises to allow gc
+	if not Promise.TEST then
+		self._parent = nil
+		self._consumers = nil
+	end
+end
+
+--[[
+	Chains a Promise from this one that is resolved if this Promise is
+	resolved, and rejected if it is not resolved.
+] ]
+function Promise.prototype:now(rejectionValue)
+	local traceback = debug.traceback(nil, 2)
+	if self:getStatus() == Promise.Status.Resolved then
+		return self:_andThen(traceback, function(...)
+			return ...
+		end)
+	else
+		return Promise.reject(rejectionValue == nil and Error.new({
+			kind = Error.Kind.NotResolvedInTime,
+			error = "This Promise was not resolved in time for :now()",
+			context = ":now() was called at:\n\n" .. traceback,
+		}) or rejectionValue)
+	end
+end
+
+--[[
+	Retries a Promise-returning callback N times until it succeeds.
+] ]
+function Promise.retry(callback, times, ...)
+	assert(type(callback) == "function", "Parameter #1 to Promise.retry must be a function")
+	assert(type(times) == "number", "Parameter #2 to Promise.retry must be a number")
+
+	local args, length = {...}, select("#", ...)
+
+	return Promise.resolve(callback(...)):catch(function(...)
+		if times > 0 then
+			return Promise.retry(callback, times - 1, unpack(args, 1, length))
+		else
+			return Promise.reject(...)
+		end
+	end)
+end
+
+--[[
+	Converts an event into a Promise with an optional predicate
+] ]
+function Promise.fromEvent(event, predicate)
+	predicate = predicate or function()
+		return true
+	end
+
+	return Promise._new(debug.traceback(nil, 2), function(resolve, reject, onCancel)
+		local connection
+		local shouldDisconnect = false
+
+		local function disconnect()
+			connection:Disconnect()
+			connection = nil
+		end
+
+		-- We use shouldDisconnect because if the callback given to Connect is called before
+		-- Connect returns, connection will still be nil. This happens with events that queue up
+		-- events when there's nothing connected, such as RemoteEvents
+
+		connection = event:Connect(function(...)
+			local callbackValue = predicate(...)
+
+			if callbackValue == true then
+				resolve(...)
+
+				if connection then
+					disconnect()
+				else
+					shouldDisconnect = true
+				end
+			elseif type(callbackValue) ~= "boolean" then
+				error("Promise.fromEvent predicate should always return a boolean")
+			end
+		end)
+
+		if shouldDisconnect and connection then
+			return disconnect()
+		end
+
+		onCancel(function()
+			disconnect()
+		end)
+	end)
+end
+
+return Promise
+
+        end)
+    end);
+    hMod("RuntimeLib", "ModuleScript", "Havoc.include.RuntimeLib", "Havoc.include", function()
+        return (function(...)
+local Promise = require(script.Parent.Promise)
+
+local RunService = game:GetService("RunService")
+local ReplicatedFirst = game:GetService("ReplicatedFirst")
+
+local TS = {}
+
+TS.Promise = Promise
+
+local function isPlugin(object)
+	return RunService:IsStudio() and object:FindFirstAncestorWhichIsA("Plugin") ~= nil
+end
+
+function TS.getModule(object, scope, moduleName)
+	if moduleName == nil then
+		moduleName = scope
+		scope = "@rbxts"
+	end
+
+	if RunService:IsRunning() and object:IsDescendantOf(ReplicatedFirst) then
+		warn("roblox-ts packages should not be used from ReplicatedFirst!")
+	end
+
+	-- ensure modules have fully replicated
+	if RunService:IsRunning() and RunService:IsClient() and not isPlugin(object) and not game:IsLoaded() then
+		game.Loaded:Wait()
+	end
+
+	local globalModules = script.Parent:FindFirstChild("node_modules")
+	if not globalModules then
+		error("Could not find any modules!", 2)
+	end
+
+	repeat
+		local modules = object:FindFirstChild("node_modules")
+		if modules and modules ~= globalModules then
+			modules = modules:FindFirstChild("@rbxts")
+		end
+		if modules then
+			local module = modules:FindFirstChild(moduleName)
+			if module then
+				return module
+			end
+		end
+		object = object.Parent
+	until object == nil or object == globalModules
+
+	local scopedModules = globalModules:FindFirstChild(scope or "@rbxts");
+	return (scopedModules or globalModules):FindFirstChild(moduleName) or error("Could not find module: " .. moduleName, 2)
+end
+
+-- This is a hash which TS.import uses as a kind of linked-list-like history of [Script who Loaded] -> Library
+local currentlyLoading = {}
+local registeredLibraries = {}
+
+function TS.import(caller, module, ...)
+	for i = 1, select("#", ...) do
+		module = module:WaitForChild((select(i, ...)))
+	end
+
+	if module.ClassName ~= "ModuleScript" then
+		error("Failed to import! Expected ModuleScript, got " .. module.ClassName, 2)
+	end
+
+	currentlyLoading[caller] = module
+
+	-- Check to see if a case like this occurs:
+	-- module -> Module1 -> Module2 -> module
+
+	-- WHERE currentlyLoading[module] is Module1
+	-- and currentlyLoading[Module1] is Module2
+	-- and currentlyLoading[Module2] is module
+
+	local currentModule = module
+	local depth = 0
+
+	while currentModule do
+		depth = depth + 1
+		currentModule = currentlyLoading[currentModule]
+
+		if currentModule == module then
+			local str = currentModule.Name -- Get the string traceback
+
+			for _ = 1, depth do
+				currentModule = currentlyLoading[currentModule]
+				str = str .. "  ⇒ " .. currentModule.Name
+			end
+
+			error("Failed to import! Detected a circular dependency chain: " .. str, 2)
+		end
+	end
+
+	if not registeredLibraries[module] then
+		if _G[module] then
+			error(
+				"Invalid module access! Do you have two TS runtimes trying to import this? " .. module:GetFullName(),
+				2
+			)
+		end
+
+		_G[module] = TS
+		registeredLibraries[module] = true -- register as already loaded for subsequent calls
+	end
+
+	local data = require(module)
+
+	if currentlyLoading[caller] == module then -- Thread-safe cleanup!
+		currentlyLoading[caller] = nil
+	end
+
+	return data
+end
+
+function TS.instanceof(obj, class)
+	-- custom Class.instanceof() check
+	if type(class) == "table" and type(class.instanceof) == "function" then
+		return class.instanceof(obj)
+	end
+
+	-- metatable check
+	if type(obj) == "table" then
+		obj = getmetatable(obj)
+		while obj ~= nil do
+			if obj == class then
+				return true
+			end
+			local mt = getmetatable(obj)
+			if mt then
+				obj = mt.__index
+			else
+				obj = nil
+			end
+		end
+	end
+
+	return false
+end
+
+function TS.async(callback)
+	return function(...)
+		local n = select("#", ...)
+		local args = { ... }
+		return Promise.new(function(resolve, reject)
+			coroutine.wrap(function()
+				local ok, result = pcall(callback, unpack(args, 1, n))
+				if ok then
+					resolve(result)
+				else
+					reject(result)
+				end
+			end)()
+		end)
+	end
+end
+
+function TS.await(promise)
+	if not Promise.is(promise) then
+		return promise
+	end
+
+	local status, value = promise:awaitStatus()
+	if status == Promise.Status.Resolved then
+		return value
+	elseif status == Promise.Status.Rejected then
+		error(value, 2)
+	else
+		error("The awaited Promise was cancelled", 2)
+	end
+end
+
+function TS.bit_lrsh(a, b)
+	local absA = math.abs(a)
+	local result = bit32.rshift(absA, b)
+	if a == absA then
+		return result
+	else
+		return -result - 1
+	end
+end
+
+TS.TRY_RETURN = 1
+TS.TRY_BREAK = 2
+TS.TRY_CONTINUE = 3
+
+function TS.try(func, catch, finally)
+	local err, traceback
+	local success, exitType, returns = xpcall(
+		func,
+		function(errInner)
+			err = errInner
+			traceback = debug.traceback()
+		end
+	)
+	if not success and catch then
+		local newExitType, newReturns = catch(err, traceback)
+		if newExitType then
+			exitType, returns = newExitType, newReturns
+		end
+	end
+	if finally then
+		local newExitType, newReturns = finally()
+		if newExitType then
+			exitType, returns = newExitType, newReturns
+		end
+	end
+	return exitType, returns
+end
+
+function TS.generator(callback)
+	local co = coroutine.create(callback)
+	return {
+		next = function(...)
+			if coroutine.status(co) == "dead" then
+				return { done = true }
+			else
+				local success, value = coroutine.resume(co, ...)
+				if success == false then
+					error(value, 2)
+				end
+				return {
+					value = value,
+					done = coroutine.status(co) == "dead",
+				}
+			end
+		end,
+	}
+end
+
+return TS
+
+        end)
+    end);
     hInst("node_modules", "Folder", "Havoc.include.node_modules", "Havoc.include");
     hInst("compiler-types", "Folder", "Havoc.include.node_modules.compiler-types", "Havoc.include.node_modules");
     hInst("types", "Folder", "Havoc.include.node_modules.compiler-types.types", "Havoc.include.node_modules.compiler-types");
     hInst("exploit-types", "Folder", "Havoc.include.node_modules.exploit-types", "Havoc.include.node_modules");
     hInst("types", "Folder", "Havoc.include.node_modules.exploit-types.types", "Havoc.include.node_modules.exploit-types");
     hInst("flipper", "Folder", "Havoc.include.node_modules.flipper", "Havoc.include.node_modules");
-    hInst("src", "ModuleScript", "Havoc.include.node_modules.flipper.src", "Havoc.include.node_modules.flipper");
+    hMod("src", "ModuleScript", "Havoc.include.node_modules.flipper.src", "Havoc.include.node_modules.flipper", function()
+        return (function(...)
+local Flipper = {
+	SingleMotor = require(script.SingleMotor),
+	GroupMotor = require(script.GroupMotor),
+
+	Instant = require(script.Instant),
+	Linear = require(script.Linear),
+	Spring = require(script.Spring),
+	
+	isMotor = require(script.isMotor),
+}
+
+return Flipper
+        end)
+    end);
     hInst("typings", "Folder", "Havoc.include.node_modules.flipper.typings", "Havoc.include.node_modules.flipper");
-    hInst("make", "ModuleScript", "Havoc.include.node_modules.make", "Havoc.include.node_modules");
+    hMod("make", "ModuleScript", "Havoc.include.node_modules.make", "Havoc.include.node_modules", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.3
+--[[
+	*
+	* Returns a table wherein an object's writable properties can be specified,
+	* while also allowing functions to be passed in which can be bound to a RBXScriptSignal.
+] ]
+--[[
+	*
+	* Instantiates a new Instance of `className` with given `settings`,
+	* where `settings` is an object of the form { [K: propertyName]: value }.
+	*
+	* `settings.Children` is an array of child objects to be parented to the generated Instance.
+	*
+	* Events can be set to a callback function, which will be connected.
+	*
+	* `settings.Parent` is always set last.
+] ]
+local function Make(className, settings)
+	local _binding = settings
+	local children = _binding.Children
+	local parent = _binding.Parent
+	local instance = Instance.new(className)
+	for setting, value in pairs(settings) do
+		if setting ~= "Children" and setting ~= "Parent" then
+			local _binding_1 = instance
+			local prop = _binding_1[setting]
+			if typeof(prop) == "RBXScriptSignal" then
+				prop:Connect(value)
+			else
+				instance[setting] = value
+			end
+		end
+	end
+	if children then
+		for _, child in ipairs(children) do
+			child.Parent = instance
+		end
+	end
+	instance.Parent = parent
+	return instance
+end
+return Make
+
+        end)
+    end);
     hInst("node_modules", "Folder", "Havoc.include.node_modules.make.node_modules", "Havoc.include.node_modules.make");
     hInst("@rbxts", "Folder", "Havoc.include.node_modules.make.node_modules.@rbxts", "Havoc.include.node_modules.make.node_modules");
     hInst("compiler-types", "Folder", "Havoc.include.node_modules.make.node_modules.@rbxts.compiler-types", "Havoc.include.node_modules.make.node_modules.@rbxts");
     hInst("types", "Folder", "Havoc.include.node_modules.make.node_modules.@rbxts.compiler-types.types", "Havoc.include.node_modules.make.node_modules.@rbxts.compiler-types");
-    hInst("object-utils", "ModuleScript", "Havoc.include.node_modules.object-utils", "Havoc.include.node_modules");
+    hMod("object-utils", "ModuleScript", "Havoc.include.node_modules.object-utils", "Havoc.include.node_modules", function()
+        return (function(...)
+local HttpService = game:GetService("HttpService")
+
+local Object = {}
+
+function Object.keys(object)
+	local result = table.create(#object)
+	for key in pairs(object) do
+		result[#result + 1] = key
+	end
+	return result
+end
+
+function Object.values(object)
+	local result = table.create(#object)
+	for _, value in pairs(object) do
+		result[#result + 1] = value
+	end
+	return result
+end
+
+function Object.entries(object)
+	local result = table.create(#object)
+	for key, value in pairs(object) do
+		result[#result + 1] = { key, value }
+	end
+	return result
+end
+
+function Object.assign(toObj, ...)
+	for i = 1, select("#", ...) do
+		local arg = select(i, ...)
+		if type(arg) == "table" then
+			for key, value in pairs(arg) do
+				toObj[key] = value
+			end
+		end
+	end
+	return toObj
+end
+
+function Object.copy(object)
+	local result = table.create(#object)
+	for k, v in pairs(object) do
+		result[k] = v
+	end
+	return result
+end
+
+local function deepCopyHelper(object, encountered)
+	local result = table.create(#object)
+	encountered[object] = result
+
+	for k, v in pairs(object) do
+		if type(k) == "table" then
+			k = encountered[k] or deepCopyHelper(k, encountered)
+		end
+
+		if type(v) == "table" then
+			v = encountered[v] or deepCopyHelper(v, encountered)
+		end
+
+		result[k] = v
+	end
+
+	return result
+end
+
+function Object.deepCopy(object)
+	return deepCopyHelper(object, {})
+end
+
+function Object.deepEquals(a, b)
+	-- a[k] == b[k]
+	for k in pairs(a) do
+		local av = a[k]
+		local bv = b[k]
+		if type(av) == "table" and type(bv) == "table" then
+			local result = Object.deepEquals(av, bv)
+			if not result then
+				return false
+			end
+		elseif av ~= bv then
+			return false
+		end
+	end
+
+	-- extra keys in b
+	for k in pairs(b) do
+		if a[k] == nil then
+			return false
+		end
+	end
+
+	return true
+end
+
+function Object.toString(data)
+	return HttpService:JSONEncode(data)
+end
+
+function Object.isEmpty(object)
+	return next(object) == nil
+end
+
+function Object.fromEntries(entries)
+	local entriesLen = #entries
+
+	local result = table.create(entriesLen)
+	if entries then
+		for i = 1, entriesLen do
+			local pair = entries[i]
+			result[pair[1] ] = pair[2]
+		end
+	end
+	return result
+end
+
+return Object
+
+        end)
+    end);
     hInst("roact", "Folder", "Havoc.include.node_modules.roact", "Havoc.include.node_modules");
-    hInst("src", "ModuleScript", "Havoc.include.node_modules.roact.src", "Havoc.include.node_modules.roact");
+    hMod("src", "ModuleScript", "Havoc.include.node_modules.roact.src", "Havoc.include.node_modules.roact", function()
+        return (function(...)
+--[[
+	Packages up the internals of Roact and exposes a public API for it.
+] ]
+
+local GlobalConfig = require(script.GlobalConfig)
+local createReconciler = require(script.createReconciler)
+local createReconcilerCompat = require(script.createReconcilerCompat)
+local RobloxRenderer = require(script.RobloxRenderer)
+local strict = require(script.strict)
+local Binding = require(script.Binding)
+
+local robloxReconciler = createReconciler(RobloxRenderer)
+local reconcilerCompat = createReconcilerCompat(robloxReconciler)
+
+local Roact = strict {
+	Component = require(script.Component),
+	createElement = require(script.createElement),
+	createFragment = require(script.createFragment),
+	oneChild = require(script.oneChild),
+	PureComponent = require(script.PureComponent),
+	None = require(script.None),
+	Portal = require(script.Portal),
+	createRef = require(script.createRef),
+	forwardRef = require(script.forwardRef),
+	createBinding = Binding.create,
+	joinBindings = Binding.join,
+	createContext = require(script.createContext),
+
+	Change = require(script.PropMarkers.Change),
+	Children = require(script.PropMarkers.Children),
+	Event = require(script.PropMarkers.Event),
+	Ref = require(script.PropMarkers.Ref),
+
+	mount = robloxReconciler.mountVirtualTree,
+	unmount = robloxReconciler.unmountVirtualTree,
+	update = robloxReconciler.updateVirtualTree,
+
+	reify = reconcilerCompat.reify,
+	teardown = reconcilerCompat.teardown,
+	reconcile = reconcilerCompat.reconcile,
+
+	setGlobalConfig = GlobalConfig.set,
+
+	-- APIs that may change in the future without warning
+	UNSTABLE = {
+	},
+}
+
+return Roact
+        end)
+    end);
     hInst("roact-hooked", "Folder", "Havoc.include.node_modules.roact-hooked", "Havoc.include.node_modules");
-    hInst("out", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out", "Havoc.include.node_modules.roact-hooked");
-    hInst("hooks", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks", "Havoc.include.node_modules.roact-hooked.out");
-    hInst("use-binding", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-binding", "Havoc.include.node_modules.roact-hooked.out.hooks");
-    hInst("use-callback", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-callback", "Havoc.include.node_modules.roact-hooked.out.hooks");
-    hInst("use-context", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-context", "Havoc.include.node_modules.roact-hooked.out.hooks");
-    hInst("use-effect", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-effect", "Havoc.include.node_modules.roact-hooked.out.hooks");
-    hInst("use-memo", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-memo", "Havoc.include.node_modules.roact-hooked.out.hooks");
-    hInst("use-mutable", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-mutable", "Havoc.include.node_modules.roact-hooked.out.hooks");
-    hInst("use-reducer", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-reducer", "Havoc.include.node_modules.roact-hooked.out.hooks");
-    hInst("use-ref", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-ref", "Havoc.include.node_modules.roact-hooked.out.hooks");
-    hInst("use-state", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-state", "Havoc.include.node_modules.roact-hooked.out.hooks");
-    hInst("types", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.types", "Havoc.include.node_modules.roact-hooked.out");
+    hMod("out", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out", "Havoc.include.node_modules.roact-hooked", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.7
+local TS = _G[script]
+local exports = {}
+local _with_hooks = TS.import(script, script, "with-hooks")
+local withHooks = _with_hooks.withHooks
+local withHooksPure = _with_hooks.withHooksPure
+for _k, _v in pairs(TS.import(script, script, "hooks")) do
+	exports[_k] = _v
+end
+--[[
+	*
+	* `hooked` is a [higher-order component](https://reactjs.org/docs/higher-order-components.html) that turns your
+	* Function Component into a [class component](https://roblox.github.io/roact/guide/components/).
+	*
+	* `hooked` allows you to hook into the Component's lifecycle through Hooks.
+	*
+	* @example
+	* const MyComponent = hooked<Props>(
+	*   (props) => {
+	*     // render using props
+	*   },
+	* );
+	*
+	* @see https://reactjs.org/docs/hooks-intro.html
+] ]
+local function hooked(functionComponent)
+	return withHooks(functionComponent)
+end
+--[[
+	*
+	* `pure` is a [higher-order component](https://reactjs.org/docs/higher-order-components.html) that turns your
+	* Function Component into a [PureComponent](https://roblox.github.io/roact/performance/reduce-reconciliation/#purecomponent).
+	*
+	* If your function component wrapped in `pure` has a {@link useState}, {@link useReducer} or {@link useContext} Hook
+	* in its implementation, it will still rerender when state or context changes.
+	*
+	* @example
+	* const MyComponent = pure<Props>(
+	*   (props) => {
+	*     // render using props
+	*   },
+	* );
+	*
+	* @see https://reactjs.org/docs/react-api.html
+	* @see https://roblox.github.io/roact/performance/reduce-reconciliation/
+] ]
+local function pure(functionComponent)
+	return withHooksPure(functionComponent)
+end
+exports.hooked = hooked
+exports.pure = pure
+return exports
+
+        end)
+    end);
+    hMod("hooks", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks", "Havoc.include.node_modules.roact-hooked.out", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.7
+local TS = _G[script]
+local exports = {}
+exports.useBinding = TS.import(script, script, "use-binding").useBinding
+exports.useCallback = TS.import(script, script, "use-callback").useCallback
+exports.useContext = TS.import(script, script, "use-context").useContext
+exports.useEffect = TS.import(script, script, "use-effect").useEffect
+exports.useMemo = TS.import(script, script, "use-memo").useMemo
+exports.useReducer = TS.import(script, script, "use-reducer").useReducer
+exports.useState = TS.import(script, script, "use-state").useState
+exports.useMutable = TS.import(script, script, "use-mutable").useMutable
+exports.useRef = TS.import(script, script, "use-ref").useRef
+return exports
+
+        end)
+    end);
+    hMod("use-binding", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-binding", "Havoc.include.node_modules.roact-hooked.out.hooks", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.7
+local TS = _G[script]
+local createBinding = TS.import(script, TS.getModule(script, "@rbxts", "roact").src).createBinding
+local memoizedHook = TS.import(script, script.Parent.Parent, "utils", "memoized-hook").memoizedHook
+--[[
+	*
+	* `useBinding` returns a memoized *`Binding`*, a special object that Roact automatically unwraps into values. When a
+	* binding is updated, Roact will only change the specific properties that are subscribed to it.
+	*
+	* The first value returned is a `Binding` object, which will typically be passed as a prop to a Roact host component.
+	* The second is a function that can be called with a new value to update the binding.
+	*
+	* @example
+	* const [binding, setBindingValue] = useBinding(initialValue);
+	*
+	* @param initialValue - Initialized as the `.current` property
+	* @returns A memoized `Binding` object, and a function to update the value of the binding.
+	*
+	* @see https://roblox.github.io/roact/advanced/bindings-and-refs/#bindings
+] ]
+local function useBinding(initialValue)
+	return memoizedHook(function()
+		local bindingSet = { createBinding(initialValue) }
+		return bindingSet
+	end).state
+end
+return {
+	useBinding = useBinding,
+}
+
+        end)
+    end);
+    hMod("use-callback", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-callback", "Havoc.include.node_modules.roact-hooked.out.hooks", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.7
+local TS = _G[script]
+local useMemo = TS.import(script, script.Parent, "use-memo").useMemo
+--[[
+	*
+	* Returns a memoized version of the callback that only changes if one of the dependencies has changed.
+	*
+	* This is useful when passing callbacks to optimized child components that rely on reference equality to prevent
+	* unnecessary renders.
+	*
+	* `useCallback(fn, deps)` is equivalent to `useMemo(() => fn, deps)`.
+	*
+	* @example
+	* const memoizedCallback = useCallback(
+	*   () => {
+	*     doSomething(a, b);
+	*   },
+	*   [a, b],
+	* );
+	*
+	* @param callback - An inline callback
+	* @param deps - An array of dependencies
+	* @returns A memoized version of the callback
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#usecallback
+] ]
+local function useCallback(callback, deps)
+	return useMemo(function()
+		return callback
+	end, deps)
+end
+return {
+	useCallback = useCallback,
+}
+
+        end)
+    end);
+    hMod("use-context", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-context", "Havoc.include.node_modules.roact-hooked.out.hooks", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.7
+local TS = _G[script]
+--[[
+	*
+	* @see https://github.com/Kampfkarren/roact-hooks/blob/main/src/createUseContext.lua
+] ]
+local _memoized_hook = TS.import(script, script.Parent.Parent, "utils", "memoized-hook")
+local memoizedHook = _memoized_hook.memoizedHook
+local resolveCurrentComponent = _memoized_hook.resolveCurrentComponent
+local useEffect = TS.import(script, script.Parent, "use-effect").useEffect
+local useState = TS.import(script, script.Parent, "use-state").useState
+local function copyComponent(component)
+	return setmetatable({}, {
+		__index = component,
+	})
+end
+--[[
+	*
+	* Accepts a context object (the value returned from `Roact.createContext`) and returns the current context value, as
+	* given by the nearest context provider for the given context.
+	*
+	* When the nearest `Context.Provider` above the component updates, this Hook will trigger a rerender with the latest
+	* context value.
+	*
+	* If there is no Provider, `useContext` returns the default value of the context.
+	*
+	* @param context - The Context object to read from
+	* @returns The latest context value of the nearest Provider
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#usecontext
+] ]
+local function useContext(context)
+	local thisContext = context
+	local _binding = memoizedHook(function()
+		local consumer = copyComponent(resolveCurrentComponent())
+		thisContext.Consumer.init(consumer)
+		return consumer.contextEntry
+	end)
+	local contextEntry = _binding.state
+	if contextEntry then
+		local _binding_1 = useState(contextEntry.value)
+		local value = _binding_1[1]
+		local setValue = _binding_1[2]
+		useEffect(function()
+			return contextEntry.onUpdate:subscribe(setValue)
+		end, {})
+		return value
+	else
+		return thisContext.defaultValue
+	end
+end
+return {
+	useContext = useContext,
+}
+
+        end)
+    end);
+    hMod("use-effect", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-effect", "Havoc.include.node_modules.roact-hooked.out.hooks", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.7
+local TS = _G[script]
+local areDepsEqual = TS.import(script, script.Parent.Parent, "utils", "are-deps-equal").areDepsEqual
+local _memoized_hook = TS.import(script, script.Parent.Parent, "utils", "memoized-hook")
+local memoizedHook = _memoized_hook.memoizedHook
+local resolveCurrentComponent = _memoized_hook.resolveCurrentComponent
+local function scheduleEffect(effect)
+	local _binding = resolveCurrentComponent()
+	local effects = _binding.effects
+	if effects.tail == nil then
+		-- This is the first effect in the list
+		effects.tail = effect
+		effects.head = effects.tail
+	else
+		-- Append to the end of the list
+		local _exp = effects.tail
+		_exp.next = effect
+		effects.tail = _exp.next
+	end
+	return effect
+end
+--[[
+	*
+	* Accepts a function that contains imperative, possibly effectful code. The function passed to `useEffect` will run
+	* synchronously (thread-blocking) after the Roblox Instance is created and rendered.
+	*
+	* The clean-up function (returned by the effect) runs before the component is removed from the UI to prevent memory
+	* leaks. Additionally, if a component renders multiple times, the **previous effect is cleaned up before executing
+	* the next effect**.
+	*
+	*`useEffect` runs in the same phase as `didMount` and `didUpdate`. All cleanup functions are called on `willUnmount`.
+	*
+	* @example
+	* useEffect(() => {
+	*   // use value
+	*   return () => {
+	*     // cleanup
+	*   }
+	* }, [value]);
+	*
+	* useEffect(() => {
+	*   // did update
+	* });
+	*
+	* useEffect(() => {
+	*   // did mount
+	*   return () => {
+	*     // will unmount
+	*   }
+	* }, []);
+	*
+	* @param callback - Imperative function that can return a cleanup function
+	* @param deps - If present, effect will only activate if the values in the list change
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#useeffect
+] ]
+local function useEffect(callback, deps)
+	local hook = memoizedHook(nil)
+	local _prevDeps = hook.state
+	if _prevDeps ~= nil then
+		_prevDeps = _prevDeps.deps
+	end
+	local prevDeps = _prevDeps
+	if deps and areDepsEqual(deps, prevDeps) then
+		return nil
+	end
+	hook.state = scheduleEffect({
+		id = hook.id,
+		callback = callback,
+		deps = deps,
+	})
+end
+return {
+	useEffect = useEffect,
+}
+
+        end)
+    end);
+    hMod("use-memo", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-memo", "Havoc.include.node_modules.roact-hooked.out.hooks", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.7
+local TS = _G[script]
+local areDepsEqual = TS.import(script, script.Parent.Parent, "utils", "are-deps-equal").areDepsEqual
+local memoizedHook = TS.import(script, script.Parent.Parent, "utils", "memoized-hook").memoizedHook
+--[[
+	*
+	* `useMemo` will only recompute the memoized value when one of the `deps` has changed. This optimization helps to
+	* avoid expensive calculations on every render.
+	*
+	* Remember that the function passed to `useMemo` runs during rendering. Don’t do anything there that you wouldn’t
+	* normally do while rendering. For example, side effects belong in `useEffect`, not `useMemo`.
+	*
+	* If no array is provided, a new value will be computed on every render. This is usually a mistake, so `deps` must be
+	* explicitly written as `undefined`.
+	*
+	* @example
+	* const memoizedValue = useMemo(() => computeExpensiveValue(a, b), [a, b]);
+	*
+	* @param factory - A "create" function that computes a value
+	* @param deps - An array of dependencies
+	* @returns A memoized value
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#usememo
+] ]
+local function useMemo(factory, deps)
+	local hook = memoizedHook(function()
+		return {}
+	end)
+	local _binding = hook.state
+	local prevValue = _binding[1]
+	local prevDeps = _binding[2]
+	if prevValue ~= nil and (deps and areDepsEqual(deps, prevDeps)) then
+		return prevValue
+	end
+	local nextValue = factory()
+	hook.state = { nextValue, deps }
+	return nextValue
+end
+return {
+	useMemo = useMemo,
+}
+
+        end)
+    end);
+    hMod("use-mutable", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-mutable", "Havoc.include.node_modules.roact-hooked.out.hooks", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.7
+local TS = _G[script]
+local memoizedHook = TS.import(script, script.Parent.Parent, "utils", "memoized-hook").memoizedHook
+-- Function overloads from https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/react/index.d.ts#L1061
+--[[
+	*
+	* `useMutable` returns a mutable object whose `.current` property is initialized to the argument `initialValue`.
+	* The returned object will persist for the full lifetime of the component.
+	*
+	* `useMutable()` is handy for keeping any mutable value around similar to how you’d use instance fields in classes.
+	*
+	* This cannot be used as a [Roact Ref](https://roblox.github.io/roact/advanced/bindings-and-refs/#refs). If you want
+	* to reference a Roblox Instance, refer to {@link useRef}.
+	*
+	* @example
+	* const container = useMutable(initialValue);
+	* useEffect(() => {
+	*   container.current = value;
+	* });
+	*
+	* @param initialValue - Initialized as the `.current` property
+	* @returns A memoized, mutable object
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#useref
+] ]
+--[[
+	*
+	* `useMutable` returns a mutable object whose `.current` property is initialized to the argument `initialValue`.
+	* The returned object will persist for the full lifetime of the component.
+	*
+	* `useMutable()` is handy for keeping any mutable value around similar to how you’d use instance fields in classes.
+	*
+	* This cannot be used as a [Roact Ref](https://roblox.github.io/roact/advanced/bindings-and-refs/#refs). If you want
+	* to reference a Roblox Instance, refer to {@link useRef}.
+	*
+	* @example
+	* const container = useMutable(initialValue);
+	* useEffect(() => {
+	*   container.current = value;
+	* });
+	*
+	* @param initialValue - Initialized as the `.current` property
+	* @returns A memoized, mutable object
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#useref
+] ]
+-- convenience overload for refs given as a ref prop as they typically start with a null value
+--[[
+	*
+	* `useMutable` returns a mutable object whose `.current` property is initialized to the argument `initialValue`.
+	* The returned object will persist for the full lifetime of the component.
+	*
+	* `useMutable()` is handy for keeping any mutable value around similar to how you’d use instance fields in classes.
+	*
+	* This cannot be used as a [Roact Ref](https://roblox.github.io/roact/advanced/bindings-and-refs/#refs). If you want
+	* to reference a Roblox Instance, refer to {@link useRef}.
+	*
+	* @example
+	* const container = useMutable(initialValue);
+	* useEffect(() => {
+	*   container.current = value;
+	* });
+	*
+	* @returns A memoized, mutable object
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#useref
+] ]
+-- convenience overload for potentially undefined initialValue / call with 0 arguments
+-- has a default to stop it from defaulting to {} instead
+--[[
+	*
+	* `useMutable` returns a mutable object whose `.current` property is initialized to the argument `initialValue`.
+	* The returned object will persist for the full lifetime of the component.
+	*
+	* `useMutable()` is handy for keeping any mutable value around similar to how you’d use instance fields in classes.
+	*
+	* This cannot be used as a [Roact Ref](https://roblox.github.io/roact/advanced/bindings-and-refs/#refs). If you want
+	* to reference a Roblox Instance, refer to {@link useRef}.
+	*
+	* @example
+	* const container = useMutable(initialValue);
+	* useEffect(() => {
+	*   container.current = value;
+	* });
+	*
+	* @param initialValue - Initialized as the `.current` property
+	* @returns A memoized, mutable object
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#useref
+] ]
+local function useMutable(initialValue)
+	return memoizedHook(function()
+		return {
+			current = initialValue,
+		}
+	end).state
+end
+return {
+	useMutable = useMutable,
+}
+
+        end)
+    end);
+    hMod("use-reducer", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-reducer", "Havoc.include.node_modules.roact-hooked.out.hooks", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.7
+local TS = _G[script]
+local _memoized_hook = TS.import(script, script.Parent.Parent, "utils", "memoized-hook")
+local memoizedHook = _memoized_hook.memoizedHook
+local resolveCurrentComponent = _memoized_hook.resolveCurrentComponent
+--[[
+	*
+	* Accepts a reducer of type `(state, action) => newState`, and returns the current state paired with a `dispatch`
+	* method.
+	*
+	* If a new state is the same value as the current state, this will bail out without rerendering the component.
+	*
+	* `useReducer` is usually preferable to `useState` when you have complex state logic that involves multiple sub-values.
+	* It also lets you optimize performance for components that trigger deep updates because [you can pass `dispatch` down
+	* instead of callbacks](https://reactjs.org/docs/hooks-faq.html#how-to-avoid-passing-callbacks-down).
+	*
+	* There are two different ways to initialize `useReducer` state. You can use the initial state as a second argument,
+	* or [create the initial state lazily](https://reactjs.org/docs/hooks-reference.html#lazy-initialization). To do this,
+	* you can pass an init function as the third argument. The initial state will be set to `initializer(initialArg)`.
+	*
+	* @param reducer - Function that returns a state given the current state and an action
+	* @param initializerArg - State used during the initial render, or passed to `initializer` if provided
+	* @param initializer - Optional function that returns an initial state given `initializerArg`
+	* @returns The current state, and an action dispatcher
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#usereducer
+] ]
+-- overload where dispatch could accept 0 arguments.
+--[[
+	*
+	* Accepts a reducer of type `(state, action) => newState`, and returns the current state paired with a `dispatch`
+	* method.
+	*
+	* If a new state is the same value as the current state, this will bail out without rerendering the component.
+	*
+	* `useReducer` is usually preferable to `useState` when you have complex state logic that involves multiple sub-values.
+	* It also lets you optimize performance for components that trigger deep updates because [you can pass `dispatch` down
+	* instead of callbacks](https://reactjs.org/docs/hooks-faq.html#how-to-avoid-passing-callbacks-down).
+	*
+	* There are two different ways to initialize `useReducer` state. You can use the initial state as a second argument,
+	* or [create the initial state lazily](https://reactjs.org/docs/hooks-reference.html#lazy-initialization). To do this,
+	* you can pass an init function as the third argument. The initial state will be set to `initializer(initialArg)`.
+	*
+	* @param reducer - Function that returns a state given the current state and an action
+	* @param initializerArg - State used during the initial render, or passed to `initializer` if provided
+	* @param initializer - Optional function that returns an initial state given `initializerArg`
+	* @returns The current state, and an action dispatcher
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#usereducer
+] ]
+-- overload where dispatch could accept 0 arguments.
+--[[
+	*
+	* Accepts a reducer of type `(state, action) => newState`, and returns the current state paired with a `dispatch`
+	* method.
+	*
+	* If a new state is the same value as the current state, this will bail out without rerendering the component.
+	*
+	* `useReducer` is usually preferable to `useState` when you have complex state logic that involves multiple sub-values.
+	* It also lets you optimize performance for components that trigger deep updates because [you can pass `dispatch` down
+	* instead of callbacks](https://reactjs.org/docs/hooks-faq.html#how-to-avoid-passing-callbacks-down).
+	*
+	* There are two different ways to initialize `useReducer` state. You can use the initial state as a second argument,
+	* or [create the initial state lazily](https://reactjs.org/docs/hooks-reference.html#lazy-initialization). To do this,
+	* you can pass an init function as the third argument. The initial state will be set to `initializer(initialArg)`.
+	*
+	* @param reducer - Function that returns a state given the current state and an action
+	* @param initializerArg - State used during the initial render, or passed to `initializer` if provided
+	* @param initializer - Optional function that returns an initial state given `initializerArg`
+	* @returns The current state, and an action dispatcher
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#usereducer
+] ]
+-- overload for free "I"; all goes as long as initializer converts it into "ReducerState<R>".
+--[[
+	*
+	* Accepts a reducer of type `(state, action) => newState`, and returns the current state paired with a `dispatch`
+	* method.
+	*
+	* If a new state is the same value as the current state, this will bail out without rerendering the component.
+	*
+	* `useReducer` is usually preferable to `useState` when you have complex state logic that involves multiple sub-values.
+	* It also lets you optimize performance for components that trigger deep updates because [you can pass `dispatch` down
+	* instead of callbacks](https://reactjs.org/docs/hooks-faq.html#how-to-avoid-passing-callbacks-down).
+	*
+	* There are two different ways to initialize `useReducer` state. You can use the initial state as a second argument,
+	* or [create the initial state lazily](https://reactjs.org/docs/hooks-reference.html#lazy-initialization). To do this,
+	* you can pass an init function as the third argument. The initial state will be set to `initializer(initialArg)`.
+	*
+	* @param reducer - Function that returns a state given the current state and an action
+	* @param initializerArg - State used during the initial render, or passed to `initializer` if provided
+	* @param initializer - Optional function that returns an initial state given `initializerArg`
+	* @returns The current state, and an action dispatcher
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#usereducer
+] ]
+-- overload where "I" may be a subset of ReducerState<R>; used to provide autocompletion.
+-- If "I" matches ReducerState<R> exactly then the last overload will allow initializer to be omitted.
+--[[
+	*
+	* Accepts a reducer of type `(state, action) => newState`, and returns the current state paired with a `dispatch`
+	* method.
+	*
+	* If a new state is the same value as the current state, this will bail out without rerendering the component.
+	*
+	* `useReducer` is usually preferable to `useState` when you have complex state logic that involves multiple sub-values.
+	* It also lets you optimize performance for components that trigger deep updates because [you can pass `dispatch` down
+	* instead of callbacks](https://reactjs.org/docs/hooks-faq.html#how-to-avoid-passing-callbacks-down).
+	*
+	* There are two different ways to initialize `useReducer` state. You can use the initial state as a second argument,
+	* or [create the initial state lazily](https://reactjs.org/docs/hooks-reference.html#lazy-initialization). To do this,
+	* you can pass an init function as the third argument. The initial state will be set to `initializer(initialArg)`.
+	*
+	* @param reducer - Function that returns a state given the current state and an action
+	* @param initializerArg - State used during the initial render, or passed to `initializer` if provided
+	* @param initializer - Optional function that returns an initial state given `initializerArg`
+	* @returns The current state, and an action dispatcher
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#usereducer
+] ]
+-- Implementation matches a previous overload, is this required?
+local function useReducer(reducer, initializerArg, initializer)
+	local currentComponent = resolveCurrentComponent()
+	local hook = memoizedHook(function()
+		local _result
+		if initializer then
+			_result = initializer(initializerArg)
+		else
+			_result = initializerArg
+		end
+		return _result
+	end)
+	local function dispatch(action)
+		local nextState = reducer(hook.state, action)
+		if hook.state ~= nextState then
+			currentComponent:setHookState(hook.id, function()
+				hook.state = nextState
+				return hook.state
+			end)
+		end
+	end
+	return { hook.state, dispatch }
+end
+return {
+	useReducer = useReducer,
+}
+
+        end)
+    end);
+    hMod("use-ref", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-ref", "Havoc.include.node_modules.roact-hooked.out.hooks", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.7
+local TS = _G[script]
+local createRef = TS.import(script, TS.getModule(script, "@rbxts", "roact").src).createRef
+local memoizedHook = TS.import(script, script.Parent.Parent, "utils", "memoized-hook").memoizedHook
+--[[
+	*
+	* `useRef` returns a memoized *`Ref`*, a special type of binding that points to Roblox Instance objects that are
+	* created by Roact. The returned object will persist for the full lifetime of the component.
+	*
+	* `useMutable()` is handy for keeping any mutable value around similar to how you’d use instance fields in classes.
+	*
+	* This is not mutable like React's `useRef` hook. If you want to use a mutable object, refer to {@link useMutable}.
+	*
+	* @example
+	* const ref = useRef<TextBox>();
+	*
+	* useEffect(() => {
+	* 	const textBox = ref.getValue();
+	* 	if (textBox) {
+	* 		textBox.CaptureFocus();
+	* 	}
+	* }, []);
+	*
+	* return <textbox Ref={ref} />;
+	*
+	* @returns A memoized `Ref` object
+	*
+	* @see https://roblox.github.io/roact/advanced/bindings-and-refs/#refs
+] ]
+local function useRef()
+	return memoizedHook(function()
+		return createRef()
+	end).state
+end
+return {
+	useRef = useRef,
+}
+
+        end)
+    end);
+    hMod("use-state", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-state", "Havoc.include.node_modules.roact-hooked.out.hooks", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.7
+local TS = _G[script]
+local useReducer = TS.import(script, script.Parent, "use-reducer").useReducer
+--[[
+	*
+	* Returns a stateful value, and a function to update it.
+	*
+	* During the initial render, the returned state (`state`) is the same as the value passed as the first argument
+	* (`initialState`).
+	*
+	* The `setState` function is used to update the state. It always knows the current state, so it's safe to omit from
+	* the `useEffect` or `useCallback` dependency lists.
+	*
+	* If you update a State Hook to the same value as the current state, this will bail out without rerendering the
+	* component.
+	*
+	* @example
+	* const [state, setState] = useState(initialState);
+	* const [state, setState] = useState(() => someExpensiveComputation());
+	* setState(newState);
+	* setState((prevState) => prevState + 1)
+	*
+	* @param initialState - State used during the initial render. Can be a function, which will be executed on initial render
+	* @returns A stateful value, and an updater function
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#usestate
+] ]
+--[[
+	*
+	* Returns a stateful value, and a function to update it.
+	*
+	* During the initial render, the returned state (`state`) is the same as the value passed as the first argument
+	* (`initialState`).
+	*
+	* The `setState` function is used to update the state. It always knows the current state, so it's safe to omit from
+	* the `useEffect` or `useCallback` dependency lists.
+	*
+	* If you update a State Hook to the same value as the current state, this will bail out without rerendering the
+	* component.
+	*
+	* @example
+	* const [state, setState] = useState(initialState);
+	* const [state, setState] = useState(() => someExpensiveComputation());
+	* setState(newState);
+	* setState((prevState) => prevState + 1)
+	*
+	* @param initialState - State used during the initial render. Can be a function, which will be executed on initial render
+	* @returns A stateful value, and an updater function
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#usestate
+] ]
+--[[
+	*
+	* Returns a stateful value, and a function to update it.
+	*
+	* During the initial render, the returned state (`state`) is the same as the value passed as the first argument
+	* (`initialState`).
+	*
+	* The `setState` function is used to update the state. It always knows the current state, so it's safe to omit from
+	* the `useEffect` or `useCallback` dependency lists.
+	*
+	* If you update a State Hook to the same value as the current state, this will bail out without rerendering the
+	* component.
+	*
+	* @example
+	* const [state, setState] = useState(initialState);
+	* const [state, setState] = useState(() => someExpensiveComputation());
+	* setState(newState);
+	* setState((prevState) => prevState + 1)
+	*
+	* @param initialState - State used during the initial render. Can be a function, which will be executed on initial render
+	* @returns A stateful value, and an updater function
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#usestate
+] ]
+local function useState(initialState)
+	local _binding = useReducer(function(state, action)
+		local _result
+		if type(action) == "function" then
+			_result = action(state)
+		else
+			_result = action
+		end
+		return _result
+	end, nil, function()
+		local _result
+		if type(initialState) == "function" then
+			_result = initialState()
+		else
+			_result = initialState
+		end
+		return _result
+	end)
+	local state = _binding[1]
+	local dispatch = _binding[2]
+	return { state, dispatch }
+end
+return {
+	useState = useState,
+}
+
+        end)
+    end);
+    hMod("types", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.types", "Havoc.include.node_modules.roact-hooked.out", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.7
+-- Roact
+-- Reducers
+-- Utility types
+-- Hooks
+return nil
+
+        end)
+    end);
     hInst("utils", "Folder", "Havoc.include.node_modules.roact-hooked.out.utils", "Havoc.include.node_modules.roact-hooked.out");
-    hInst("are-deps-equal", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.utils.are-deps-equal", "Havoc.include.node_modules.roact-hooked.out.utils");
-    hInst("memoized-hook", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.utils.memoized-hook", "Havoc.include.node_modules.roact-hooked.out.utils");
-    hInst("with-hooks", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.with-hooks", "Havoc.include.node_modules.roact-hooked.out");
-    hInst("component-with-hooks", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.with-hooks.component-with-hooks", "Havoc.include.node_modules.roact-hooked.out.with-hooks");
-    hInst("with-hooks", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.with-hooks.with-hooks", "Havoc.include.node_modules.roact-hooked.out.with-hooks");
+    hMod("are-deps-equal", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.utils.are-deps-equal", "Havoc.include.node_modules.roact-hooked.out.utils", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.7
+local function areDepsEqual(nextDeps, prevDeps)
+	if prevDeps == nil then
+		return false
+	end
+	if #nextDeps ~= #prevDeps then
+		return false
+	end
+	do
+		local i = 0
+		local _shouldIncrement = false
+		while true do
+			if _shouldIncrement then
+				i += 1
+			else
+				_shouldIncrement = true
+			end
+			if not (i < #nextDeps) then
+				break
+			end
+			if nextDeps[i + 1] == prevDeps[i + 1] then
+				continue
+			end
+			return false
+		end
+	end
+	return true
+end
+return {
+	areDepsEqual = areDepsEqual,
+}
+
+        end)
+    end);
+    hMod("memoized-hook", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.utils.memoized-hook", "Havoc.include.node_modules.roact-hooked.out.utils", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.7
+local EXCEPTION_INVALID_HOOK_CALL = table.concat({ "Invalid hook call. Hooks can only be called inside of the body of a function component.", "This is usually the result of conflicting versions of roact-hooked.", "See https://reactjs.org/link/invalid-hook-call for tips about how to debug and fix this problem." }, "\n")
+local EXCEPTION_RENDER_NOT_DONE = "Failed to render hook! (Another hooked component is rendering)"
+local EXCEPTION_RENDER_OVERLAP = "Failed to render hook! (Another hooked component rendered during this one)"
+local currentHook
+local currentlyRenderingComponent
+--[[
+	*
+	* Prepares for an upcoming render.
+] ]
+local function renderReady(component)
+	local _arg0 = currentlyRenderingComponent == nil
+	assert(_arg0, EXCEPTION_RENDER_NOT_DONE)
+	currentlyRenderingComponent = component
+end
+--[[
+	*
+	* Cleans up hooks. Must be called after finishing a render!
+] ]
+local function renderDone(component)
+	local _arg0 = currentlyRenderingComponent == component
+	assert(_arg0, EXCEPTION_RENDER_OVERLAP)
+	currentlyRenderingComponent = nil
+	currentHook = nil
+end
+--[[
+	*
+	* Returns the currently-rendering component. Throws an error if a component is not mid-render.
+] ]
+local function resolveCurrentComponent()
+	return currentlyRenderingComponent or error(EXCEPTION_INVALID_HOOK_CALL, 3)
+end
+--[[
+	*
+	* Gets or creates a new hook. Hooks are memoized for every component. See the original source
+	* {@link https://github.com/facebook/react/blob/main/packages/react-reconciler/src/ReactFiberHooks.new.js#L619 here}.
+	*
+	* @param initialValue - Initial value for `Hook.state` and `Hook.baseState`.
+] ]
+local function memoizedHook(initialValue)
+	local currentlyRenderingComponent = resolveCurrentComponent()
+	local _result
+	if currentHook then
+		_result = currentHook.next
+	else
+		_result = currentlyRenderingComponent.firstHook
+	end
+	local nextHook = _result
+	if nextHook then
+		-- The hook has already been created
+		currentHook = nextHook
+	else
+		-- This is a new hook, should be from an initial render
+		local _result_1
+		if type(initialValue) == "function" then
+			_result_1 = initialValue()
+		else
+			_result_1 = initialValue
+		end
+		local state = _result_1
+		local newHook = {
+			id = currentHook and currentHook.id + 1 or 0,
+			state = state,
+			baseState = state,
+		}
+		if not currentHook then
+			-- This is the first hook in the list
+			currentHook = newHook
+			currentlyRenderingComponent.firstHook = currentHook
+		else
+			-- Append to the end of the list
+			currentHook.next = newHook
+			currentHook = currentHook.next
+		end
+	end
+	return currentHook
+end
+return {
+	renderReady = renderReady,
+	renderDone = renderDone,
+	resolveCurrentComponent = resolveCurrentComponent,
+	memoizedHook = memoizedHook,
+}
+
+        end)
+    end);
+    hMod("with-hooks", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.with-hooks", "Havoc.include.node_modules.roact-hooked.out", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.7
+local TS = _G[script]
+local exports = {}
+local _with_hooks = TS.import(script, script, "with-hooks")
+exports.withHooks = _with_hooks.withHooks
+exports.withHooksPure = _with_hooks.withHooksPure
+return exports
+
+        end)
+    end);
+    hMod("component-with-hooks", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.with-hooks.component-with-hooks", "Havoc.include.node_modules.roact-hooked.out.with-hooks", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.7
+local TS = _G[script]
+local _memoized_hook = TS.import(script, script.Parent.Parent, "utils", "memoized-hook")
+local renderDone = _memoized_hook.renderDone
+local renderReady = _memoized_hook.renderReady
+local ComponentWithHooks
+do
+	ComponentWithHooks = {}
+	function ComponentWithHooks:constructor()
+	end
+	function ComponentWithHooks:init()
+		self.effects = {}
+		self.effectHandles = {}
+	end
+	function ComponentWithHooks:setHookState(id, reducer)
+		self:setState(function(state)
+			return {
+				[id] = reducer(state[id]),
+			}
+		end)
+	end
+	function ComponentWithHooks:render()
+		renderReady(self)
+		local _functionComponent = self.functionComponent
+		local _props = self.props
+		local _success, _valueOrError = pcall(_functionComponent, _props)
+		local result = _success and {
+			success = true,
+			value = _valueOrError,
+		} or {
+			success = false,
+			error = _valueOrError,
+		}
+		renderDone(self)
+		if not result.success then
+			error("(ComponentWithHooks) " .. result.error)
+		end
+		return result.value
+	end
+	function ComponentWithHooks:didMount()
+		self:flushEffects()
+	end
+	function ComponentWithHooks:didUpdate()
+		self:flushEffects()
+	end
+	function ComponentWithHooks:willUnmount()
+		self:unmountEffects()
+		self.effects.head = nil
+	end
+	function ComponentWithHooks:flushEffectsHelper(effect)
+		if not effect then
+			return nil
+		end
+		local _effectHandles = self.effectHandles
+		local _id = effect.id
+		local _result = _effectHandles[_id]
+		if _result ~= nil then
+			_result()
+		end
+		local handle = effect.callback()
+		if handle then
+			local _effectHandles_1 = self.effectHandles
+			local _id_1 = effect.id
+			-- ▼ Map.set ▼
+			_effectHandles_1[_id_1] = handle
+			-- ▲ Map.set ▲
+		end
+		self:flushEffectsHelper(effect.next)
+	end
+	function ComponentWithHooks:flushEffects()
+		self:flushEffectsHelper(self.effects.head)
+		self.effects.head = nil
+		self.effects.tail = nil
+	end
+	function ComponentWithHooks:unmountEffects()
+		-- This does not clean up effects by order of id, but it should not matter
+		-- because this is on unmount
+		local _effectHandles = self.effectHandles
+		local _arg0 = function(handle)
+			return handle()
+		end
+		-- ▼ ReadonlyMap.forEach ▼
+		for _k, _v in pairs(_effectHandles) do
+			_arg0(_v, _k, _effectHandles)
+		end
+		-- ▲ ReadonlyMap.forEach ▲
+		-- ▼ Map.clear ▼
+		table.clear(self.effectHandles)
+		-- ▲ Map.clear ▲
+	end
+end
+return {
+	ComponentWithHooks = ComponentWithHooks,
+}
+
+        end)
+    end);
+    hMod("with-hooks", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.with-hooks.with-hooks", "Havoc.include.node_modules.roact-hooked.out.with-hooks", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.7
+local TS = _G[script]
+local ComponentWithHooks = TS.import(script, script.Parent, "component-with-hooks").ComponentWithHooks
+local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
+local function componentWithHooksMixin(ctor)
+	for k, v in pairs(ComponentWithHooks) do
+		ctor[k] = v
+	end
+end
+local function withHooks(functionComponent)
+	local ComponentClass
+	do
+		ComponentClass = Roact.Component:extend("ComponentClass")
+		function ComponentClass:init()
+		end
+		ComponentClass.functionComponent = functionComponent
+	end
+	componentWithHooksMixin(ComponentClass)
+	return ComponentClass
+end
+local function withHooksPure(functionComponent)
+	local ComponentClass
+	do
+		ComponentClass = Roact.PureComponent:extend("ComponentClass")
+		function ComponentClass:init()
+		end
+		ComponentClass.functionComponent = functionComponent
+	end
+	componentWithHooksMixin(ComponentClass)
+	return ComponentClass
+end
+return {
+	withHooks = withHooks,
+	withHooksPure = withHooksPure,
+}
+
+        end)
+    end);
     hInst("roact-rodux-hooked", "Folder", "Havoc.include.node_modules.roact-rodux-hooked", "Havoc.include.node_modules");
-    hInst("out", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out", "Havoc.include.node_modules.roact-rodux-hooked");
+    hMod("out", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out", "Havoc.include.node_modules.roact-rodux-hooked", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.3
+local TS = _G[script]
+local exports = {}
+exports.Provider = TS.import(script, script, "components", "provider").Provider
+exports.useDispatch = TS.import(script, script, "hooks", "use-dispatch").useDispatch
+exports.useSelector = TS.import(script, script, "hooks", "use-selector").useSelector
+exports.useStore = TS.import(script, script, "hooks", "use-store").useStore
+exports.shallowEqual = TS.import(script, script, "helpers", "shallow-equal").shallowEqual
+exports.RoactRoduxContext = TS.import(script, script, "components", "context").RoactRoduxContext
+return exports
+
+        end)
+    end);
     hInst("components", "Folder", "Havoc.include.node_modules.roact-rodux-hooked.out.components", "Havoc.include.node_modules.roact-rodux-hooked.out");
-    hInst("context", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.components.context", "Havoc.include.node_modules.roact-rodux-hooked.out.components");
-    hInst("provider", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.components.provider", "Havoc.include.node_modules.roact-rodux-hooked.out.components");
+    hMod("context", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.components.context", "Havoc.include.node_modules.roact-rodux-hooked.out.components", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.3
+local TS = _G[script]
+local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
+local RoactRoduxContext = Roact.createContext(nil)
+return {
+	RoactRoduxContext = RoactRoduxContext,
+}
+
+        end)
+    end);
+    hMod("provider", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.components.provider", "Havoc.include.node_modules.roact-rodux-hooked.out.components", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.3
+local TS = _G[script]
+local RoactRoduxContext = TS.import(script, script.Parent, "context").RoactRoduxContext
+local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
+local hooked = _roact_hooked.hooked
+local useMemo = _roact_hooked.useMemo
+local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
+--[[
+	*
+	* Makes the Rodux store available to the `useStore()` calls in the component hierarchy below.
+] ]
+local Provider = hooked(function(_param)
+	local store = _param.store
+	local children = _param[Roact.Children]
+	local contextValue = useMemo(function()
+		return {
+			store = store,
+		}
+	end, { store })
+	local _ptr = {
+		value = contextValue,
+	}
+	local _ptr_1 = {}
+	local _length = #_ptr_1
+	if children then
+		for _k, _v in pairs(children) do
+			if type(_k) == "number" then
+				_ptr_1[_length + _k] = _v
+			else
+				_ptr_1[_k] = _v
+			end
+		end
+	end
+	return Roact.createElement(RoactRoduxContext.Provider, _ptr, _ptr_1)
+end)
+return {
+	Provider = Provider,
+}
+
+        end)
+    end);
     hInst("helpers", "Folder", "Havoc.include.node_modules.roact-rodux-hooked.out.helpers", "Havoc.include.node_modules.roact-rodux-hooked.out");
-    hInst("shallow-equal", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.helpers.shallow-equal", "Havoc.include.node_modules.roact-rodux-hooked.out.helpers");
+    hMod("shallow-equal", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.helpers.shallow-equal", "Havoc.include.node_modules.roact-rodux-hooked.out.helpers", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.3
+local TS = _G[script]
+local Object = TS.import(script, TS.getModule(script, "@rbxts", "object-utils"))
+--[[
+	*
+	* Compares two arbitrary values for shallow equality. Object values are compared based on their keys, i.e. they must
+	* have the same keys and for each key the value must be equal.
+] ]
+local function shallowEqual(left, right)
+	if left == right then
+		return true
+	end
+	if not (type(left) == "table") or not (type(right) == "table") then
+		return false
+	end
+	local keysLeft = Object.keys(left)
+	local keysRight = Object.keys(right)
+	if #keysLeft ~= #keysRight then
+		return false
+	end
+	local _arg0 = function(value, index)
+		return value == right[index]
+	end
+	-- ▼ ReadonlyArray.every ▼
+	local _result = true
+	for _k, _v in ipairs(keysLeft) do
+		if not _arg0(_v, _k - 1, keysLeft) then
+			_result = false
+			break
+		end
+	end
+	-- ▲ ReadonlyArray.every ▲
+	return _result
+end
+return {
+	shallowEqual = shallowEqual,
+}
+
+        end)
+    end);
     hInst("hooks", "Folder", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks", "Havoc.include.node_modules.roact-rodux-hooked.out");
-    hInst("use-dispatch", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks.use-dispatch", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks");
-    hInst("use-selector", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks.use-selector", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks");
-    hInst("use-store", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks.use-store", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks");
-    hInst("types", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.types", "Havoc.include.node_modules.roact-rodux-hooked.out");
+    hMod("use-dispatch", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks.use-dispatch", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.3
+local TS = _G[script]
+local useMutable = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).useMutable
+local useStore = TS.import(script, script.Parent, "use-store").useStore
+--[[
+	*
+	* A hook to access the Rodux Store's `dispatch` method.
+	*
+	* @returns Rodux store's `dispatch` method
+	*
+	* @example
+	* import Roact from "@rbxts/roact";
+	* import { hooked } from "@rbxts/roact-hooked";
+	* import { useDispatch } from "@rbxts/roact-rodux-hooked";
+	* import type { RootStore } from "./store";
+	*
+	* export const CounterComponent = hooked(() => {
+	*   const dispatch = useDispatch<RootStore>();
+	*   return (
+	*     <textlabel
+	*       Text={"Increase counter"}
+	*       Event={{
+	*         Activated: () => dispatch({ type: "increase-counter" }),
+	*       }}
+	*     />
+	*   );
+	* });
+] ]
+local function useDispatch()
+	local store = useStore()
+	return useMutable(function(action)
+		return store:dispatch(action)
+	end).current
+end
+return {
+	useDispatch = useDispatch,
+}
+
+        end)
+    end);
+    hMod("use-selector", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks.use-selector", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.3
+local TS = _G[script]
+local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
+local useEffect = _roact_hooked.useEffect
+local useMutable = _roact_hooked.useMutable
+local useReducer = _roact_hooked.useReducer
+local useStore = TS.import(script, script.Parent, "use-store").useStore
+--[[
+	*
+	* This interface allows you to easily create a hook that is properly typed for your store's root state.
+	*
+	* @example
+	* interface RootState {
+	*   property: string;
+	* }
+	*
+	* const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
+] ]
+--[[
+	*
+	* A hook to access the Rodux Store's state. This hook takes a selector function as an argument. The selector is called
+	* with the store state.
+	*
+	* This hook takes an optional equality comparison function as the second parameter that allows you to customize the
+	* way the selected state is compared to determine whether the component needs to be re-rendered.
+	*
+	* @param selector - The selector function
+	* @param equalityFn - The function that will be used to determine equality
+	*
+	* @returns The selected portion of the state
+	*
+	* @example
+	* import Roact from "@rbxts/roact";
+	* import { hooked } from "@rbxts/roact-hooked";
+	* import { useSelector } from "@rbxts/roact-rodux-hooked";
+	* import type { RootState } from "./store";
+	*
+	* export const CounterComponent = hooked(() => {
+	*   const count = useSelector((state: RootState) => state.counter);
+	*   return <textlabel Text={`Counter: ${count}`} />;
+	* });
+] ]
+local function useSelector(selector, equalityFn)
+	if equalityFn == nil then
+		equalityFn = function(a, b)
+			return a == b
+		end
+	end
+	local _binding = useReducer(function(s)
+		return s + 1
+	end, 0)
+	local forceRender = _binding[2]
+	local store = useStore()
+	local latestSubscriptionCallbackError = useMutable()
+	local latestSelector = useMutable()
+	local latestStoreState = useMutable()
+	local latestSelectedState = useMutable()
+	local storeState = store:getState()
+	local selectedState
+	TS.try(function()
+		local _value = selector ~= latestSelector.current or storeState ~= latestStoreState.current or latestSubscriptionCallbackError.current
+		if _value ~= "" and _value then
+			local newSelectedState = selector(storeState)
+			-- ensure latest selected state is reused so that a custom equality function can result in identical references
+			if latestSelectedState.current == nil or not equalityFn(newSelectedState, latestSelectedState.current) then
+				selectedState = newSelectedState
+			else
+				selectedState = latestSelectedState.current
+			end
+		else
+			selectedState = latestSelectedState.current
+		end
+	end, function(err)
+		if latestSubscriptionCallbackError.current ~= nil then
+			err ..= "\nThe error may be correlated with this previous error:\n" .. latestSubscriptionCallbackError.current .. "\n\n"
+		end
+		error(err)
+	end)
+	useEffect(function()
+		latestSelector.current = selector
+		latestStoreState.current = storeState
+		latestSelectedState.current = selectedState
+		latestSubscriptionCallbackError.current = nil
+	end)
+	useEffect(function()
+		local function checkForUpdates(newStoreState)
+			local _exitType, _returns = TS.try(function()
+				-- Avoid calling selector multiple times if the store's state has not changed
+				if newStoreState == latestStoreState.current then
+					return TS.TRY_RETURN, {}
+				end
+				local newSelectedState = latestSelector.current(newStoreState)
+				if equalityFn(newSelectedState, latestSelectedState.current) then
+					return TS.TRY_RETURN, {}
+				end
+				latestSelectedState.current = newSelectedState
+				latestStoreState.current = newStoreState
+			end, function(err)
+				-- we ignore all errors here, since when the component
+				-- is re-rendered, the selectors are called again, and
+				-- will throw again, if neither props nor store state
+				-- changed
+				latestSubscriptionCallbackError.current = err
+			end)
+			if _exitType then
+				return unpack(_returns)
+			end
+			task.spawn(forceRender)
+		end
+		local subscription = store.changed:connect(checkForUpdates)
+		checkForUpdates(store:getState())
+		return function()
+			return subscription:disconnect()
+		end
+	end, { store })
+	return selectedState
+end
+return {
+	useSelector = useSelector,
+}
+
+        end)
+    end);
+    hMod("use-store", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks.use-store", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.3
+local TS = _G[script]
+local RoactRoduxContext = TS.import(script, script.Parent.Parent, "components", "context").RoactRoduxContext
+local useContext = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).useContext
+--[[
+	*
+	* A hook to access the Rodux Store.
+	*
+	* @returns The Rodux store
+	*
+	* @example
+	* import Roact from "@rbxts/roact";
+	* import { hooked } from "@rbxts/roact-hooked";
+	* import { useStore } from "@rbxts/roact-rodux-hooked";
+	* import type { RootStore } from "./store";
+	*
+	* export const CounterComponent = hooked(() => {
+	*   const store = useStore<RootStore>();
+	*   return <textlabel Text={store.getState()} />;
+	* });
+] ]
+local function useStore()
+	return useContext(RoactRoduxContext).store
+end
+return {
+	useStore = useStore,
+}
+
+        end)
+    end);
+    hMod("types", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.types", "Havoc.include.node_modules.roact-rodux-hooked.out", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.3
+--[[
+	*
+	* A Roact Context
+] ]
+return nil
+
+        end)
+    end);
     hInst("rodux", "Folder", "Havoc.include.node_modules.rodux", "Havoc.include.node_modules");
-    hInst("src", "ModuleScript", "Havoc.include.node_modules.rodux.src", "Havoc.include.node_modules.rodux");
-    hInst("services", "ModuleScript", "Havoc.include.node_modules.services", "Havoc.include.node_modules");
+    hMod("src", "ModuleScript", "Havoc.include.node_modules.rodux.src", "Havoc.include.node_modules.rodux", function()
+        return (function(...)
+local Store = require(script.Store)
+local createReducer = require(script.createReducer)
+local combineReducers = require(script.combineReducers)
+local makeActionCreator = require(script.makeActionCreator)
+local loggerMiddleware = require(script.loggerMiddleware)
+local thunkMiddleware = require(script.thunkMiddleware)
+
+return {
+	Store = Store,
+	createReducer = createReducer,
+	combineReducers = combineReducers,
+	makeActionCreator = makeActionCreator,
+	loggerMiddleware = loggerMiddleware.middleware,
+	thunkMiddleware = thunkMiddleware,
+}
+
+        end)
+    end);
+    hMod("services", "ModuleScript", "Havoc.include.node_modules.services", "Havoc.include.node_modules", function()
+        return (function(...)
+return setmetatable({}, {
+	__index = function(self, serviceName)
+		local service = game:GetService(serviceName)
+		self[serviceName] = service
+		return service
+	end,
+})
+
+        end)
+    end);
     hInst("types", "Folder", "Havoc.include.node_modules.types", "Havoc.include.node_modules");
     hInst("include", "Folder", "Havoc.include.node_modules.types.include", "Havoc.include.node_modules.types");
     hInst("generated", "Folder", "Havoc.include.node_modules.types.include.generated", "Havoc.include.node_modules.types.include");
@@ -11409,4 +14632,4 @@ return {
     hInit();
 end
 
-start();
+start()
