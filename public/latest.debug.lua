@@ -24,7 +24,7 @@ local function resolveParent(parentId)
     end
     local parent = instanceFromId[parentId]
     if not parent then
-        error(string.format("[Havoc] resolveParent: no instance registered for id '%s'", tostring(parentId)))
+        warn(string.format("[Havoc] resolveParent: no instance registered for id '%s'", tostring(parentId)))
     end
     return parent
 end
@@ -79,7 +79,11 @@ hEnv = function(id)
 end
 
 local function hMod(name, class, id, parentId, fn)
-    local inst = Instance.new(class)
+    local ok, inst = pcall(Instance.new, class)
+    if not ok then
+        warn(string.format("[Havoc] Skipping hMod for %s (%s) — not instantiable", name, class))
+        return
+    end
     inst.Name = name
     inst.Parent = resolveParent(parentId)
     instanceFromId[id] = inst
@@ -87,7 +91,11 @@ local function hMod(name, class, id, parentId, fn)
 end
 
 local function hInst(name, class, id, parentId)
-    local inst = Instance.new(class)
+    local ok, inst = pcall(Instance.new, class)
+    if not ok then
+        warn(string.format("[Havoc] Skipping hInst for %s (%s) — not instantiable", name, class))
+        return
+    end
     inst.Name = name
     inst.Parent = resolveParent(parentId)
     instanceFromId[id] = inst
