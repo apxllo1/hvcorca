@@ -22,10 +22,13 @@ local function resolveParent(parentId)
         local Players = game:GetService("Players")
         return Players.LocalPlayer:WaitForChild("PlayerGui")
     end
-    return instanceFromId[parentId]
+    local parent = instanceFromId[parentId]
+    if not parent then
+        error(string.format("[Havoc] resolveParent: no instance registered for id '%s'", tostring(parentId)))
+    end
+    return parent
 end
 
--- Forward declare hEnv so TS.import and hMod can reference it
 local hEnv
 
 local TS = {
@@ -39,8 +42,6 @@ local TS = {
                 last = v
             end
         end
-
-        -- Check bundled registry first before falling back to native require
         if modules[last] then
             local m = modules[last]
             if not m.loaded then
@@ -49,7 +50,6 @@ local TS = {
             end
             return m.data
         end
-
         return require(last)
     end,
 
