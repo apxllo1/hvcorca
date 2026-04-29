@@ -70,12 +70,7 @@ const Slider = hooked(({ label, displayValue, percent, onUpdate }: SliderProps) 
 				}}
 			>
 				<uicorner CornerRadius={new UDim(0, 8)} />
-				<frame
-					Key="Fill"
-					Size={new UDim2(percent, 0, 1, 0)}
-					BackgroundColor3={GREEN}
-					BorderSizePixel={0}
-				>
+				<frame Key="Fill" Size={new UDim2(percent, 0, 1, 0)} BackgroundColor3={GREEN} BorderSizePixel={0}>
 					<uicorner CornerRadius={new UDim(0, 8)} />
 					<frame
 						Key="Thumb"
@@ -102,14 +97,8 @@ const FacebangModal = hooked(({ isVisible, onClose }: FacebangProps) => {
 		if (job) dispatch(setJobActive("facebang", !job.active));
 	}, [job]);
 
-	const handleSpeedUpdate = useCallback(
-		(p: number) => dispatch(setJobSlider("facebang", "speed", p * 10)),
-		[],
-	);
-	const handleDistanceUpdate = useCallback(
-		(p: number) => dispatch(setJobSlider("facebang", "distance", p * 15)),
-		[],
-	);
+	const handleSpeedUpdate = useCallback((p: number) => dispatch(setJobSlider("facebang", "speed", p * 10)), []);
+	const handleDistanceUpdate = useCallback((p: number) => dispatch(setJobSlider("facebang", "distance", p * 15)), []);
 
 	if (!isVisible || !job) return <></>;
 
