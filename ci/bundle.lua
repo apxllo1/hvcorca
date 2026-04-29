@@ -52,17 +52,41 @@ local function instanceToPath(inst)
         table.insert(parts, 1, current.Name)
         current = current.Parent
     end
-    return "out/" .. table.concat(parts, "/")
+    return parts
 end
 
 local function readSource(inst)
-    local base = instanceToPath(inst)
+    local parts = instanceToPath(inst)
+    local fullPath = table.concat(parts, "/")
+
+    -- Check out/ first
+    local base = "out/" .. fullPath
     local ok, src = pcall(remodel.readFile, base .. ".lua")
     if ok and src then return src end
     local ok2, src2 = pcall(remodel.readFile, base .. "/init.lua")
     if ok2 and src2 then return src2 end
     local ok3, src3 = pcall(remodel.readFile, base .. ".client.lua")
     if ok3 and src3 then return src3 end
+
+    -- Check node_modules/@rbxts for include/node_modules packages
+    local stripped = fullPath:match("^include/node_modules/(.+)$")
+    if stripped then
+        local nmBase = "node_modules/@rbxts/" .. stripped
+        local ok4, src4 = pcall(remodel.readFile, nmBase .. ".lua")
+        if ok4 and src4 then return src4 end
+        local ok5, src5 = pcall(remodel.readFile, nmBase .. "/init.lua")
+        if ok5 and src5 then return src5 end
+    end
+
+    -- Check include/ directly for Promise and RuntimeLib
+    local includePath = fullPath:match("^include/(.+)$")
+    if includePath then
+        local ok6, src6 = pcall(remodel.readFile, "include/" .. includePath .. ".lua")
+        if ok6 and src6 then return src6 end
+        local ok7, src7 = pcall(remodel.readFile, "include/" .. includePath .. "/init.lua")
+        if ok7 and src7 then return src7 end
+    end
+
     return nil
 end
 
@@ -100,7 +124,7 @@ end
 walk(model)
 
 file:write("\n    hInit();\n")
-file:write("end\n\nstart();")
+file:write("end\n\nstart()")
 file:close()
 
 print("------------------------------------------")
