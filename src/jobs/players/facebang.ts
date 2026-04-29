@@ -32,9 +32,7 @@ const speedToDuration = (speed: number) => {
 
 onJobChange("facebang", (job, state) => {
 	const sliderJob = job as unknown as JobWithSliders;
-	const sliders = sliderJob?.sliders as
-		| { distance: number; speed: number; angle?: number }
-		| undefined;
+	const sliders = sliderJob?.sliders as { distance: number; speed: number; angle?: number } | undefined;
 
 	const localPlayer = Players.LocalPlayer;
 	const localChar = localPlayer.Character;
@@ -48,10 +46,7 @@ onJobChange("facebang", (job, state) => {
 	if (isRunning) return;
 
 	const targetName = state.dashboard.apps.playerSelected;
-	const targetPlayer =
-		targetName !== undefined
-			? (Players.FindFirstChild(targetName) as Player)
-			: undefined;
+	const targetPlayer = targetName !== undefined ? (Players.FindFirstChild(targetName) as Player) : undefined;
 
 	if (!targetPlayer || targetPlayer === localPlayer) return;
 
@@ -72,8 +67,7 @@ onJobChange("facebang", (job, state) => {
 			setPhysicsEnabled(localChar, false);
 
 			// Pull latest slider values each stroke
-			const currentJob = (state.jobs as unknown as Record<string, JobWithSliders>)
-				.facebang;
+			const currentJob = (state.jobs as unknown as Record<string, JobWithSliders>).facebang;
 			const currentSliders = currentJob?.sliders as
 				| { distance: number; speed: number; angle?: number }
 				| undefined;
