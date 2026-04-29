@@ -36,11 +36,17 @@ file:write("    hInit, hMod, hInst, hEnv = (function()\n")
 file:write(runtime)
 file:write("\n    end)();\n\n")
 
--- Register root as a Folder parented to ROOT
+-- Register root folder
 local rootPath = string.format("%q", model:GetFullName())
 file:write(string.format(
     "    hInst(%s, \"Folder\", %s, \"ROOT\");\n",
     string.format("%q", model.Name), rootPath
+))
+
+-- Register include folder explicitly so RuntimeLib can be parented correctly
+file:write(string.format(
+    "    hInst(\"include\", \"Folder\", %q, %q);\n",
+    model.Name .. ".include", model.Name
 ))
 
 local SKIP_NAMES = { include = true, node_modules = true }
