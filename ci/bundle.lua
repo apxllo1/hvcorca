@@ -44,22 +44,22 @@ file:write(string.format(
 
 local SKIP_NAMES = { include = true, node_modules = true }
 
--- Converts an instance's full name to a file path under out/
 local function instanceToPath(inst)
-    -- Strip the root model name prefix (e.g. "Havoc.")
-    local fullName = inst:GetFullName()
-    local stripped = fullName:gsub("^" .. model.Name .. "%.", "")
-    return "out/" .. stripped:gsub("%.", "/")
+    local parts = {}
+    local current = inst
+    while current and current ~= model do
+        table.insert(parts, 1, current.Name)
+        current = current.Parent
+    end
+    return "out/" .. table.concat(parts, "/")
 end
 
 local function readSource(inst)
     local base = instanceToPath(inst)
-    -- Try direct .lua file first, then init.lua
     local ok, src = pcall(remodel.readFile, base .. ".lua")
     if ok and src then return src end
     local ok2, src2 = pcall(remodel.readFile, base .. "/init.lua")
     if ok2 and src2 then return src2 end
-    -- Try .client.lua for LocalScripts
     local ok3, src3 = pcall(remodel.readFile, base .. ".client.lua")
     if ok3 and src3 then return src3 end
     return nil
