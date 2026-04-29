@@ -35,7 +35,9 @@ local TS = {
             local m = modules[last]
             if not m.loaded then
                 m.loaded = true
-                m.data = m.fn()(hEnv(last:GetFullName()))
+                local innerFunc = m.fn()
+                setfenv(innerFunc, hEnv(last:GetFullName()))
+                m.data = innerFunc()
             end
             return m.data
         end
@@ -55,7 +57,9 @@ hEnv = function(id)
                 local m = modules[target]
                 if not m.loaded then
                     m.loaded = true
-                    m.data = m.fn()(hEnv(target:GetFullName()))
+                    local innerFunc = m.fn()
+                    setfenv(innerFunc, hEnv(target:GetFullName()))
+                    m.data = innerFunc()
                 end
                 return m.data
             end
@@ -93,7 +97,9 @@ local function hInit()
     for inst, m in pairs(modules) do
         if inst:IsA("LocalScript") then
             task.spawn(function()
-                setfenv(m.fn(), hEnv(inst:GetFullName()))()
+                local fn = m.fn()
+                setfenv(fn, hEnv(inst:GetFullName()))
+                fn()
             end)
         end
     end
