@@ -29,13 +29,13 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install Remodel
-  run: |
-    curl -L --fail --retry 3 --retry-delay 2 \
-      https://github.com/rojo-rbx/remodel/releases/download/v0.11.0/remodel-0.11.0-linux-x86_64.zip \
-      -o remodel.zip
-    unzip remodel.zip
-    chmod +x remodel
-    sudo mv remodel /usr/local/bin/remodel
+        run: |
+          curl -L --fail --retry 3 --retry-delay 2 \
+            https://github.com/rojo-rbx/remodel/releases/download/v0.11.0/remodel-0.11.0-linux-x86_64.zip \
+            -o remodel.zip
+          unzip remodel.zip
+          chmod +x remodel
+          sudo mv remodel /usr/local/bin/remodel
       - name: Install NPM dependencies
         run: npm install
       - name: Compile roblox-ts
