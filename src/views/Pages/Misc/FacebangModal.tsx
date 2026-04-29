@@ -42,7 +42,7 @@ const Slider = hooked(({ label, displayValue, percent, onUpdate }: SliderProps) 
 				Position={new UDim2(0.5, 0, 0, 0)}
 				BackgroundTransparency={1}
 				TextColor3={Color3.fromRGB(160, 160, 160)}
-				Font={Enum.Font.GothamMedium}
+				Font={Enum.Font.Gotham}
 				TextSize={12}
 				TextXAlignment={Enum.TextXAlignment.Right}
 			/>
@@ -70,7 +70,12 @@ const Slider = hooked(({ label, displayValue, percent, onUpdate }: SliderProps) 
 				}}
 			>
 				<uicorner CornerRadius={new UDim(0, 8)} />
-				<frame Key="Fill" Size={new UDim2(percent, 0, 1, 0)} BackgroundColor3={GREEN} BorderSizePixel={0}>
+				<frame
+					Key="Fill"
+					Size={new UDim2(percent, 0, 1, 0)}
+					BackgroundColor3={GREEN}
+					BorderSizePixel={0}
+				>
 					<uicorner CornerRadius={new UDim(0, 8)} />
 					<frame
 						Key="Thumb"
@@ -90,6 +95,7 @@ const Slider = hooked(({ label, displayValue, percent, onUpdate }: SliderProps) 
 const FacebangModal = hooked(({ isVisible, onClose }: FacebangProps) => {
 	const job = useSelector((state) => state.jobs.facebang) as JobWithSliders | undefined;
 	const dispatch = useDispatch();
+	const sliders = job?.sliders as { angle: number; distance: number; speed: number } | undefined;
 	const [keybind, setKeybind] = useState("Z");
 	const [listeningForKey, setListeningForKey] = useState(false);
 
@@ -97,10 +103,16 @@ const FacebangModal = hooked(({ isVisible, onClose }: FacebangProps) => {
 		if (job) dispatch(setJobActive("facebang", !job.active));
 	}, [job]);
 
-	const handleSpeedUpdate = useCallback((p: number) => dispatch(setJobSlider("facebang", "speed", p * 10)), []);
-	const handleDistanceUpdate = useCallback((p: number) => dispatch(setJobSlider("facebang", "distance", p * 15)), []);
+	const handleSpeedUpdate = useCallback(
+		(p: number) => dispatch(setJobSlider("facebang", "speed", p * 10)),
+		[],
+	);
+	const handleDistanceUpdate = useCallback(
+		(p: number) => dispatch(setJobSlider("facebang", "distance", p * 15)),
+		[],
+	);
 
-	if (!isVisible || !job) return <></>;
+	if (!isVisible || !job || !sliders) return <></>;
 
 	return (
 		<frame
@@ -149,7 +161,7 @@ const FacebangModal = hooked(({ isVisible, onClose }: FacebangProps) => {
 					Position={new UDim2(0, 150, 0, 0)}
 					BackgroundTransparency={1}
 					TextColor3={Color3.fromRGB(130, 130, 130)}
-					Font={Enum.Font.GothamMedium}
+					Font={Enum.Font.Gotham}
 					TextSize={13}
 					TextXAlignment={Enum.TextXAlignment.Right}
 				/>
@@ -160,7 +172,7 @@ const FacebangModal = hooked(({ isVisible, onClose }: FacebangProps) => {
 					Position={new UDim2(0, 0, 0, 32)}
 					BackgroundTransparency={1}
 					TextColor3={Color3.fromRGB(90, 90, 90)}
-					Font={Enum.Font.GothamMedium}
+					Font={Enum.Font.Gotham}
 					TextSize={11}
 					TextXAlignment={Enum.TextXAlignment.Left}
 				/>
@@ -232,7 +244,7 @@ const FacebangModal = hooked(({ isVisible, onClose }: FacebangProps) => {
 							setListeningForKey(true);
 							const conn = UserInputService.InputBegan.Connect((inp, gp) => {
 								if (!gp && inp.UserInputType === Enum.UserInputType.Keyboard) {
-									setKeybind(Enum.KeyCode[inp.KeyCode as unknown as number] ?? "Z");
+									setKeybind(inp.KeyCode.Name ?? "Z");
 									setListeningForKey(false);
 									conn.Disconnect();
 								}
@@ -257,21 +269,21 @@ const FacebangModal = hooked(({ isVisible, onClose }: FacebangProps) => {
 				<Slider
 					Key="SpeedSlider"
 					label="Speed"
-					displayValue={`${math.round((job.sliders.speed ?? 5) * 10) / 10}x`}
-					percent={(job.sliders.speed ?? 5) / 10}
+					displayValue={`${math.round((sliders.speed ?? 5) * 10) / 10}x`}
+					percent={(sliders.speed ?? 5) / 10}
 					onUpdate={handleSpeedUpdate}
 				/>
 
 				<Slider
 					Key="DistanceSlider"
 					label="Distance"
-					displayValue={`${math.round(job.sliders.distance * 10) / 10} studs`}
-					percent={job.sliders.distance / 15}
+					displayValue={`${math.round(sliders.distance * 10) / 10} studs`}
+					percent={sliders.distance / 15}
 					onUpdate={handleDistanceUpdate}
 				/>
 			</frame>
 
-			{/* Footer note bottom */}
+			{/* Footer bottom */}
 			<textlabel
 				Key="FooterBottom"
 				Text="Keybind activates on nearest player"
@@ -279,7 +291,7 @@ const FacebangModal = hooked(({ isVisible, onClose }: FacebangProps) => {
 				Position={new UDim2(0, 20, 1, -30)}
 				BackgroundTransparency={1}
 				TextColor3={Color3.fromRGB(80, 80, 80)}
-				Font={Enum.Font.GothamMedium}
+				Font={Enum.Font.Gotham}
 				TextSize={11}
 				TextXAlignment={Enum.TextXAlignment.Left}
 			/>
