@@ -9348,6 +9348,7 @@ local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
 local hooked = _roact_hooked.hooked
 local useCallback = _roact_hooked.useCallback
+local useState = _roact_hooked.useState
 local _rodux_hooks = TS.import(script, script.Parent.Parent.Parent.Parent, "hooks", "common", "rodux-hooks")
 local useSelector = _rodux_hooks.useSelector
 local useDispatch = _rodux_hooks.useDispatch
@@ -9358,6 +9359,10 @@ local _services = TS.import(script, TS.getModule(script, "@rbxts", "services"))
 local RunService = _services.RunService
 local UserInputService = _services.UserInputService
 local Players = _services.Players
+local GREEN = Color3.fromRGB(80, 220, 140)
+local BG_DARK = Color3.fromRGB(10, 10, 10)
+local BG_ROW = Color3.fromRGB(20, 20, 20)
+local BG_TRACK = Color3.fromRGB(15, 15, 15)
 local Slider = hooked(function(_param)
 	local label = _param.label
 	local displayValue = _param.displayValue
@@ -9365,69 +9370,63 @@ local Slider = hooked(function(_param)
 	local onUpdate = _param.onUpdate
 	return Roact.createFragment({
 		[label] = Roact.createElement("Frame", {
-			Size = UDim2.new(1, -40, 0, 65),
+			Size = UDim2.new(1, 0, 0, 70),
 			BackgroundTransparency = 1,
-			LayoutOrder = 0,
 		}, {
-			SliderLabel = Roact.createElement("TextLabel", {
-				Text = string.upper(label),
-				Size = UDim2.new(0, 160, 0, 20),
+			Label = Roact.createElement("TextLabel", {
+				Text = label,
+				Size = UDim2.new(0.5, 0, 0, 20),
 				BackgroundTransparency = 1,
-				TextColor3 = Color3.fromRGB(180, 180, 180),
-				Font = Enum.Font.GothamBold,
-				TextSize = 12,
-				TextXAlignment = Enum.TextXAlignment.Left,
-			}),
-			SliderValue = Roact.createElement("TextLabel", {
-				Text = displayValue,
-				Size = UDim2.new(0, 100, 0, 20),
-				Position = UDim2.new(1, -100, 0, 0),
-				BackgroundTransparency = 1,
-				TextColor3 = Color3.fromRGB(235, 76, 105),
+				TextColor3 = Color3.fromRGB(200, 200, 200),
 				Font = Enum.Font.GothamBold,
 				TextSize = 13,
+				TextXAlignment = Enum.TextXAlignment.Left,
+			}),
+			Value = Roact.createElement("TextLabel", {
+				Text = displayValue,
+				Size = UDim2.new(0.5, 0, 0, 20),
+				Position = UDim2.new(0.5, 0, 0, 0),
+				BackgroundTransparency = 1,
+				TextColor3 = Color3.fromRGB(160, 160, 160),
+				Font = Enum.Font.Gotham,
+				TextSize = 12,
 				TextXAlignment = Enum.TextXAlignment.Right,
 			}),
-			SliderTrack = Roact.createElement("TextButton", {
+			Track = Roact.createElement("TextButton", {
 				Text = "",
-				Size = UDim2.new(1, 0, 0, 32),
-				Position = UDim2.new(0, 0, 0, 24),
-				BackgroundColor3 = Color3.fromRGB(15, 15, 15),
+				Size = UDim2.new(1, 0, 0, 36),
+				Position = UDim2.new(0, 0, 0, 26),
+				BackgroundColor3 = BG_TRACK,
 				AutoButtonColor = false,
 				[Roact.Event.MouseButton1Down] = function(rbx)
 					local mouse = Players.LocalPlayer:GetMouse()
 					local moveConn = RunService.RenderStepped:Connect(function()
-						local relativeX = mouse.X - rbx.AbsolutePosition.X
-						local newPercent = math.clamp(relativeX / rbx.AbsoluteSize.X, 0, 1)
-						onUpdate(newPercent)
+						local relX = mouse.X - rbx.AbsolutePosition.X
+						onUpdate(math.clamp(relX / rbx.AbsoluteSize.X, 0, 1))
 					end)
-					local releaseConn
-					releaseConn = UserInputService.InputEnded:Connect(function(input)
-						if input.UserInputType == Enum.UserInputType.MouseButton1 then
+					local upConn
+					upConn = UserInputService.InputEnded:Connect(function(inp)
+						if inp.UserInputType == Enum.UserInputType.MouseButton1 then
 							moveConn:Disconnect()
-							releaseConn:Disconnect()
+							upConn:Disconnect()
 						end
 					end)
 				end,
 			}, {
 				Roact.createElement("UICorner", {
-					CornerRadius = UDim.new(0, 6),
-				}),
-				Roact.createElement("UIStroke", {
-					Color = Color3.fromRGB(30, 30, 30),
-					Thickness = 1,
+					CornerRadius = UDim.new(0, 8),
 				}),
 				Fill = Roact.createElement("Frame", {
 					Size = UDim2.new(percent, 0, 1, 0),
-					BackgroundColor3 = Color3.fromRGB(235, 76, 105),
+					BackgroundColor3 = GREEN,
 					BorderSizePixel = 0,
 				}, {
 					Roact.createElement("UICorner", {
-						CornerRadius = UDim.new(0, 6),
+						CornerRadius = UDim.new(0, 8),
 					}),
 					Thumb = Roact.createElement("Frame", {
-						Size = UDim2.new(0, 4, 0, 16),
-						Position = UDim2.new(1, -2, 0.5, -8),
+						Size = UDim2.new(0, 4, 0, 18),
+						Position = UDim2.new(1, -2, 0.5, -9),
 						BackgroundColor3 = Color3.fromRGB(255, 255, 255),
 						BorderSizePixel = 0,
 					}, {
@@ -9447,113 +9446,210 @@ local FacebangModal = hooked(function(_param)
 		return state.jobs.facebang
 	end)
 	local dispatch = useDispatch()
+	local _result = job
+	if _result ~= nil then
+		_result = _result.sliders
+	end
+	local sliders = _result
+	local _binding = useState("Z")
+	local keybind = _binding[1]
+	local setKeybind = _binding[2]
+	local _binding_1 = useState(false)
+	local listeningForKey = _binding_1[1]
+	local setListeningForKey = _binding_1[2]
 	local handleToggleActive = useCallback(function()
 		if job then
 			dispatch(setJobActive("facebang", not job.active))
 		end
 	end, { job })
+	local handleSpeedUpdate = useCallback(function(p)
+		return dispatch(setJobSlider("facebang", "speed", p * 10))
+	end, {})
 	local handleDistanceUpdate = useCallback(function(p)
 		return dispatch(setJobSlider("facebang", "distance", p * 15))
 	end, {})
-	local handleAngleUpdate = useCallback(function(p)
-		return dispatch(setJobSlider("facebang", "angle", p * 360))
-	end, {})
-	if not isVisible or not job then
+	if not isVisible or (not job or not sliders) then
 		return Roact.createFragment()
 	end
-	return Roact.createFragment({
-		FacebangModal = Roact.createElement("Frame", {
-			Size = UDim2.new(0, 350, 0, 420),
-			Position = UDim2.new(0.5, -175, 0.5, -210),
-			BackgroundColor3 = Color3.fromRGB(10, 10, 10),
-			BorderSizePixel = 0,
-			Active = true,
-			ZIndex = 11,
-			[Roact.Event.InputBegan] = function(_, input)
-				if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-				end
-			end,
+	local _attributes = {
+		Size = UDim2.new(0, 380, 0, 480),
+		Position = UDim2.new(0.5, -190, 0.5, -240),
+		BackgroundColor3 = BG_DARK,
+		BorderSizePixel = 0,
+		Active = true,
+		ZIndex = 11,
+		[Roact.Event.InputBegan] = function(_, input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			end
+		end,
+	}
+	local _children = {
+		Roact.createElement("UICorner", {
+			CornerRadius = UDim.new(0, 14),
+		}),
+		Roact.createElement("UIStroke", {
+			Color = Color3.fromRGB(30, 30, 30),
+			Thickness = 1,
+		}),
+		Header = Roact.createElement("Frame", {
+			Size = UDim2.new(1, -40, 0, 55),
+			Position = UDim2.new(0, 20, 0, 15),
+			BackgroundTransparency = 1,
 		}, {
-			Roact.createElement("UICorner", {
-				CornerRadius = UDim.new(0, 12),
-			}),
-			Roact.createElement("UIStroke", {
-				Color = Color3.fromRGB(35, 35, 35),
-				Thickness = 1,
-			}),
 			Title = Roact.createElement("TextLabel", {
-				Text = "FACEBANG CONFIG",
-				Size = UDim2.new(1, -60, 0, 60),
-				Position = UDim2.new(0, 20, 0, 0),
+				Text = "Facebang",
+				Size = UDim2.new(0, 140, 0, 30),
 				BackgroundTransparency = 1,
 				TextColor3 = Color3.fromRGB(255, 255, 255),
 				Font = Enum.Font.GothamBold,
-				TextSize = 18,
+				TextSize = 22,
 				TextXAlignment = Enum.TextXAlignment.Left,
 			}),
-			CloseButton = Roact.createElement("TextButton", {
-				Text = "✕",
-				Size = UDim2.new(0, 30, 0, 30),
-				Position = UDim2.new(1, -40, 0, 15),
+			Subtitle = Roact.createElement("TextLabel", {
+				Text = job.active and "Running" or "Press keybind to start",
+				Size = UDim2.new(1, -150, 0, 30),
+				Position = UDim2.new(0, 150, 0, 0),
 				BackgroundTransparency = 1,
-				TextColor3 = Color3.fromRGB(150, 150, 150),
+				TextColor3 = Color3.fromRGB(130, 130, 130),
+				Font = Enum.Font.Gotham,
+				TextSize = 13,
+				TextXAlignment = Enum.TextXAlignment.Right,
+			}),
+			FooterNote = Roact.createElement("TextLabel", {
+				Text = "Keybind activates on nearest player",
+				Size = UDim2.new(1, 0, 0, 18),
+				Position = UDim2.new(0, 0, 0, 32),
+				BackgroundTransparency = 1,
+				TextColor3 = Color3.fromRGB(90, 90, 90),
+				Font = Enum.Font.Gotham,
+				TextSize = 11,
+				TextXAlignment = Enum.TextXAlignment.Left,
+			}),
+		}),
+		Divider = Roact.createElement("Frame", {
+			Size = UDim2.new(1, -40, 0, 1),
+			Position = UDim2.new(0, 20, 0, 78),
+			BackgroundColor3 = Color3.fromRGB(30, 30, 30),
+			BorderSizePixel = 0,
+		}),
+		StartButton = Roact.createElement("TextButton", {
+			Text = job.active and "STOP" or "START",
+			Size = UDim2.new(1, -40, 0, 52),
+			Position = UDim2.new(0, 20, 0, 92),
+			BackgroundColor3 = GREEN,
+			Font = Enum.Font.GothamBold,
+			TextColor3 = Color3.fromRGB(10, 10, 10),
+			TextSize = 16,
+			AutoButtonColor = false,
+			[Roact.Event.MouseButton1Click] = handleToggleActive,
+		}, {
+			Roact.createElement("UICorner", {
+				CornerRadius = UDim.new(0, 10),
+			}),
+		}),
+		Divider2 = Roact.createElement("Frame", {
+			Size = UDim2.new(1, -40, 0, 1),
+			Position = UDim2.new(0, 20, 0, 158),
+			BackgroundColor3 = Color3.fromRGB(30, 30, 30),
+			BorderSizePixel = 0,
+		}),
+		KeybindRow = Roact.createElement("Frame", {
+			Size = UDim2.new(1, -40, 0, 44),
+			Position = UDim2.new(0, 20, 0, 170),
+			BackgroundTransparency = 1,
+		}, {
+			KeybindLabel = Roact.createElement("TextLabel", {
+				Text = "Keybind",
+				Size = UDim2.new(0.5, 0, 1, 0),
+				BackgroundTransparency = 1,
+				TextColor3 = Color3.fromRGB(200, 200, 200),
 				Font = Enum.Font.GothamBold,
-				TextSize = 16,
-				[Roact.Event.MouseButton1Click] = onClose,
+				TextSize = 13,
+				TextXAlignment = Enum.TextXAlignment.Left,
 			}),
-			StatusSection = Roact.createElement("Frame", {
-				Size = UDim2.new(1, -40, 0, 80),
-				Position = UDim2.new(0, 20, 0, 75),
-				BackgroundTransparency = 1,
+			KeybindBox = Roact.createElement("TextButton", {
+				Text = listeningForKey and "..." or keybind,
+				Size = UDim2.new(0, 90, 0, 34),
+				Position = UDim2.new(1, -90, 0.5, -17),
+				BackgroundColor3 = BG_ROW,
+				TextColor3 = Color3.fromRGB(220, 220, 220),
+				Font = Enum.Font.GothamBold,
+				TextSize = 14,
+				AutoButtonColor = false,
+				[Roact.Event.MouseButton1Click] = function()
+					setListeningForKey(true)
+					local conn
+					conn = UserInputService.InputBegan:Connect(function(inp, gp)
+						if not gp and inp.UserInputType == Enum.UserInputType.Keyboard then
+							local _condition = inp.KeyCode.Name
+							if _condition == nil then
+								_condition = "Z"
+							end
+							setKeybind(_condition)
+							setListeningForKey(false)
+							conn:Disconnect()
+						end
+					end)
+				end,
 			}, {
-				StatusLabel = Roact.createElement("TextLabel", {
-					Text = job.active and "STATUS: RUNNING" or "STATUS: READY",
-					Size = UDim2.new(1, 0, 0, 20),
-					BackgroundTransparency = 1,
-					TextColor3 = job.active and Color3.fromRGB(235, 76, 105) or Color3.fromRGB(120, 120, 120),
-					Font = Enum.Font.GothamBold,
-					TextSize = 11,
-					TextXAlignment = Enum.TextXAlignment.Left,
+				Roact.createElement("UICorner", {
+					CornerRadius = UDim.new(0, 8),
 				}),
-				ActivateButton = Roact.createElement("TextButton", {
-					Text = job.active and "TERMINATE" or "ACTIVATE",
-					Size = UDim2.new(1, 0, 0, 45),
-					Position = UDim2.new(0, 0, 0, 25),
-					BackgroundColor3 = job.active and Color3.fromRGB(235, 76, 105) or Color3.fromRGB(20, 20, 20),
-					Font = Enum.Font.GothamBold,
-					TextColor3 = Color3.fromRGB(255, 255, 255),
-					TextSize = 14,
-					AutoButtonColor = false,
-					[Roact.Event.MouseButton1Click] = handleToggleActive,
-				}, {
-					Roact.createElement("UICorner", {
-						CornerRadius = UDim.new(0, 8),
-					}),
-				}),
-			}),
-			SlidersSection = Roact.createElement("Frame", {
-				Size = UDim2.new(1, -40, 0, 200),
-				Position = UDim2.new(0, 20, 0, 175),
-				BackgroundTransparency = 1,
-			}, {
-				Roact.createElement("UIListLayout", {
-					Padding = UDim.new(0, 10),
-					SortOrder = Enum.SortOrder.LayoutOrder,
-				}),
-				DistanceSlider = Roact.createElement(Slider, {
-					label = "Interaction Distance",
-					displayValue = tostring(math.round(job.sliders.distance * 10) / 10) .. " studs",
-					percent = job.sliders.distance / 15,
-					onUpdate = handleDistanceUpdate,
-				}),
-				AngleSlider = Roact.createElement(Slider, {
-					label = "Rotation Angle",
-					displayValue = tostring(math.round(job.sliders.angle)) .. "°",
-					percent = job.sliders.angle / 360,
-					onUpdate = handleAngleUpdate,
+				Roact.createElement("UIStroke", {
+					Color = Color3.fromRGB(40, 40, 40),
+					Thickness = 1,
 				}),
 			}),
 		}),
+	}
+	local _length = #_children
+	local _attributes_1 = {
+		Size = UDim2.new(1, -40, 0, 160),
+		Position = UDim2.new(0, 20, 0, 225),
+		BackgroundTransparency = 1,
+	}
+	local _children_1 = {
+		Roact.createElement("UIListLayout", {
+			Padding = UDim.new(0, 6),
+			SortOrder = Enum.SortOrder.LayoutOrder,
+		}),
+	}
+	local _length_1 = #_children_1
+	local _attributes_2 = {
+		label = "Speed",
+	}
+	local _fn = math
+	local _condition = sliders.speed
+	if _condition == nil then
+		_condition = 5
+	end
+	_attributes_2.displayValue = tostring(_fn.round(_condition * 10) / 10) .. "x"
+	local _condition_1 = sliders.speed
+	if _condition_1 == nil then
+		_condition_1 = 5
+	end
+	_attributes_2.percent = _condition_1 / 10
+	_attributes_2.onUpdate = handleSpeedUpdate
+	_children_1.SpeedSlider = Roact.createElement(Slider, _attributes_2)
+	_children_1.DistanceSlider = Roact.createElement(Slider, {
+		label = "Distance",
+		displayValue = tostring(math.round(sliders.distance * 10) / 10) .. " studs",
+		percent = sliders.distance / 15,
+		onUpdate = handleDistanceUpdate,
+	})
+	_children.Sliders = Roact.createElement("Frame", _attributes_1, _children_1)
+	_children.FooterBottom = Roact.createElement("TextLabel", {
+		Text = "Keybind activates on nearest player",
+		Size = UDim2.new(1, -40, 0, 20),
+		Position = UDim2.new(0, 20, 1, -30),
+		BackgroundTransparency = 1,
+		TextColor3 = Color3.fromRGB(80, 80, 80),
+		Font = Enum.Font.Gotham,
+		TextSize = 11,
+		TextXAlignment = Enum.TextXAlignment.Left,
+	})
+	return Roact.createFragment({
+		FacebangModal = Roact.createElement("Frame", _attributes, _children),
 	})
 end)
 local default = FacebangModal
