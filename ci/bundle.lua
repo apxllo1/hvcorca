@@ -1,7 +1,6 @@
 -- bundle.lua
 local args = arg or {...} or {}
 
--- 1. Argument Extraction
 local input_file, output_file
 for _, v in ipairs(args) do
     if v:find("%.rbxm$") then
@@ -37,15 +36,34 @@ file:write("    hInit, hMod, hInst, hEnv = (function()\n")
 file:write(runtime)
 file:write("\n    end)();\n\n")
 
--- Register the root container before walking
 local rootPath = string.format("%q", model:GetFullName())
 file:write(string.format(
     "    hInst(%s, %q, %s, \"ROOT\");\n",
     string.format("%q", model.Name), model.ClassName, rootPath
 ))
 
--- Subtrees that should never be bundled as modules
 local SKIP_NAMES = { include = true, node_modules = true }
+
+-- Converts an instance's full name to a file path under out/
+local function instanceToPath(inst)
+    -- Strip the root model name prefix (e.g. "Havoc.")
+    local fullName = inst:GetFullName()
+    local stripped = fullName:gsub("^" .. model.Name .. "%.", "")
+    return "out/" .. stripped:gsub("%.", "/")
+end
+
+local function readSource(inst)
+    local base = instanceToPath(inst)
+    -- Try direct .lua file first, then init.lua
+    local ok, src = pcall(remodel.readFile, base .. ".lua")
+    if ok and src then return src end
+    local ok2, src2 = pcall(remodel.readFile, base .. "/init.lua")
+    if ok2 and src2 then return src2 end
+    -- Try .client.lua for LocalScripts
+    local ok3, src3 = pcall(remodel.readFile, base .. ".client.lua")
+    if ok3 and src3 then return src3 end
+    return nil
+end
 
 local function walk(parent)
     for _, object in ipairs(parent:GetChildren()) do
@@ -59,29 +77,18 @@ local function walk(parent)
             file:write(string.format("    hInst(%s, %q, %s, %s);\n", name, class, path, parentPath))
             walk(object)
         elseif isScript then
-            local success, source = pcall(function() return object.Source end)
-            if not success or source == nil then
-                print(string.format(
-                    "[WARN] Skipping %s (%s) — pcall=%s source=%s",
-                    object:GetFullName(), class, tostring(success), tostring(source)
-                ))
+            local source = readSource(object)
+            if not source or source == "" then
+                print(string.format("[WARN] No source file found for %s (%s)", object:GetFullName(), class))
                 file:write(string.format("    hInst(%s, %q, %s, %s);\n", name, class, path, parentPath))
-                walk(object)
-            elseif source == "" then
-                print(string.format(
-                    "[WARN] Empty source for %s (%s) — emitting as hInst container.",
-                    object:GetFullName(), class
-                ))
-                file:write(string.format("    hInst(%s, %q, %s, %s);\n", name, class, path, parentPath))
-                walk(object)
             else
                 source = source:gsub("%]%]", "] ]")
                 file:write(string.format("    hMod(%s, %q, %s, %s, function()\n", name, class, path, parentPath))
                 file:write("        return (function(...)\n")
                 file:write(source)
                 file:write("\n        end)\n    end);\n")
-                walk(object)
             end
+            walk(object)
         else
             file:write(string.format("    hInst(%s, %q, %s, %s);\n", name, class, path, parentPath))
             walk(object)
