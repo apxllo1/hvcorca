@@ -339,7 +339,53 @@ return {
 
         end)
     end);
-    hInst("Acrylic.story", "ModuleScript", "Havoc.components.Acrylic.Acrylic.story", "Havoc.components.Acrylic");
+    hMod("Acrylic.story", "ModuleScript", "Havoc.components.Acrylic.Acrylic.story", "Havoc.components.Acrylic", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.7
+local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
+local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
+local Provider = TS.import(script, TS.getModule(script, "@rbxts", "roact-rodux-hooked").out).Provider
+local Acrylic = TS.import(script, script.Parent, "Acrylic").default
+local DashboardPage = TS.import(script, script.Parent.Parent.Parent, "store", "models", "dashboard.model").DashboardPage
+local configureStore = TS.import(script, script.Parent.Parent.Parent, "store", "store").configureStore
+local hex = TS.import(script, script.Parent.Parent.Parent, "utils", "color3").hex
+local _udim2 = TS.import(script, script.Parent.Parent.Parent, "utils", "udim2")
+local px = _udim2.px
+local scale = _udim2.scale
+return function(target)
+	local handle = Roact.mount(Roact.createElement(Provider, {
+		store = configureStore({
+			dashboard = {
+				isOpen = true,
+				page = DashboardPage.Apps,
+				hint = nil,
+				apps = {},
+			},
+		}),
+	}, {
+		Roact.createElement("Frame", {
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = scale(0.3, 0.7),
+			Size = px(250, 350),
+			BackgroundColor3 = hex("#000000"),
+			BackgroundTransparency = 0.5,
+			BorderSizePixel = 0,
+		}, {
+			Roact.createElement("UICorner", {
+				CornerRadius = UDim.new(0, 64),
+			}),
+			Roact.createElement(Acrylic, {
+				radius = 52,
+			}),
+		}),
+	}), target, "Acrylic")
+	return function()
+		return Roact.unmount(handle)
+	end
+end
+
+        end)
+    end);
     hMod("acrylic-instance", "ModuleScript", "Havoc.components.Acrylic.acrylic-instance", "Havoc.components.Acrylic", function()
         return (function(...)
 -- Compiled with roblox-ts v1.2.7
@@ -4196,13 +4242,174 @@ end)
     end);
     hInst("store", "Folder", "Havoc.store", "Havoc");
     hInst("actions", "Folder", "Havoc.store.actions", "Havoc.store");
-    hInst("dashboard.action", "ModuleScript", "Havoc.store.actions.dashboard.action", "Havoc.store.actions");
-    hInst("jobs.action", "ModuleScript", "Havoc.store.actions.jobs.action", "Havoc.store.actions");
-    hInst("options.action", "ModuleScript", "Havoc.store.actions.options.action", "Havoc.store.actions");
+    hMod("dashboard.action", "ModuleScript", "Havoc.store.actions.dashboard.action", "Havoc.store.actions", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.7
+local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
+local Rodux = TS.import(script, TS.getModule(script, "@rbxts", "rodux").src)
+local setDashboardPage = Rodux.makeActionCreator("dashboard/setDashboardPage", function(page)
+	return {
+		page = page,
+	}
+end)
+local toggleDashboard = Rodux.makeActionCreator("dashboard/toggleDashboard", function()
+	return {}
+end)
+local setHint = Rodux.makeActionCreator("dashboard/setHint", function(hint)
+	return {
+		hint = hint,
+	}
+end)
+local clearHint = Rodux.makeActionCreator("dashboard/clearHint", function()
+	return {}
+end)
+local playerSelected = Rodux.makeActionCreator("dashboard/playerSelected", function(player)
+	return {
+		name = player.Name,
+	}
+end)
+local playerDeselected = Rodux.makeActionCreator("dashboard/playerDeselected", function()
+	return {}
+end)
+return {
+	setDashboardPage = setDashboardPage,
+	toggleDashboard = toggleDashboard,
+	setHint = setHint,
+	clearHint = clearHint,
+	playerSelected = playerSelected,
+	playerDeselected = playerDeselected,
+}
+
+        end)
+    end);
+    hMod("jobs.action", "ModuleScript", "Havoc.store.actions.jobs.action", "Havoc.store.actions", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.7
+local setJobActive = function(jobName, active)
+	return {
+		type = "jobs/setJobActive",
+		jobName = jobName,
+		active = active,
+	}
+end
+local setJobValue = function(jobName, value)
+	return {
+		type = "jobs/setJobValue",
+		jobName = jobName,
+		value = value,
+	}
+end
+local setJobSlider = function(jobName, slider, value)
+	return {
+		type = "jobs/setJobSlider",
+		jobName = jobName,
+		slider = slider,
+		value = value,
+	}
+end
+return {
+	setJobActive = setJobActive,
+	setJobValue = setJobValue,
+	setJobSlider = setJobSlider,
+}
+
+        end)
+    end);
+    hMod("options.action", "ModuleScript", "Havoc.store.actions.options.action", "Havoc.store.actions", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.7
+local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
+local Rodux = TS.import(script, TS.getModule(script, "@rbxts", "rodux").src)
+local setConfig = Rodux.makeActionCreator("options/setConfig", function(name, active)
+	return {
+		name = name,
+		active = active,
+	}
+end)
+local setShortcut = Rodux.makeActionCreator("options/setShortcut", function(shortcut, keycode)
+	return {
+		shortcut = shortcut,
+		keycode = keycode,
+	}
+end)
+local removeShortcut = Rodux.makeActionCreator("options/removeShortcut", function(shortcut)
+	return {
+		shortcut = shortcut,
+	}
+end)
+local setTheme = Rodux.makeActionCreator("options/setTheme", function(theme)
+	return {
+		theme = theme,
+	}
+end)
+return {
+	setConfig = setConfig,
+	setShortcut = setShortcut,
+	removeShortcut = removeShortcut,
+	setTheme = setTheme,
+}
+
+        end)
+    end);
     hInst("models", "Folder", "Havoc.store.models", "Havoc.store");
-    hInst("dashboard.model", "ModuleScript", "Havoc.store.models.dashboard.model", "Havoc.store.models");
-    hInst("jobs.model", "ModuleScript", "Havoc.store.models.jobs.model", "Havoc.store.models");
-    hInst("options.model", "ModuleScript", "Havoc.store.models.options.model", "Havoc.store.models");
+    hMod("dashboard.model", "ModuleScript", "Havoc.store.models.dashboard.model", "Havoc.store.models", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.7
+local DashboardPage
+do
+	local _inverse = {}
+	DashboardPage = setmetatable({}, {
+		__index = _inverse,
+	})
+	DashboardPage.Home = "home"
+	_inverse.home = "Home"
+	DashboardPage.Apps = "apps"
+	_inverse.apps = "Apps"
+	DashboardPage.Scripts = "scripts"
+	_inverse.scripts = "Scripts"
+	DashboardPage.Options = "options"
+	_inverse.options = "Options"
+	DashboardPage.Misc = "misc"
+	_inverse.misc = "Misc"
+end
+local PAGE_TO_INDEX = {
+	[DashboardPage.Home] = 0,
+	[DashboardPage.Apps] = 1,
+	[DashboardPage.Scripts] = 2,
+	[DashboardPage.Options] = 3,
+	[DashboardPage.Misc] = 4,
+}
+local PAGE_TO_ICON = {
+	[DashboardPage.Home] = "rbxassetid://8992031167",
+	[DashboardPage.Apps] = "rbxassetid://8992031246",
+	[DashboardPage.Scripts] = "rbxassetid://8992030918",
+	[DashboardPage.Options] = "rbxassetid://8992031056",
+	[DashboardPage.Misc] = "rbxassetid://10651509376",
+}
+return {
+	DashboardPage = DashboardPage,
+	PAGE_TO_INDEX = PAGE_TO_INDEX,
+	PAGE_TO_ICON = PAGE_TO_ICON,
+}
+
+        end)
+    end);
+    hMod("jobs.model", "ModuleScript", "Havoc.store.models.jobs.model", "Havoc.store.models", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.7
+
+        end)
+    end);
+    hMod("options.model", "ModuleScript", "Havoc.store.models.options.model", "Havoc.store.models", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.7
+local __FIX_OPTIONS = true
+return {
+	__FIX_OPTIONS = __FIX_OPTIONS,
+}
+
+        end)
+    end);
     hMod("persistent-state", "ModuleScript", "Havoc.store.persistent-state", "Havoc.store", function()
         return (function(...)
 -- Compiled with roblox-ts v1.2.7
@@ -4274,9 +4481,280 @@ return {
         end)
     end);
     hInst("reducers", "Folder", "Havoc.store.reducers", "Havoc.store");
-    hInst("dashboard.reducer", "ModuleScript", "Havoc.store.reducers.dashboard.reducer", "Havoc.store.reducers");
-    hInst("jobs.reducer", "ModuleScript", "Havoc.store.reducers.jobs.reducer", "Havoc.store.reducers");
-    hInst("options.reducer", "ModuleScript", "Havoc.store.reducers.options.reducer", "Havoc.store.reducers");
+    hMod("dashboard.reducer", "ModuleScript", "Havoc.store.reducers.dashboard.reducer", "Havoc.store.reducers", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.7
+local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
+local Rodux = TS.import(script, TS.getModule(script, "@rbxts", "rodux").src)
+local DashboardPage = TS.import(script, script.Parent.Parent, "models", "dashboard.model").DashboardPage
+local initialState = {
+	page = DashboardPage.Home,
+	isOpen = false,
+	hint = nil,
+	apps = {
+		playerSelected = nil,
+	},
+}
+local dashboardReducer = Rodux.createReducer(initialState, {
+	["dashboard/setDashboardPage"] = function(state, action)
+		local _object = {}
+		for _k, _v in pairs(state) do
+			_object[_k] = _v
+		end
+		_object.page = action.page
+		return _object
+	end,
+	["dashboard/toggleDashboard"] = function(state)
+		local _object = {}
+		for _k, _v in pairs(state) do
+			_object[_k] = _v
+		end
+		_object.isOpen = not state.isOpen
+		return _object
+	end,
+	["dashboard/setHint"] = function(state, action)
+		local _object = {}
+		for _k, _v in pairs(state) do
+			_object[_k] = _v
+		end
+		_object.hint = action.hint
+		return _object
+	end,
+	["dashboard/clearHint"] = function(state)
+		local _object = {}
+		for _k, _v in pairs(state) do
+			_object[_k] = _v
+		end
+		_object.hint = nil
+		return _object
+	end,
+	["dashboard/playerSelected"] = function(state, action)
+		local _object = {}
+		for _k, _v in pairs(state) do
+			_object[_k] = _v
+		end
+		local _left = "apps"
+		local _object_1 = {}
+		for _k, _v in pairs(state.apps) do
+			_object_1[_k] = _v
+		end
+		_object_1.playerSelected = action.name
+		_object[_left] = _object_1
+		return _object
+	end,
+	["dashboard/playerDeselected"] = function(state)
+		local _object = {}
+		for _k, _v in pairs(state) do
+			_object[_k] = _v
+		end
+		local _left = "apps"
+		local _object_1 = {}
+		for _k, _v in pairs(state.apps) do
+			_object_1[_k] = _v
+		end
+		_object_1.playerSelected = nil
+		_object[_left] = _object_1
+		return _object
+	end,
+})
+return {
+	dashboardReducer = dashboardReducer,
+}
+
+        end)
+    end);
+    hMod("jobs.reducer", "ModuleScript", "Havoc.store.reducers.jobs.reducer", "Havoc.store.reducers", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.7
+local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
+local Rodux = TS.import(script, TS.getModule(script, "@rbxts", "rodux").src)
+local initialState = {
+	flight = {
+		value = 60,
+		active = false,
+	},
+	walkSpeed = {
+		value = 80,
+		active = false,
+	},
+	jumpHeight = {
+		value = 200,
+		active = false,
+	},
+	refresh = {
+		active = false,
+	},
+	ghost = {
+		active = false,
+	},
+	godmode = {
+		active = false,
+	},
+	freecam = {
+		active = false,
+	},
+	teleport = {
+		active = false,
+	},
+	hide = {
+		active = false,
+	},
+	kill = {
+		active = false,
+	},
+	spectate = {
+		active = false,
+	},
+	facebang = {
+		active = false,
+		sliders = {
+			angle = 180,
+			distance = 2.5,
+		},
+	},
+	rejoinServer = {
+		active = false,
+	},
+	switchServer = {
+		active = false,
+	},
+}
+local jobsReducer = Rodux.createReducer(initialState, {
+	["jobs/setJobActive"] = function(state, action)
+		local _object = {}
+		for _k, _v in pairs(state) do
+			_object[_k] = _v
+		end
+		local _left = action.jobName
+		local _object_1 = {}
+		for _k, _v in pairs(state[action.jobName]) do
+			_object_1[_k] = _v
+		end
+		_object_1.active = action.active
+		_object[_left] = _object_1
+		return _object
+	end,
+	["jobs/setJobValue"] = function(state, action)
+		local _object = {}
+		for _k, _v in pairs(state) do
+			_object[_k] = _v
+		end
+		local _left = action.jobName
+		local _object_1 = {}
+		for _k, _v in pairs(state[action.jobName]) do
+			_object_1[_k] = _v
+		end
+		_object_1.value = action.value
+		_object[_left] = _object_1
+		return _object
+	end,
+	["jobs/setJobSlider"] = function(state, action)
+		local job = state[action.jobName]
+		if job.sliders ~= nil then
+			local jobWithSliders = job
+			local _object = {}
+			for _k, _v in pairs(state) do
+				_object[_k] = _v
+			end
+			local _left = action.jobName
+			local _object_1 = {}
+			for _k, _v in pairs(jobWithSliders) do
+				_object_1[_k] = _v
+			end
+			local _left_1 = "sliders"
+			local _object_2 = {}
+			for _k, _v in pairs(jobWithSliders.sliders) do
+				_object_2[_k] = _v
+			end
+			_object_2[action.slider] = action.value
+			_object_1[_left_1] = _object_2
+			_object[_left] = _object_1
+			return _object
+		end
+		return state
+	end,
+})
+return {
+	jobsReducer = jobsReducer,
+}
+
+        end)
+    end);
+    hMod("options.reducer", "ModuleScript", "Havoc.store.reducers.options.reducer", "Havoc.store.reducers", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.7
+local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
+local Rodux = TS.import(script, TS.getModule(script, "@rbxts", "rodux").src)
+local persistentState = TS.import(script, script.Parent.Parent, "persistent-state").persistentState
+local initialState = persistentState("options", function(state)
+	return state.options
+end, {
+	currentTheme = "Crimson",
+	config = {
+		acrylicBlur = true,
+	},
+	shortcuts = {
+		toggleDashboard = Enum.KeyCode.K.Value,
+	},
+})
+local optionsReducer = Rodux.createReducer(initialState, {
+	["options/setConfig"] = function(state, action)
+		local _object = {}
+		for _k, _v in pairs(state) do
+			_object[_k] = _v
+		end
+		local _left = "config"
+		local _object_1 = {}
+		for _k, _v in pairs(state.config) do
+			_object_1[_k] = _v
+		end
+		_object_1[action.name] = action.active
+		_object[_left] = _object_1
+		return _object
+	end,
+	["options/setTheme"] = function(state, action)
+		local _object = {}
+		for _k, _v in pairs(state) do
+			_object[_k] = _v
+		end
+		_object.currentTheme = action.theme
+		return _object
+	end,
+	["options/setShortcut"] = function(state, action)
+		local _object = {}
+		for _k, _v in pairs(state) do
+			_object[_k] = _v
+		end
+		local _left = "shortcuts"
+		local _object_1 = {}
+		for _k, _v in pairs(state.shortcuts) do
+			_object_1[_k] = _v
+		end
+		_object_1[action.shortcut] = action.keycode
+		_object[_left] = _object_1
+		return _object
+	end,
+	["options/removeShortcut"] = function(state, action)
+		local _object = {}
+		for _k, _v in pairs(state) do
+			_object[_k] = _v
+		end
+		local _left = "shortcuts"
+		local _object_1 = {}
+		for _k, _v in pairs(state.shortcuts) do
+			_object_1[_k] = _v
+		end
+		_object_1[action.shortcut] = nil
+		_object[_left] = _object_1
+		return _object
+	end,
+})
+return {
+	optionsReducer = optionsReducer,
+}
+
+        end)
+    end);
     hMod("store", "ModuleScript", "Havoc.store.store", "Havoc.store", function()
         return (function(...)
 -- Compiled with roblox-ts v1.2.7
@@ -6014,7 +6492,12 @@ return {
 
         end)
     end);
-    hInst("theme.interface", "ModuleScript", "Havoc.themes.theme.interface", "Havoc.themes");
+    hMod("theme.interface", "ModuleScript", "Havoc.themes.theme.interface", "Havoc.themes", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.7
+
+        end)
+    end);
     hInst("utils", "Folder", "Havoc.utils", "Havoc");
     hMod("array-util", "ModuleScript", "Havoc.utils.array-util", "Havoc.utils", function()
         return (function(...)
@@ -6584,7 +7067,35 @@ return {
 
         end)
     end);
-    hInst("Dashboard.story", "ModuleScript", "Havoc.views.Dashboard.Dashboard.story", "Havoc.views.Dashboard");
+    hMod("Dashboard.story", "ModuleScript", "Havoc.views.Dashboard.Dashboard.story", "Havoc.views.Dashboard", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.7
+local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
+local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
+local Provider = TS.import(script, TS.getModule(script, "@rbxts", "roact-rodux-hooked").out).Provider
+local DashboardPage = TS.import(script, script.Parent.Parent.Parent, "store", "models", "dashboard.model").DashboardPage
+local configureStore = TS.import(script, script.Parent.Parent.Parent, "store", "store").configureStore
+local Dashboard = TS.import(script, script.Parent, "Dashboard").default
+return function(target)
+	local handle = Roact.mount(Roact.createElement(Provider, {
+		store = configureStore({
+			dashboard = {
+				isOpen = true,
+				page = DashboardPage.Home,
+				hint = nil,
+				apps = {},
+			},
+		}),
+	}, {
+		Roact.createElement(Dashboard),
+	}), target, "Dashboard")
+	return function()
+		return Roact.unmount(handle)
+	end
+end
+
+        end)
+    end);
     hMod("Hint", "ModuleScript", "Havoc.views.Hint", "Havoc.views", function()
         return (function(...)
 -- Compiled with roblox-ts v1.2.7
@@ -6829,7 +7340,35 @@ return {
 
         end)
     end);
-    hInst("Navbar.story", "ModuleScript", "Havoc.views.Navbar.Navbar.story", "Havoc.views.Navbar");
+    hMod("Navbar.story", "ModuleScript", "Havoc.views.Navbar.Navbar.story", "Havoc.views.Navbar", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.7
+local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
+local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
+local Provider = TS.import(script, TS.getModule(script, "@rbxts", "roact-rodux-hooked").out).Provider
+local DashboardPage = TS.import(script, script.Parent.Parent.Parent, "store", "models", "dashboard.model").DashboardPage
+local configureStore = TS.import(script, script.Parent.Parent.Parent, "store", "store").configureStore
+local Navbar = TS.import(script, script.Parent, "Navbar").default
+return function(target)
+	local handle = Roact.mount(Roact.createElement(Provider, {
+		store = configureStore({
+			dashboard = {
+				isOpen = true,
+				page = DashboardPage.Home,
+				hint = nil,
+				apps = {},
+			},
+		}),
+	}, {
+		Roact.createElement(Navbar),
+	}), target, "Navbar")
+	return function()
+		return Roact.unmount(handle)
+	end
+end
+
+        end)
+    end);
     hMod("NavbarTab", "ModuleScript", "Havoc.views.Navbar.NavbarTab", "Havoc.views.Navbar", function()
         return (function(...)
 -- Compiled with roblox-ts v1.2.7
