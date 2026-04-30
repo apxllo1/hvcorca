@@ -23,7 +23,9 @@ function checkAlreadyLoaded(): boolean {
 async function mount(store: ReturnType<typeof configureStore>): Promise<ScreenGui> {
 	const container = Make("Folder", {
 		Name: "HavocMountContainer",
-		Parent: IS_DEV ? (Players.LocalPlayer.WaitForChild("PlayerGui") as Instance) : (game.GetService("CoreGui") as Instance)
+		Parent: IS_DEV
+			? (Players.LocalPlayer.WaitForChild("PlayerGui") as Instance)
+			: (game.GetService("CoreGui") as Instance),
 	});
 
 	Roact.mount(
@@ -49,7 +51,7 @@ async function mount(store: ReturnType<typeof configureStore>): Promise<ScreenGu
 function render(app: ScreenGui): void {
 	// FIX: Use 'as unknown' to bypass the TS2352 overlap error
 	const protect = (syn as unknown as { protect_gui?: (gui: Instance) => void })?.protect_gui;
-	
+
 	if (protect) {
 		pcall(() => protect(app));
 	}
