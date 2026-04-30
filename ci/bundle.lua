@@ -2,25 +2,11 @@ local args = arg or {...} or {}
 local input_file = args[1] or "Havoc.rbxm"
 local output_file = args[2] or "latest.lua"
 
-print("------------------------------------------")
-print("[Havoc] Reading: " .. input_file)
-print("[Havoc] Writing: " .. output_file)
-print("------------------------------------------")
-
 local model_data = remodel.readModelFile(input_file)
-if not model_data or #model_data == 0 then
-    error("[Havoc] Model file is empty or invalid: " .. input_file)
-end
 local model = model_data[1]
-
-local file, err = io.open(output_file, "w")
-if not file then
-    error("[Havoc] Could not open output file: " .. tostring(err))
-end
-
+local file = io.open(output_file, "w")
 local scriptCount = 0
 
--- Helper: get path parts relative to model root
 local function getRelParts(inst)
     local parts = {}
     local curr = inst
@@ -31,99 +17,60 @@ local function getRelParts(inst)
     return parts
 end
 
--- Helper: try to read source from several locations
 local function readSource(inst)
     local parts = getRelParts(inst)
     local relPath = table.concat(parts, "/")
-
-    local includePath = relPath:match("^include/(.+)$") or relPath
-    local nmPath = relPath:gsub("^include/node_modules/", "")
-
     local attempts = {
         "out/" .. relPath .. ".lua",
         "out/" .. relPath .. "/init.lua",
         "out/" .. relPath .. ".client.lua",
-        "out/" .. relPath .. ".server.lua",
-        "include/" .. includePath .. ".lua",
-        "include/" .. includePath .. "/init.lua",
-        "node_modules/@rbxts/" .. nmPath .. ".lua",
-        "node_modules/@rbxts/" .. nmPath .. "/init.lua",
+        "include/" .. (relPath:match("^include/(.+)$") or relPath) .. ".lua",
+        "node_modules/@rbxts/" .. (relPath:gsub("^include/node_modules/", "")) .. ".lua",
+        "node_modules/@rbxts/" .. (relPath:gsub("^include/node_modules/", "")) .. "/init.lua",
     }
-
     for _, loc in ipairs(attempts) do
         local ok, content = pcall(remodel.readFile, loc)
-        if ok and content and #content > 0 then
-            return content
-        end
+        if ok and content then return content end
     end
     return nil
 end
 
--- HEADER: This MUST load ci/runtime.lua correctly
-file:write("local function start()\n")
-file:write("    local hInit, hMod, hInst, hEnv = (function()\n")
-local runtime_ok, runtime_src = pcall(remodel.readFile, "ci/runtime.lua")
-if not runtime_ok then error("[Havoc] FAILED TO READ ci/runtime.lua") end
-file:write(runtime_src)
+-- Header
+file:write("local function start()\n    local hInit, hMod, hInst, hEnv = (function()\n")
+file:write(remodel.readFile("ci/runtime.lua"))
 file:write("\n    end)()\n\n")
-
--- Register root
-local rootName = string.format("%q", model.Name)
-local rootPath = string.format("%q", model:GetFullName())
-file:write(string.format("    hInst(%s, \"Folder\", %s, nil)\n", rootName, rootPath))
-
--- Manual registration for the include folder to ensure it exists for roblox-ts
-file:write(string.format("    hInst(\"include\", \"Folder\", %q, %q)\n", model.Name .. ".include", model.Name))
-
--- We skip the internal 'node_modules' folder in the walk because roblox-ts includes are handled via 'include'
-local SKIP_NAMES = { node_modules = true }
 
 local function walk(parent)
     for _, object in ipairs(parent:GetChildren()) do
-        if SKIP_NAMES[object.Name] then continue end
+        local name = string.format("%q", object.Name)
+        local id = string.format("%q", object:GetFullName())
+        local pId = string.format("%q", parent:GetFullName())
+        local class = object.ClassName
 
-        local name     = string.format("%q", object.Name)
-        local path     = string.format("%q", object:GetFullName())
-        local pPath    = string.format("%q", parent:GetFullName())
-        local class    = object.ClassName
-        local isScript = class == "ModuleScript" or class == "LocalScript"
-
-        if isScript then
+        if (class == "ModuleScript" or class == "LocalScript") and object.Name ~= "node_modules" then
             local src = readSource(object)
-            if src and #src > 0 then
-                -- Strip comments
-                src = src:gsub("%-%-%[%[[%s%S]- %]%]", "")
-                src = src:gsub("%-%-[^\n]*", "")
-                
+            if src then
+                src = src:gsub("%-%-%[%[[%s%S]- %]%]", ""):gsub("%-%-[^\n]*", "")
                 scriptCount = scriptCount + 1
-                
-                -- SNAPSHOT STRICT FIX: Wrap source in setfenv + hEnv factory
-                -- This ensures the 'script' global is correctly bound before execution
-                file:write("    hMod(" .. name .. ", " .. string.format("%q", class) .. ", " .. path .. ", " .. pPath .. ", function()\n")
-                file:write("        return setfenv(function(...)\n")
-                file:write(src)
-                file:write("\n        end, hEnv(" .. path .. "))()\n")
+                -- SNAPSHOT STRICT WRAPPER
+                file:write("    hMod("..name..", "..string.format("%q", class)..", "..id..", "..pId..", function()\n")
+                file:write("        return setfenv(function(...)\n" .. src .. "\n        end, hEnv(" .. id .. "))()\n")
                 file:write("    end)\n")
             else
-                -- If no source found, register as a dummy instance so require() doesn't error
-                file:write(string.format("    hInst(%s, %q, %s, %s)\n", name, class, path, pPath))
+                file:write(string.format("    hInst(%s, %q, %s, %s)\n", name, class, id, pId))
             end
         else
-            -- Register non-script instances (Folders, ScreenGuis, etc)
-            file:write(string.format("    hInst(%s, %q, %s, %s)\n", name, class, path, pPath))
+            file:write(string.format("    hInst(%s, %q, %s, %s)\n", name, class, id, pId))
         end
-        
-        -- Continue walking the tree
-        walk(object)
+
+        -- Always walk children unless it's node_modules
+        if object.Name ~= "node_modules" then
+            walk(object)
+        end
     end
 end
 
+file:write(string.format("    hInst(%q, \"Folder\", %q, nil)\n", model.Name, model:GetFullName()))
 walk(model)
-
--- FOOTER
-file:write("\n    hInit()\nend\n\nstart()\n")
+file:write("\n    hInit()\nend\nstart()")
 file:close()
-
-print("------------------------------------------")
-print("[Havoc] Bundled " .. scriptCount .. " scripts into " .. output_file)
-print("------------------------------------------")
