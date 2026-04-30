@@ -37,13 +37,24 @@ local function readSource(inst)
     local parts = getRelParts(inst)
     local relPath = table.concat(parts, "/")
 
+    -- Strip leading "include/" to get the bare name for include/ folder lookups
+    local includePath = relPath:match("^include/(.+)$") or relPath
+    -- Strip "include/node_modules/" prefix for node_modules lookups
+    local nmPath = relPath:gsub("^include/node_modules/", "")
+
     local attempts = {
+        -- roblox-ts compiled output
         "out/" .. relPath .. ".lua",
         "out/" .. relPath .. "/init.lua",
-        "include/" .. relPath .. ".lua",
-        "include/" .. relPath .. "/init.lua",
-        "node_modules/@rbxts/" .. relPath:gsub("^include/node_modules/", "") .. ".lua",
-        "node_modules/@rbxts/" .. relPath:gsub("^include/node_modules/", "") .. "/init.lua",
+        -- client scripts (main.client.tsx compiles to main.client.lua)
+        "out/" .. relPath .. ".client.lua",
+        "out/" .. relPath .. ".server.lua",
+        -- include folder (Promise, RuntimeLib live here)
+        "include/" .. includePath .. ".lua",
+        "include/" .. includePath .. "/init.lua",
+        -- node_modules
+        "node_modules/@rbxts/" .. nmPath .. ".lua",
+        "node_modules/@rbxts/" .. nmPath .. "/init.lua",
     }
 
     for _, loc in ipairs(attempts) do
