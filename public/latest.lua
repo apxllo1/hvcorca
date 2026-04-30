@@ -5,11 +5,6 @@ local idFromInstance = {}
 local modules = {}
 local currentlyLoading = {}
 
-local runEnv = (getgenv and getgenv()) or (getfenv and getfenv()) or _G or shared
-
--- Forward declaration
-local newEnv
-
 local function validateRequire(module, caller)
     currentlyLoading[caller] = module
     local currentModule = module
@@ -41,34 +36,31 @@ local function loadModule(obj, this)
     if module.isLoaded then
         if cleanup then cleanup() end
         return module.value
+    else
+        local data = module.fn()
+        module.value = data
+        module.isLoaded = true
+        if cleanup then cleanup() end
+        return data
     end
-    local fn = module.fn()
-    setfenv(fn, newEnv(idFromInstance[obj]))
-    local ok, result = pcall(fn)
-    if not ok then
-        warn("[Havoc] Error in " .. obj:GetFullName() .. ": " .. tostring(result))
-    end
-    module.value = result
-    module.isLoaded = true
-    if cleanup then cleanup() end
-    return result
 end
 
 local function requireModuleInternal(target, this)
     if modules[target] and target:IsA("ModuleScript") then
         return loadModule(target, this)
+    else
+        return require(target)
     end
-    return require(target)
 end
 
-newEnv = function(id)
+local function newEnv(id)
     return setmetatable({
         script = instanceFromId[id],
         require = function(module)
             return requireModuleInternal(module, instanceFromId[id])
         end,
     }, {
-        __index = runEnv,
+        __index = getfenv(0),
         __metatable = "This metatable is locked",
     })
 end
