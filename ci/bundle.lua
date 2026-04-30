@@ -156,11 +156,70 @@ end
 -- Pass 2: single-line -- comments
 
 local function stripComments(src)
-    local result = src:gsub("%-%-%[%[(.-)%]%]", function(inner)
-        return (inner:gsub("[^\n]", ""))
-    end)
-    result = result:gsub("%-%-[^\n]*", "")
-    return result
+    -- Safe parser: tracks string state so -- inside strings is never stripped.
+    -- The naive gsub approach breaks on: local s = "hello -- world"
+    local out = {}
+    local i   = 1
+    local len = #src
+
+    while i <= len do
+        -- Block comment --[[ ... ]] — strip body, keep newlines for stack traces
+        if src:sub(i, i+3) == "--[[" then
+            local close = src:find("%]%]", i + 4)
+            if close then
+                out[#out+1] = src:sub(i + 4, close - 1):gsub("[^\n]", "")
+                i = close + 2
+            else
+                i = len + 1  -- unclosed block comment, skip to end
+            end
+
+        -- Single-line comment -- (only when NOT inside a string)
+        elseif src:sub(i, i+1) == "--" then
+            local nl = src:find("\n", i + 2, true)
+            i = nl or (len + 1)  -- skip to newline; newline itself kept next iter
+
+        -- Double-quoted string "..." — copy verbatim, respect escapes
+        elseif src:sub(i, i) == '"' then
+            local j = i + 1
+            while j <= len do
+                local c = src:sub(j, j)
+                if c == "\\" then j = j + 2
+                elseif c == '"' then j = j + 1; break
+                else j = j + 1 end
+            end
+            out[#out+1] = src:sub(i, j - 1)
+            i = j
+
+        -- Single-quoted string '...' — copy verbatim, respect escapes
+        elseif src:sub(i, i) == "'" then
+            local j = i + 1
+            while j <= len do
+                local c = src:sub(j, j)
+                if c == "\\" then j = j + 2
+                elseif c == "'" then j = j + 1; break
+                else j = j + 1 end
+            end
+            out[#out+1] = src:sub(i, j - 1)
+            i = j
+
+        -- Long string [[...]] — copy verbatim (not a comment)
+        elseif src:sub(i, i+1) == "[[" then
+            local close = src:find("%]%]", i + 2)
+            if close then
+                out[#out+1] = src:sub(i, close + 1)
+                i = close + 2
+            else
+                out[#out+1] = src:sub(i)
+                i = len + 1
+            end
+
+        else
+            out[#out+1] = src:sub(i, i)
+            i = i + 1
+        end
+    end
+
+    return table.concat(out)
 end
 
 -- ─── Bundle Header ────────────────────────────────────────────────────────────
