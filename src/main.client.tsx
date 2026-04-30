@@ -19,13 +19,18 @@ async function main() {
 		setStore(store);
 
 		// Parent to CoreGui via GetService to pass TS compiler
-		const host = IS_DEV 
-			? (Players.LocalPlayer.WaitForChild("PlayerGui") as Instance) 
+		const host = IS_DEV
+			? (Players.LocalPlayer.WaitForChild("PlayerGui") as Instance)
 			: (game.GetService("CoreGui") as Instance);
 
 		const container = Make("Folder", { Name: "HavocMount", Parent: host });
 
-		Roact.mount(<Provider store={store}><App /></Provider>, container);
+		Roact.mount(
+			<Provider store={store}>
+				<App />
+			</Provider>,
+			container,
+		);
 
 		// Wait for Roact to actually create the ScreenGui
 		let app = container.FindFirstChildWhichIsA("ScreenGui");
@@ -38,7 +43,7 @@ async function main() {
 		if (!app) throw "ScreenGui failed to render";
 
 		// Executor Protection
-		const synObj = (syn as unknown) as { protect_gui?: (gui: Instance) => void };
+		const synObj = syn as unknown as { protect_gui?: (gui: Instance) => void };
 		if (synObj?.protect_gui) pcall(() => synObj.protect_gui!(app!));
 
 		if (!IS_DEV) {
