@@ -6,23 +6,24 @@ local function start()
     Returns: hInit, hMod, hInst, hEnv
 --]]
 
-local instanceFromId  = {}
-local idFromInstance  = {}
-local modules         = {}
+local instanceFromId   = {}
+local idFromInstance   = {}
+local modules          = {}
 local currentlyLoading = {}
 
 -- ─── Environment Builder ──────────────────────────────────────────────────────
--- FIX 1: Use getfenv(1) not getfenv(0). In most executors getfenv(0) is the
--- C-level global which lacks injected executor globals. getfenv(1) or _G gets
--- the executor's full environment including Drawing, getrawmetatable, etc.
-
 local function hEnv(id)
     local inst = instanceFromId[id]
     return setmetatable({
         script = inst,
         require = function(target)
-            if typeof(target) == "Instance" and modules[target] then
-                return _G.__HAVOC_LOAD(target, inst)
+            if typeof(target) == "Instance" then
+                if modules[target] then
+                    return _G.__HAVOC_LOAD(target, inst)
+                end
+                -- LAYER 3 FIX: Loud error instead of silent hang
+                error("[Havoc] require: '" .. tostring(target.Name) .. 
+                      "' is not a registered module. Was it registered as hInst instead of hMod?", 2)
             end
             return require(target)
         end,
@@ -30,57 +31,35 @@ local function hEnv(id)
 end
 
 -- ─── Circular Dependency Check ────────────────────────────────────────────────
--- FIX 2: Track a proper visited set during the walk so the cycle detection
--- actually terminates and correctly identifies the looping module.
-
 local function validateRequire(module, caller)
     currentlyLoading[caller] = module
-
     local visited = {}
     local current = module
     while current do
         if visited[current] then
-            -- Found a cycle — build a readable chain for the error message
             error("[Havoc] Circular dependency detected involving: " .. current.Name)
         end
         visited[current] = true
-        current = currentlyLoading[current]  -- follow the chain
+        current = currentlyLoading[current]
     end
 end
 
 -- ─── Module Loader ────────────────────────────────────────────────────────────
--- FIX 3: On pcall failure, mark the module as errored so subsequent requires
--- get a clear error instead of silent nil.
-
 local function loadModule(obj, caller)
     local module = modules[obj]
     if not module then return nil end
+    if module.isLoaded then return module.value end
+    if module.isErrored then error("[Havoc] Module previously failed to load: " .. obj.Name) end
 
-    if module.isLoaded then
-        return module.value
-    end
-
-    if module.isErrored then
-        error("[Havoc] Module previously failed to load: " .. obj.Name)
-    end
-
-    if caller then
-        validateRequire(obj, caller)
-    end
-
+    if caller then validateRequire(obj, caller) end
     local success, result = pcall(module.fn)
-
-    if caller then
-        currentlyLoading[caller] = nil
-    end
+    if caller then currentlyLoading[caller] = nil end
 
     if not success then
         module.isErrored = true
         error("[Havoc] Error loading module '" .. obj.Name .. "': " .. tostring(result), 2)
     end
 
-    -- A module that returns nothing exports an empty table (not nil),
-    -- so callers can safely do `local x = require(mod); x.fn()` checks.
     module.value    = (result ~= nil) and result or {}
     module.isLoaded = true
     return module.value
@@ -89,7 +68,6 @@ end
 _G.__HAVOC_LOAD = loadModule
 
 -- ─── Instance Registration ────────────────────────────────────────────────────
-
 local function hMod(name, class, id, parentId, fn)
     local inst   = Instance.new(class)
     inst.Name    = name
@@ -105,15 +83,16 @@ local function hInst(name, class, id, parentId)
     inst.Parent  = parentId and instanceFromId[parentId] or nil
     instanceFromId[id]   = inst
     idFromInstance[inst] = id
-    -- not a script, so no modules entry
 end
 
 -- ─── Bootstrap ────────────────────────────────────────────────────────────────
--- Spawns all LocalScripts. ModuleScripts are loaded lazily on first require().
-
 local function hInit()
+    -- LAYER 2 FIX: Wait for game to load to prevent RuntimeLib hangs
+    if not game:IsLoaded() then
+        game.Loaded:Wait()
+    end
     for obj, _ in pairs(modules) do
-        if obj:IsA("LocalScript") then
+        if obj:IsA("LocalScript") and not obj.Disabled then
             task.spawn(loadModule, obj, "root")
         end
     end
@@ -13105,6 +13084,237 @@ return TS
         end, hEnv("Havoc.include.RuntimeLib"))()
     end)
     hInst("node_modules", "Folder", "Havoc.include.node_modules", "Havoc.include")
+    hInst("compiler-types", "Folder", "Havoc.include.node_modules.compiler-types", "Havoc.include.node_modules")
+    hInst("types", "Folder", "Havoc.include.node_modules.compiler-types.types", "Havoc.include.node_modules.compiler-types")
+    hInst("exploit-types", "Folder", "Havoc.include.node_modules.exploit-types", "Havoc.include.node_modules")
+    hInst("types", "Folder", "Havoc.include.node_modules.exploit-types.types", "Havoc.include.node_modules.exploit-types")
+    hInst("flipper", "Folder", "Havoc.include.node_modules.flipper", "Havoc.include.node_modules")
+    hInst("src", "ModuleScript", "Havoc.include.node_modules.flipper.src", "Havoc.include.node_modules.flipper")
+    hInst("typings", "Folder", "Havoc.include.node_modules.flipper.typings", "Havoc.include.node_modules.flipper")
+    hMod("make", "ModuleScript", "Havoc.include.node_modules.make", "Havoc.include.node_modules", function()
+        return setfenv(function(...)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+local function Make(className, settings)
+	local _binding = settings
+	local children = _binding.Children
+	local parent = _binding.Parent
+	local instance = Instance.new(className)
+	for setting, value in pairs(settings) do
+		if setting ~= "Children" and setting ~= "Parent" then
+			local _binding_1 = instance
+			local prop = _binding_1[setting]
+			if typeof(prop) == "RBXScriptSignal" then
+				prop:Connect(value)
+			else
+				instance[setting] = value
+			end
+		end
+	end
+	if children then
+		for _, child in ipairs(children) do
+			child.Parent = instance
+		end
+	end
+	instance.Parent = parent
+	return instance
+end
+return Make
+
+        end, hEnv("Havoc.include.node_modules.make"))()
+    end)
+    hInst("node_modules", "Folder", "Havoc.include.node_modules.make.node_modules", "Havoc.include.node_modules.make")
+    hInst("@rbxts", "Folder", "Havoc.include.node_modules.make.node_modules.@rbxts", "Havoc.include.node_modules.make.node_modules")
+    hInst("compiler-types", "Folder", "Havoc.include.node_modules.make.node_modules.@rbxts.compiler-types", "Havoc.include.node_modules.make.node_modules.@rbxts")
+    hInst("types", "Folder", "Havoc.include.node_modules.make.node_modules.@rbxts.compiler-types.types", "Havoc.include.node_modules.make.node_modules.@rbxts.compiler-types")
+    hMod("object-utils", "ModuleScript", "Havoc.include.node_modules.object-utils", "Havoc.include.node_modules", function()
+        return setfenv(function(...)
+local HttpService = game:GetService("HttpService")
+
+local Object = {}
+
+function Object.keys(object)
+	local result = table.create(#object)
+	for key in pairs(object) do
+		result[#result + 1] = key
+	end
+	return result
+end
+
+function Object.values(object)
+	local result = table.create(#object)
+	for _, value in pairs(object) do
+		result[#result + 1] = value
+	end
+	return result
+end
+
+function Object.entries(object)
+	local result = table.create(#object)
+	for key, value in pairs(object) do
+		result[#result + 1] = { key, value }
+	end
+	return result
+end
+
+function Object.assign(toObj, ...)
+	for i = 1, select("#", ...) do
+		local arg = select(i, ...)
+		if type(arg) == "table" then
+			for key, value in pairs(arg) do
+				toObj[key] = value
+			end
+		end
+	end
+	return toObj
+end
+
+function Object.copy(object)
+	local result = table.create(#object)
+	for k, v in pairs(object) do
+		result[k] = v
+	end
+	return result
+end
+
+local function deepCopyHelper(object, encountered)
+	local result = table.create(#object)
+	encountered[object] = result
+
+	for k, v in pairs(object) do
+		if type(k) == "table" then
+			k = encountered[k] or deepCopyHelper(k, encountered)
+		end
+
+		if type(v) == "table" then
+			v = encountered[v] or deepCopyHelper(v, encountered)
+		end
+
+		result[k] = v
+	end
+
+	return result
+end
+
+function Object.deepCopy(object)
+	return deepCopyHelper(object, {})
+end
+
+function Object.deepEquals(a, b)
+	
+	for k in pairs(a) do
+		local av = a[k]
+		local bv = b[k]
+		if type(av) == "table" and type(bv) == "table" then
+			local result = Object.deepEquals(av, bv)
+			if not result then
+				return false
+			end
+		elseif av ~= bv then
+			return false
+		end
+	end
+
+	
+	for k in pairs(b) do
+		if a[k] == nil then
+			return false
+		end
+	end
+
+	return true
+end
+
+function Object.toString(data)
+	return HttpService:JSONEncode(data)
+end
+
+function Object.isEmpty(object)
+	return next(object) == nil
+end
+
+function Object.fromEntries(entries)
+	local entriesLen = #entries
+
+	local result = table.create(entriesLen)
+	if entries then
+		for i = 1, entriesLen do
+			local pair = entries[i]
+			result[pair[1]] = pair[2]
+		end
+	end
+	return result
+end
+
+return Object
+
+        end, hEnv("Havoc.include.node_modules.object-utils"))()
+    end)
+    hInst("roact", "Folder", "Havoc.include.node_modules.roact", "Havoc.include.node_modules")
+    hInst("src", "ModuleScript", "Havoc.include.node_modules.roact.src", "Havoc.include.node_modules.roact")
+    hInst("roact-hooked", "Folder", "Havoc.include.node_modules.roact-hooked", "Havoc.include.node_modules")
+    hInst("out", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out", "Havoc.include.node_modules.roact-hooked")
+    hInst("hooks", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks", "Havoc.include.node_modules.roact-hooked.out")
+    hInst("use-binding", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-binding", "Havoc.include.node_modules.roact-hooked.out.hooks")
+    hInst("use-callback", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-callback", "Havoc.include.node_modules.roact-hooked.out.hooks")
+    hInst("use-context", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-context", "Havoc.include.node_modules.roact-hooked.out.hooks")
+    hInst("use-effect", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-effect", "Havoc.include.node_modules.roact-hooked.out.hooks")
+    hInst("use-memo", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-memo", "Havoc.include.node_modules.roact-hooked.out.hooks")
+    hInst("use-mutable", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-mutable", "Havoc.include.node_modules.roact-hooked.out.hooks")
+    hInst("use-reducer", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-reducer", "Havoc.include.node_modules.roact-hooked.out.hooks")
+    hInst("use-ref", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-ref", "Havoc.include.node_modules.roact-hooked.out.hooks")
+    hInst("use-state", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-state", "Havoc.include.node_modules.roact-hooked.out.hooks")
+    hInst("types", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.types", "Havoc.include.node_modules.roact-hooked.out")
+    hInst("utils", "Folder", "Havoc.include.node_modules.roact-hooked.out.utils", "Havoc.include.node_modules.roact-hooked.out")
+    hInst("are-deps-equal", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.utils.are-deps-equal", "Havoc.include.node_modules.roact-hooked.out.utils")
+    hInst("memoized-hook", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.utils.memoized-hook", "Havoc.include.node_modules.roact-hooked.out.utils")
+    hInst("with-hooks", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.with-hooks", "Havoc.include.node_modules.roact-hooked.out")
+    hInst("component-with-hooks", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.with-hooks.component-with-hooks", "Havoc.include.node_modules.roact-hooked.out.with-hooks")
+    hInst("with-hooks", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.with-hooks.with-hooks", "Havoc.include.node_modules.roact-hooked.out.with-hooks")
+    hInst("roact-rodux-hooked", "Folder", "Havoc.include.node_modules.roact-rodux-hooked", "Havoc.include.node_modules")
+    hInst("out", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out", "Havoc.include.node_modules.roact-rodux-hooked")
+    hInst("components", "Folder", "Havoc.include.node_modules.roact-rodux-hooked.out.components", "Havoc.include.node_modules.roact-rodux-hooked.out")
+    hInst("context", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.components.context", "Havoc.include.node_modules.roact-rodux-hooked.out.components")
+    hInst("provider", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.components.provider", "Havoc.include.node_modules.roact-rodux-hooked.out.components")
+    hInst("helpers", "Folder", "Havoc.include.node_modules.roact-rodux-hooked.out.helpers", "Havoc.include.node_modules.roact-rodux-hooked.out")
+    hInst("shallow-equal", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.helpers.shallow-equal", "Havoc.include.node_modules.roact-rodux-hooked.out.helpers")
+    hInst("hooks", "Folder", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks", "Havoc.include.node_modules.roact-rodux-hooked.out")
+    hInst("use-dispatch", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks.use-dispatch", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks")
+    hInst("use-selector", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks.use-selector", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks")
+    hInst("use-store", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks.use-store", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks")
+    hInst("types", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.types", "Havoc.include.node_modules.roact-rodux-hooked.out")
+    hInst("rodux", "Folder", "Havoc.include.node_modules.rodux", "Havoc.include.node_modules")
+    hInst("src", "ModuleScript", "Havoc.include.node_modules.rodux.src", "Havoc.include.node_modules.rodux")
+    hMod("services", "ModuleScript", "Havoc.include.node_modules.services", "Havoc.include.node_modules", function()
+        return setfenv(function(...)
+return setmetatable({}, {
+	__index = function(self, serviceName)
+		local service = game:GetService(serviceName)
+		self[serviceName] = service
+		return service
+	end,
+})
+
+        end, hEnv("Havoc.include.node_modules.services"))()
+    end)
+    hInst("types", "Folder", "Havoc.include.node_modules.types", "Havoc.include.node_modules")
+    hInst("include", "Folder", "Havoc.include.node_modules.types.include", "Havoc.include.node_modules.types")
+    hInst("generated", "Folder", "Havoc.include.node_modules.types.include.generated", "Havoc.include.node_modules.types.include")
 
     hInit()
 end
