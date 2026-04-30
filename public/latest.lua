@@ -5,24 +5,47 @@ local idFromInstance = {}
 local modules = {}
 local currentlyLoading = {}
 
+-- Helper to set up the environment for each script
+local function newEnv(id)
+    local inst = instanceFromId[id]
+    local env = setmetatable({
+        script = inst,
+        -- Overwrite the global require with our virtual one
+        require = function(target)
+            if typeof(target) == "Instance" then
+                if modules[target] then
+                    -- We pass the current script instance so we can track circular deps
+                    local loadModule = _G.__HAVOC_LOAD -- Accessed via _G to avoid scope issues
+                    return loadModule(target, inst)
+                end
+            end
+            return require(target)
+        end,
+    }, {
+        __index = getfenv(0),
+        __metatable = "This metatable is locked",
+    })
+    return env
+end
+
 local function validateRequire(module, caller)
     currentlyLoading[caller] = module
     local currentModule = module
     local depth = 0
-    if not modules[module] then
-        while currentModule do
-            depth = depth + 1
-            currentModule = currentlyLoading[currentModule]
-            if currentModule == module then
-                local str = currentModule.Name
-                for _ = 1, depth do
-                    currentModule = currentlyLoading[currentModule]
-                    str = str .. "\n" .. currentModule.Name
-                end
-                error("Failed to load '" .. module.Name .. "'; Circular dependency:\n" .. str, 2)
+    
+    while currentModule do
+        depth = depth + 1
+        currentModule = currentlyLoading[currentModule]
+        if currentModule == module then
+            local str = currentModule.Name
+            for _ = 1, depth do
+                currentModule = currentlyLoading[currentModule]
+                str = str .. "\n" .. currentModule.Name
             end
+            error("[Havoc] Circular dependency detected:\n" .. str, 2)
         end
     end
+
     return function()
         if currentlyLoading[caller] == module then
             currentlyLoading[caller] = nil
@@ -31,44 +54,45 @@ local function validateRequire(module, caller)
 end
 
 local function loadModule(obj, this)
-    local cleanup = this and validateRequire(obj, this)
     local module = modules[obj]
+    if not module then return nil end
+    
     if module.isLoaded then
-        if cleanup then cleanup() end
         return module.value
-    else
-        local data = module.fn()
-        module.value = data
-        module.isLoaded = true
-        if cleanup then cleanup() end
-        return data
     end
+
+    local cleanup = this and validateRequire(obj, this)
+    
+    -- bundle.lua wraps source in: function() return (function(...) [SRC] end) end
+    -- We call the first function to get the actual script closure
+    local scriptWrapper = module.fn()
+    
+    -- Inject the custom environment so 'script' and 'require' work as expected
+    local env = newEnv(idFromInstance[obj])
+    setfenv(scriptWrapper, env)
+
+    -- Execute the module and catch exports
+    local success, result = pcall(scriptWrapper)
+    
+    if not success then
+        error(string.format("[Havoc] Runtime Error in %s: %s", obj:GetFullName(), tostring(result)), 0)
+    end
+
+    module.value = result
+    module.isLoaded = true
+    
+    if cleanup then cleanup() end
+    return result
 end
 
-local function requireModuleInternal(target, this)
-    if modules[target] and target:IsA("ModuleScript") then
-        return loadModule(target, this)
-    else
-        return require(target)
-    end
-end
-
-local function newEnv(id)
-    return setmetatable({
-        script = instanceFromId[id],
-        require = function(module)
-            return requireModuleInternal(module, instanceFromId[id])
-        end,
-    }, {
-        __index = getfenv(0),
-        __metatable = "This metatable is locked",
-    })
-end
+-- Export to _G temporarily so the virtual require can see the loader
+_G.__HAVOC_LOAD = loadModule
 
 local function hMod(name, class, id, parentId, fn)
     local inst = Instance.new(class)
     inst.Name = name
-    inst.Parent = parentId ~= nil and instanceFromId[parentId] or nil
+    inst.Parent = (parentId ~= nil) and instanceFromId[parentId] or nil
+    
     instanceFromId[id] = inst
     idFromInstance[inst] = id
     modules[inst] = { fn = fn, isLoaded = false, value = nil }
@@ -77,7 +101,8 @@ end
 local function hInst(name, class, id, parentId)
     local inst = Instance.new(class)
     inst.Name = name
-    inst.Parent = parentId ~= nil and instanceFromId[parentId] or nil
+    inst.Parent = (parentId ~= nil) and instanceFromId[parentId] or nil
+    
     instanceFromId[id] = inst
     idFromInstance[inst] = id
 end
@@ -86,9 +111,13 @@ local function hInit()
     if not game:IsLoaded() then
         game.Loaded:Wait()
     end
-    for obj in pairs(modules) do
+    
+    -- Run all LocalScripts to start the execution flow
+    for obj, data in pairs(modules) do
         if obj:IsA("LocalScript") and not obj.Disabled then
-            task.spawn(loadModule, obj)
+            task.spawn(function()
+                loadModule(obj)
+            end)
         end
     end
 end
@@ -4173,7 +4202,9 @@ local TS = require(script.Parent.include.RuntimeLib)
 local Make = TS.import(script, TS.getModule(script, "@rbxts", "make"))
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local Provider = TS.import(script, TS.getModule(script, "@rbxts", "roact-rodux-hooked").out).Provider
-local Players = TS.import(script, TS.getModule(script, "@rbxts", "services")).Players
+local _services = TS.import(script, TS.getModule(script, "@rbxts", "services"))
+local Players = _services.Players
+local RunService = _services.RunService
 local IS_DEV = TS.import(script, script.Parent, "constants").IS_DEV
 local setStore = TS.import(script, script.Parent, "jobs").setStore
 local toggleDashboard = TS.import(script, script.Parent, "store", "actions", "dashboard.action").toggleDashboard
@@ -4182,67 +4213,80 @@ local App = TS.import(script, script.Parent, "App").default
 local LOAD_GUARD = "_HAVOC_IS_LOADED"
 local MOUNT_TIMEOUT = 10
 local function checkAlreadyLoaded()
-	if getgenv and getgenv()[LOAD_GUARD] ~= nil then
+	local g = (getgenv and getgenv() or _G)
+	if g[LOAD_GUARD] == true then
 		warn("[Havoc] Already loaded — skipping.")
 		return true
 	end
 	return false
 end
 local mount = TS.async(function(store)
-	local container = Make("Folder", {})
+	local container = Make("Folder", {
+		Name = "HavocMountContainer",
+		Parent = IS_DEV and (Players.LocalPlayer:WaitForChild("PlayerGui")) or (game:GetService("CoreGui")),
+	})
 	Roact.mount(Roact.createElement(Provider, {
 		store = store,
 	}, {
 		Roact.createElement(App),
 	}), container)
-	local app = container:WaitForChild(MOUNT_TIMEOUT)
-	if not app then
-		error("[Havoc] Mount timed out after " .. (tostring(MOUNT_TIMEOUT) .. "s — ScreenGui never appeared."))
+	local appInstance = container:FindFirstChildWhichIsA("ScreenGui")
+	if not appInstance then
+		local start = os.clock()
+		while not appInstance and os.clock() - start < MOUNT_TIMEOUT do
+			appInstance = container:FindFirstChildWhichIsA("ScreenGui")
+			RunService.Heartbeat:Wait()
+		end
 	end
-	return app
+	if not appInstance then
+		error("[Havoc] Mount timed out after " .. (tostring(MOUNT_TIMEOUT) .. "s — ScreenGui never appeared inside container."))
+	end
+	return appInstance
 end)
 local function render(app)
-	local _result = syn
-	if _result ~= nil then
-		_result = _result.protect_gui
+	local _protect = syn
+	if _protect ~= nil then
+		_protect = _protect.protect_gui
 	end
-	local _condition = _result
-	if _condition == nil then
-		_condition = protect_gui
-	end
-	local protect = _condition
+	local protect = _protect
 	if protect then
-		pcall(function()
+		local success, err = pcall(function()
 			return protect(app)
 		end)
+		if not success then
+			warn("[Havoc] protect_gui failed: " .. tostring(err))
+		end
 	end
 	if IS_DEV then
 		app.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
-	elseif gethui then
-		app.Parent = gethui()
 	else
-		app.Parent = game:GetService("CoreGui")
+		local host = (gethui and gethui() or game:GetService("CoreGui"))
+		app.Parent = host
 	end
 end
 local main = TS.async(function()
 	if checkAlreadyLoaded() then
 		return nil
 	end
-	local store = configureStore()
-	setStore(store)
-	local app = TS.await(mount(store))
-	render(app)
-	if time() > 3 then
-		task.defer(function()
-			return store:dispatch(toggleDashboard())
-		end)
-	end
-	if getgenv then
-		getgenv()[LOAD_GUARD] = true
-	end
+	TS.try(function()
+		local store = configureStore()
+		setStore(store)
+		local app = TS.await(mount(store))
+		render(app)
+		if time() > 3 then
+			task.defer(function()
+				return store:dispatch(toggleDashboard())
+			end)
+		end
+		local g = (getgenv and getgenv() or _G)
+		g[LOAD_GUARD] = true
+		print("[Havoc] Successfully initialized.")
+	end, function(err)
+		warn("[Havoc] Initialization Error: " .. tostring(err))
+	end)
 end)
 main():catch(function(err)
-	warn("[Havoc] Failed to load: " .. tostring(err))
+	warn("[Havoc] Fatal: " .. tostring(err))
 end)
 
         end)
