@@ -1,7 +1,7 @@
 import Make from "@rbxts/make";
 import Roact from "@rbxts/roact";
 import { Provider } from "@rbxts/roact-rodux-hooked";
-import { Players } from "@rbxts/services";
+import { Players, RunService } from "@rbxts/services";
 import { IS_DEV } from "constants";
 import { setStore } from "jobs";
 import { toggleDashboard } from "store/actions/dashboard.action";
@@ -15,7 +15,9 @@ const MOUNT_TIMEOUT = 10;
  * Prevents double-loading in auto-execution environments.
  */
 function checkAlreadyLoaded(): boolean {
-	if (getgenv && LOAD_GUARD in getgenv()) {
+	// Use a safer check for getgenv to support various executors
+	const g = (getgenv ? getgenv() : _G) as Record<string, unknown>;
+	if (g[LOAD_GUARD] === true) {
 		warn("[Havoc] Already loaded — skipping.");
 		return true;
 	}
@@ -26,36 +28,57 @@ function checkAlreadyLoaded(): boolean {
  * Mounts the Roact tree and waits for the ScreenGui to appear.
  */
 async function mount(store: ReturnType<typeof configureStore>): Promise<ScreenGui> {
-	const container = Make("Folder", {});
+	const container = Make("Folder", {
+		Name: "HavocMountContainer",
+		Parent: IS_DEV ? Players.LocalPlayer.WaitForChild("PlayerGui") : game.GetService("CoreGui")
+	});
+
 	Roact.mount(
 		<Provider store={store}>
 			<App />
 		</Provider>,
 		container,
 	);
-	const app = container.WaitForChild(MOUNT_TIMEOUT) as ScreenGui | undefined;
-	if (!app) {
-		throw `[Havoc] Mount timed out after ${MOUNT_TIMEOUT}s — ScreenGui never appeared.`;
+
+	// FIX: We need to find the ScreenGui. 
+	// Since App returns a <screengui>, it will be a child of 'container'.
+	let appInstance = container.FindFirstChildWhichIsA("ScreenGui");
+	
+	if (!appInstance) {
+		// If it's not there immediately (async mount), poll for it briefly
+		const start = os.clock();
+		while (!appInstance && os.clock() - start < MOUNT_TIMEOUT) {
+			appInstance = container.FindFirstChildWhichIsA("ScreenGui");
+			RunService.Heartbeat.Wait();
+		}
 	}
-	return app as ScreenGui;
+
+	if (!appInstance) {
+		throw `[Havoc] Mount timed out after ${MOUNT_TIMEOUT}s — ScreenGui never appeared inside container.`;
+	}
+
+	return appInstance;
 }
 
 /**
  * Parents the ScreenGui to the correct container.
- * Prefers syn.protect_gui, then gethui, then CoreGui, then PlayerGui in dev.
  */
 function render(app: ScreenGui): void {
-	const protect = syn?.protect_gui ?? protect_gui;
+	// syn.protect_gui is often necessary for strict executors
+	const protect = (syn as { protect_gui?: (gui: Instance) => void })?.protect_gui;
+	
 	if (protect) {
-		pcall(() => protect(app));
+		const [success, err] = pcall(() => protect(app));
+		if (!success) warn(`[Havoc] protect_gui failed: ${err}`);
 	}
 
+	// In standard use, we move it from our temporary container to the final destination
 	if (IS_DEV) {
-		app.Parent = Players.LocalPlayer.WaitForChild("PlayerGui") as Instance;
-	} else if (gethui) {
-		app.Parent = gethui();
+		app.Parent = Players.LocalPlayer.WaitForChild("PlayerGui");
 	} else {
-		app.Parent = game.GetService("CoreGui");
+		// Prefer gethui() for executors like Opiumware/Wave
+		const host = (gethui ? gethui() : game.GetService("CoreGui")) as Instance;
+		app.Parent = host;
 	}
 }
 
@@ -65,22 +88,30 @@ function render(app: ScreenGui): void {
 async function main(): Promise<void> {
 	if (checkAlreadyLoaded()) return;
 
-	const store = configureStore();
-	setStore(store);
+	try {
+		const store = configureStore();
+		setStore(store);
 
-	const app = await mount(store);
-	render(app);
+		const app = await mount(store);
+		render(app);
 
-	// Auto-open dashboard if the game has been running for more than 3 seconds
-	if (time() > 3) {
-		task.defer(() => store.dispatch(toggleDashboard()));
-	}
+		// Auto-open dashboard if the game has been running for more than 3 seconds
+		if (time() > 3) {
+			task.defer(() => store.dispatch(toggleDashboard()));
+		}
 
-	if (getgenv) {
-		getgenv()[LOAD_GUARD] = true;
+		if (getgenv) {
+			getgenv()[LOAD_GUARD] = true;
+		} else {
+			(_G as Record<string, unknown>)[LOAD_GUARD] = true;
+		}
+		
+		print("[Havoc] Successfully initialized.");
+	} catch (err) {
+		warn(`[Havoc] Initialization Error: ${tostring(err)}`);
 	}
 }
 
 main().catch((err: unknown) => {
-	warn(`[Havoc] Failed to load: ${tostring(err)}`);
+	warn(`[Havoc] Fatal: ${tostring(err)}`);
 });
