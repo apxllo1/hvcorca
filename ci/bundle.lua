@@ -4,7 +4,7 @@
     Reads Havoc.rbxm, walks the full instance tree including node_modules,
     and emits a self-contained latest.lua with runtime + all module sources.
 
-    Usage (via Remodel):
+    Usage:
         remodel run ci/bundle.lua
         remodel run ci/bundle.lua MyModel.rbxm output.lua
 --]]
@@ -33,12 +33,12 @@ if not file then
     error("[Havoc] Cannot open output file: " .. tostring(openErr))
 end
 
-local scriptCount   = 0
-local missingCount  = 0
+local scriptCount  = 0
+local missingCount = 0
 
 -- ─── Path Resolver ────────────────────────────────────────────────────────────
--- Walks up the instance tree collecting names until the model root,
--- producing e.g. {"include","node_modules","@rbxts","roact"} for a nested pkg.
+-- Returns ordered list of ancestor names from model root down to inst.
+-- e.g. Havoc.include.node_modules.flipper.src → {"include","node_modules","flipper","src"}
 
 local function getRelParts(inst)
     local parts = {}
@@ -51,72 +51,92 @@ local function getRelParts(inst)
 end
 
 -- ─── Source Finder ────────────────────────────────────────────────────────────
--- The .rbxm stores @rbxts packages like this in the instance tree:
---   node_modules → @rbxts → flipper → src          ("src" is the ModuleScript)
---   node_modules → @rbxts → roact → src            ("src" is the ModuleScript)
---   node_modules → @rbxts → roact-hooked → out     ("out" is the ModuleScript)
---   node_modules → @rbxts → roact-hooked → out → hooks → use-state  (nested)
---   node_modules → @rbxts → rodux → src            ("src" is the ModuleScript)
+-- Your .rbxm node_modules layout (confirmed from build warnings):
 --
--- So parts[#parts] = "src"/"out"/"lib" — NOT the package name.
--- We find "@rbxts" in the parts list and use everything after it to build
--- the correct on-disk probe path.
+--   CASE A — package has a compiled subfolder:
+--     node_modules → flipper → src        parts = {..., "node_modules", "flipper", "src"}
+--     node_modules → roact → src          parts = {..., "node_modules", "roact",   "src"}
+--     node_modules → rodux → src          parts = {..., "node_modules", "rodux",   "src"}
+--     node_modules → roact-hooked → out   parts = {..., "node_modules", "roact-hooked", "out"}
+--     node_modules → roact-hooked → out → hooks → use-state  (deeply nested)
+--
+--   CASE B — package IS the leaf (flat):
+--     node_modules → make                 parts = {..., "node_modules", "make"}
+--     node_modules → services             parts = {..., "node_modules", "services"}
+--     node_modules → object-utils         parts = {..., "node_modules", "object-utils"}
+--
+-- On disk, ALL packages live under node_modules/@rbxts/<pkgName>/
+-- We find "node_modules" in the parts list and reconstruct the correct disk path.
 
-local function getRbxtsProbes(parts)
-    -- Find the "@rbxts" segment
-    local rbxtsIdx = nil
+local function getNodeModulesProbes(parts)
+    -- Find the "node_modules" segment index
+    local nmIdx = nil
     for i, p in ipairs(parts) do
-        if p == "@rbxts" then rbxtsIdx = i; break end
+        if p == "node_modules" then nmIdx = i; break end
     end
-    if not rbxtsIdx then return {} end
+    if not nmIdx then return {} end
 
-    local pkgName = parts[rbxtsIdx + 1]  -- e.g. "roact-hooked"
+    local pkgName = parts[nmIdx + 1]   -- e.g. "flipper", "make", "roact-hooked"
     if not pkgName then return {} end
 
-    -- Collect everything after the package name as the in-package sub-path
+    -- Everything after the package name = in-package sub-path
+    -- e.g. for "flipper.src" → subParts = {"src"}
+    -- e.g. for "roact-hooked.out.hooks.use-state" → subParts = {"out","hooks","use-state"}
+    -- e.g. for "make" (flat) → subParts = {}
     local subParts = {}
-    for i = rbxtsIdx + 2, #parts do
+    for i = nmIdx + 2, #parts do
         table.insert(subParts, parts[i])
     end
 
-    local base = "node_modules/@rbxts/" .. pkgName
+    -- On-disk base: try both @rbxts/ scoped and unscoped layouts
+    -- (some roblox-ts versions use @rbxts/, others install flat)
+    local bases = {
+        "node_modules/@rbxts/" .. pkgName,
+        "node_modules/"        .. pkgName,
+    }
+
+    local probes = {}
 
     if #subParts == 0 then
-        -- Instance IS the package root — try all standard entry layouts
-        return {
-            base .. "/src/init.lua",
-            base .. "/lib/init.lua",
-            base .. "/out/init.lua",
-            base .. "/init.lua",
-        }
+        -- CASE B: flat package — instance IS the entry point
+        for _, base in ipairs(bases) do
+            table.insert(probes, base .. "/src/init.lua")
+            table.insert(probes, base .. "/lib/init.lua")
+            table.insert(probes, base .. "/out/init.lua")
+            table.insert(probes, base .. "/init.lua")
+        end
+    else
+        -- CASE A: package has subfolder(s)
+        -- subPath e.g. "src", "out", "out/hooks/use-state"
+        local subPath = table.concat(subParts, "/")
+        for _, base in ipairs(bases) do
+            table.insert(probes, base .. "/" .. subPath .. ".lua")
+            table.insert(probes, base .. "/" .. subPath .. "/init.lua")
+        end
     end
 
-    -- Instance is a nested module inside the package
-    -- e.g. roact-hooked/out/hooks/use-state → out/hooks/use-state.lua
-    local subPath = table.concat(subParts, "/")
-    return {
-        base .. "/" .. subPath .. ".lua",
-        base .. "/" .. subPath .. "/init.lua",
-    }
+    return probes
 end
 
 local function readSource(inst)
     local parts   = getRelParts(inst)
     local relPath = table.concat(parts, "/")
-    local cleanRel = relPath:gsub("^include/", ""):gsub("^node_modules/", "")
+    local cleanRel = relPath
+        :gsub("^include/", "")
+        :gsub("^node_modules/", "")
 
     local attempts = {
-        -- ── App source (roblox-ts out/ output) ──────────────────────────────
+        -- ── Compiled app source (roblox-ts out/) ────────────────────────────
         "out/" .. relPath .. ".lua",
         "out/" .. relPath .. "/init.lua",
         "out/" .. relPath .. ".client.lua",
-        -- ── roblox-ts include/ shims (RuntimeLib, Promise) ───────────────────
+        -- ── roblox-ts include/ shims (RuntimeLib, Promise, etc.) ─────────────
         "include/" .. cleanRel .. ".lua",
         "include/" .. cleanRel .. "/init.lua",
     }
 
-    -- ── @rbxts node_modules — smart probes based on real tree position ───────
-    for _, probe in ipairs(getRbxtsProbes(parts)) do
+    -- ── node_modules packages — handles both flat and subfolder layouts ───────
+    for _, probe in ipairs(getNodeModulesProbes(parts)) do
         table.insert(attempts, probe)
     end
 
@@ -131,16 +151,14 @@ local function readSource(inst)
 end
 
 -- ─── Comment Stripper ─────────────────────────────────────────────────────────
--- Two-pass: block comments first (preserving newlines for stack trace accuracy),
--- then single-line comments.
--- Does NOT strip shebangs or copyright headers (not present in compiled TS output).
+-- Pass 1: block comments --[[ ... ]] — body chars stripped, newlines kept
+--         (preserves line numbers so executor stack traces are accurate)
+-- Pass 2: single-line -- comments
 
 local function stripComments(src)
-    -- Pass 1: --[[ ... ]] — replace body chars with nothing but keep newlines
     local result = src:gsub("%-%-%[%[(.-)%]%]", function(inner)
         return (inner:gsub("[^\n]", ""))
     end)
-    -- Pass 2: -- single line comments
     result = result:gsub("%-%-[^\n]*", "")
     return result
 end
@@ -154,10 +172,9 @@ file:write(remodel.readFile("ci/runtime.lua"))
 file:write("\n    end)()\n\n")
 
 -- ─── Walker ───────────────────────────────────────────────────────────────────
--- Recurses the ENTIRE tree including node_modules.
--- Folders and non-script instances → hInst (virtual instance, no source)
--- Scripts with found source       → hMod  (virtual module with factory fn)
--- Scripts with missing source     → hInst + warning (keeps tree intact)
+-- Walks the ENTIRE instance tree.
+-- ModuleScript/LocalScript with found source → hMod (has factory fn)
+-- Everything else, or scripts with no source → hInst (plain virtual instance)
 
 local function walk(parent)
     for _, object in ipairs(parent:GetChildren()) do
@@ -178,14 +195,12 @@ local function walk(parent)
                     name, class, id, pId
                 ))
                 file:write(
-                    "        _setfenv(function(...)\n"
+                    "        return _setfenv(function(...)\n"
                     .. clean
                     .. "\n        end, hEnv(" .. id .. "))()\n"
                 )
                 file:write("    end)\n")
             else
-                -- Source missing: register as a plain instance so the tree stays
-                -- consistent and script.Parent chains don't break for other modules.
                 missingCount = missingCount + 1
                 print(string.format(
                     "[Havoc] WARNING: no source for %s (%s) — registered as plain instance",
@@ -197,19 +212,17 @@ local function walk(parent)
                 ))
             end
         else
-            -- Folder, RemoteEvent, BindableEvent, etc.
             file:write(string.format(
                 "    hInst(%s, %q, %s, %s)\n",
                 name, class, id, pId
             ))
         end
 
-        -- Always recurse — this is what registers @rbxts package children
         walk(object)
     end
 end
 
--- Register model root as a Folder with nil parent (it has no parent in the executor)
+-- Model root registered with nil parent
 file:write(string.format(
     "    hInst(%q, \"Folder\", %q, nil)\n",
     model.Name,
@@ -228,6 +241,3 @@ print(string.format(
     scriptCount, missingCount
 ))
 print("------------------------------------------")
-
--- NOTE: No `return` here. bundle.lua is a Remodel build script, not a module.
--- hInit/hMod/hInst/hEnv exist only inside the generated latest.lua, not here.
