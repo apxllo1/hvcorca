@@ -11328,7 +11328,7 @@ local function Scripts()
 		}, {
 			Roact.createElement(Content, {
 				header = "AK ADMIN",
-				body = "A universal script with 60k+ users!",
+				body = "Universal with 60k+ users!",
 				footer = "absent.wtf",
 			}),
 		}),
@@ -11348,7 +11348,7 @@ local function Scripts()
 		}, {
 			Roact.createElement(Content, {
 				header = "Novoline",
-				body = "A universal script made by Gladius.",
+				body = "Keyless Universal by Gladius.",
 				footer = "novoline.pro",
 			}),
 		}),
