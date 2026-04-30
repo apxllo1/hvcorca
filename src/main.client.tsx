@@ -11,9 +11,6 @@ import App from "./App";
 const LOAD_GUARD = "_HAVOC_IS_LOADED";
 const MOUNT_TIMEOUT = 10;
 
-/**
- * Prevents double-loading in auto-execution environments.
- */
 function checkAlreadyLoaded(): boolean {
 	const g = (getgenv ? getgenv() : _G) as Record<string, unknown>;
 	if (g[LOAD_GUARD] === true) {
@@ -23,15 +20,10 @@ function checkAlreadyLoaded(): boolean {
 	return false;
 }
 
-/**
- * Mounts the Roact tree and waits for the ScreenGui to appear.
- */
 async function mount(store: ReturnType<typeof configureStore>): Promise<ScreenGui> {
 	const container = Make("Folder", {
 		Name: "HavocMountContainer",
-		Parent: IS_DEV
-			? (Players.LocalPlayer.WaitForChild("PlayerGui") as Instance)
-			: (game.GetService("CoreGui") as Instance),
+		Parent: IS_DEV ? (Players.LocalPlayer.WaitForChild("PlayerGui") as Instance) : (game.GetService("CoreGui") as Instance)
 	});
 
 	Roact.mount(
@@ -42,7 +34,6 @@ async function mount(store: ReturnType<typeof configureStore>): Promise<ScreenGu
 	);
 
 	let appInstance = container.FindFirstChildWhichIsA("ScreenGui");
-
 	if (!appInstance) {
 		const start = os.clock();
 		while (!appInstance && os.clock() - start < MOUNT_TIMEOUT) {
@@ -51,43 +42,31 @@ async function mount(store: ReturnType<typeof configureStore>): Promise<ScreenGu
 		}
 	}
 
-	if (!appInstance) {
-		throw `[Havoc] Mount timed out after ${MOUNT_TIMEOUT}s — ScreenGui never appeared inside container.`;
-	}
-
+	if (!appInstance) throw `[Havoc] Mount timed out.`;
 	return appInstance;
 }
 
-/**
- * Parents the ScreenGui to the correct container.
- */
 function render(app: ScreenGui): void {
-	// FIX: Use 'unknown' as a bridge to resolve the TS2352 conversion error
+	// FIX: Use 'as unknown' to bypass the TS2352 overlap error
 	const protect = (syn as unknown as { protect_gui?: (gui: Instance) => void })?.protect_gui;
-
+	
 	if (protect) {
-		const [success, err] = pcall(() => protect(app));
-		if (!success) warn(`[Havoc] protect_gui failed: ${err}`);
+		pcall(() => protect(app));
 	}
 
 	if (IS_DEV) {
 		app.Parent = Players.LocalPlayer.WaitForChild("PlayerGui") as Instance;
 	} else {
-		const host = (gethui ? gethui() : game.GetService("CoreGui")) as Instance;
-		app.Parent = host;
+		app.Parent = (gethui ? gethui() : game.GetService("CoreGui")) as Instance;
 	}
 }
 
-/**
- * Entry point.
- */
 async function main(): Promise<void> {
 	if (checkAlreadyLoaded()) return;
 
 	try {
 		const store = configureStore();
 		setStore(store);
-
 		const app = await mount(store);
 		render(app);
 
@@ -97,13 +76,9 @@ async function main(): Promise<void> {
 
 		const g = (getgenv ? getgenv() : _G) as Record<string, unknown>;
 		g[LOAD_GUARD] = true;
-
-		print("[Havoc] Successfully initialized.");
 	} catch (err) {
-		warn(`[Havoc] Initialization Error: ${tostring(err)}`);
+		warn(`[Havoc] Init Error: ${err}`);
 	}
 }
 
-main().catch((err: unknown) => {
-	warn(`[Havoc] Fatal: ${tostring(err)}`);
-});
+main().catch(warn);
