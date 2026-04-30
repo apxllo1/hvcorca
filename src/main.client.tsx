@@ -30,7 +30,7 @@ function checkAlreadyLoaded(): boolean {
 async function mount(store: ReturnType<typeof configureStore>): Promise<ScreenGui> {
 	const container = Make("Folder", {
 		Name: "HavocMountContainer",
-		Parent: IS_DEV ? Players.LocalPlayer.WaitForChild("PlayerGui") : game.GetService("CoreGui")
+		Parent: IS_DEV ? Players.LocalPlayer.WaitForChild("PlayerGui") : game.GetService("CoreGui"),
 	});
 
 	Roact.mount(
@@ -40,10 +40,10 @@ async function mount(store: ReturnType<typeof configureStore>): Promise<ScreenGu
 		container,
 	);
 
-	// FIX: We need to find the ScreenGui. 
+	// FIX: We need to find the ScreenGui.
 	// Since App returns a <screengui>, it will be a child of 'container'.
 	let appInstance = container.FindFirstChildWhichIsA("ScreenGui");
-	
+
 	if (!appInstance) {
 		// If it's not there immediately (async mount), poll for it briefly
 		const start = os.clock();
@@ -66,7 +66,7 @@ async function mount(store: ReturnType<typeof configureStore>): Promise<ScreenGu
 function render(app: ScreenGui): void {
 	// syn.protect_gui is often necessary for strict executors
 	const protect = (syn as { protect_gui?: (gui: Instance) => void })?.protect_gui;
-	
+
 	if (protect) {
 		const [success, err] = pcall(() => protect(app));
 		if (!success) warn(`[Havoc] protect_gui failed: ${err}`);
@@ -105,7 +105,7 @@ async function main(): Promise<void> {
 		} else {
 			(_G as Record<string, unknown>)[LOAD_GUARD] = true;
 		}
-		
+
 		print("[Havoc] Successfully initialized.");
 	} catch (err) {
 		warn(`[Havoc] Initialization Error: ${tostring(err)}`);
