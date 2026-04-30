@@ -12,22 +12,22 @@ const LOAD_GUARD = "_HAVOC_IS_LOADED";
 const MOUNT_TIMEOUT = 10;
 
 /**
- * Prevents multiple instances by checking the global environment.
+ * Checks if Havoc is already running in the current session.
  */
 function checkAlreadyLoaded(): boolean {
-	const g = (getgenv ? getgenv() : _G) as Record<string, unknown>;
+	const g = (getgenv ? getgenv() : _G) as Record<string, any>;
 	if (g[LOAD_GUARD] === true) {
-		warn("[Havoc] Already loaded — skipping.");
+		warn("[Havoc] Already loaded — skipping execution.");
 		return true;
 	}
 	return false;
 }
 
 /**
- * Mounts the Roact app and polls for the resulting ScreenGui.
+ * Mounts the Roact tree into a temporary folder and waits for the ScreenGui to appear.
  */
 async function mount(store: ReturnType<typeof configureStore>): Promise<ScreenGui> {
-	// Identify the target host for the temporary container
+	// Use CoreGui via GetService to satisfy roblox-ts compiler permissions
 	const host = IS_DEV
 		? (Players.LocalPlayer.WaitForChild("PlayerGui") as Instance)
 		: (game.GetService("CoreGui") as Instance);
@@ -44,7 +44,7 @@ async function mount(store: ReturnType<typeof configureStore>): Promise<ScreenGu
 		container,
 	);
 
-	// Poll for the ScreenGui (Modular Roact apps take a few frames to mount)
+	// In modular builds, the ScreenGui might not exist the exact millisecond mount() is called
 	let appInstance = container.FindFirstChildWhichIsA("ScreenGui");
 	const start = os.clock();
 
@@ -55,18 +55,20 @@ async function mount(store: ReturnType<typeof configureStore>): Promise<ScreenGu
 
 	if (!appInstance) {
 		container.Destroy();
-		throw `Mount timed out: ScreenGui not found in App tree.`;
+		throw `[Havoc] Mount Failure: App rendered but no ScreenGui was found within ${MOUNT_TIMEOUT}s.`;
 	}
 
 	return appInstance;
 }
 
 /**
- * Protects and finalizes the UI location.
+ * Handles UI protection for executors and final parenting.
  */
 function render(app: ScreenGui): void {
-	// Bypasses TS2352 strictly to allow protection on the ScreenGui
-	const protect = (syn as unknown as { protect_gui?: (gui: Instance) => void })?.protect_gui;
+	// Bypasses TS error for custom executor globals
+	const syn_obj = (syn as unknown) as { protect_gui?: (gui: Instance) => void };
+	const protect = syn_obj?.protect_gui;
+
 	if (protect) {
 		pcall(() => protect(app));
 	}
@@ -74,39 +76,45 @@ function render(app: ScreenGui): void {
 	if (IS_DEV) {
 		app.Parent = Players.LocalPlayer.WaitForChild("PlayerGui") as Instance;
 	} else {
-		// Use gethui for modern executors (Wave/Solara), fallback to CoreGui
+		// Use gethui() if available (Wave/Solara/etc), otherwise fallback to CoreGui
 		const host = (gethui ? gethui() : game.GetService("CoreGui")) as Instance;
 		app.Parent = host;
 	}
 }
 
+/**
+ * Entry point for the client script.
+ */
 async function main(): Promise<void> {
 	if (checkAlreadyLoaded()) return;
 
 	try {
-		// 1. Setup Store
+		// 1. Initialize Redux Store
 		const store = configureStore();
 		setStore(store);
 
-		// 2. Mount & Find UI
+		// 2. Mount Roact Tree
 		const app = await mount(store);
 
-		// 3. Move to final destination & Protect
+		// 3. Move and Protect UI
 		render(app);
 
-		// 4. Set persistent guard
-		const g = (getgenv ? getgenv() : _G) as Record<string, unknown>;
+		// 4. Set Global Guard to prevent re-execution
+		const g = (getgenv ? getgenv() : _G) as Record<string, any>;
 		g[LOAD_GUARD] = true;
 
-		// 5. Open UI if injected into an active game
-		if (time() > 2) {
+		// 5. If injected late, toggle the dashboard open automatically
+		if (time() > 3) {
 			task.defer(() => store.dispatch(toggleDashboard()));
 		}
 
-		print("[Havoc] Successfully initialized.");
+		print("[Havoc] Client initialized successfully.");
 	} catch (err) {
-		warn(`[Havoc] Init Error: ${tostring(err)}`);
+		warn(`[Havoc] Initialization Error: ${tostring(err)}`);
 	}
 }
 
-main().catch((err) => warn(`[Havoc] Fatal: ${tostring(err)}`));
+// Start execution
+main().catch((err) => {
+	warn(`[Havoc] Fatal Runtime Error: ${tostring(err)}`);
+});
