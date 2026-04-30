@@ -59,10 +59,12 @@ local function readSource(inst)
     return nil
 end
 
--- HEADER
+-- HEADER: This MUST load ci/runtime.lua correctly
 file:write("local function start()\n")
 file:write("    local hInit, hMod, hInst, hEnv = (function()\n")
-file:write(remodel.readFile("ci/runtime.lua"))
+local runtime_ok, runtime_src = pcall(remodel.readFile, "ci/runtime.lua")
+if not runtime_ok then error("[Havoc] FAILED TO READ ci/runtime.lua") end
+file:write(runtime_src)
 file:write("\n    end)()\n\n")
 
 -- Register root
@@ -70,24 +72,23 @@ local rootName = string.format("%q", model.Name)
 local rootPath = string.format("%q", model:GetFullName())
 file:write(string.format("    hInst(%s, \"Folder\", %s, nil)\n", rootName, rootPath))
 
--- Register include folder
+-- Manual registration for the include folder to ensure it exists for roblox-ts
 file:write(string.format("    hInst(\"include\", \"Folder\", %q, %q)\n", model.Name .. ".include", model.Name))
 
-local SKIP_INLINE = { node_modules = true }
+-- We skip the internal 'node_modules' folder in the walk because roblox-ts includes are handled via 'include'
+local SKIP_NAMES = { node_modules = true }
 
 local function walk(parent)
     for _, object in ipairs(parent:GetChildren()) do
+        if SKIP_NAMES[object.Name] then continue end
+
         local name     = string.format("%q", object.Name)
         local path     = string.format("%q", object:GetFullName())
         local pPath    = string.format("%q", parent:GetFullName())
         local class    = object.ClassName
         local isScript = class == "ModuleScript" or class == "LocalScript"
 
-        if SKIP_INLINE[object.Name] then
-            file:write(string.format("    hInst(%s, %q, %s, %s)\n", name, class, path, pPath))
-            walk(object)
-
-        elseif isScript then
+        if isScript then
             local src = readSource(object)
             if src and #src > 0 then
                 -- Strip comments
@@ -97,22 +98,23 @@ local function walk(parent)
                 scriptCount = scriptCount + 1
                 
                 -- SNAPSHOT STRICT FIX: Wrap source in setfenv + hEnv factory
-                -- This ensures 'script' is defined correctly inside the module scope
+                -- This ensures the 'script' global is correctly bound before execution
                 file:write("    hMod(" .. name .. ", " .. string.format("%q", class) .. ", " .. path .. ", " .. pPath .. ", function()\n")
                 file:write("        return setfenv(function(...)\n")
                 file:write(src)
-                file:write("\n        end, hEnv(" .. path .. "))()\n") -- The ID is the path
+                file:write("\n        end, hEnv(" .. path .. "))()\n")
                 file:write("    end)\n")
             else
-                print("[WARN] No source found for: " .. object:GetFullName())
+                -- If no source found, register as a dummy instance so require() doesn't error
                 file:write(string.format("    hInst(%s, %q, %s, %s)\n", name, class, path, pPath))
             end
-            walk(object)
-
         else
+            -- Register non-script instances (Folders, ScreenGuis, etc)
             file:write(string.format("    hInst(%s, %q, %s, %s)\n", name, class, path, pPath))
-            walk(object)
         end
+        
+        -- Continue walking the tree
+        walk(object)
     end
 end
 
