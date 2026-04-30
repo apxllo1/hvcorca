@@ -2,41 +2,60 @@ local function start()
     local hInit, hMod, hInst, hEnv = (function()
 local instanceFromId, idFromInstance, modules, currentlyLoading = {}, {}, {}, {}
 
-local function loadModule(obj, this)
+-- SNAPSHOT STRICT: Environment Factory
+-- This is called by the bundle for every hMod to bind the 'script' object
+local function hEnv(id)
+    local inst = instanceFromId[id]
+    return setmetatable({
+        script = inst,
+        require = function(target)
+            -- If requiring a bundled module
+            if typeof(target) == "Instance" and modules[target] then
+                return _G.__HAVOC_LOAD(target, inst)
+            end
+            -- Fallback to standard Roblox require (for built-ins)
+            return require(target)
+        end,
+    }, { 
+        __index = getfenv(0),
+        __metatable = "This metatable is locked"
+    })
+end
+
+-- SNAPSHOT STRICT: Circular Dependency Validator
+local function validateRequire(module, caller)
+    currentlyLoading[caller] = module
+    local current = module
+    local depth = 0
+    while current do
+        depth = depth + 1
+        current = currentlyLoading[current]
+        if current == module then
+            local traceback = current.Name
+            -- Build a readable chain for the error
+            for _ = 1, depth do
+                current = currentlyLoading[current]
+                traceback = traceback .. " => " .. current.Name
+            end
+            error("[Havoc] Circular dependency detected: " .. traceback)
+        end
+    end
+end
+
+local function loadModule(obj, caller)
     local module = modules[obj]
     if not module then return nil end
     if module.isLoaded then return module.value end
     
-    -- FIX: Circular Dependency Protection
-    -- If this module is already in 'currentlyLoading', it's a circular loop
-    if currentlyLoading[obj] then
-        error("[Havoc] Circular dependency detected while loading: " .. obj:GetFullName())
-    end
+    -- Check for loops
+    validateRequire(obj, caller)
     
-    currentlyLoading[obj] = true
+    -- Execute the factory function provided by hMod
+    -- In the Snapshot logic, module.fn() already contains the setfenv wrapper
+    local success, result = pcall(module.fn)
     
-    local scriptWrapper = module.fn()
-    
-    -- Create the virtual environment for the script
-    local env = setmetatable({
-        script = obj,
-        require = function(target)
-            -- If the target is an Instance (like script.Parent.Module)
-            if typeof(target) == "Instance" and modules[target] then
-                return loadModule(target, obj)
-            end
-            -- Fallback to standard Roblox require
-            return require(target)
-        end
-    }, { __index = getfenv(0) })
-    
-    -- Apply the environment
-    setfenv(scriptWrapper, env)
-    
-    local success, result = pcall(scriptWrapper)
-    
-    -- Clean up loading state
-    currentlyLoading[obj] = nil
+    -- Cleanup loading state
+    currentlyLoading[caller] = nil
     
     if not success then 
         error("[Havoc] Runtime Error in " .. obj:GetFullName() .. ": " .. tostring(result)) 
@@ -47,7 +66,7 @@ local function loadModule(obj, this)
     return result
 end
 
--- FIX: Bridge for global access (often needed by compiled roblox-ts code)
+-- Global bridge for roblox-ts cross-module resolution
 _G.__HAVOC_LOAD = loadModule
 
 local function hMod(name, class, id, parentId, fn)
@@ -68,25 +87,26 @@ local function hInst(name, class, id, parentId)
 end
 
 local function hInit()
-    -- Initialize all LocalScripts (entry points)
+    -- Start entry point scripts (LocalScripts)
     for obj in pairs(modules) do
         if obj:IsA("LocalScript") then 
             task.spawn(function()
-                local ok, err = pcall(loadModule, obj)
+                local ok, err = pcall(loadModule, obj, "root")
                 if not ok then warn(err) end
             end) 
         end
     end
 end
 
-return hInit, hMod, hInst
+-- CRITICAL: Return hEnv so bundle.lua can use it for setfenv
+return hInit, hMod, hInst, hEnv
 
     end)()
 
     hInst("Havoc", "Folder", "Havoc", nil)
     hInst("include", "Folder", "Havoc.include", "Havoc")
     hMod("App", "ModuleScript", "Havoc.App", "Havoc", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -131,21 +151,21 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.App"))()
     end)
     hInst("components", "Folder", "Havoc.components", "Havoc")
     hMod("Acrylic", "ModuleScript", "Havoc.components.Acrylic", "Havoc.components", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Acrylic").default
 return exports
 
-        end)
+        end, hEnv("Havoc.components.Acrylic"))()
     end)
     hMod("Acrylic", "ModuleScript", "Havoc.components.Acrylic.Acrylic", "Havoc.components.Acrylic", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -314,10 +334,10 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.components.Acrylic.Acrylic"))()
     end)
     hMod("Acrylic.story", "ModuleScript", "Havoc.components.Acrylic.Acrylic.story", "Havoc.components.Acrylic", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -361,10 +381,10 @@ return function(target)
 	end
 end
 
-        end)
+        end, hEnv("Havoc.components.Acrylic.Acrylic.story"))()
     end)
     hMod("acrylic-instance", "ModuleScript", "Havoc.components.Acrylic.acrylic-instance", "Havoc.components.Acrylic", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Make = TS.import(script, TS.getModule(script, "@rbxts", "make"))
@@ -457,10 +477,10 @@ return {
 	acrylicInstance = acrylicInstance,
 }
 
-        end)
+        end, hEnv("Havoc.components.Acrylic.acrylic-instance"))()
     end)
     hMod("ActionButton", "ModuleScript", "Havoc.components.ActionButton", "Havoc.components", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -563,10 +583,10 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.components.ActionButton"))()
     end)
     hMod("Border", "ModuleScript", "Havoc.components.Border", "Havoc.components", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -639,10 +659,10 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.components.Border"))()
     end)
     hMod("BrightButton", "ModuleScript", "Havoc.components.BrightButton", "Havoc.components", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -779,10 +799,10 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.components.BrightButton"))()
     end)
     hMod("BrightSlider", "ModuleScript", "Havoc.components.BrightSlider", "Havoc.components", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Spring = TS.import(script, TS.getModule(script, "@rbxts", "flipper").src).Spring
@@ -976,10 +996,10 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.components.BrightSlider"))()
     end)
     hMod("Canvas", "ModuleScript", "Havoc.components.Canvas", "Havoc.components", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -1059,10 +1079,10 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.components.Canvas"))()
     end)
     hMod("Card", "ModuleScript", "Havoc.components.Card", "Havoc.components", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -1160,10 +1180,10 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.components.Card"))()
     end)
     hMod("Fill", "ModuleScript", "Havoc.components.Fill", "Havoc.components", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -1243,10 +1263,10 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.components.Fill"))()
     end)
     hMod("Glow", "ModuleScript", "Havoc.components.Glow", "Havoc.components", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -1384,10 +1404,10 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.components.Glow"))()
     end)
     hMod("ParallaxImage", "ModuleScript", "Havoc.components.ParallaxImage", "Havoc.components", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -1429,10 +1449,10 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.components.ParallaxImage"))()
     end)
     hMod("constants", "ModuleScript", "Havoc.constants", "Havoc", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local IS_DEV = type(getgenv) == "nil"
 local _condition = VERSION
@@ -1445,11 +1465,11 @@ return {
 	VERSION_TAG = VERSION_TAG,
 }
 
-        end)
+        end, hEnv("Havoc.constants"))()
     end)
     hInst("context", "Folder", "Havoc.context", "Havoc")
     hMod("scale-context", "ModuleScript", "Havoc.context.scale-context", "Havoc.context", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -1458,12 +1478,12 @@ return {
 	ScaleContext = ScaleContext,
 }
 
-        end)
+        end, hEnv("Havoc.context.scale-context"))()
     end)
     hInst("hooks", "Folder", "Havoc.hooks", "Havoc")
     hInst("common", "Folder", "Havoc.hooks.common", "Havoc.hooks")
     hMod("flipper-hooks", "ModuleScript", "Havoc.hooks.common.flipper-hooks", "Havoc.hooks.common", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local exports = {}
@@ -1475,10 +1495,10 @@ exports.useMotor = TS.import(script, script, "use-motor").useMotor
 exports.useSpring = TS.import(script, script, "use-spring").useSpring
 return exports
 
-        end)
+        end, hEnv("Havoc.hooks.common.flipper-hooks"))()
     end)
     hMod("get-binding", "ModuleScript", "Havoc.hooks.common.flipper-hooks.get-binding", "Havoc.hooks.common.flipper-hooks", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local isMotor = TS.import(script, TS.getModule(script, "@rbxts", "flipper").src).isMotor
@@ -1504,10 +1524,10 @@ return {
 	getBinding = getBinding,
 }
 
-        end)
+        end, hEnv("Havoc.hooks.common.flipper-hooks.get-binding"))()
     end)
     hMod("use-goal", "ModuleScript", "Havoc.hooks.common.flipper-hooks.use-goal", "Havoc.hooks.common.flipper-hooks", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local getBinding = TS.import(script, script.Parent, "get-binding").getBinding
@@ -1521,10 +1541,10 @@ return {
 	useGoal = useGoal,
 }
 
-        end)
+        end, hEnv("Havoc.hooks.common.flipper-hooks.use-goal"))()
     end)
     hMod("use-instant", "ModuleScript", "Havoc.hooks.common.flipper-hooks.use-instant", "Havoc.hooks.common.flipper-hooks", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Instant = TS.import(script, TS.getModule(script, "@rbxts", "flipper").src).Instant
@@ -1536,10 +1556,10 @@ return {
 	useInstant = useInstant,
 }
 
-        end)
+        end, hEnv("Havoc.hooks.common.flipper-hooks.use-instant"))()
     end)
     hMod("use-linear", "ModuleScript", "Havoc.hooks.common.flipper-hooks.use-linear", "Havoc.hooks.common.flipper-hooks", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Linear = TS.import(script, TS.getModule(script, "@rbxts", "flipper").src).Linear
@@ -1551,10 +1571,10 @@ return {
 	useLinear = useLinear,
 }
 
-        end)
+        end, hEnv("Havoc.hooks.common.flipper-hooks.use-linear"))()
     end)
     hMod("use-motor", "ModuleScript", "Havoc.hooks.common.flipper-hooks.use-motor", "Havoc.hooks.common.flipper-hooks", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local _flipper = TS.import(script, TS.getModule(script, "@rbxts", "flipper").src)
@@ -1577,10 +1597,10 @@ return {
 	useMotor = useMotor,
 }
 
-        end)
+        end, hEnv("Havoc.hooks.common.flipper-hooks.use-motor"))()
     end)
     hMod("use-spring", "ModuleScript", "Havoc.hooks.common.flipper-hooks.use-spring", "Havoc.hooks.common.flipper-hooks", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Spring = TS.import(script, TS.getModule(script, "@rbxts", "flipper").src).Spring
@@ -1592,10 +1612,10 @@ return {
 	useSpring = useSpring,
 }
 
-        end)
+        end, hEnv("Havoc.hooks.common.flipper-hooks.use-spring"))()
     end)
     hMod("rodux-hooks", "ModuleScript", "Havoc.hooks.common.rodux-hooks", "Havoc.hooks.common", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _roact_rodux_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-rodux-hooked").out)
@@ -1617,10 +1637,10 @@ return {
 	useAppStore = useAppStore,
 }
 
-        end)
+        end, hEnv("Havoc.hooks.common.rodux-hooks"))()
     end)
     hMod("use-delayed-update", "ModuleScript", "Havoc.hooks.common.use-delayed-update", "Havoc.hooks.common", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
@@ -1684,10 +1704,10 @@ return {
 	useDelayedUpdate = useDelayedUpdate,
 }
 
-        end)
+        end, hEnv("Havoc.hooks.common.use-delayed-update"))()
     end)
     hMod("use-did-mount", "ModuleScript", "Havoc.hooks.common.use-did-mount", "Havoc.hooks.common", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
@@ -1714,10 +1734,10 @@ return {
 	useIsMount = useIsMount,
 }
 
-        end)
+        end, hEnv("Havoc.hooks.common.use-did-mount"))()
     end)
     hMod("use-forced-update", "ModuleScript", "Havoc.hooks.common.use-forced-update", "Havoc.hooks.common", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
@@ -1736,10 +1756,10 @@ return {
 	useForcedUpdate = useForcedUpdate,
 }
 
-        end)
+        end, hEnv("Havoc.hooks.common.use-forced-update"))()
     end)
     hMod("use-interval", "ModuleScript", "Havoc.hooks.common.use-interval", "Havoc.hooks.common", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local useEffect = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).useEffect
@@ -1768,10 +1788,10 @@ return {
 	useInterval = useInterval,
 }
 
-        end)
+        end, hEnv("Havoc.hooks.common.use-interval"))()
     end)
     hMod("use-mouse-location", "ModuleScript", "Havoc.hooks.common.use-mouse-location", "Havoc.hooks.common", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
@@ -1802,10 +1822,10 @@ return {
 	useMouseLocation = useMouseLocation,
 }
 
-        end)
+        end, hEnv("Havoc.hooks.common.use-mouse-location"))()
     end)
     hMod("use-promise", "ModuleScript", "Havoc.hooks.common.use-promise", "Havoc.hooks.common", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
@@ -1892,10 +1912,10 @@ return {
 	usePromise = usePromise,
 }
 
-        end)
+        end, hEnv("Havoc.hooks.common.use-promise"))()
     end)
     hMod("use-set-state", "ModuleScript", "Havoc.hooks.common.use-set-state", "Havoc.hooks.common", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local useState = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).useState
@@ -1931,10 +1951,10 @@ return {
 	default = useSetState,
 }
 
-        end)
+        end, hEnv("Havoc.hooks.common.use-set-state"))()
     end)
     hMod("use-spring", "ModuleScript", "Havoc.hooks.common.use-spring", "Havoc.hooks.common", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Spring = TS.import(script, TS.getModule(script, "@rbxts", "flipper").src).Spring
@@ -1998,10 +2018,10 @@ return {
 	useSpring = useSpring,
 }
 
-        end)
+        end, hEnv("Havoc.hooks.common.use-spring"))()
     end)
     hMod("use-viewport-size", "ModuleScript", "Havoc.hooks.common.use-viewport-size", "Havoc.hooks.common", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
@@ -2049,10 +2069,10 @@ return {
 	useViewportSize = useViewportSize,
 }
 
-        end)
+        end, hEnv("Havoc.hooks.common.use-viewport-size"))()
     end)
     hMod("use-current-page", "ModuleScript", "Havoc.hooks.use-current-page", "Havoc.hooks", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local useAppSelector = TS.import(script, script.Parent, "common", "rodux-hooks").useAppSelector
@@ -2071,10 +2091,10 @@ return {
 	useIsPageOpen = useIsPageOpen,
 }
 
-        end)
+        end, hEnv("Havoc.hooks.use-current-page"))()
     end)
     hMod("use-friends", "ModuleScript", "Havoc.hooks.use-friends", "Havoc.hooks", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local useMemo = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).useMemo
@@ -2165,10 +2185,10 @@ return {
 	useFriendActivity = useFriendActivity,
 }
 
-        end)
+        end, hEnv("Havoc.hooks.use-friends"))()
     end)
     hMod("use-parallax-offset", "ModuleScript", "Havoc.hooks.use-parallax-offset", "Havoc.hooks", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Spring = TS.import(script, TS.getModule(script, "@rbxts", "flipper").src).Spring
@@ -2205,10 +2225,10 @@ return {
 	useParallaxOffset = useParallaxOffset,
 }
 
-        end)
+        end, hEnv("Havoc.hooks.use-parallax-offset"))()
     end)
     hMod("use-scale", "ModuleScript", "Havoc.hooks.use-scale", "Havoc.hooks", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -2226,10 +2246,10 @@ return {
 	useScale = useScale,
 }
 
-        end)
+        end, hEnv("Havoc.hooks.use-scale"))()
     end)
     hMod("use-theme", "ModuleScript", "Havoc.hooks.use-theme", "Havoc.hooks", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local useAppSelector = TS.import(script, script.Parent, "common", "rodux-hooks").useAppSelector
@@ -2265,10 +2285,10 @@ return {
 	useTheme = useTheme,
 }
 
-        end)
+        end, hEnv("Havoc.hooks.use-theme"))()
     end)
     hMod("jobs", "ModuleScript", "Havoc.jobs", "Havoc", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.include.RuntimeLib)
 local exports = {}
@@ -2288,10 +2308,10 @@ TS.import(script, script, "players", "teleport")
 TS.import(script, script, "players", "facebang")
 return exports
 
-        end)
+        end, hEnv("Havoc.jobs"))()
     end)
     hMod("acrylic", "ModuleScript", "Havoc.jobs.acrylic", "Havoc.jobs", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Make = TS.import(script, TS.getModule(script, "@rbxts", "make"))
@@ -2351,11 +2371,11 @@ main():catch(function(err)
 end)
 return nil
 
-        end)
+        end, hEnv("Havoc.jobs.acrylic"))()
     end)
     hInst("character", "Folder", "Havoc.jobs.character", "Havoc.jobs")
     hMod("flight", "ModuleScript", "Havoc.jobs.character.flight", "Havoc.jobs.character", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _flipper = TS.import(script, TS.getModule(script, "@rbxts", "flipper").src)
@@ -2518,10 +2538,10 @@ main():catch(function(err)
 end)
 return nil
 
-        end)
+        end, hEnv("Havoc.jobs.character.flight"))()
     end)
     hMod("ghost", "ModuleScript", "Havoc.jobs.character.ghost", "Havoc.jobs.character", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _services = TS.import(script, TS.getModule(script, "@rbxts", "services"))
@@ -2698,10 +2718,10 @@ main():catch(function(err)
 end)
 return nil
 
-        end)
+        end, hEnv("Havoc.jobs.character.ghost"))()
     end)
     hMod("godmode", "ModuleScript", "Havoc.jobs.character.godmode", "Havoc.jobs.character", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _services = TS.import(script, TS.getModule(script, "@rbxts", "services"))
@@ -2780,10 +2800,10 @@ main():catch(function(err)
 end)
 return nil
 
-        end)
+        end, hEnv("Havoc.jobs.character.godmode"))()
     end)
     hMod("humanoid", "ModuleScript", "Havoc.jobs.character.humanoid", "Havoc.jobs.character", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Players = TS.import(script, TS.getModule(script, "@rbxts", "services")).Players
@@ -2879,10 +2899,10 @@ main():catch(function(err)
 end)
 return nil
 
-        end)
+        end, hEnv("Havoc.jobs.character.humanoid"))()
     end)
     hMod("refresh", "ModuleScript", "Havoc.jobs.character.refresh", "Havoc.jobs.character", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _services = TS.import(script, TS.getModule(script, "@rbxts", "services"))
@@ -2951,10 +2971,10 @@ main():catch(function(err)
 end)
 return nil
 
-        end)
+        end, hEnv("Havoc.jobs.character.refresh"))()
     end)
     hMod("freecam", "ModuleScript", "Havoc.jobs.freecam", "Havoc.jobs", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local _freecam = TS.import(script, script.Parent, "helpers", "freecam")
@@ -2975,11 +2995,11 @@ main():catch(function(err)
 end)
 return nil
 
-        end)
+        end, hEnv("Havoc.jobs.freecam"))()
     end)
     hInst("helpers", "Folder", "Havoc.jobs.helpers", "Havoc.jobs")
     hMod("freecam", "ModuleScript", "Havoc.jobs.helpers.freecam", "Havoc.jobs.helpers", function()
-        return (function(...)
+        return setfenv(function(...)
 
 
 
@@ -3438,10 +3458,10 @@ return {
 	DisableFreecam = DisableFreecam,
 }
 
-        end)
+        end, hEnv("Havoc.jobs.helpers.freecam"))()
     end)
     hMod("get-selected-player", "ModuleScript", "Havoc.jobs.helpers.get-selected-player", "Havoc.jobs.helpers", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Players = TS.import(script, TS.getModule(script, "@rbxts", "services")).Players
@@ -3470,10 +3490,10 @@ return {
 	getSelectedPlayer = getSelectedPlayer,
 }
 
-        end)
+        end, hEnv("Havoc.jobs.helpers.get-selected-player"))()
     end)
     hMod("job-store", "ModuleScript", "Havoc.jobs.helpers.job-store", "Havoc.jobs.helpers", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local setInterval = TS.import(script, script.Parent.Parent.Parent, "utils", "timeout").setInterval
@@ -3539,11 +3559,11 @@ return {
 	onJobChange = onJobChange,
 }
 
-        end)
+        end, hEnv("Havoc.jobs.helpers.job-store"))()
     end)
     hInst("players", "Folder", "Havoc.jobs.players", "Havoc.jobs")
     hMod("facebang", "ModuleScript", "Havoc.jobs.players.facebang", "Havoc.jobs.players", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _services = TS.import(script, TS.getModule(script, "@rbxts", "services"))
@@ -3680,10 +3700,10 @@ onJobChange("facebang", function(job, state)
 end)
 return nil
 
-        end)
+        end, hEnv("Havoc.jobs.players.facebang"))()
     end)
     hMod("hide", "ModuleScript", "Havoc.jobs.players.hide", "Havoc.jobs.players", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Players = TS.import(script, TS.getModule(script, "@rbxts", "services")).Players
@@ -3762,10 +3782,10 @@ main():catch(function(err)
 end)
 return nil
 
-        end)
+        end, hEnv("Havoc.jobs.players.hide"))()
     end)
     hMod("kill", "ModuleScript", "Havoc.jobs.players.kill", "Havoc.jobs.players", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _services = TS.import(script, TS.getModule(script, "@rbxts", "services"))
@@ -3918,10 +3938,10 @@ main():catch(function(err)
 end)
 return nil
 
-        end)
+        end, hEnv("Havoc.jobs.players.kill"))()
     end)
     hMod("spectate", "ModuleScript", "Havoc.jobs.players.spectate", "Havoc.jobs.players", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Workspace = TS.import(script, TS.getModule(script, "@rbxts", "services")).Workspace
@@ -3982,10 +4002,10 @@ main():catch(function(err)
 end)
 return nil
 
-        end)
+        end, hEnv("Havoc.jobs.players.spectate"))()
     end)
     hMod("teleport", "ModuleScript", "Havoc.jobs.players.teleport", "Havoc.jobs.players", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Players = TS.import(script, TS.getModule(script, "@rbxts", "services")).Players
@@ -4040,10 +4060,10 @@ main():catch(function(err)
 end)
 return nil
 
-        end)
+        end, hEnv("Havoc.jobs.players.teleport"))()
     end)
     hMod("server", "ModuleScript", "Havoc.jobs.server", "Havoc.jobs", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local _services = TS.import(script, TS.getModule(script, "@rbxts", "services"))
@@ -4150,10 +4170,10 @@ main():catch(function(err)
 end)
 return nil
 
-        end)
+        end, hEnv("Havoc.jobs.server"))()
     end)
     hMod("main", "LocalScript", "Havoc.main", "Havoc", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.include.RuntimeLib)
 local Make = TS.import(script, TS.getModule(script, "@rbxts", "make"))
@@ -4196,6 +4216,7 @@ local mount = TS.async(function(store)
 		end
 	end
 	if not appInstance then
+		container:Destroy()
 		error("[Havoc] Mount timed out after " .. (tostring(MOUNT_TIMEOUT) .. "s. ScreenGui not found."))
 	end
 	return appInstance
@@ -4230,7 +4251,7 @@ local main = TS.async(function()
 		setStore(store)
 		local app = TS.await(mount(store))
 		render(app)
-		if time() > 3 then
+		if time() > 2 then
 			task.defer(function()
 				return store:dispatch(toggleDashboard())
 			end)
@@ -4246,12 +4267,12 @@ main():catch(function(err)
 	warn("[Havoc] Fatal startup error: " .. tostring(err))
 end)
 
-        end)
+        end, hEnv("Havoc.main"))()
     end)
     hInst("store", "Folder", "Havoc.store", "Havoc")
     hInst("actions", "Folder", "Havoc.store.actions", "Havoc.store")
     hMod("dashboard.action", "ModuleScript", "Havoc.store.actions.dashboard.action", "Havoc.store.actions", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Rodux = TS.import(script, TS.getModule(script, "@rbxts", "rodux").src)
@@ -4288,10 +4309,10 @@ return {
 	playerDeselected = playerDeselected,
 }
 
-        end)
+        end, hEnv("Havoc.store.actions.dashboard.action"))()
     end)
     hMod("jobs.action", "ModuleScript", "Havoc.store.actions.jobs.action", "Havoc.store.actions", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local setJobActive = function(jobName, active)
 	return {
@@ -4321,10 +4342,10 @@ return {
 	setJobSlider = setJobSlider,
 }
 
-        end)
+        end, hEnv("Havoc.store.actions.jobs.action"))()
     end)
     hMod("options.action", "ModuleScript", "Havoc.store.actions.options.action", "Havoc.store.actions", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Rodux = TS.import(script, TS.getModule(script, "@rbxts", "rodux").src)
@@ -4357,11 +4378,11 @@ return {
 	setTheme = setTheme,
 }
 
-        end)
+        end, hEnv("Havoc.store.actions.options.action"))()
     end)
     hInst("models", "Folder", "Havoc.store.models", "Havoc.store")
     hMod("dashboard.model", "ModuleScript", "Havoc.store.models.dashboard.model", "Havoc.store.models", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local DashboardPage
 do
@@ -4400,26 +4421,26 @@ return {
 	PAGE_TO_ICON = PAGE_TO_ICON,
 }
 
-        end)
+        end, hEnv("Havoc.store.models.dashboard.model"))()
     end)
     hMod("jobs.model", "ModuleScript", "Havoc.store.models.jobs.model", "Havoc.store.models", function()
-        return (function(...)
+        return setfenv(function(...)
 
 
-        end)
+        end, hEnv("Havoc.store.models.jobs.model"))()
     end)
     hMod("options.model", "ModuleScript", "Havoc.store.models.options.model", "Havoc.store.models", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local __FIX_OPTIONS = true
 return {
 	__FIX_OPTIONS = __FIX_OPTIONS,
 }
 
-        end)
+        end, hEnv("Havoc.store.models.options.model"))()
     end)
     hMod("persistent-state", "ModuleScript", "Havoc.store.persistent-state", "Havoc.store", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local _services = TS.import(script, TS.getModule(script, "@rbxts", "services"))
@@ -4486,11 +4507,11 @@ return {
 	persistentState = persistentState,
 }
 
-        end)
+        end, hEnv("Havoc.store.persistent-state"))()
     end)
     hInst("reducers", "Folder", "Havoc.store.reducers", "Havoc.store")
     hMod("dashboard.reducer", "ModuleScript", "Havoc.store.reducers.dashboard.reducer", "Havoc.store.reducers", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Rodux = TS.import(script, TS.getModule(script, "@rbxts", "rodux").src)
@@ -4569,10 +4590,10 @@ return {
 	dashboardReducer = dashboardReducer,
 }
 
-        end)
+        end, hEnv("Havoc.store.reducers.dashboard.reducer"))()
     end)
     hMod("jobs.reducer", "ModuleScript", "Havoc.store.reducers.jobs.reducer", "Havoc.store.reducers", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Rodux = TS.import(script, TS.getModule(script, "@rbxts", "rodux").src)
@@ -4686,10 +4707,10 @@ return {
 	jobsReducer = jobsReducer,
 }
 
-        end)
+        end, hEnv("Havoc.store.reducers.jobs.reducer"))()
     end)
     hMod("options.reducer", "ModuleScript", "Havoc.store.reducers.options.reducer", "Havoc.store.reducers", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Rodux = TS.import(script, TS.getModule(script, "@rbxts", "rodux").src)
@@ -4761,10 +4782,10 @@ return {
 	optionsReducer = optionsReducer,
 }
 
-        end)
+        end, hEnv("Havoc.store.reducers.options.reducer"))()
     end)
     hMod("store", "ModuleScript", "Havoc.store.store", "Havoc.store", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Rodux = TS.import(script, TS.getModule(script, "@rbxts", "rodux").src)
@@ -4783,10 +4804,10 @@ return {
 	configureStore = configureStore,
 }
 
-        end)
+        end, hEnv("Havoc.store.store"))()
     end)
     hMod("theme", "ModuleScript", "Havoc.theme", "Havoc", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local UI_COLORS = {
 	Accent = Color3.fromRGB(235, 76, 105),
@@ -4818,10 +4839,10 @@ return {
 	UI_LAYOUT = UI_LAYOUT,
 }
 
-        end)
+        end, hEnv("Havoc.theme"))()
     end)
     hMod("themes", "ModuleScript", "Havoc.themes", "Havoc", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.include.RuntimeLib)
 local darkTheme = TS.import(script, script, "sorbet").darkTheme
@@ -4873,10 +4894,10 @@ return {
 	darkTheme = darkTheme,
 }
 
-        end)
+        end, hEnv("Havoc.themes"))()
     end)
     hMod("crimson", "ModuleScript", "Havoc.themes.crimson", "Havoc.themes", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local darkTheme = TS.import(script, script.Parent, "sorbet").darkTheme
@@ -5150,10 +5171,10 @@ return {
 	crimson = crimson,
 }
 
-        end)
+        end, hEnv("Havoc.themes.crimson"))()
     end)
     hMod("frosted-glass", "ModuleScript", "Havoc.themes.frosted-glass", "Havoc.themes", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local darkTheme = TS.import(script, script.Parent, "sorbet").darkTheme
@@ -5442,10 +5463,10 @@ return {
 	frostedGlass = frostedGlass,
 }
 
-        end)
+        end, hEnv("Havoc.themes.frosted-glass"))()
     end)
     hMod("high-contrast", "ModuleScript", "Havoc.themes.high-contrast", "Havoc.themes", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local darkTheme = TS.import(script, script.Parent, "sorbet").darkTheme
@@ -5685,10 +5706,10 @@ return {
 	highContrast = highContrast,
 }
 
-        end)
+        end, hEnv("Havoc.themes.high-contrast"))()
     end)
     hMod("light-theme", "ModuleScript", "Havoc.themes.light-theme", "Havoc.themes", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local darkTheme = TS.import(script, script.Parent, "sorbet").darkTheme
@@ -5921,10 +5942,10 @@ return {
 	lightTheme = lightTheme,
 }
 
-        end)
+        end, hEnv("Havoc.themes.light-theme"))()
     end)
     hMod("obsidian", "ModuleScript", "Havoc.themes.obsidian", "Havoc.themes", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local darkTheme = TS.import(script, script.Parent, "sorbet").darkTheme
@@ -6244,10 +6265,10 @@ return {
 	obsidian = obsidian,
 }
 
-        end)
+        end, hEnv("Havoc.themes.obsidian"))()
     end)
     hMod("sorbet", "ModuleScript", "Havoc.themes.sorbet", "Havoc.themes", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local hex = TS.import(script, script.Parent.Parent, "utils", "color3").hex
@@ -6498,17 +6519,17 @@ return {
 	darkTheme = darkTheme,
 }
 
-        end)
+        end, hEnv("Havoc.themes.sorbet"))()
     end)
     hMod("theme.interface", "ModuleScript", "Havoc.themes.theme.interface", "Havoc.themes", function()
-        return (function(...)
+        return setfenv(function(...)
 
 
-        end)
+        end, hEnv("Havoc.themes.theme.interface"))()
     end)
     hInst("utils", "Folder", "Havoc.utils", "Havoc")
     hMod("array-util", "ModuleScript", "Havoc.utils.array-util", "Havoc.utils", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local function arrayToMap(arr, mapper)
 	
@@ -6527,10 +6548,10 @@ return {
 	arrayToMap = arrayToMap,
 }
 
-        end)
+        end, hEnv("Havoc.utils.array-util"))()
     end)
     hMod("binding-util", "ModuleScript", "Havoc.utils.binding-util", "Havoc.utils", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -6549,10 +6570,10 @@ return {
 	asBinding = asBinding,
 }
 
-        end)
+        end, hEnv("Havoc.utils.binding-util"))()
     end)
     hMod("color3", "ModuleScript", "Havoc.utils.color3", "Havoc.utils", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local function getLuminance(color)
 	if typeof(color) == "ColorSequence" then
@@ -6610,10 +6631,10 @@ return {
 	hsl = hsl,
 }
 
-        end)
+        end, hEnv("Havoc.utils.color3"))()
     end)
     hMod("debug", "ModuleScript", "Havoc.utils.debug", "Havoc.utils", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Stats = TS.import(script, TS.getModule(script, "@rbxts", "services")).Stats
@@ -6672,10 +6693,10 @@ return {
 	logger = logger,
 }
 
-        end)
+        end, hEnv("Havoc.utils.debug"))()
     end)
     hMod("http", "ModuleScript", "Havoc.utils.http", "Havoc.utils", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local HttpService = TS.import(script, TS.getModule(script, "@rbxts", "services")).HttpService
@@ -6704,10 +6725,10 @@ return {
 	post = post,
 }
 
-        end)
+        end, hEnv("Havoc.utils.http"))()
     end)
     hMod("number-util", "ModuleScript", "Havoc.utils.number-util", "Havoc.utils", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local function map(n, min0, max0, min1, max1)
 	return min1 + ((n - min0) * (max1 - min1)) / (max0 - min0)
@@ -6720,10 +6741,10 @@ return {
 	lerp = lerp,
 }
 
-        end)
+        end, hEnv("Havoc.utils.number-util"))()
     end)
     hMod("timeout", "ModuleScript", "Havoc.utils.timeout", "Havoc.utils", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local RunService = TS.import(script, TS.getModule(script, "@rbxts", "services")).RunService
@@ -6808,10 +6829,10 @@ return {
 	Interval = Interval,
 }
 
-        end)
+        end, hEnv("Havoc.utils.timeout"))()
     end)
     hMod("udim2", "ModuleScript", "Havoc.utils.udim2", "Havoc.utils", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local function px(x, y)
 	return UDim2.new(0, x, 0, y)
@@ -6831,21 +6852,21 @@ return {
 	applyUDim2 = applyUDim2,
 }
 
-        end)
+        end, hEnv("Havoc.utils.udim2"))()
     end)
     hInst("views", "Folder", "Havoc.views", "Havoc")
     hMod("Clock", "ModuleScript", "Havoc.views.Clock", "Havoc.views", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Clock").default
 return exports
 
-        end)
+        end, hEnv("Havoc.views.Clock"))()
     end)
     hMod("Clock", "ModuleScript", "Havoc.views.Clock.Clock", "Havoc.views.Clock", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -6965,20 +6986,20 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.views.Clock.Clock"))()
     end)
     hMod("Dashboard", "ModuleScript", "Havoc.views.Dashboard", "Havoc.views", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Dashboard").default
 return exports
 
-        end)
+        end, hEnv("Havoc.views.Dashboard"))()
     end)
     hMod("Dashboard", "ModuleScript", "Havoc.views.Dashboard.Dashboard", "Havoc.views.Dashboard", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -7073,10 +7094,10 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.views.Dashboard.Dashboard"))()
     end)
     hMod("Dashboard.story", "ModuleScript", "Havoc.views.Dashboard.Dashboard.story", "Havoc.views.Dashboard", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -7102,20 +7123,20 @@ return function(target)
 	end
 end
 
-        end)
+        end, hEnv("Havoc.views.Dashboard.Dashboard.story"))()
     end)
     hMod("Hint", "ModuleScript", "Havoc.views.Hint", "Havoc.views", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Hint").default
 return exports
 
-        end)
+        end, hEnv("Havoc.views.Hint"))()
     end)
     hMod("Hint", "ModuleScript", "Havoc.views.Hint.Hint", "Havoc.views.Hint", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -7174,20 +7195,20 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.views.Hint.Hint"))()
     end)
     hMod("Navbar", "ModuleScript", "Havoc.views.Navbar", "Havoc.views", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Navbar").default
 return exports
 
-        end)
+        end, hEnv("Havoc.views.Navbar"))()
     end)
     hMod("Navbar", "ModuleScript", "Havoc.views.Navbar.Navbar", "Havoc.views.Navbar", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -7346,10 +7367,10 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.views.Navbar.Navbar"))()
     end)
     hMod("Navbar.story", "ModuleScript", "Havoc.views.Navbar.Navbar.story", "Havoc.views.Navbar", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -7375,10 +7396,10 @@ return function(target)
 	end
 end
 
-        end)
+        end, hEnv("Havoc.views.Navbar.Navbar.story"))()
     end)
     hMod("NavbarTab", "ModuleScript", "Havoc.views.Navbar.NavbarTab", "Havoc.views.Navbar", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -7443,30 +7464,30 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.views.Navbar.NavbarTab"))()
     end)
     hMod("Pages", "ModuleScript", "Havoc.views.Pages", "Havoc.views", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Pages").default
 return exports
 
-        end)
+        end, hEnv("Havoc.views.Pages"))()
     end)
     hMod("Apps", "ModuleScript", "Havoc.views.Pages.Apps", "Havoc.views.Pages", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Apps").default
 return exports
 
-        end)
+        end, hEnv("Havoc.views.Pages.Apps"))()
     end)
     hMod("Apps", "ModuleScript", "Havoc.views.Pages.Apps.Apps", "Havoc.views.Pages.Apps", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -7492,20 +7513,20 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.views.Pages.Apps.Apps"))()
     end)
     hMod("Players", "ModuleScript", "Havoc.views.Pages.Apps.Players", "Havoc.views.Pages.Apps", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Players").default
 return exports
 
-        end)
+        end, hEnv("Havoc.views.Pages.Apps.Players"))()
     end)
     hMod("Actions", "ModuleScript", "Havoc.views.Pages.Apps.Players.Actions", "Havoc.views.Pages.Apps.Players", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -7559,10 +7580,10 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.views.Pages.Apps.Players.Actions"))()
     end)
     hMod("Avatar", "ModuleScript", "Havoc.views.Pages.Apps.Players.Avatar", "Havoc.views.Pages.Apps.Players", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -7617,10 +7638,10 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.views.Pages.Apps.Players.Avatar"))()
     end)
     hMod("Players", "ModuleScript", "Havoc.views.Pages.Apps.Players.Players", "Havoc.views.Pages.Apps.Players", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -7653,10 +7674,10 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.views.Pages.Apps.Players.Players"))()
     end)
     hMod("Selection", "ModuleScript", "Havoc.views.Pages.Apps.Players.Selection", "Havoc.views.Pages.Apps.Players", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -7982,10 +8003,10 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.views.Pages.Apps.Players.Selection"))()
     end)
     hMod("Username", "ModuleScript", "Havoc.views.Pages.Apps.Players.Username", "Havoc.views.Pages.Apps.Players", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -8041,30 +8062,30 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.views.Pages.Apps.Players.Username"))()
     end)
     hMod("Home", "ModuleScript", "Havoc.views.Pages.Home", "Havoc.views.Pages", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Home").default
 return exports
 
-        end)
+        end, hEnv("Havoc.views.Pages.Home"))()
     end)
     hMod("FriendActivity", "ModuleScript", "Havoc.views.Pages.Home.FriendActivity", "Havoc.views.Pages.Home", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "FriendActivity").default
 return exports
 
-        end)
+        end, hEnv("Havoc.views.Pages.Home.FriendActivity"))()
     end)
     hMod("FriendActivity", "ModuleScript", "Havoc.views.Pages.Home.FriendActivity.FriendActivity", "Havoc.views.Pages.Home.FriendActivity", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -8169,10 +8190,10 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.views.Pages.Home.FriendActivity.FriendActivity"))()
     end)
     hMod("FriendItem", "ModuleScript", "Havoc.views.Pages.Home.FriendActivity.FriendItem", "Havoc.views.Pages.Home.FriendActivity", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -8286,10 +8307,10 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.views.Pages.Home.FriendActivity.FriendItem"))()
     end)
     hMod("GameItem", "ModuleScript", "Havoc.views.Pages.Home.FriendActivity.GameItem", "Havoc.views.Pages.Home.FriendActivity", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -8374,10 +8395,10 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.views.Pages.Home.FriendActivity.GameItem"))()
     end)
     hMod("Home", "ModuleScript", "Havoc.views.Pages.Home.Home", "Havoc.views.Pages.Home", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -8409,20 +8430,20 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.views.Pages.Home.Home"))()
     end)
     hMod("Profile", "ModuleScript", "Havoc.views.Pages.Home.Profile", "Havoc.views.Pages.Home", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Profile").default
 return exports
 
-        end)
+        end, hEnv("Havoc.views.Pages.Home.Profile"))()
     end)
     hMod("Actions", "ModuleScript", "Havoc.views.Pages.Home.Profile.Actions", "Havoc.views.Pages.Home.Profile", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -8475,10 +8496,10 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.views.Pages.Home.Profile.Actions"))()
     end)
     hMod("Avatar", "ModuleScript", "Havoc.views.Pages.Home.Profile.Avatar", "Havoc.views.Pages.Home.Profile", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -8524,10 +8545,10 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.views.Pages.Home.Profile.Avatar"))()
     end)
     hMod("Info", "ModuleScript", "Havoc.views.Pages.Home.Profile.Info", "Havoc.views.Pages.Home.Profile", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -8644,10 +8665,10 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.views.Pages.Home.Profile.Info"))()
     end)
     hMod("Profile", "ModuleScript", "Havoc.views.Pages.Home.Profile.Profile", "Havoc.views.Pages.Home.Profile", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -8690,10 +8711,10 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.views.Pages.Home.Profile.Profile"))()
     end)
     hMod("Sliders", "ModuleScript", "Havoc.views.Pages.Home.Profile.Sliders", "Havoc.views.Pages.Home.Profile", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -8868,10 +8889,10 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.views.Pages.Home.Profile.Sliders"))()
     end)
     hMod("Username", "ModuleScript", "Havoc.views.Pages.Home.Profile.Username", "Havoc.views.Pages.Home.Profile", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -8917,20 +8938,20 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.views.Pages.Home.Profile.Username"))()
     end)
     hMod("Server", "ModuleScript", "Havoc.views.Pages.Home.Server", "Havoc.views.Pages.Home", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Server").default
 return exports
 
-        end)
+        end, hEnv("Havoc.views.Pages.Home.Server"))()
     end)
     hMod("Server", "ModuleScript", "Havoc.views.Pages.Home.Server.Server", "Havoc.views.Pages.Home.Server", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -9012,10 +9033,10 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.views.Pages.Home.Server.Server"))()
     end)
     hMod("ServerAction", "ModuleScript", "Havoc.views.Pages.Home.Server.ServerAction", "Havoc.views.Pages.Home.Server", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -9112,10 +9133,10 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.views.Pages.Home.Server.ServerAction"))()
     end)
     hMod("StatusLabel", "ModuleScript", "Havoc.views.Pages.Home.Server.StatusLabel", "Havoc.views.Pages.Home.Server", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -9182,10 +9203,10 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.views.Pages.Home.Server.StatusLabel"))()
     end)
     hMod("Title", "ModuleScript", "Havoc.views.Pages.Home.Title", "Havoc.views.Pages.Home", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -9324,20 +9345,20 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.views.Pages.Home.Title"))()
     end)
     hMod("Misc", "ModuleScript", "Havoc.views.Pages.Misc", "Havoc.views.Pages", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Misc").default
 return exports
 
-        end)
+        end, hEnv("Havoc.views.Pages.Misc"))()
     end)
     hMod("FacebangModal", "ModuleScript", "Havoc.views.Pages.Misc.FacebangModal", "Havoc.views.Pages.Misc", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -9653,10 +9674,10 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.views.Pages.Misc.FacebangModal"))()
     end)
     hMod("Misc", "ModuleScript", "Havoc.views.Pages.Misc.Misc", "Havoc.views.Pages.Misc", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -9771,30 +9792,30 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.views.Pages.Misc.Misc"))()
     end)
     hMod("Options", "ModuleScript", "Havoc.views.Pages.Options", "Havoc.views.Pages", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Options").default
 return exports
 
-        end)
+        end, hEnv("Havoc.views.Pages.Options"))()
     end)
     hMod("Config", "ModuleScript", "Havoc.views.Pages.Options.Config", "Havoc.views.Pages.Options", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Config").default
 return exports
 
-        end)
+        end, hEnv("Havoc.views.Pages.Options.Config"))()
     end)
     hMod("Config", "ModuleScript", "Havoc.views.Pages.Options.Config.Config", "Havoc.views.Pages.Options.Config", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -9864,10 +9885,10 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.views.Pages.Options.Config.Config"))()
     end)
     hMod("ConfigItem", "ModuleScript", "Havoc.views.Pages.Options.Config.ConfigItem", "Havoc.views.Pages.Options.Config", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -10020,10 +10041,10 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.views.Pages.Options.Config.ConfigItem"))()
     end)
     hMod("Options", "ModuleScript", "Havoc.views.Pages.Options.Options", "Havoc.views.Pages.Options", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -10053,20 +10074,20 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.views.Pages.Options.Options"))()
     end)
     hMod("Shortcuts", "ModuleScript", "Havoc.views.Pages.Options.Shortcuts", "Havoc.views.Pages.Options", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Shortcuts").default
 return exports
 
-        end)
+        end, hEnv("Havoc.views.Pages.Options.Shortcuts"))()
     end)
     hMod("ShortcutItem", "ModuleScript", "Havoc.views.Pages.Options.Shortcuts.ShortcutItem", "Havoc.views.Pages.Options.Shortcuts", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -10315,10 +10336,10 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.views.Pages.Options.Shortcuts.ShortcutItem"))()
     end)
     hMod("Shortcuts", "ModuleScript", "Havoc.views.Pages.Options.Shortcuts.Shortcuts", "Havoc.views.Pages.Options.Shortcuts", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -10476,20 +10497,20 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.views.Pages.Options.Shortcuts.Shortcuts"))()
     end)
     hMod("Themes", "ModuleScript", "Havoc.views.Pages.Options.Themes", "Havoc.views.Pages.Options", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Themes").default
 return exports
 
-        end)
+        end, hEnv("Havoc.views.Pages.Options.Themes"))()
     end)
     hMod("ThemeItem", "ModuleScript", "Havoc.views.Pages.Options.Themes.ThemeItem", "Havoc.views.Pages.Options.Themes", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -10727,10 +10748,10 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.views.Pages.Options.Themes.ThemeItem"))()
     end)
     hMod("Themes", "ModuleScript", "Havoc.views.Pages.Options.Themes.Themes", "Havoc.views.Pages.Options.Themes", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -10813,10 +10834,10 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.views.Pages.Options.Themes.Themes"))()
     end)
     hMod("Pages", "ModuleScript", "Havoc.views.Pages.Pages", "Havoc.views.Pages", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -10907,20 +10928,20 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.views.Pages.Pages"))()
     end)
     hMod("Scripts", "ModuleScript", "Havoc.views.Pages.Scripts", "Havoc.views.Pages", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Scripts").default
 return exports
 
-        end)
+        end, hEnv("Havoc.views.Pages.Scripts"))()
     end)
     hMod("Content", "ModuleScript", "Havoc.views.Pages.Scripts.Content", "Havoc.views.Pages.Scripts", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -11067,10 +11088,10 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.views.Pages.Scripts.Content"))()
     end)
     hMod("ScriptCard", "ModuleScript", "Havoc.views.Pages.Scripts.ScriptCard", "Havoc.views.Pages.Scripts", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -11253,10 +11274,10 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.views.Pages.Scripts.ScriptCard"))()
     end)
     hMod("Scripts", "ModuleScript", "Havoc.views.Pages.Scripts.Scripts", "Havoc.views.Pages.Scripts", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -11432,10 +11453,10 @@ return {
 	default = default,
 }
 
-        end)
+        end, hEnv("Havoc.views.Pages.Scripts.Scripts"))()
     end)
     hMod("constants", "ModuleScript", "Havoc.views.Pages.Scripts.constants", "Havoc.views.Pages.Scripts", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local BASE_WINDOW_HEIGHT = 880
 local BASE_WINDOW_WIDTH = 1824
@@ -11446,11 +11467,11 @@ return {
 	BASE_PADDING = BASE_PADDING,
 }
 
-        end)
+        end, hEnv("Havoc.views.Pages.Scripts.constants"))()
     end)
     hInst("include", "Folder", "Havoc.include", "Havoc")
     hMod("Promise", "ModuleScript", "Havoc.include.Promise", "Havoc.include", function()
-        return (function(...)
+        return setfenv(function(...)
 
 	An implementation of Promises similar to Promise/A+.
 ]]
@@ -12854,10 +12875,10 @@ end
 
 return Promise
 
-        end)
+        end, hEnv("Havoc.include.Promise"))()
     end)
     hMod("RuntimeLib", "ModuleScript", "Havoc.include.RuntimeLib", "Havoc.include", function()
-        return (function(...)
+        return setfenv(function(...)
 local Promise = require(script.Parent.Promise)
 
 local RunService = game:GetService("RunService")
@@ -13088,7 +13109,7 @@ end
 
 return TS
 
-        end)
+        end, hEnv("Havoc.include.RuntimeLib"))()
     end)
     hInst("node_modules", "Folder", "Havoc.include.node_modules", "Havoc.include")
     hInst("compiler-types", "Folder", "Havoc.include.node_modules.compiler-types", "Havoc.include.node_modules")
@@ -13097,7 +13118,7 @@ return TS
     hInst("types", "Folder", "Havoc.include.node_modules.exploit-types.types", "Havoc.include.node_modules.exploit-types")
     hInst("flipper", "Folder", "Havoc.include.node_modules.flipper", "Havoc.include.node_modules")
     hMod("src", "ModuleScript", "Havoc.include.node_modules.flipper.src", "Havoc.include.node_modules.flipper", function()
-        return (function(...)
+        return setfenv(function(...)
 local Flipper = {
 	SingleMotor = require(script.SingleMotor),
 	GroupMotor = require(script.GroupMotor),
@@ -13110,11 +13131,11 @@ local Flipper = {
 }
 
 return Flipper
-        end)
+        end, hEnv("Havoc.include.node_modules.flipper.src"))()
     end)
     hInst("typings", "Folder", "Havoc.include.node_modules.flipper.typings", "Havoc.include.node_modules.flipper")
     hMod("make", "ModuleScript", "Havoc.include.node_modules.make", "Havoc.include.node_modules", function()
-        return (function(...)
+        return setfenv(function(...)
 
 
 	*
@@ -13158,14 +13179,14 @@ local function Make(className, settings)
 end
 return Make
 
-        end)
+        end, hEnv("Havoc.include.node_modules.make"))()
     end)
     hInst("node_modules", "Folder", "Havoc.include.node_modules.make.node_modules", "Havoc.include.node_modules.make")
     hInst("@rbxts", "Folder", "Havoc.include.node_modules.make.node_modules.@rbxts", "Havoc.include.node_modules.make.node_modules")
     hInst("compiler-types", "Folder", "Havoc.include.node_modules.make.node_modules.@rbxts.compiler-types", "Havoc.include.node_modules.make.node_modules.@rbxts")
     hInst("types", "Folder", "Havoc.include.node_modules.make.node_modules.@rbxts.compiler-types.types", "Havoc.include.node_modules.make.node_modules.@rbxts.compiler-types")
     hMod("object-utils", "ModuleScript", "Havoc.include.node_modules.object-utils", "Havoc.include.node_modules", function()
-        return (function(...)
+        return setfenv(function(...)
 local HttpService = game:GetService("HttpService")
 
 local Object = {}
@@ -13285,11 +13306,11 @@ end
 
 return Object
 
-        end)
+        end, hEnv("Havoc.include.node_modules.object-utils"))()
     end)
     hInst("roact", "Folder", "Havoc.include.node_modules.roact", "Havoc.include.node_modules")
     hMod("src", "ModuleScript", "Havoc.include.node_modules.roact.src", "Havoc.include.node_modules.roact", function()
-        return (function(...)
+        return setfenv(function(...)
 
 	Packages up the internals of Roact and exposes a public API for it.
 ]]
@@ -13339,11 +13360,11 @@ local Roact = strict {
 }
 
 return Roact
-        end)
+        end, hEnv("Havoc.include.node_modules.roact.src"))()
     end)
     hInst("roact-hooked", "Folder", "Havoc.include.node_modules.roact-hooked", "Havoc.include.node_modules")
     hMod("out", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out", "Havoc.include.node_modules.roact-hooked", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = _G[script]
 local exports = {}
@@ -13397,10 +13418,10 @@ exports.hooked = hooked
 exports.pure = pure
 return exports
 
-        end)
+        end, hEnv("Havoc.include.node_modules.roact-hooked.out"))()
     end)
     hMod("hooks", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks", "Havoc.include.node_modules.roact-hooked.out", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = _G[script]
 local exports = {}
@@ -13415,10 +13436,10 @@ exports.useMutable = TS.import(script, script, "use-mutable").useMutable
 exports.useRef = TS.import(script, script, "use-ref").useRef
 return exports
 
-        end)
+        end, hEnv("Havoc.include.node_modules.roact-hooked.out.hooks"))()
     end)
     hMod("use-binding", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-binding", "Havoc.include.node_modules.roact-hooked.out.hooks", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = _G[script]
 local createBinding = TS.import(script, TS.getModule(script, "@rbxts", "roact").src).createBinding
@@ -13449,10 +13470,10 @@ return {
 	useBinding = useBinding,
 }
 
-        end)
+        end, hEnv("Havoc.include.node_modules.roact-hooked.out.hooks.use-binding"))()
     end)
     hMod("use-callback", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-callback", "Havoc.include.node_modules.roact-hooked.out.hooks", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = _G[script]
 local useMemo = TS.import(script, script.Parent, "use-memo").useMemo
@@ -13488,10 +13509,10 @@ return {
 	useCallback = useCallback,
 }
 
-        end)
+        end, hEnv("Havoc.include.node_modules.roact-hooked.out.hooks.use-callback"))()
     end)
     hMod("use-context", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-context", "Havoc.include.node_modules.roact-hooked.out.hooks", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = _G[script]
 
@@ -13547,10 +13568,10 @@ return {
 	useContext = useContext,
 }
 
-        end)
+        end, hEnv("Havoc.include.node_modules.roact-hooked.out.hooks.use-context"))()
     end)
     hMod("use-effect", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-effect", "Havoc.include.node_modules.roact-hooked.out.hooks", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = _G[script]
 local areDepsEqual = TS.import(script, script.Parent.Parent, "utils", "are-deps-equal").areDepsEqual
@@ -13627,10 +13648,10 @@ return {
 	useEffect = useEffect,
 }
 
-        end)
+        end, hEnv("Havoc.include.node_modules.roact-hooked.out.hooks.use-effect"))()
     end)
     hMod("use-memo", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-memo", "Havoc.include.node_modules.roact-hooked.out.hooks", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = _G[script]
 local areDepsEqual = TS.import(script, script.Parent.Parent, "utils", "are-deps-equal").areDepsEqual
@@ -13673,10 +13694,10 @@ return {
 	useMemo = useMemo,
 }
 
-        end)
+        end, hEnv("Havoc.include.node_modules.roact-hooked.out.hooks.use-memo"))()
     end)
     hMod("use-mutable", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-mutable", "Havoc.include.node_modules.roact-hooked.out.hooks", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = _G[script]
 local memoizedHook = TS.import(script, script.Parent.Parent, "utils", "memoized-hook").memoizedHook
@@ -13778,10 +13799,10 @@ return {
 	useMutable = useMutable,
 }
 
-        end)
+        end, hEnv("Havoc.include.node_modules.roact-hooked.out.hooks.use-mutable"))()
     end)
     hMod("use-reducer", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-reducer", "Havoc.include.node_modules.roact-hooked.out.hooks", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = _G[script]
 local _memoized_hook = TS.import(script, script.Parent.Parent, "utils", "memoized-hook")
@@ -13929,10 +13950,10 @@ return {
 	useReducer = useReducer,
 }
 
-        end)
+        end, hEnv("Havoc.include.node_modules.roact-hooked.out.hooks.use-reducer"))()
     end)
     hMod("use-ref", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-ref", "Havoc.include.node_modules.roact-hooked.out.hooks", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = _G[script]
 local createRef = TS.import(script, TS.getModule(script, "@rbxts", "roact").src).createRef
@@ -13971,10 +13992,10 @@ return {
 	useRef = useRef,
 }
 
-        end)
+        end, hEnv("Havoc.include.node_modules.roact-hooked.out.hooks.use-ref"))()
     end)
     hMod("use-state", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-state", "Havoc.include.node_modules.roact-hooked.out.hooks", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = _G[script]
 local useReducer = TS.import(script, script.Parent, "use-reducer").useReducer
@@ -14076,10 +14097,10 @@ return {
 	useState = useState,
 }
 
-        end)
+        end, hEnv("Havoc.include.node_modules.roact-hooked.out.hooks.use-state"))()
     end)
     hMod("types", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.types", "Havoc.include.node_modules.roact-hooked.out", function()
-        return (function(...)
+        return setfenv(function(...)
 
 
 
@@ -14087,11 +14108,11 @@ return {
 
 return nil
 
-        end)
+        end, hEnv("Havoc.include.node_modules.roact-hooked.out.types"))()
     end)
     hInst("utils", "Folder", "Havoc.include.node_modules.roact-hooked.out.utils", "Havoc.include.node_modules.roact-hooked.out")
     hMod("are-deps-equal", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.utils.are-deps-equal", "Havoc.include.node_modules.roact-hooked.out.utils", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local function areDepsEqual(nextDeps, prevDeps)
 	if prevDeps == nil then
@@ -14124,10 +14145,10 @@ return {
 	areDepsEqual = areDepsEqual,
 }
 
-        end)
+        end, hEnv("Havoc.include.node_modules.roact-hooked.out.utils.are-deps-equal"))()
     end)
     hMod("memoized-hook", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.utils.memoized-hook", "Havoc.include.node_modules.roact-hooked.out.utils", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local EXCEPTION_INVALID_HOOK_CALL = table.concat({ "Invalid hook call. Hooks can only be called inside of the body of a function component.", "This is usually the result of conflicting versions of roact-hooked.", "See https://reactjs.org/link/invalid-hook-call for tips about how to debug and fix this problem." }, "\n")
 local EXCEPTION_RENDER_NOT_DONE = "Failed to render hook! (Another hooked component is rendering)"
@@ -14212,10 +14233,10 @@ return {
 	memoizedHook = memoizedHook,
 }
 
-        end)
+        end, hEnv("Havoc.include.node_modules.roact-hooked.out.utils.memoized-hook"))()
     end)
     hMod("with-hooks", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.with-hooks", "Havoc.include.node_modules.roact-hooked.out", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = _G[script]
 local exports = {}
@@ -14224,10 +14245,10 @@ exports.withHooks = _with_hooks.withHooks
 exports.withHooksPure = _with_hooks.withHooksPure
 return exports
 
-        end)
+        end, hEnv("Havoc.include.node_modules.roact-hooked.out.with-hooks"))()
     end)
     hMod("component-with-hooks", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.with-hooks.component-with-hooks", "Havoc.include.node_modules.roact-hooked.out.with-hooks", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = _G[script]
 local _memoized_hook = TS.import(script, script.Parent.Parent, "utils", "memoized-hook")
@@ -14323,10 +14344,10 @@ return {
 	ComponentWithHooks = ComponentWithHooks,
 }
 
-        end)
+        end, hEnv("Havoc.include.node_modules.roact-hooked.out.with-hooks.component-with-hooks"))()
     end)
     hMod("with-hooks", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.with-hooks.with-hooks", "Havoc.include.node_modules.roact-hooked.out.with-hooks", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = _G[script]
 local ComponentWithHooks = TS.import(script, script.Parent, "component-with-hooks").ComponentWithHooks
@@ -14363,11 +14384,11 @@ return {
 	withHooksPure = withHooksPure,
 }
 
-        end)
+        end, hEnv("Havoc.include.node_modules.roact-hooked.out.with-hooks.with-hooks"))()
     end)
     hInst("roact-rodux-hooked", "Folder", "Havoc.include.node_modules.roact-rodux-hooked", "Havoc.include.node_modules")
     hMod("out", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out", "Havoc.include.node_modules.roact-rodux-hooked", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = _G[script]
 local exports = {}
@@ -14379,11 +14400,11 @@ exports.shallowEqual = TS.import(script, script, "helpers", "shallow-equal").sha
 exports.RoactRoduxContext = TS.import(script, script, "components", "context").RoactRoduxContext
 return exports
 
-        end)
+        end, hEnv("Havoc.include.node_modules.roact-rodux-hooked.out"))()
     end)
     hInst("components", "Folder", "Havoc.include.node_modules.roact-rodux-hooked.out.components", "Havoc.include.node_modules.roact-rodux-hooked.out")
     hMod("context", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.components.context", "Havoc.include.node_modules.roact-rodux-hooked.out.components", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = _G[script]
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -14392,10 +14413,10 @@ return {
 	RoactRoduxContext = RoactRoduxContext,
 }
 
-        end)
+        end, hEnv("Havoc.include.node_modules.roact-rodux-hooked.out.components.context"))()
     end)
     hMod("provider", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.components.provider", "Havoc.include.node_modules.roact-rodux-hooked.out.components", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = _G[script]
 local RoactRoduxContext = TS.import(script, script.Parent, "context").RoactRoduxContext
@@ -14435,11 +14456,11 @@ return {
 	Provider = Provider,
 }
 
-        end)
+        end, hEnv("Havoc.include.node_modules.roact-rodux-hooked.out.components.provider"))()
     end)
     hInst("helpers", "Folder", "Havoc.include.node_modules.roact-rodux-hooked.out.helpers", "Havoc.include.node_modules.roact-rodux-hooked.out")
     hMod("shallow-equal", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.helpers.shallow-equal", "Havoc.include.node_modules.roact-rodux-hooked.out.helpers", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = _G[script]
 local Object = TS.import(script, TS.getModule(script, "@rbxts", "object-utils"))
@@ -14478,11 +14499,11 @@ return {
 	shallowEqual = shallowEqual,
 }
 
-        end)
+        end, hEnv("Havoc.include.node_modules.roact-rodux-hooked.out.helpers.shallow-equal"))()
     end)
     hInst("hooks", "Folder", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks", "Havoc.include.node_modules.roact-rodux-hooked.out")
     hMod("use-dispatch", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks.use-dispatch", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = _G[script]
 local useMutable = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).useMutable
@@ -14521,10 +14542,10 @@ return {
 	useDispatch = useDispatch,
 }
 
-        end)
+        end, hEnv("Havoc.include.node_modules.roact-rodux-hooked.out.hooks.use-dispatch"))()
     end)
     hMod("use-selector", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks.use-selector", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = _G[script]
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
@@ -14646,10 +14667,10 @@ return {
 	useSelector = useSelector,
 }
 
-        end)
+        end, hEnv("Havoc.include.node_modules.roact-rodux-hooked.out.hooks.use-selector"))()
     end)
     hMod("use-store", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks.use-store", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks", function()
-        return (function(...)
+        return setfenv(function(...)
 
 local TS = _G[script]
 local RoactRoduxContext = TS.import(script, script.Parent.Parent, "components", "context").RoactRoduxContext
@@ -14678,10 +14699,10 @@ return {
 	useStore = useStore,
 }
 
-        end)
+        end, hEnv("Havoc.include.node_modules.roact-rodux-hooked.out.hooks.use-store"))()
     end)
     hMod("types", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.types", "Havoc.include.node_modules.roact-rodux-hooked.out", function()
-        return (function(...)
+        return setfenv(function(...)
 
 
 	*
@@ -14689,11 +14710,11 @@ return {
 ]]
 return nil
 
-        end)
+        end, hEnv("Havoc.include.node_modules.roact-rodux-hooked.out.types"))()
     end)
     hInst("rodux", "Folder", "Havoc.include.node_modules.rodux", "Havoc.include.node_modules")
     hMod("src", "ModuleScript", "Havoc.include.node_modules.rodux.src", "Havoc.include.node_modules.rodux", function()
-        return (function(...)
+        return setfenv(function(...)
 local Store = require(script.Store)
 local createReducer = require(script.createReducer)
 local combineReducers = require(script.combineReducers)
@@ -14710,10 +14731,10 @@ return {
 	thunkMiddleware = thunkMiddleware,
 }
 
-        end)
+        end, hEnv("Havoc.include.node_modules.rodux.src"))()
     end)
     hMod("services", "ModuleScript", "Havoc.include.node_modules.services", "Havoc.include.node_modules", function()
-        return (function(...)
+        return setfenv(function(...)
 return setmetatable({}, {
 	__index = function(self, serviceName)
 		local service = game:GetService(serviceName)
@@ -14722,7 +14743,7 @@ return setmetatable({}, {
 	end,
 })
 
-        end)
+        end, hEnv("Havoc.include.node_modules.services"))()
     end)
     hInst("types", "Folder", "Havoc.include.node_modules.types", "Havoc.include.node_modules")
     hInst("include", "Folder", "Havoc.include.node_modules.types.include", "Havoc.include.node_modules.types")
