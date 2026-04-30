@@ -65,15 +65,13 @@ file:write("    local hInit, hMod, hInst, hEnv = (function()\n")
 file:write(remodel.readFile("ci/runtime.lua"))
 file:write("\n    end)()\n\n")
 
+-- Register root
 local rootName = string.format("%q", model.Name)
 local rootPath = string.format("%q", model:GetFullName())
 file:write(string.format("    hInst(%s, \"Folder\", %s, nil)\n", rootName, rootPath))
 
-file:write(string.format(
-    "    hInst(\"include\", \"Folder\", %q, %q)\n",
-    model.Name .. ".include",
-    model.Name
-))
+-- Register include folder
+file:write(string.format("    hInst(\"include\", \"Folder\", %q, %q)\n", model.Name .. ".include", model.Name))
 
 local SKIP_INLINE = { node_modules = true }
 
@@ -92,18 +90,19 @@ local function walk(parent)
         elseif isScript then
             local src = readSource(object)
             if src and #src > 0 then
-                -- FIX: Use newline-aware stripping for block comments
+                -- Strip comments
                 src = src:gsub("%-%-%[%[[%s%S]- %]%]", "")
-                -- Strip line comments
                 src = src:gsub("%-%-[^\n]*", "")
                 
-                -- CRITICAL FIX: Direct concatenation instead of string.format
-                -- This prevents math operators (+) and string patterns (%) from causing syntax errors
                 scriptCount = scriptCount + 1
+                
+                -- SNAPSHOT STRICT FIX: Wrap source in setfenv + hEnv factory
+                -- This ensures 'script' is defined correctly inside the module scope
                 file:write("    hMod(" .. name .. ", " .. string.format("%q", class) .. ", " .. path .. ", " .. pPath .. ", function()\n")
-                file:write("        return (function(...)\n")
+                file:write("        return setfenv(function(...)\n")
                 file:write(src)
-                file:write("\n        end)\n    end)\n")
+                file:write("\n        end, hEnv(" .. path .. "))()\n") -- The ID is the path
+                file:write("    end)\n")
             else
                 print("[WARN] No source found for: " .. object:GetFullName())
                 file:write(string.format("    hInst(%s, %q, %s, %s)\n", name, class, path, pPath))
