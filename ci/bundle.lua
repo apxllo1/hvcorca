@@ -110,21 +110,9 @@ local function readSource(inst)
         "out/" .. relPath .. ".lua",
         "out/" .. relPath .. "/init.lua",
         "out/" .. relPath .. ".client.lua",
-
         -- ── roblox-ts include/ shims (RuntimeLib, Promise) ───────────────────
         "include/" .. cleanRel .. ".lua",
         "include/" .. cleanRel .. "/init.lua",
-
-        -- ── Root node_modules (Added to match your project structure) ────────
-        "node_modules/" .. cleanRel .. ".lua",
-        "node_modules/" .. cleanRel .. "/init.lua",
-
-        -- ── Explicit @rbxts probes (Fixes the Roact/Rodux missing sources) ────
-        "node_modules/@rbxts/" .. cleanRel .. ".lua",
-        "node_modules/@rbxts/" .. cleanRel .. "/init.lua",
-        "node_modules/@rbxts/" .. cleanRel .. "/out/init.lua",
-        "node_modules/@rbxts/" .. cleanRel .. "/lib/init.lua",
-        "node_modules/@rbxts/" .. cleanRel .. "/src/init.lua",
     }
 
     -- ── @rbxts node_modules — smart probes based on real tree position ───────
@@ -190,7 +178,7 @@ local function walk(parent)
                     name, class, id, pId
                 ))
                 file:write(
-                    "        return setfenv(function(...)\n"
+                    "        _setfenv(function(...)\n"
                     .. clean
                     .. "\n        end, hEnv(" .. id .. "))()\n"
                 )
