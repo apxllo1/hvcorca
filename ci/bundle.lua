@@ -72,10 +72,10 @@ file:write("    local hInit, hMod, hInst, hEnv = (function()\n")
 file:write(remodel.readFile("ci/runtime.lua"))
 file:write("\n    end)()\n\n")
 
--- Register root
+-- Register root with nil parent (matches Richie's original)
 local rootName = string.format("%q", model.Name)
 local rootPath = string.format("%q", model:GetFullName())
-file:write(string.format("    hInst(%s, \"Folder\", %s, \"ROOT\")\n", rootName, rootPath))
+file:write(string.format("    hInst(%s, \"Folder\", %s, nil)\n", rootName, rootPath))
 
 -- Register include folder so RuntimeLib/Promise can be parented correctly
 file:write(string.format(
