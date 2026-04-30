@@ -66,7 +66,7 @@ async function mount(store: ReturnType<typeof configureStore>): Promise<ScreenGu
  */
 function render(app: ScreenGui): void {
 	// Bypasses TS error for custom executor globals
-	const syn_obj = (syn as unknown) as { protect_gui?: (gui: Instance) => void };
+	const syn_obj = syn as unknown as { protect_gui?: (gui: Instance) => void };
 	const protect = syn_obj?.protect_gui;
 
 	if (protect) {
