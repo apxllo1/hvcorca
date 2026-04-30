@@ -42,7 +42,7 @@ function Scripts() {
 				}
 				position={scale(0, 0)}
 			>
-				<Content header="AK ADMIN" body="A universal script with 60k+ users!" footer="absent.wtf" />
+				<Content header="AK ADMIN" body="Universal with 60k+ users!" footer="absent.wtf" />
 			</ScriptCard>
 
 			{/* NOVOLINE */}
@@ -65,7 +65,7 @@ function Scripts() {
 				}
 				position={scale(0, 1)}
 			>
-				<Content header="Novoline" body="A universal script made by Gladius." footer="novoline.pro" />
+				<Content header="Novoline" body="Keyless Universal by Gladius." footer="novoline.pro" />
 			</ScriptCard>
 
 			{/* ONYX */}
