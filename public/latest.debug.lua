@@ -1,128 +1,64 @@
 local function start()
     local hInit, hMod, hInst, hEnv = (function()
-local instanceFromId = {}
-local idFromInstance = {}
-local modules = {}
-local currentlyLoading = {}
-
--- Helper to set up the environment for each script
-local function newEnv(id)
-    local inst = instanceFromId[id]
-    local env = setmetatable({
-        script = inst,
-        -- Overwrite the global require with our virtual one
-        require = function(target)
-            if typeof(target) == "Instance" then
-                if modules[target] then
-                    -- We pass the current script instance so we can track circular deps
-                    local loadModule = _G.__HAVOC_LOAD -- Accessed via _G to avoid scope issues
-                    return loadModule(target, inst)
-                end
-            end
-            return require(target)
-        end,
-    }, {
-        __index = getfenv(0),
-        __metatable = "This metatable is locked",
-    })
-    return env
-end
-
-local function validateRequire(module, caller)
-    currentlyLoading[caller] = module
-    local currentModule = module
-    local depth = 0
-    
-    while currentModule do
-        depth = depth + 1
-        currentModule = currentlyLoading[currentModule]
-        if currentModule == module then
-            local str = currentModule.Name
-            for _ = 1, depth do
-                currentModule = currentlyLoading[currentModule]
-                str = str .. "\n" .. currentModule.Name
-            end
-            error("[Havoc] Circular dependency detected:\n" .. str, 2)
-        end
-    end
-
-    return function()
-        if currentlyLoading[caller] == module then
-            currentlyLoading[caller] = nil
-        end
-    end
-end
+local instanceFromId, idFromInstance, modules, currentlyLoading = {}, {}, {}, {}
 
 local function loadModule(obj, this)
     local module = modules[obj]
     if not module then return nil end
+    if module.isLoaded then return module.value end
     
-    if module.isLoaded then
-        return module.value
-    end
-
-    local cleanup = this and validateRequire(obj, this)
+    currentlyLoading[this or "root"] = obj
     
-    -- bundle.lua wraps source in: function() return (function(...) [SRC] end) end
-    -- We call the first function to get the actual script closure
     local scriptWrapper = module.fn()
+    -- FIX: Ensure environment has access to the custom require
+    local env = setmetatable({
+        script = obj,
+        require = function(target)
+            if modules[target] then
+                return loadModule(target, obj)
+            end
+            return require(target)
+        end
+    }, { __index = getfenv(0) })
     
-    -- Inject the custom environment so 'script' and 'require' work as expected
-    local env = newEnv(idFromInstance[obj])
     setfenv(scriptWrapper, env)
-
-    -- Execute the module and catch exports
     local success, result = pcall(scriptWrapper)
     
-    if not success then
-        error(string.format("[Havoc] Runtime Error in %s: %s", obj:GetFullName(), tostring(result)), 0)
+    if not success then 
+        error("[Havoc] Runtime Error in " .. obj.Name .. ": " .. tostring(result)) 
     end
 
     module.value = result
     module.isLoaded = true
-    
-    if cleanup then cleanup() end
     return result
 end
-
--- Export to _G temporarily so the virtual require can see the loader
-_G.__HAVOC_LOAD = loadModule
 
 local function hMod(name, class, id, parentId, fn)
     local inst = Instance.new(class)
     inst.Name = name
-    inst.Parent = (parentId ~= nil) and instanceFromId[parentId] or nil
-    
+    inst.Parent = parentId and instanceFromId[parentId] or nil
     instanceFromId[id] = inst
     idFromInstance[inst] = id
-    modules[inst] = { fn = fn, isLoaded = false, value = nil }
+    modules[inst] = { fn = fn, isLoaded = false }
 end
 
 local function hInst(name, class, id, parentId)
     local inst = Instance.new(class)
     inst.Name = name
-    inst.Parent = (parentId ~= nil) and instanceFromId[parentId] or nil
-    
+    inst.Parent = parentId and instanceFromId[parentId] or nil
     instanceFromId[id] = inst
     idFromInstance[inst] = id
 end
 
 local function hInit()
-    if not game:IsLoaded() then
-        game.Loaded:Wait()
-    end
-    
-    -- Run all LocalScripts to start the execution flow
-    for obj, data in pairs(modules) do
-        if obj:IsA("LocalScript") and not obj.Disabled then
-            task.spawn(function()
-                loadModule(obj)
-            end)
+    for obj in pairs(modules) do
+        if obj:IsA("LocalScript") then 
+            task.spawn(loadModule, obj) 
         end
     end
 end
 
-return hInit, hMod, hInst, newEnv
+return hInit, hMod, hInst
 
     end)()
 
@@ -1056,7 +992,7 @@ local function Canvas(_param)
 		ZIndex = zIndex,
 	}
 	for _k, _v in pairs(onChange) do
-		_attributes[Roact.Change[_k] ] = _v
+		_attributes[Roact.Change[_k]] = _v
 	end
 	local _children = {}
 	local _length = #_children
@@ -2290,7 +2226,7 @@ end
 
 local _map = {}
 for _, _v in ipairs(_newValue) do
-	_map[_v[1] ] = _v[2]
+	_map[_v[1]] = _v[2]
 end
 local THEME_MAP = _map
 local function useTheme(key)
@@ -4239,7 +4175,7 @@ local mount = TS.async(function(store)
 		end
 	end
 	if not appInstance then
-		error("[Havoc] Mount timed out after " .. (tostring(MOUNT_TIMEOUT) .. "s — ScreenGui never appeared inside container."))
+		error("[Havoc] Mount timed out.")
 	end
 	return appInstance
 end)
@@ -4250,18 +4186,14 @@ local function render(app)
 	end
 	local protect = _protect
 	if protect then
-		local success, err = pcall(function()
+		pcall(function()
 			return protect(app)
 		end)
-		if not success then
-			warn("[Havoc] protect_gui failed: " .. tostring(err))
-		end
 	end
 	if IS_DEV then
 		app.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
 	else
-		local host = (gethui and gethui() or game:GetService("CoreGui"))
-		app.Parent = host
+		app.Parent = (gethui and gethui() or game:GetService("CoreGui"))
 	end
 end
 local main = TS.async(function()
@@ -4280,14 +4212,11 @@ local main = TS.async(function()
 		end
 		local g = (getgenv and getgenv() or _G)
 		g[LOAD_GUARD] = true
-		print("[Havoc] Successfully initialized.")
 	end, function(err)
-		warn("[Havoc] Initialization Error: " .. tostring(err))
+		warn("[Havoc] Init Error: " .. tostring(err))
 	end)
 end)
-main():catch(function(err)
-	warn("[Havoc] Fatal: " .. tostring(err))
-end)
+main():catch(warn)
 
         end)
     end)
@@ -6562,7 +6491,7 @@ local function arrayToMap(arr, mapper)
 	
 	local _map = {}
 	for _, _v in ipairs(_newValue) do
-		_map[_v[1] ] = _v[2]
+		_map[_v[1]] = _v[2]
 	end
 	return _map
 end
@@ -11495,6 +11424,8 @@ return {
     hMod("Promise", "ModuleScript", "Havoc.include.Promise", "Havoc.include", function()
         return (function(...)
 
+	An implementation of Promises similar to Promise/A+.
+]]
 
 local ERROR_NON_PROMISE_IN_LIST = "Non-promise value passed into %s at index %s"
 local ERROR_NON_LIST = "Please pass a list of promises to %s"
@@ -11502,6 +11433,8 @@ local ERROR_NON_FUNCTION = "Please pass a handler function to %s!"
 local MODE_KEY_METATABLE = {__mode = "k"}
 
 
+	Creates an enum dictionary with some metamethods to prevent common mistakes.
+]]
 local function makeEnum(enumName, members)
 	local enum = {}
 
@@ -11520,6 +11453,10 @@ local function makeEnum(enumName, members)
 end
 
 
+	An object to represent runtime errors that occur during execution.
+	Promises that experience an error like this will be rejected with
+	an instance of this object.
+]]
 local Error do
 	Error = {
 		Kind = makeEnum("Promise.Error.Kind", {
@@ -11597,11 +11534,17 @@ local Error do
 end
 
 
+	Packs a number of arguments into a table and returns its length.
+
+	Used to cajole varargs without dropping sparse values.
+]]
 local function pack(...)
 	return select("#", ...), { ... }
 end
 
 
+	Returns first value (success), and packs all following values.
+]]
 local function packResult(success, ...)
 	return success, select("#", ...), { ... }
 end
@@ -11628,11 +11571,16 @@ local function makeErrorHandler(traceback)
 end
 
 
+	Calls a Promise executor with error handling.
+]]
 local function runExecutor(traceback, callback, ...)
 	return packResult(xpcall(callback, makeErrorHandler(traceback), ...))
 end
 
 
+	Creates a function that invokes a callback with correct error handling and
+	resolution mechanisms.
+]]
 local function createAdvancer(traceback, callback, resolve, reject)
 	return function(...)
 		local ok, resultLength, result = runExecutor(traceback, callback, ...)
@@ -11659,6 +11607,17 @@ Promise.prototype = {}
 Promise.__index = Promise.prototype
 
 
+	Constructs a new Promise with the given initializing callback.
+
+	This is generally only called when directly wrapping a non-promise API into
+	a promise-based version.
+
+	The callback will receive 'resolve' and 'reject' methods, used to start
+	invoking the promise chain.
+
+	Second parameter, parent, is used internally for tracking the "parent" in a
+	promise chain. External code shouldn't need to worry about this.
+]]
 function Promise._new(traceback, callback, parent)
 	if parent ~= nil and not Promise.is(parent) then
 		error("Argument #2 to Promise.new must be a promise or nil", 2)
@@ -11750,6 +11709,8 @@ function Promise:__tostring()
 end
 
 
+	Promise.new, except pcall on a new thread is automatic.
+]]
 function Promise.defer(callback)
 	local traceback = debug.traceback(nil, 2)
 	local promise
@@ -11772,6 +11733,8 @@ end
 Promise.async = Promise.defer
 
 
+	Create a promise that represents the immediately resolved value.
+]]
 function Promise.resolve(...)
 	local length, values = pack(...)
 	return Promise._new(debug.traceback(nil, 2), function(resolve)
@@ -11780,6 +11743,8 @@ function Promise.resolve(...)
 end
 
 
+	Create a promise that represents the immediately rejected value.
+]]
 function Promise.reject(...)
 	local length, values = pack(...)
 	return Promise._new(debug.traceback(nil, 2), function(_, reject)
@@ -11788,6 +11753,9 @@ function Promise.reject(...)
 end
 
 
+	Runs a non-promise-returning function as a Promise with the
+  given arguments.
+]]
 function Promise._try(traceback, callback, ...)
 	local valuesLength, values = pack(...)
 
@@ -11797,11 +11765,17 @@ function Promise._try(traceback, callback, ...)
 end
 
 
+	Begins a Promise chain, turning synchronous errors into rejections.
+]]
 function Promise.try(...)
 	return Promise._try(debug.traceback(nil, 2), ...)
 end
 
 
+	Returns a new promise that:
+		* is resolved when all input promises resolve
+		* is rejected if ANY input promises reject
+]]
 function Promise._all(traceback, promises, amount)
 	if type(promises) ~= "table" then
 		error(string.format(ERROR_NON_LIST, "Promise.all"), 3)
@@ -11971,6 +11945,9 @@ function Promise.allSettled(promises)
 end
 
 
+	Races a set of Promises and returns the first one that resolves,
+	cancelling the others.
+]]
 function Promise.race(promises)
 	assert(type(promises) == "table", string.format(ERROR_NON_LIST, "Promise.race"))
 
@@ -12011,6 +11988,13 @@ function Promise.race(promises)
 end
 
 
+	Iterates serially over the given an array of values, calling the predicate callback on each before continuing.
+	If the predicate returns a Promise, we wait for that Promise to resolve before continuing to the next item
+	in the array. If the Promise the predicate returns rejects, the Promise from Promise.each is also rejected with
+	the same value.
+
+	Returns a Promise containing an array of the return values from the predicate for each item in the original list.
+]]
 function Promise.each(list, predicate)
 	assert(type(list) == "table", string.format(ERROR_NON_LIST, "Promise.each"))
 	assert(type(predicate) == "function", string.format(ERROR_NON_FUNCTION, "Promise.each"))
@@ -12105,6 +12089,8 @@ function Promise.each(list, predicate)
 end
 
 
+	Is the given object a Promise instance?
+]]
 function Promise.is(object)
 	if type(object) ~= "table" then
 		return false
@@ -12131,6 +12117,8 @@ function Promise.is(object)
 end
 
 
+	Converts a yielding function into a Promise-returning one.
+]]
 function Promise.promisify(callback)
 	return function(...)
 		return Promise._try(debug.traceback(nil, 2), callback, ...)
@@ -12138,6 +12126,8 @@ function Promise.promisify(callback)
 end
 
 
+	Creates a Promise that resolves after given number of seconds.
+]]
 do
 	
 
@@ -12237,6 +12227,8 @@ do
 end
 
 
+	Rejects the promise after `seconds` seconds.
+]]
 function Promise.prototype:timeout(seconds, rejectionValue)
 	local traceback = debug.traceback(nil, 2)
 
@@ -12261,6 +12253,10 @@ function Promise.prototype:getStatus()
 end
 
 
+	Creates a new promise that receives the result of this promise.
+
+	The given callbacks are invoked depending on that result.
+]]
 function Promise.prototype:_andThen(traceback, successHandler, failureHandler)
 	self._unhandledRejection = false
 
@@ -12325,6 +12321,8 @@ function Promise.prototype:andThen(successHandler, failureHandler)
 end
 
 
+	Used to catch any errors that may have occurred in the promise.
+]]
 function Promise.prototype:catch(failureCallback)
 	assert(
 		failureCallback == nil or type(failureCallback) == "function",
@@ -12334,6 +12332,9 @@ function Promise.prototype:catch(failureCallback)
 end
 
 
+	Like andThen, but the value passed into the handler is also the
+	value returned from the handler.
+]]
 function Promise.prototype:tap(tapCallback)
 	assert(type(tapCallback) == "function", string.format(ERROR_NON_FUNCTION, "Promise:tap"))
 	return self:_andThen(debug.traceback(nil, 2), function(...)
@@ -12351,6 +12352,8 @@ function Promise.prototype:tap(tapCallback)
 end
 
 
+	Calls a callback on `andThen` with specific arguments.
+]]
 function Promise.prototype:andThenCall(callback, ...)
 	assert(type(callback) == "function", string.format(ERROR_NON_FUNCTION, "Promise:andThenCall"))
 	local length, values = pack(...)
@@ -12360,6 +12363,8 @@ function Promise.prototype:andThenCall(callback, ...)
 end
 
 
+	Shorthand for an andThen handler that returns the given value.
+]]
 function Promise.prototype:andThenReturn(...)
 	local length, values = pack(...)
 	return self:_andThen(debug.traceback(nil, 2), function()
@@ -12368,6 +12373,9 @@ function Promise.prototype:andThenReturn(...)
 end
 
 
+	Cancels the promise, disallowing it from rejecting or resolving, and calls
+	the cancellation hook if provided.
+]]
 function Promise.prototype:cancel()
 	if self._status ~= Promise.Status.Started then
 		return
@@ -12391,6 +12399,9 @@ function Promise.prototype:cancel()
 end
 
 
+	Used to decrease the number of consumers by 1, and if there are no more,
+	cancel this promise.
+]]
 function Promise.prototype:_consumerCancelled(consumer)
 	if self._status ~= Promise.Status.Started then
 		return
@@ -12404,6 +12415,9 @@ function Promise.prototype:_consumerCancelled(consumer)
 end
 
 
+	Used to set a handler for when the promise resolves, rejects, or is
+	cancelled. Returns a new promise chained from this promise.
+]]
 function Promise.prototype:_finally(traceback, finallyHandler, onlyOk)
 	if not onlyOk then
 		self._unhandledRejection = false
@@ -12451,6 +12465,8 @@ function Promise.prototype:finally(finallyHandler)
 end
 
 
+	Calls a callback on `finally` with specific arguments.
+]]
 function Promise.prototype:finallyCall(callback, ...)
 	assert(type(callback) == "function", string.format(ERROR_NON_FUNCTION, "Promise:finallyCall"))
 	local length, values = pack(...)
@@ -12460,6 +12476,8 @@ function Promise.prototype:finallyCall(callback, ...)
 end
 
 
+	Shorthand for a finally handler that returns the given value.
+]]
 function Promise.prototype:finallyReturn(...)
 	local length, values = pack(...)
 	return self:_finally(debug.traceback(nil, 2), function()
@@ -12468,6 +12486,8 @@ function Promise.prototype:finallyReturn(...)
 end
 
 
+	Similar to finally, except rejections are propagated through it.
+]]
 function Promise.prototype:done(finallyHandler)
 	assert(
 		finallyHandler == nil or type(finallyHandler) == "function",
@@ -12477,6 +12497,8 @@ function Promise.prototype:done(finallyHandler)
 end
 
 
+	Calls a callback on `done` with specific arguments.
+]]
 function Promise.prototype:doneCall(callback, ...)
 	assert(type(callback) == "function", string.format(ERROR_NON_FUNCTION, "Promise:doneCall"))
 	local length, values = pack(...)
@@ -12486,6 +12508,8 @@ function Promise.prototype:doneCall(callback, ...)
 end
 
 
+	Shorthand for a done handler that returns the given value.
+]]
 function Promise.prototype:doneReturn(...)
 	local length, values = pack(...)
 	return self:_finally(debug.traceback(nil, 2), function()
@@ -12494,6 +12518,10 @@ function Promise.prototype:doneReturn(...)
 end
 
 
+	Yield until the promise is completed.
+
+	This matches the execution model of normal Roblox functions.
+]]
 function Promise.prototype:awaitStatus()
 	self._unhandledRejection = false
 
@@ -12522,6 +12550,8 @@ local function awaitHelper(status, ...)
 end
 
 
+	Calls awaitStatus internally, returns (isResolved, values...)
+]]
 function Promise.prototype:await()
 	return awaitHelper(self:awaitStatus())
 end
@@ -12535,6 +12565,9 @@ local function expectHelper(status, ...)
 end
 
 
+	Calls await and only returns if the Promise resolves.
+	Throws if the Promise rejects or gets cancelled.
+]]
 function Promise.prototype:expect()
 	return expectHelper(self:awaitStatus())
 end
@@ -12543,6 +12576,12 @@ end
 Promise.prototype.awaitValue = Promise.prototype.expect
 
 
+	Intended for use in tests.
+
+	Similar to await(), but instead of yielding if the promise is unresolved,
+	_unwrap will throw. This indicates an assumption that a promise has
+	resolved.
+]]
 function Promise.prototype:_unwrap()
 	if self._status == Promise.Status.Started then
 		error("Promise has not resolved or rejected.", 2)
@@ -12678,6 +12717,10 @@ function Promise.prototype:_reject(...)
 end
 
 
+	Calls any :finally handlers. We need this to be a separate method and
+	queue because we must call all of the finally callbacks upon a success,
+	failure, *and* cancellation.
+]]
 function Promise.prototype:_finalize()
 	for _, callback in ipairs(self._queuedFinally) do
 		
@@ -12698,6 +12741,9 @@ function Promise.prototype:_finalize()
 end
 
 
+	Chains a Promise from this one that is resolved if this Promise is
+	resolved, and rejected if it is not resolved.
+]]
 function Promise.prototype:now(rejectionValue)
 	local traceback = debug.traceback(nil, 2)
 	if self:getStatus() == Promise.Status.Resolved then
@@ -12714,6 +12760,8 @@ function Promise.prototype:now(rejectionValue)
 end
 
 
+	Retries a Promise-returning callback N times until it succeeds.
+]]
 function Promise.retry(callback, times, ...)
 	assert(type(callback) == "function", "Parameter #1 to Promise.retry must be a function")
 	assert(type(times) == "number", "Parameter #2 to Promise.retry must be a number")
@@ -12730,6 +12778,8 @@ function Promise.retry(callback, times, ...)
 end
 
 
+	Converts an event into a Promise with an optional predicate
+]]
 function Promise.fromEvent(event, predicate)
 	predicate = predicate or function()
 		return true
@@ -13039,7 +13089,21 @@ return Flipper
         return (function(...)
 
 
+	*
+	* Returns a table wherein an object's writable properties can be specified,
+	* while also allowing functions to be passed in which can be bound to a RBXScriptSignal.
+]]
 
+	*
+	* Instantiates a new Instance of `className` with given `settings`,
+	* where `settings` is an object of the form { [K: propertyName]: value }.
+	*
+	* `settings.Children` is an array of child objects to be parented to the generated Instance.
+	*
+	* Events can be set to a callback function, which will be connected.
+	*
+	* `settings.Parent` is always set last.
+]]
 local function Make(className, settings)
 	local _binding = settings
 	local children = _binding.Children
@@ -13185,7 +13249,7 @@ function Object.fromEntries(entries)
 	if entries then
 		for i = 1, entriesLen do
 			local pair = entries[i]
-			result[pair[1] ] = pair[2]
+			result[pair[1]] = pair[2]
 		end
 	end
 	return result
@@ -13199,6 +13263,8 @@ return Object
     hMod("src", "ModuleScript", "Havoc.include.node_modules.roact.src", "Havoc.include.node_modules.roact", function()
         return (function(...)
 
+	Packages up the internals of Roact and exposes a public API for it.
+]]
 
 local GlobalConfig = require(script.GlobalConfig)
 local createReconciler = require(script.createReconciler)
@@ -13260,10 +13326,42 @@ for _k, _v in pairs(TS.import(script, script, "hooks")) do
 	exports[_k] = _v
 end
 
+	*
+	* `hooked` is a [higher-order component](https://reactjs.org/docs/higher-order-components.html) that turns your
+	* Function Component into a [class component](https://roblox.github.io/roact/guide/components/).
+	*
+	* `hooked` allows you to hook into the Component's lifecycle through Hooks.
+	*
+	* @example
+	* const MyComponent = hooked<Props>(
+	*   (props) => {
+	*     // render using props
+	*   },
+	* );
+	*
+	* @see https://reactjs.org/docs/hooks-intro.html
+]]
 local function hooked(functionComponent)
 	return withHooks(functionComponent)
 end
 
+	*
+	* `pure` is a [higher-order component](https://reactjs.org/docs/higher-order-components.html) that turns your
+	* Function Component into a [PureComponent](https://roblox.github.io/roact/performance/reduce-reconciliation/#purecomponent).
+	*
+	* If your function component wrapped in `pure` has a {@link useState}, {@link useReducer} or {@link useContext} Hook
+	* in its implementation, it will still rerender when state or context changes.
+	*
+	* @example
+	* const MyComponent = pure<Props>(
+	*   (props) => {
+	*     // render using props
+	*   },
+	* );
+	*
+	* @see https://reactjs.org/docs/react-api.html
+	* @see https://roblox.github.io/roact/performance/reduce-reconciliation/
+]]
 local function pure(functionComponent)
 	return withHooksPure(functionComponent)
 end
@@ -13298,6 +13396,21 @@ local TS = _G[script]
 local createBinding = TS.import(script, TS.getModule(script, "@rbxts", "roact").src).createBinding
 local memoizedHook = TS.import(script, script.Parent.Parent, "utils", "memoized-hook").memoizedHook
 
+	*
+	* `useBinding` returns a memoized *`Binding`*, a special object that Roact automatically unwraps into values. When a
+	* binding is updated, Roact will only change the specific properties that are subscribed to it.
+	*
+	* The first value returned is a `Binding` object, which will typically be passed as a prop to a Roact host component.
+	* The second is a function that can be called with a new value to update the binding.
+	*
+	* @example
+	* const [binding, setBindingValue] = useBinding(initialValue);
+	*
+	* @param initialValue - Initialized as the `.current` property
+	* @returns A memoized `Binding` object, and a function to update the value of the binding.
+	*
+	* @see https://roblox.github.io/roact/advanced/bindings-and-refs/#bindings
+]]
 local function useBinding(initialValue)
 	return memoizedHook(function()
 		local bindingSet = { createBinding(initialValue) }
@@ -13316,6 +13429,28 @@ return {
 local TS = _G[script]
 local useMemo = TS.import(script, script.Parent, "use-memo").useMemo
 
+	*
+	* Returns a memoized version of the callback that only changes if one of the dependencies has changed.
+	*
+	* This is useful when passing callbacks to optimized child components that rely on reference equality to prevent
+	* unnecessary renders.
+	*
+	* `useCallback(fn, deps)` is equivalent to `useMemo(() => fn, deps)`.
+	*
+	* @example
+	* const memoizedCallback = useCallback(
+	*   () => {
+	*     doSomething(a, b);
+	*   },
+	*   [a, b],
+	* );
+	*
+	* @param callback - An inline callback
+	* @param deps - An array of dependencies
+	* @returns A memoized version of the callback
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#usecallback
+]]
 local function useCallback(callback, deps)
 	return useMemo(function()
 		return callback
@@ -13332,6 +13467,9 @@ return {
 
 local TS = _G[script]
 
+	*
+	* @see https://github.com/Kampfkarren/roact-hooks/blob/main/src/createUseContext.lua
+]]
 local _memoized_hook = TS.import(script, script.Parent.Parent, "utils", "memoized-hook")
 local memoizedHook = _memoized_hook.memoizedHook
 local resolveCurrentComponent = _memoized_hook.resolveCurrentComponent
@@ -13343,6 +13481,20 @@ local function copyComponent(component)
 	})
 end
 
+	*
+	* Accepts a context object (the value returned from `Roact.createContext`) and returns the current context value, as
+	* given by the nearest context provider for the given context.
+	*
+	* When the nearest `Context.Provider` above the component updates, this Hook will trigger a rerender with the latest
+	* context value.
+	*
+	* If there is no Provider, `useContext` returns the default value of the context.
+	*
+	* @param context - The Context object to read from
+	* @returns The latest context value of the nearest Provider
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#usecontext
+]]
 local function useContext(context)
 	local thisContext = context
 	local _binding = memoizedHook(function()
@@ -13393,6 +13545,40 @@ local function scheduleEffect(effect)
 	return effect
 end
 
+	*
+	* Accepts a function that contains imperative, possibly effectful code. The function passed to `useEffect` will run
+	* synchronously (thread-blocking) after the Roblox Instance is created and rendered.
+	*
+	* The clean-up function (returned by the effect) runs before the component is removed from the UI to prevent memory
+	* leaks. Additionally, if a component renders multiple times, the **previous effect is cleaned up before executing
+	* the next effect**.
+	*
+	*`useEffect` runs in the same phase as `didMount` and `didUpdate`. All cleanup functions are called on `willUnmount`.
+	*
+	* @example
+	* useEffect(() => {
+	*   // use value
+	*   return () => {
+	*     // cleanup
+	*   }
+	* }, [value]);
+	*
+	* useEffect(() => {
+	*   // did update
+	* });
+	*
+	* useEffect(() => {
+	*   // did mount
+	*   return () => {
+	*     // will unmount
+	*   }
+	* }, []);
+	*
+	* @param callback - Imperative function that can return a cleanup function
+	* @param deps - If present, effect will only activate if the values in the list change
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#useeffect
+]]
 local function useEffect(callback, deps)
 	local hook = memoizedHook(nil)
 	local _prevDeps = hook.state
@@ -13422,6 +13608,25 @@ local TS = _G[script]
 local areDepsEqual = TS.import(script, script.Parent.Parent, "utils", "are-deps-equal").areDepsEqual
 local memoizedHook = TS.import(script, script.Parent.Parent, "utils", "memoized-hook").memoizedHook
 
+	*
+	* `useMemo` will only recompute the memoized value when one of the `deps` has changed. This optimization helps to
+	* avoid expensive calculations on every render.
+	*
+	* Remember that the function passed to `useMemo` runs during rendering. Don’t do anything there that you wouldn’t
+	* normally do while rendering. For example, side effects belong in `useEffect`, not `useMemo`.
+	*
+	* If no array is provided, a new value will be computed on every render. This is usually a mistake, so `deps` must be
+	* explicitly written as `undefined`.
+	*
+	* @example
+	* const memoizedValue = useMemo(() => computeExpensiveValue(a, b), [a, b]);
+	*
+	* @param factory - A "create" function that computes a value
+	* @param deps - An array of dependencies
+	* @returns A memoized value
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#usememo
+]]
 local function useMemo(factory, deps)
 	local hook = memoizedHook(function()
 		return {}
@@ -13449,12 +13654,91 @@ local TS = _G[script]
 local memoizedHook = TS.import(script, script.Parent.Parent, "utils", "memoized-hook").memoizedHook
 
 
+	*
+	* `useMutable` returns a mutable object whose `.current` property is initialized to the argument `initialValue`.
+	* The returned object will persist for the full lifetime of the component.
+	*
+	* `useMutable()` is handy for keeping any mutable value around similar to how you’d use instance fields in classes.
+	*
+	* This cannot be used as a [Roact Ref](https://roblox.github.io/roact/advanced/bindings-and-refs/#refs). If you want
+	* to reference a Roblox Instance, refer to {@link useRef}.
+	*
+	* @example
+	* const container = useMutable(initialValue);
+	* useEffect(() => {
+	*   container.current = value;
+	* });
+	*
+	* @param initialValue - Initialized as the `.current` property
+	* @returns A memoized, mutable object
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#useref
+]]
+
+	*
+	* `useMutable` returns a mutable object whose `.current` property is initialized to the argument `initialValue`.
+	* The returned object will persist for the full lifetime of the component.
+	*
+	* `useMutable()` is handy for keeping any mutable value around similar to how you’d use instance fields in classes.
+	*
+	* This cannot be used as a [Roact Ref](https://roblox.github.io/roact/advanced/bindings-and-refs/#refs). If you want
+	* to reference a Roblox Instance, refer to {@link useRef}.
+	*
+	* @example
+	* const container = useMutable(initialValue);
+	* useEffect(() => {
+	*   container.current = value;
+	* });
+	*
+	* @param initialValue - Initialized as the `.current` property
+	* @returns A memoized, mutable object
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#useref
+]]
+
+
+	*
+	* `useMutable` returns a mutable object whose `.current` property is initialized to the argument `initialValue`.
+	* The returned object will persist for the full lifetime of the component.
+	*
+	* `useMutable()` is handy for keeping any mutable value around similar to how you’d use instance fields in classes.
+	*
+	* This cannot be used as a [Roact Ref](https://roblox.github.io/roact/advanced/bindings-and-refs/#refs). If you want
+	* to reference a Roblox Instance, refer to {@link useRef}.
+	*
+	* @example
+	* const container = useMutable(initialValue);
+	* useEffect(() => {
+	*   container.current = value;
+	* });
+	*
+	* @returns A memoized, mutable object
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#useref
+]]
 
 
 
-
-
-
+	*
+	* `useMutable` returns a mutable object whose `.current` property is initialized to the argument `initialValue`.
+	* The returned object will persist for the full lifetime of the component.
+	*
+	* `useMutable()` is handy for keeping any mutable value around similar to how you’d use instance fields in classes.
+	*
+	* This cannot be used as a [Roact Ref](https://roblox.github.io/roact/advanced/bindings-and-refs/#refs). If you want
+	* to reference a Roblox Instance, refer to {@link useRef}.
+	*
+	* @example
+	* const container = useMutable(initialValue);
+	* useEffect(() => {
+	*   container.current = value;
+	* });
+	*
+	* @param initialValue - Initialized as the `.current` property
+	* @returns A memoized, mutable object
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#useref
+]]
 local function useMutable(initialValue)
 	return memoizedHook(function()
 		return {
@@ -13476,15 +13760,120 @@ local _memoized_hook = TS.import(script, script.Parent.Parent, "utils", "memoize
 local memoizedHook = _memoized_hook.memoizedHook
 local resolveCurrentComponent = _memoized_hook.resolveCurrentComponent
 
+	*
+	* Accepts a reducer of type `(state, action) => newState`, and returns the current state paired with a `dispatch`
+	* method.
+	*
+	* If a new state is the same value as the current state, this will bail out without rerendering the component.
+	*
+	* `useReducer` is usually preferable to `useState` when you have complex state logic that involves multiple sub-values.
+	* It also lets you optimize performance for components that trigger deep updates because [you can pass `dispatch` down
+	* instead of callbacks](https://reactjs.org/docs/hooks-faq.html#how-to-avoid-passing-callbacks-down).
+	*
+	* There are two different ways to initialize `useReducer` state. You can use the initial state as a second argument,
+	* or [create the initial state lazily](https://reactjs.org/docs/hooks-reference.html#lazy-initialization). To do this,
+	* you can pass an init function as the third argument. The initial state will be set to `initializer(initialArg)`.
+	*
+	* @param reducer - Function that returns a state given the current state and an action
+	* @param initializerArg - State used during the initial render, or passed to `initializer` if provided
+	* @param initializer - Optional function that returns an initial state given `initializerArg`
+	* @returns The current state, and an action dispatcher
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#usereducer
+]]
+
+
+	*
+	* Accepts a reducer of type `(state, action) => newState`, and returns the current state paired with a `dispatch`
+	* method.
+	*
+	* If a new state is the same value as the current state, this will bail out without rerendering the component.
+	*
+	* `useReducer` is usually preferable to `useState` when you have complex state logic that involves multiple sub-values.
+	* It also lets you optimize performance for components that trigger deep updates because [you can pass `dispatch` down
+	* instead of callbacks](https://reactjs.org/docs/hooks-faq.html#how-to-avoid-passing-callbacks-down).
+	*
+	* There are two different ways to initialize `useReducer` state. You can use the initial state as a second argument,
+	* or [create the initial state lazily](https://reactjs.org/docs/hooks-reference.html#lazy-initialization). To do this,
+	* you can pass an init function as the third argument. The initial state will be set to `initializer(initialArg)`.
+	*
+	* @param reducer - Function that returns a state given the current state and an action
+	* @param initializerArg - State used during the initial render, or passed to `initializer` if provided
+	* @param initializer - Optional function that returns an initial state given `initializerArg`
+	* @returns The current state, and an action dispatcher
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#usereducer
+]]
+
+
+	*
+	* Accepts a reducer of type `(state, action) => newState`, and returns the current state paired with a `dispatch`
+	* method.
+	*
+	* If a new state is the same value as the current state, this will bail out without rerendering the component.
+	*
+	* `useReducer` is usually preferable to `useState` when you have complex state logic that involves multiple sub-values.
+	* It also lets you optimize performance for components that trigger deep updates because [you can pass `dispatch` down
+	* instead of callbacks](https://reactjs.org/docs/hooks-faq.html#how-to-avoid-passing-callbacks-down).
+	*
+	* There are two different ways to initialize `useReducer` state. You can use the initial state as a second argument,
+	* or [create the initial state lazily](https://reactjs.org/docs/hooks-reference.html#lazy-initialization). To do this,
+	* you can pass an init function as the third argument. The initial state will be set to `initializer(initialArg)`.
+	*
+	* @param reducer - Function that returns a state given the current state and an action
+	* @param initializerArg - State used during the initial render, or passed to `initializer` if provided
+	* @param initializer - Optional function that returns an initial state given `initializerArg`
+	* @returns The current state, and an action dispatcher
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#usereducer
+]]
+
+
+	*
+	* Accepts a reducer of type `(state, action) => newState`, and returns the current state paired with a `dispatch`
+	* method.
+	*
+	* If a new state is the same value as the current state, this will bail out without rerendering the component.
+	*
+	* `useReducer` is usually preferable to `useState` when you have complex state logic that involves multiple sub-values.
+	* It also lets you optimize performance for components that trigger deep updates because [you can pass `dispatch` down
+	* instead of callbacks](https://reactjs.org/docs/hooks-faq.html#how-to-avoid-passing-callbacks-down).
+	*
+	* There are two different ways to initialize `useReducer` state. You can use the initial state as a second argument,
+	* or [create the initial state lazily](https://reactjs.org/docs/hooks-reference.html#lazy-initialization). To do this,
+	* you can pass an init function as the third argument. The initial state will be set to `initializer(initialArg)`.
+	*
+	* @param reducer - Function that returns a state given the current state and an action
+	* @param initializerArg - State used during the initial render, or passed to `initializer` if provided
+	* @param initializer - Optional function that returns an initial state given `initializerArg`
+	* @returns The current state, and an action dispatcher
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#usereducer
+]]
 
 
 
-
-
-
-
-
-
+	*
+	* Accepts a reducer of type `(state, action) => newState`, and returns the current state paired with a `dispatch`
+	* method.
+	*
+	* If a new state is the same value as the current state, this will bail out without rerendering the component.
+	*
+	* `useReducer` is usually preferable to `useState` when you have complex state logic that involves multiple sub-values.
+	* It also lets you optimize performance for components that trigger deep updates because [you can pass `dispatch` down
+	* instead of callbacks](https://reactjs.org/docs/hooks-faq.html#how-to-avoid-passing-callbacks-down).
+	*
+	* There are two different ways to initialize `useReducer` state. You can use the initial state as a second argument,
+	* or [create the initial state lazily](https://reactjs.org/docs/hooks-reference.html#lazy-initialization). To do this,
+	* you can pass an init function as the third argument. The initial state will be set to `initializer(initialArg)`.
+	*
+	* @param reducer - Function that returns a state given the current state and an action
+	* @param initializerArg - State used during the initial render, or passed to `initializer` if provided
+	* @param initializer - Optional function that returns an initial state given `initializerArg`
+	* @returns The current state, and an action dispatcher
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#usereducer
+]]
 
 local function useReducer(reducer, initializerArg, initializer)
 	local currentComponent = resolveCurrentComponent()
@@ -13521,6 +13910,30 @@ local TS = _G[script]
 local createRef = TS.import(script, TS.getModule(script, "@rbxts", "roact").src).createRef
 local memoizedHook = TS.import(script, script.Parent.Parent, "utils", "memoized-hook").memoizedHook
 
+	*
+	* `useRef` returns a memoized *`Ref`*, a special type of binding that points to Roblox Instance objects that are
+	* created by Roact. The returned object will persist for the full lifetime of the component.
+	*
+	* `useMutable()` is handy for keeping any mutable value around similar to how you’d use instance fields in classes.
+	*
+	* This is not mutable like React's `useRef` hook. If you want to use a mutable object, refer to {@link useMutable}.
+	*
+	* @example
+	* const ref = useRef<TextBox>();
+	*
+	* useEffect(() => {
+	* 	const textBox = ref.getValue();
+	* 	if (textBox) {
+	* 		textBox.CaptureFocus();
+	* 	}
+	* }, []);
+	*
+	* return <textbox Ref={ref} />;
+	*
+	* @returns A memoized `Ref` object
+	*
+	* @see https://roblox.github.io/roact/advanced/bindings-and-refs/#refs
+]]
 local function useRef()
 	return memoizedHook(function()
 		return createRef()
@@ -13538,8 +13951,77 @@ return {
 local TS = _G[script]
 local useReducer = TS.import(script, script.Parent, "use-reducer").useReducer
 
+	*
+	* Returns a stateful value, and a function to update it.
+	*
+	* During the initial render, the returned state (`state`) is the same as the value passed as the first argument
+	* (`initialState`).
+	*
+	* The `setState` function is used to update the state. It always knows the current state, so it's safe to omit from
+	* the `useEffect` or `useCallback` dependency lists.
+	*
+	* If you update a State Hook to the same value as the current state, this will bail out without rerendering the
+	* component.
+	*
+	* @example
+	* const [state, setState] = useState(initialState);
+	* const [state, setState] = useState(() => someExpensiveComputation());
+	* setState(newState);
+	* setState((prevState) => prevState + 1)
+	*
+	* @param initialState - State used during the initial render. Can be a function, which will be executed on initial render
+	* @returns A stateful value, and an updater function
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#usestate
+]]
 
+	*
+	* Returns a stateful value, and a function to update it.
+	*
+	* During the initial render, the returned state (`state`) is the same as the value passed as the first argument
+	* (`initialState`).
+	*
+	* The `setState` function is used to update the state. It always knows the current state, so it's safe to omit from
+	* the `useEffect` or `useCallback` dependency lists.
+	*
+	* If you update a State Hook to the same value as the current state, this will bail out without rerendering the
+	* component.
+	*
+	* @example
+	* const [state, setState] = useState(initialState);
+	* const [state, setState] = useState(() => someExpensiveComputation());
+	* setState(newState);
+	* setState((prevState) => prevState + 1)
+	*
+	* @param initialState - State used during the initial render. Can be a function, which will be executed on initial render
+	* @returns A stateful value, and an updater function
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#usestate
+]]
 
+	*
+	* Returns a stateful value, and a function to update it.
+	*
+	* During the initial render, the returned state (`state`) is the same as the value passed as the first argument
+	* (`initialState`).
+	*
+	* The `setState` function is used to update the state. It always knows the current state, so it's safe to omit from
+	* the `useEffect` or `useCallback` dependency lists.
+	*
+	* If you update a State Hook to the same value as the current state, this will bail out without rerendering the
+	* component.
+	*
+	* @example
+	* const [state, setState] = useState(initialState);
+	* const [state, setState] = useState(() => someExpensiveComputation());
+	* setState(newState);
+	* setState((prevState) => prevState + 1)
+	*
+	* @param initialState - State used during the initial render. Can be a function, which will be executed on initial render
+	* @returns A stateful value, and an updater function
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#usestate
+]]
 local function useState(initialState)
 	local _binding = useReducer(function(state, action)
 		local _result
@@ -13625,12 +14107,18 @@ local EXCEPTION_RENDER_OVERLAP = "Failed to render hook! (Another hooked compone
 local currentHook
 local currentlyRenderingComponent
 
+	*
+	* Prepares for an upcoming render.
+]]
 local function renderReady(component)
 	local _arg0 = currentlyRenderingComponent == nil
 	assert(_arg0, EXCEPTION_RENDER_NOT_DONE)
 	currentlyRenderingComponent = component
 end
 
+	*
+	* Cleans up hooks. Must be called after finishing a render!
+]]
 local function renderDone(component)
 	local _arg0 = currentlyRenderingComponent == component
 	assert(_arg0, EXCEPTION_RENDER_OVERLAP)
@@ -13638,10 +14126,19 @@ local function renderDone(component)
 	currentHook = nil
 end
 
+	*
+	* Returns the currently-rendering component. Throws an error if a component is not mid-render.
+]]
 local function resolveCurrentComponent()
 	return currentlyRenderingComponent or error(EXCEPTION_INVALID_HOOK_CALL, 3)
 end
 
+	*
+	* Gets or creates a new hook. Hooks are memoized for every component. See the original source
+	* {@link https://github.com/facebook/react/blob/main/packages/react-reconciler/src/ReactFiberHooks.new.js#L619 here}.
+	*
+	* @param initialValue - Initial value for `Hook.state` and `Hook.baseState`.
+]]
 local function memoizedHook(initialValue)
 	local currentlyRenderingComponent = resolveCurrentComponent()
 	local _result
@@ -13879,6 +14376,9 @@ local hooked = _roact_hooked.hooked
 local useMemo = _roact_hooked.useMemo
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 
+	*
+	* Makes the Rodux store available to the `useStore()` calls in the component hierarchy below.
+]]
 local Provider = hooked(function(_param)
 	local store = _param.store
 	local children = _param[Roact.Children]
@@ -13916,6 +14416,10 @@ return {
 local TS = _G[script]
 local Object = TS.import(script, TS.getModule(script, "@rbxts", "object-utils"))
 
+	*
+	* Compares two arbitrary values for shallow equality. Object values are compared based on their keys, i.e. they must
+	* have the same keys and for each key the value must be equal.
+]]
 local function shallowEqual(left, right)
 	if left == right then
 		return true
@@ -13956,6 +14460,29 @@ local TS = _G[script]
 local useMutable = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).useMutable
 local useStore = TS.import(script, script.Parent, "use-store").useStore
 
+	*
+	* A hook to access the Rodux Store's `dispatch` method.
+	*
+	* @returns Rodux store's `dispatch` method
+	*
+	* @example
+	* import Roact from "@rbxts/roact";
+	* import { hooked } from "@rbxts/roact-hooked";
+	* import { useDispatch } from "@rbxts/roact-rodux-hooked";
+	* import type { RootStore } from "./store";
+	*
+	* export const CounterComponent = hooked(() => {
+	*   const dispatch = useDispatch<RootStore>();
+	*   return (
+	*     <textlabel
+	*       Text={"Increase counter"}
+	*       Event={{
+	*         Activated: () => dispatch({ type: "increase-counter" }),
+	*       }}
+	*     />
+	*   );
+	* });
+]]
 local function useDispatch()
 	local store = useStore()
 	return useMutable(function(action)
@@ -13978,7 +14505,40 @@ local useMutable = _roact_hooked.useMutable
 local useReducer = _roact_hooked.useReducer
 local useStore = TS.import(script, script.Parent, "use-store").useStore
 
+	*
+	* This interface allows you to easily create a hook that is properly typed for your store's root state.
+	*
+	* @example
+	* interface RootState {
+	*   property: string;
+	* }
+	*
+	* const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
+]]
 
+	*
+	* A hook to access the Rodux Store's state. This hook takes a selector function as an argument. The selector is called
+	* with the store state.
+	*
+	* This hook takes an optional equality comparison function as the second parameter that allows you to customize the
+	* way the selected state is compared to determine whether the component needs to be re-rendered.
+	*
+	* @param selector - The selector function
+	* @param equalityFn - The function that will be used to determine equality
+	*
+	* @returns The selected portion of the state
+	*
+	* @example
+	* import Roact from "@rbxts/roact";
+	* import { hooked } from "@rbxts/roact-hooked";
+	* import { useSelector } from "@rbxts/roact-rodux-hooked";
+	* import type { RootState } from "./store";
+	*
+	* export const CounterComponent = hooked(() => {
+	*   const count = useSelector((state: RootState) => state.counter);
+	*   return <textlabel Text={`Counter: ${count}`} />;
+	* });
+]]
 local function useSelector(selector, equalityFn)
 	if equalityFn == nil then
 		equalityFn = function(a, b)
@@ -14067,6 +14627,22 @@ local TS = _G[script]
 local RoactRoduxContext = TS.import(script, script.Parent.Parent, "components", "context").RoactRoduxContext
 local useContext = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).useContext
 
+	*
+	* A hook to access the Rodux Store.
+	*
+	* @returns The Rodux store
+	*
+	* @example
+	* import Roact from "@rbxts/roact";
+	* import { hooked } from "@rbxts/roact-hooked";
+	* import { useStore } from "@rbxts/roact-rodux-hooked";
+	* import type { RootStore } from "./store";
+	*
+	* export const CounterComponent = hooked(() => {
+	*   const store = useStore<RootStore>();
+	*   return <textlabel Text={store.getState()} />;
+	* });
+]]
 local function useStore()
 	return useContext(RoactRoduxContext).store
 end
@@ -14080,6 +14656,9 @@ return {
         return (function(...)
 
 
+	*
+	* A Roact Context
+]]
 return nil
 
         end)
