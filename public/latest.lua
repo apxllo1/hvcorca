@@ -13119,50 +13119,1634 @@ return TS
     hInst("exploit-types", "Folder", "Havoc.include.node_modules.exploit-types", "Havoc.include.node_modules")
     hInst("types", "Folder", "Havoc.include.node_modules.exploit-types.types", "Havoc.include.node_modules.exploit-types")
     hInst("flipper", "Folder", "Havoc.include.node_modules.flipper", "Havoc.include.node_modules")
-    hInst("src", "ModuleScript", "Havoc.include.node_modules.flipper.src", "Havoc.include.node_modules.flipper")
+    hMod("src", "ModuleScript", "Havoc.include.node_modules.flipper.src", "Havoc.include.node_modules.flipper", function()
+        return setfenv(function(...)
+local Flipper = {
+	SingleMotor = require(script.SingleMotor),
+	GroupMotor = require(script.GroupMotor),
+
+	Instant = require(script.Instant),
+	Linear = require(script.Linear),
+	Spring = require(script.Spring),
+	
+	isMotor = require(script.isMotor),
+}
+
+return Flipper
+        end, hEnv("Havoc.include.node_modules.flipper.src"))()
+    end)
     hInst("typings", "Folder", "Havoc.include.node_modules.flipper.typings", "Havoc.include.node_modules.flipper")
-    hInst("make", "ModuleScript", "Havoc.include.node_modules.make", "Havoc.include.node_modules")
+    hMod("make", "ModuleScript", "Havoc.include.node_modules.make", "Havoc.include.node_modules", function()
+        return setfenv(function(...)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+local function Make(className, settings)
+	local _binding = settings
+	local children = _binding.Children
+	local parent = _binding.Parent
+	local instance = Instance.new(className)
+	for setting, value in pairs(settings) do
+		if setting ~= "Children" and setting ~= "Parent" then
+			local _binding_1 = instance
+			local prop = _binding_1[setting]
+			if typeof(prop) == "RBXScriptSignal" then
+				prop:Connect(value)
+			else
+				instance[setting] = value
+			end
+		end
+	end
+	if children then
+		for _, child in ipairs(children) do
+			child.Parent = instance
+		end
+	end
+	instance.Parent = parent
+	return instance
+end
+return Make
+
+        end, hEnv("Havoc.include.node_modules.make"))()
+    end)
     hInst("node_modules", "Folder", "Havoc.include.node_modules.make.node_modules", "Havoc.include.node_modules.make")
     hInst("@rbxts", "Folder", "Havoc.include.node_modules.make.node_modules.@rbxts", "Havoc.include.node_modules.make.node_modules")
     hInst("compiler-types", "Folder", "Havoc.include.node_modules.make.node_modules.@rbxts.compiler-types", "Havoc.include.node_modules.make.node_modules.@rbxts")
     hInst("types", "Folder", "Havoc.include.node_modules.make.node_modules.@rbxts.compiler-types.types", "Havoc.include.node_modules.make.node_modules.@rbxts.compiler-types")
-    hInst("object-utils", "ModuleScript", "Havoc.include.node_modules.object-utils", "Havoc.include.node_modules")
+    hMod("object-utils", "ModuleScript", "Havoc.include.node_modules.object-utils", "Havoc.include.node_modules", function()
+        return setfenv(function(...)
+local HttpService = game:GetService("HttpService")
+
+local Object = {}
+
+function Object.keys(object)
+	local result = table.create(#object)
+	for key in pairs(object) do
+		result[#result + 1] = key
+	end
+	return result
+end
+
+function Object.values(object)
+	local result = table.create(#object)
+	for _, value in pairs(object) do
+		result[#result + 1] = value
+	end
+	return result
+end
+
+function Object.entries(object)
+	local result = table.create(#object)
+	for key, value in pairs(object) do
+		result[#result + 1] = { key, value }
+	end
+	return result
+end
+
+function Object.assign(toObj, ...)
+	for i = 1, select("#", ...) do
+		local arg = select(i, ...)
+		if type(arg) == "table" then
+			for key, value in pairs(arg) do
+				toObj[key] = value
+			end
+		end
+	end
+	return toObj
+end
+
+function Object.copy(object)
+	local result = table.create(#object)
+	for k, v in pairs(object) do
+		result[k] = v
+	end
+	return result
+end
+
+local function deepCopyHelper(object, encountered)
+	local result = table.create(#object)
+	encountered[object] = result
+
+	for k, v in pairs(object) do
+		if type(k) == "table" then
+			k = encountered[k] or deepCopyHelper(k, encountered)
+		end
+
+		if type(v) == "table" then
+			v = encountered[v] or deepCopyHelper(v, encountered)
+		end
+
+		result[k] = v
+	end
+
+	return result
+end
+
+function Object.deepCopy(object)
+	return deepCopyHelper(object, {})
+end
+
+function Object.deepEquals(a, b)
+	
+	for k in pairs(a) do
+		local av = a[k]
+		local bv = b[k]
+		if type(av) == "table" and type(bv) == "table" then
+			local result = Object.deepEquals(av, bv)
+			if not result then
+				return false
+			end
+		elseif av ~= bv then
+			return false
+		end
+	end
+
+	
+	for k in pairs(b) do
+		if a[k] == nil then
+			return false
+		end
+	end
+
+	return true
+end
+
+function Object.toString(data)
+	return HttpService:JSONEncode(data)
+end
+
+function Object.isEmpty(object)
+	return next(object) == nil
+end
+
+function Object.fromEntries(entries)
+	local entriesLen = #entries
+
+	local result = table.create(entriesLen)
+	if entries then
+		for i = 1, entriesLen do
+			local pair = entries[i]
+			result[pair[1]] = pair[2]
+		end
+	end
+	return result
+end
+
+return Object
+
+        end, hEnv("Havoc.include.node_modules.object-utils"))()
+    end)
     hInst("roact", "Folder", "Havoc.include.node_modules.roact", "Havoc.include.node_modules")
-    hInst("src", "ModuleScript", "Havoc.include.node_modules.roact.src", "Havoc.include.node_modules.roact")
+    hMod("src", "ModuleScript", "Havoc.include.node_modules.roact.src", "Havoc.include.node_modules.roact", function()
+        return setfenv(function(...)
+
+
+
+
+local GlobalConfig = require(script.GlobalConfig)
+local createReconciler = require(script.createReconciler)
+local createReconcilerCompat = require(script.createReconcilerCompat)
+local RobloxRenderer = require(script.RobloxRenderer)
+local strict = require(script.strict)
+local Binding = require(script.Binding)
+
+local robloxReconciler = createReconciler(RobloxRenderer)
+local reconcilerCompat = createReconcilerCompat(robloxReconciler)
+
+local Roact = strict {
+	Component = require(script.Component),
+	createElement = require(script.createElement),
+	createFragment = require(script.createFragment),
+	oneChild = require(script.oneChild),
+	PureComponent = require(script.PureComponent),
+	None = require(script.None),
+	Portal = require(script.Portal),
+	createRef = require(script.createRef),
+	forwardRef = require(script.forwardRef),
+	createBinding = Binding.create,
+	joinBindings = Binding.join,
+	createContext = require(script.createContext),
+
+	Change = require(script.PropMarkers.Change),
+	Children = require(script.PropMarkers.Children),
+	Event = require(script.PropMarkers.Event),
+	Ref = require(script.PropMarkers.Ref),
+
+	mount = robloxReconciler.mountVirtualTree,
+	unmount = robloxReconciler.unmountVirtualTree,
+	update = robloxReconciler.updateVirtualTree,
+
+	reify = reconcilerCompat.reify,
+	teardown = reconcilerCompat.teardown,
+	reconcile = reconcilerCompat.reconcile,
+
+	setGlobalConfig = GlobalConfig.set,
+
+	
+	UNSTABLE = {
+	},
+}
+
+return Roact
+        end, hEnv("Havoc.include.node_modules.roact.src"))()
+    end)
     hInst("roact-hooked", "Folder", "Havoc.include.node_modules.roact-hooked", "Havoc.include.node_modules")
-    hInst("out", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out", "Havoc.include.node_modules.roact-hooked")
-    hInst("hooks", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks", "Havoc.include.node_modules.roact-hooked.out")
-    hInst("use-binding", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-binding", "Havoc.include.node_modules.roact-hooked.out.hooks")
-    hInst("use-callback", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-callback", "Havoc.include.node_modules.roact-hooked.out.hooks")
-    hInst("use-context", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-context", "Havoc.include.node_modules.roact-hooked.out.hooks")
-    hInst("use-effect", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-effect", "Havoc.include.node_modules.roact-hooked.out.hooks")
-    hInst("use-memo", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-memo", "Havoc.include.node_modules.roact-hooked.out.hooks")
-    hInst("use-mutable", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-mutable", "Havoc.include.node_modules.roact-hooked.out.hooks")
-    hInst("use-reducer", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-reducer", "Havoc.include.node_modules.roact-hooked.out.hooks")
-    hInst("use-ref", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-ref", "Havoc.include.node_modules.roact-hooked.out.hooks")
-    hInst("use-state", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-state", "Havoc.include.node_modules.roact-hooked.out.hooks")
-    hInst("types", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.types", "Havoc.include.node_modules.roact-hooked.out")
+    hMod("out", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out", "Havoc.include.node_modules.roact-hooked", function()
+        return setfenv(function(...)
+
+local TS = _G[script]
+local exports = {}
+local _with_hooks = TS.import(script, script, "with-hooks")
+local withHooks = _with_hooks.withHooks
+local withHooksPure = _with_hooks.withHooksPure
+for _k, _v in pairs(TS.import(script, script, "hooks")) do
+	exports[_k] = _v
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+local function hooked(functionComponent)
+	return withHooks(functionComponent)
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+local function pure(functionComponent)
+	return withHooksPure(functionComponent)
+end
+exports.hooked = hooked
+exports.pure = pure
+return exports
+
+        end, hEnv("Havoc.include.node_modules.roact-hooked.out"))()
+    end)
+    hMod("hooks", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks", "Havoc.include.node_modules.roact-hooked.out", function()
+        return setfenv(function(...)
+
+local TS = _G[script]
+local exports = {}
+exports.useBinding = TS.import(script, script, "use-binding").useBinding
+exports.useCallback = TS.import(script, script, "use-callback").useCallback
+exports.useContext = TS.import(script, script, "use-context").useContext
+exports.useEffect = TS.import(script, script, "use-effect").useEffect
+exports.useMemo = TS.import(script, script, "use-memo").useMemo
+exports.useReducer = TS.import(script, script, "use-reducer").useReducer
+exports.useState = TS.import(script, script, "use-state").useState
+exports.useMutable = TS.import(script, script, "use-mutable").useMutable
+exports.useRef = TS.import(script, script, "use-ref").useRef
+return exports
+
+        end, hEnv("Havoc.include.node_modules.roact-hooked.out.hooks"))()
+    end)
+    hMod("use-binding", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-binding", "Havoc.include.node_modules.roact-hooked.out.hooks", function()
+        return setfenv(function(...)
+
+local TS = _G[script]
+local createBinding = TS.import(script, TS.getModule(script, "@rbxts", "roact").src).createBinding
+local memoizedHook = TS.import(script, script.Parent.Parent, "utils", "memoized-hook").memoizedHook
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+local function useBinding(initialValue)
+	return memoizedHook(function()
+		local bindingSet = { createBinding(initialValue) }
+		return bindingSet
+	end).state
+end
+return {
+	useBinding = useBinding,
+}
+
+        end, hEnv("Havoc.include.node_modules.roact-hooked.out.hooks.use-binding"))()
+    end)
+    hMod("use-callback", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-callback", "Havoc.include.node_modules.roact-hooked.out.hooks", function()
+        return setfenv(function(...)
+
+local TS = _G[script]
+local useMemo = TS.import(script, script.Parent, "use-memo").useMemo
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+local function useCallback(callback, deps)
+	return useMemo(function()
+		return callback
+	end, deps)
+end
+return {
+	useCallback = useCallback,
+}
+
+        end, hEnv("Havoc.include.node_modules.roact-hooked.out.hooks.use-callback"))()
+    end)
+    hMod("use-context", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-context", "Havoc.include.node_modules.roact-hooked.out.hooks", function()
+        return setfenv(function(...)
+
+local TS = _G[script]
+
+
+
+
+local _memoized_hook = TS.import(script, script.Parent.Parent, "utils", "memoized-hook")
+local memoizedHook = _memoized_hook.memoizedHook
+local resolveCurrentComponent = _memoized_hook.resolveCurrentComponent
+local useEffect = TS.import(script, script.Parent, "use-effect").useEffect
+local useState = TS.import(script, script.Parent, "use-state").useState
+local function copyComponent(component)
+	return setmetatable({}, {
+		__index = component,
+	})
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+local function useContext(context)
+	local thisContext = context
+	local _binding = memoizedHook(function()
+		local consumer = copyComponent(resolveCurrentComponent())
+		thisContext.Consumer.init(consumer)
+		return consumer.contextEntry
+	end)
+	local contextEntry = _binding.state
+	if contextEntry then
+		local _binding_1 = useState(contextEntry.value)
+		local value = _binding_1[1]
+		local setValue = _binding_1[2]
+		useEffect(function()
+			return contextEntry.onUpdate:subscribe(setValue)
+		end, {})
+		return value
+	else
+		return thisContext.defaultValue
+	end
+end
+return {
+	useContext = useContext,
+}
+
+        end, hEnv("Havoc.include.node_modules.roact-hooked.out.hooks.use-context"))()
+    end)
+    hMod("use-effect", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-effect", "Havoc.include.node_modules.roact-hooked.out.hooks", function()
+        return setfenv(function(...)
+
+local TS = _G[script]
+local areDepsEqual = TS.import(script, script.Parent.Parent, "utils", "are-deps-equal").areDepsEqual
+local _memoized_hook = TS.import(script, script.Parent.Parent, "utils", "memoized-hook")
+local memoizedHook = _memoized_hook.memoizedHook
+local resolveCurrentComponent = _memoized_hook.resolveCurrentComponent
+local function scheduleEffect(effect)
+	local _binding = resolveCurrentComponent()
+	local effects = _binding.effects
+	if effects.tail == nil then
+		
+		effects.tail = effect
+		effects.head = effects.tail
+	else
+		
+		local _exp = effects.tail
+		_exp.next = effect
+		effects.tail = _exp.next
+	end
+	return effect
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+local function useEffect(callback, deps)
+	local hook = memoizedHook(nil)
+	local _prevDeps = hook.state
+	if _prevDeps ~= nil then
+		_prevDeps = _prevDeps.deps
+	end
+	local prevDeps = _prevDeps
+	if deps and areDepsEqual(deps, prevDeps) then
+		return nil
+	end
+	hook.state = scheduleEffect({
+		id = hook.id,
+		callback = callback,
+		deps = deps,
+	})
+end
+return {
+	useEffect = useEffect,
+}
+
+        end, hEnv("Havoc.include.node_modules.roact-hooked.out.hooks.use-effect"))()
+    end)
+    hMod("use-memo", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-memo", "Havoc.include.node_modules.roact-hooked.out.hooks", function()
+        return setfenv(function(...)
+
+local TS = _G[script]
+local areDepsEqual = TS.import(script, script.Parent.Parent, "utils", "are-deps-equal").areDepsEqual
+local memoizedHook = TS.import(script, script.Parent.Parent, "utils", "memoized-hook").memoizedHook
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+local function useMemo(factory, deps)
+	local hook = memoizedHook(function()
+		return {}
+	end)
+	local _binding = hook.state
+	local prevValue = _binding[1]
+	local prevDeps = _binding[2]
+	if prevValue ~= nil and (deps and areDepsEqual(deps, prevDeps)) then
+		return prevValue
+	end
+	local nextValue = factory()
+	hook.state = { nextValue, deps }
+	return nextValue
+end
+return {
+	useMemo = useMemo,
+}
+
+        end, hEnv("Havoc.include.node_modules.roact-hooked.out.hooks.use-memo"))()
+    end)
+    hMod("use-mutable", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-mutable", "Havoc.include.node_modules.roact-hooked.out.hooks", function()
+        return setfenv(function(...)
+
+local TS = _G[script]
+local memoizedHook = TS.import(script, script.Parent.Parent, "utils", "memoized-hook").memoizedHook
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+local function useMutable(initialValue)
+	return memoizedHook(function()
+		return {
+			current = initialValue,
+		}
+	end).state
+end
+return {
+	useMutable = useMutable,
+}
+
+        end, hEnv("Havoc.include.node_modules.roact-hooked.out.hooks.use-mutable"))()
+    end)
+    hMod("use-reducer", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-reducer", "Havoc.include.node_modules.roact-hooked.out.hooks", function()
+        return setfenv(function(...)
+
+local TS = _G[script]
+local _memoized_hook = TS.import(script, script.Parent.Parent, "utils", "memoized-hook")
+local memoizedHook = _memoized_hook.memoizedHook
+local resolveCurrentComponent = _memoized_hook.resolveCurrentComponent
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+local function useReducer(reducer, initializerArg, initializer)
+	local currentComponent = resolveCurrentComponent()
+	local hook = memoizedHook(function()
+		local _result
+		if initializer then
+			_result = initializer(initializerArg)
+		else
+			_result = initializerArg
+		end
+		return _result
+	end)
+	local function dispatch(action)
+		local nextState = reducer(hook.state, action)
+		if hook.state ~= nextState then
+			currentComponent:setHookState(hook.id, function()
+				hook.state = nextState
+				return hook.state
+			end)
+		end
+	end
+	return { hook.state, dispatch }
+end
+return {
+	useReducer = useReducer,
+}
+
+        end, hEnv("Havoc.include.node_modules.roact-hooked.out.hooks.use-reducer"))()
+    end)
+    hMod("use-ref", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-ref", "Havoc.include.node_modules.roact-hooked.out.hooks", function()
+        return setfenv(function(...)
+
+local TS = _G[script]
+local createRef = TS.import(script, TS.getModule(script, "@rbxts", "roact").src).createRef
+local memoizedHook = TS.import(script, script.Parent.Parent, "utils", "memoized-hook").memoizedHook
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+local function useRef()
+	return memoizedHook(function()
+		return createRef()
+	end).state
+end
+return {
+	useRef = useRef,
+}
+
+        end, hEnv("Havoc.include.node_modules.roact-hooked.out.hooks.use-ref"))()
+    end)
+    hMod("use-state", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-state", "Havoc.include.node_modules.roact-hooked.out.hooks", function()
+        return setfenv(function(...)
+
+local TS = _G[script]
+local useReducer = TS.import(script, script.Parent, "use-reducer").useReducer
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+local function useState(initialState)
+	local _binding = useReducer(function(state, action)
+		local _result
+		if type(action) == "function" then
+			_result = action(state)
+		else
+			_result = action
+		end
+		return _result
+	end, nil, function()
+		local _result
+		if type(initialState) == "function" then
+			_result = initialState()
+		else
+			_result = initialState
+		end
+		return _result
+	end)
+	local state = _binding[1]
+	local dispatch = _binding[2]
+	return { state, dispatch }
+end
+return {
+	useState = useState,
+}
+
+        end, hEnv("Havoc.include.node_modules.roact-hooked.out.hooks.use-state"))()
+    end)
+    hMod("types", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.types", "Havoc.include.node_modules.roact-hooked.out", function()
+        return setfenv(function(...)
+
+
+
+
+
+return nil
+
+        end, hEnv("Havoc.include.node_modules.roact-hooked.out.types"))()
+    end)
     hInst("utils", "Folder", "Havoc.include.node_modules.roact-hooked.out.utils", "Havoc.include.node_modules.roact-hooked.out")
-    hInst("are-deps-equal", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.utils.are-deps-equal", "Havoc.include.node_modules.roact-hooked.out.utils")
-    hInst("memoized-hook", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.utils.memoized-hook", "Havoc.include.node_modules.roact-hooked.out.utils")
-    hInst("with-hooks", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.with-hooks", "Havoc.include.node_modules.roact-hooked.out")
-    hInst("component-with-hooks", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.with-hooks.component-with-hooks", "Havoc.include.node_modules.roact-hooked.out.with-hooks")
-    hInst("with-hooks", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.with-hooks.with-hooks", "Havoc.include.node_modules.roact-hooked.out.with-hooks")
+    hMod("are-deps-equal", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.utils.are-deps-equal", "Havoc.include.node_modules.roact-hooked.out.utils", function()
+        return setfenv(function(...)
+
+local function areDepsEqual(nextDeps, prevDeps)
+	if prevDeps == nil then
+		return false
+	end
+	if #nextDeps ~= #prevDeps then
+		return false
+	end
+	do
+		local i = 0
+		local _shouldIncrement = false
+		while true do
+			if _shouldIncrement then
+				i += 1
+			else
+				_shouldIncrement = true
+			end
+			if not (i < #nextDeps) then
+				break
+			end
+			if nextDeps[i + 1] == prevDeps[i + 1] then
+				continue
+			end
+			return false
+		end
+	end
+	return true
+end
+return {
+	areDepsEqual = areDepsEqual,
+}
+
+        end, hEnv("Havoc.include.node_modules.roact-hooked.out.utils.are-deps-equal"))()
+    end)
+    hMod("memoized-hook", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.utils.memoized-hook", "Havoc.include.node_modules.roact-hooked.out.utils", function()
+        return setfenv(function(...)
+
+local EXCEPTION_INVALID_HOOK_CALL = table.concat({ "Invalid hook call. Hooks can only be called inside of the body of a function component.", "This is usually the result of conflicting versions of roact-hooked.", "See https://reactjs.org/link/invalid-hook-call for tips about how to debug and fix this problem." }, "\n")
+local EXCEPTION_RENDER_NOT_DONE = "Failed to render hook! (Another hooked component is rendering)"
+local EXCEPTION_RENDER_OVERLAP = "Failed to render hook! (Another hooked component rendered during this one)"
+local currentHook
+local currentlyRenderingComponent
+
+
+
+
+local function renderReady(component)
+	local _arg0 = currentlyRenderingComponent == nil
+	assert(_arg0, EXCEPTION_RENDER_NOT_DONE)
+	currentlyRenderingComponent = component
+end
+
+
+
+
+local function renderDone(component)
+	local _arg0 = currentlyRenderingComponent == component
+	assert(_arg0, EXCEPTION_RENDER_OVERLAP)
+	currentlyRenderingComponent = nil
+	currentHook = nil
+end
+
+
+
+
+local function resolveCurrentComponent()
+	return currentlyRenderingComponent or error(EXCEPTION_INVALID_HOOK_CALL, 3)
+end
+
+
+
+
+
+
+
+local function memoizedHook(initialValue)
+	local currentlyRenderingComponent = resolveCurrentComponent()
+	local _result
+	if currentHook then
+		_result = currentHook.next
+	else
+		_result = currentlyRenderingComponent.firstHook
+	end
+	local nextHook = _result
+	if nextHook then
+		
+		currentHook = nextHook
+	else
+		
+		local _result_1
+		if type(initialValue) == "function" then
+			_result_1 = initialValue()
+		else
+			_result_1 = initialValue
+		end
+		local state = _result_1
+		local newHook = {
+			id = currentHook and currentHook.id + 1 or 0,
+			state = state,
+			baseState = state,
+		}
+		if not currentHook then
+			
+			currentHook = newHook
+			currentlyRenderingComponent.firstHook = currentHook
+		else
+			
+			currentHook.next = newHook
+			currentHook = currentHook.next
+		end
+	end
+	return currentHook
+end
+return {
+	renderReady = renderReady,
+	renderDone = renderDone,
+	resolveCurrentComponent = resolveCurrentComponent,
+	memoizedHook = memoizedHook,
+}
+
+        end, hEnv("Havoc.include.node_modules.roact-hooked.out.utils.memoized-hook"))()
+    end)
+    hMod("with-hooks", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.with-hooks", "Havoc.include.node_modules.roact-hooked.out", function()
+        return setfenv(function(...)
+
+local TS = _G[script]
+local exports = {}
+local _with_hooks = TS.import(script, script, "with-hooks")
+exports.withHooks = _with_hooks.withHooks
+exports.withHooksPure = _with_hooks.withHooksPure
+return exports
+
+        end, hEnv("Havoc.include.node_modules.roact-hooked.out.with-hooks"))()
+    end)
+    hMod("component-with-hooks", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.with-hooks.component-with-hooks", "Havoc.include.node_modules.roact-hooked.out.with-hooks", function()
+        return setfenv(function(...)
+
+local TS = _G[script]
+local _memoized_hook = TS.import(script, script.Parent.Parent, "utils", "memoized-hook")
+local renderDone = _memoized_hook.renderDone
+local renderReady = _memoized_hook.renderReady
+local ComponentWithHooks
+do
+	ComponentWithHooks = {}
+	function ComponentWithHooks:constructor()
+	end
+	function ComponentWithHooks:init()
+		self.effects = {}
+		self.effectHandles = {}
+	end
+	function ComponentWithHooks:setHookState(id, reducer)
+		self:setState(function(state)
+			return {
+				[id] = reducer(state[id]),
+			}
+		end)
+	end
+	function ComponentWithHooks:render()
+		renderReady(self)
+		local _functionComponent = self.functionComponent
+		local _props = self.props
+		local _success, _valueOrError = pcall(_functionComponent, _props)
+		local result = _success and {
+			success = true,
+			value = _valueOrError,
+		} or {
+			success = false,
+			error = _valueOrError,
+		}
+		renderDone(self)
+		if not result.success then
+			error("(ComponentWithHooks) " .. result.error)
+		end
+		return result.value
+	end
+	function ComponentWithHooks:didMount()
+		self:flushEffects()
+	end
+	function ComponentWithHooks:didUpdate()
+		self:flushEffects()
+	end
+	function ComponentWithHooks:willUnmount()
+		self:unmountEffects()
+		self.effects.head = nil
+	end
+	function ComponentWithHooks:flushEffectsHelper(effect)
+		if not effect then
+			return nil
+		end
+		local _effectHandles = self.effectHandles
+		local _id = effect.id
+		local _result = _effectHandles[_id]
+		if _result ~= nil then
+			_result()
+		end
+		local handle = effect.callback()
+		if handle then
+			local _effectHandles_1 = self.effectHandles
+			local _id_1 = effect.id
+			
+			_effectHandles_1[_id_1] = handle
+			
+		end
+		self:flushEffectsHelper(effect.next)
+	end
+	function ComponentWithHooks:flushEffects()
+		self:flushEffectsHelper(self.effects.head)
+		self.effects.head = nil
+		self.effects.tail = nil
+	end
+	function ComponentWithHooks:unmountEffects()
+		
+		
+		local _effectHandles = self.effectHandles
+		local _arg0 = function(handle)
+			return handle()
+		end
+		
+		for _k, _v in pairs(_effectHandles) do
+			_arg0(_v, _k, _effectHandles)
+		end
+		
+		
+		table.clear(self.effectHandles)
+		
+	end
+end
+return {
+	ComponentWithHooks = ComponentWithHooks,
+}
+
+        end, hEnv("Havoc.include.node_modules.roact-hooked.out.with-hooks.component-with-hooks"))()
+    end)
+    hMod("with-hooks", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.with-hooks.with-hooks", "Havoc.include.node_modules.roact-hooked.out.with-hooks", function()
+        return setfenv(function(...)
+
+local TS = _G[script]
+local ComponentWithHooks = TS.import(script, script.Parent, "component-with-hooks").ComponentWithHooks
+local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
+local function componentWithHooksMixin(ctor)
+	for k, v in pairs(ComponentWithHooks) do
+		ctor[k] = v
+	end
+end
+local function withHooks(functionComponent)
+	local ComponentClass
+	do
+		ComponentClass = Roact.Component:extend("ComponentClass")
+		function ComponentClass:init()
+		end
+		ComponentClass.functionComponent = functionComponent
+	end
+	componentWithHooksMixin(ComponentClass)
+	return ComponentClass
+end
+local function withHooksPure(functionComponent)
+	local ComponentClass
+	do
+		ComponentClass = Roact.PureComponent:extend("ComponentClass")
+		function ComponentClass:init()
+		end
+		ComponentClass.functionComponent = functionComponent
+	end
+	componentWithHooksMixin(ComponentClass)
+	return ComponentClass
+end
+return {
+	withHooks = withHooks,
+	withHooksPure = withHooksPure,
+}
+
+        end, hEnv("Havoc.include.node_modules.roact-hooked.out.with-hooks.with-hooks"))()
+    end)
     hInst("roact-rodux-hooked", "Folder", "Havoc.include.node_modules.roact-rodux-hooked", "Havoc.include.node_modules")
-    hInst("out", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out", "Havoc.include.node_modules.roact-rodux-hooked")
+    hMod("out", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out", "Havoc.include.node_modules.roact-rodux-hooked", function()
+        return setfenv(function(...)
+
+local TS = _G[script]
+local exports = {}
+exports.Provider = TS.import(script, script, "components", "provider").Provider
+exports.useDispatch = TS.import(script, script, "hooks", "use-dispatch").useDispatch
+exports.useSelector = TS.import(script, script, "hooks", "use-selector").useSelector
+exports.useStore = TS.import(script, script, "hooks", "use-store").useStore
+exports.shallowEqual = TS.import(script, script, "helpers", "shallow-equal").shallowEqual
+exports.RoactRoduxContext = TS.import(script, script, "components", "context").RoactRoduxContext
+return exports
+
+        end, hEnv("Havoc.include.node_modules.roact-rodux-hooked.out"))()
+    end)
     hInst("components", "Folder", "Havoc.include.node_modules.roact-rodux-hooked.out.components", "Havoc.include.node_modules.roact-rodux-hooked.out")
-    hInst("context", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.components.context", "Havoc.include.node_modules.roact-rodux-hooked.out.components")
-    hInst("provider", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.components.provider", "Havoc.include.node_modules.roact-rodux-hooked.out.components")
+    hMod("context", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.components.context", "Havoc.include.node_modules.roact-rodux-hooked.out.components", function()
+        return setfenv(function(...)
+
+local TS = _G[script]
+local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
+local RoactRoduxContext = Roact.createContext(nil)
+return {
+	RoactRoduxContext = RoactRoduxContext,
+}
+
+        end, hEnv("Havoc.include.node_modules.roact-rodux-hooked.out.components.context"))()
+    end)
+    hMod("provider", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.components.provider", "Havoc.include.node_modules.roact-rodux-hooked.out.components", function()
+        return setfenv(function(...)
+
+local TS = _G[script]
+local RoactRoduxContext = TS.import(script, script.Parent, "context").RoactRoduxContext
+local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
+local hooked = _roact_hooked.hooked
+local useMemo = _roact_hooked.useMemo
+local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
+
+
+
+
+local Provider = hooked(function(_param)
+	local store = _param.store
+	local children = _param[Roact.Children]
+	local contextValue = useMemo(function()
+		return {
+			store = store,
+		}
+	end, { store })
+	local _ptr = {
+		value = contextValue,
+	}
+	local _ptr_1 = {}
+	local _length = #_ptr_1
+	if children then
+		for _k, _v in pairs(children) do
+			if type(_k) == "number" then
+				_ptr_1[_length + _k] = _v
+			else
+				_ptr_1[_k] = _v
+			end
+		end
+	end
+	return Roact.createElement(RoactRoduxContext.Provider, _ptr, _ptr_1)
+end)
+return {
+	Provider = Provider,
+}
+
+        end, hEnv("Havoc.include.node_modules.roact-rodux-hooked.out.components.provider"))()
+    end)
     hInst("helpers", "Folder", "Havoc.include.node_modules.roact-rodux-hooked.out.helpers", "Havoc.include.node_modules.roact-rodux-hooked.out")
-    hInst("shallow-equal", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.helpers.shallow-equal", "Havoc.include.node_modules.roact-rodux-hooked.out.helpers")
+    hMod("shallow-equal", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.helpers.shallow-equal", "Havoc.include.node_modules.roact-rodux-hooked.out.helpers", function()
+        return setfenv(function(...)
+
+local TS = _G[script]
+local Object = TS.import(script, TS.getModule(script, "@rbxts", "object-utils"))
+
+
+
+
+
+local function shallowEqual(left, right)
+	if left == right then
+		return true
+	end
+	if not (type(left) == "table") or not (type(right) == "table") then
+		return false
+	end
+	local keysLeft = Object.keys(left)
+	local keysRight = Object.keys(right)
+	if #keysLeft ~= #keysRight then
+		return false
+	end
+	local _arg0 = function(value, index)
+		return value == right[index]
+	end
+	
+	local _result = true
+	for _k, _v in ipairs(keysLeft) do
+		if not _arg0(_v, _k - 1, keysLeft) then
+			_result = false
+			break
+		end
+	end
+	
+	return _result
+end
+return {
+	shallowEqual = shallowEqual,
+}
+
+        end, hEnv("Havoc.include.node_modules.roact-rodux-hooked.out.helpers.shallow-equal"))()
+    end)
     hInst("hooks", "Folder", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks", "Havoc.include.node_modules.roact-rodux-hooked.out")
-    hInst("use-dispatch", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks.use-dispatch", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks")
-    hInst("use-selector", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks.use-selector", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks")
-    hInst("use-store", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks.use-store", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks")
-    hInst("types", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.types", "Havoc.include.node_modules.roact-rodux-hooked.out")
+    hMod("use-dispatch", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks.use-dispatch", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks", function()
+        return setfenv(function(...)
+
+local TS = _G[script]
+local useMutable = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).useMutable
+local useStore = TS.import(script, script.Parent, "use-store").useStore
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+local function useDispatch()
+	local store = useStore()
+	return useMutable(function(action)
+		return store:dispatch(action)
+	end).current
+end
+return {
+	useDispatch = useDispatch,
+}
+
+        end, hEnv("Havoc.include.node_modules.roact-rodux-hooked.out.hooks.use-dispatch"))()
+    end)
+    hMod("use-selector", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks.use-selector", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks", function()
+        return setfenv(function(...)
+
+local TS = _G[script]
+local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
+local useEffect = _roact_hooked.useEffect
+local useMutable = _roact_hooked.useMutable
+local useReducer = _roact_hooked.useReducer
+local useStore = TS.import(script, script.Parent, "use-store").useStore
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+local function useSelector(selector, equalityFn)
+	if equalityFn == nil then
+		equalityFn = function(a, b)
+			return a == b
+		end
+	end
+	local _binding = useReducer(function(s)
+		return s + 1
+	end, 0)
+	local forceRender = _binding[2]
+	local store = useStore()
+	local latestSubscriptionCallbackError = useMutable()
+	local latestSelector = useMutable()
+	local latestStoreState = useMutable()
+	local latestSelectedState = useMutable()
+	local storeState = store:getState()
+	local selectedState
+	TS.try(function()
+		local _value = selector ~= latestSelector.current or storeState ~= latestStoreState.current or latestSubscriptionCallbackError.current
+		if _value ~= "" and _value then
+			local newSelectedState = selector(storeState)
+			
+			if latestSelectedState.current == nil or not equalityFn(newSelectedState, latestSelectedState.current) then
+				selectedState = newSelectedState
+			else
+				selectedState = latestSelectedState.current
+			end
+		else
+			selectedState = latestSelectedState.current
+		end
+	end, function(err)
+		if latestSubscriptionCallbackError.current ~= nil then
+			err ..= "\nThe error may be correlated with this previous error:\n" .. latestSubscriptionCallbackError.current .. "\n\n"
+		end
+		error(err)
+	end)
+	useEffect(function()
+		latestSelector.current = selector
+		latestStoreState.current = storeState
+		latestSelectedState.current = selectedState
+		latestSubscriptionCallbackError.current = nil
+	end)
+	useEffect(function()
+		local function checkForUpdates(newStoreState)
+			local _exitType, _returns = TS.try(function()
+				
+				if newStoreState == latestStoreState.current then
+					return TS.TRY_RETURN, {}
+				end
+				local newSelectedState = latestSelector.current(newStoreState)
+				if equalityFn(newSelectedState, latestSelectedState.current) then
+					return TS.TRY_RETURN, {}
+				end
+				latestSelectedState.current = newSelectedState
+				latestStoreState.current = newStoreState
+			end, function(err)
+				
+				
+				
+				
+				latestSubscriptionCallbackError.current = err
+			end)
+			if _exitType then
+				return unpack(_returns)
+			end
+			task.spawn(forceRender)
+		end
+		local subscription = store.changed:connect(checkForUpdates)
+		checkForUpdates(store:getState())
+		return function()
+			return subscription:disconnect()
+		end
+	end, { store })
+	return selectedState
+end
+return {
+	useSelector = useSelector,
+}
+
+        end, hEnv("Havoc.include.node_modules.roact-rodux-hooked.out.hooks.use-selector"))()
+    end)
+    hMod("use-store", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks.use-store", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks", function()
+        return setfenv(function(...)
+
+local TS = _G[script]
+local RoactRoduxContext = TS.import(script, script.Parent.Parent, "components", "context").RoactRoduxContext
+local useContext = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).useContext
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+local function useStore()
+	return useContext(RoactRoduxContext).store
+end
+return {
+	useStore = useStore,
+}
+
+        end, hEnv("Havoc.include.node_modules.roact-rodux-hooked.out.hooks.use-store"))()
+    end)
+    hMod("types", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.types", "Havoc.include.node_modules.roact-rodux-hooked.out", function()
+        return setfenv(function(...)
+
+
+
+
+
+return nil
+
+        end, hEnv("Havoc.include.node_modules.roact-rodux-hooked.out.types"))()
+    end)
     hInst("rodux", "Folder", "Havoc.include.node_modules.rodux", "Havoc.include.node_modules")
-    hInst("src", "ModuleScript", "Havoc.include.node_modules.rodux.src", "Havoc.include.node_modules.rodux")
-    hInst("services", "ModuleScript", "Havoc.include.node_modules.services", "Havoc.include.node_modules")
+    hMod("src", "ModuleScript", "Havoc.include.node_modules.rodux.src", "Havoc.include.node_modules.rodux", function()
+        return setfenv(function(...)
+local Store = require(script.Store)
+local createReducer = require(script.createReducer)
+local combineReducers = require(script.combineReducers)
+local makeActionCreator = require(script.makeActionCreator)
+local loggerMiddleware = require(script.loggerMiddleware)
+local thunkMiddleware = require(script.thunkMiddleware)
+
+return {
+	Store = Store,
+	createReducer = createReducer,
+	combineReducers = combineReducers,
+	makeActionCreator = makeActionCreator,
+	loggerMiddleware = loggerMiddleware.middleware,
+	thunkMiddleware = thunkMiddleware,
+}
+
+        end, hEnv("Havoc.include.node_modules.rodux.src"))()
+    end)
+    hMod("services", "ModuleScript", "Havoc.include.node_modules.services", "Havoc.include.node_modules", function()
+        return setfenv(function(...)
+return setmetatable({}, {
+	__index = function(self, serviceName)
+		local service = game:GetService(serviceName)
+		self[serviceName] = service
+		return service
+	end,
+})
+
+        end, hEnv("Havoc.include.node_modules.services"))()
+    end)
     hInst("types", "Folder", "Havoc.include.node_modules.types", "Havoc.include.node_modules")
     hInst("include", "Folder", "Havoc.include.node_modules.types.include", "Havoc.include.node_modules.types")
     hInst("generated", "Folder", "Havoc.include.node_modules.types.include.generated", "Havoc.include.node_modules.types.include")
