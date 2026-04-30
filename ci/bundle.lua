@@ -103,7 +103,12 @@ local function walk(parent)
         elseif isScript then
             local src = readSource(object)
             if src and #src > 0 then
-                -- Escape ]] so it doesn't break the long string
+                -- Strip block comments to avoid executor parse errors on ] ] variants
+                src = src:gsub("%-%-%[%[.-%]%]", "")
+                src = src:gsub("%-%-%[%[.-%] %]", "")
+                -- Strip line comments
+                src = src:gsub("%-%-[^\n]*", "")
+                -- Escape any remaining ]] just in case
                 src = src:gsub("%]%]", "] ]")
                 scriptCount = scriptCount + 1
                 file:write(string.format(
