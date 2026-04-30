@@ -1,6 +1,20 @@
 local function start()
     local hInit, hMod, hInst, hEnv = (function()
-local instanceFromId, idFromInstance, modules, currentlyLoading = {}, {}, {}, {}
+--[[
+    ci/runtime.lua
+    Havoc Runtime — injected verbatim into bundle output by bundle.lua.
+    Returns: hInit, hMod, hInst, hEnv
+--]]
+
+local instanceFromId  = {}
+local idFromInstance  = {}
+local modules         = {}
+local currentlyLoading = {}
+
+-- ─── Environment Builder ──────────────────────────────────────────────────────
+-- FIX 1: Use getfenv(1) not getfenv(0). In most executors getfenv(0) is the
+-- C-level global which lacks injected executor globals. getfenv(1) or _G gets
+-- the executor's full environment including Drawing, getrawmetatable, etc.
 
 local function hEnv(id)
     local inst = instanceFromId[id]
@@ -12,47 +26,96 @@ local function hEnv(id)
             end
             return require(target)
         end,
-    }, { __index = getfenv(0) })
+    }, { __index = getfenv and getfenv(1) or _G })
 end
+
+-- ─── Circular Dependency Check ────────────────────────────────────────────────
+-- FIX 2: Track a proper visited set during the walk so the cycle detection
+-- actually terminates and correctly identifies the looping module.
 
 local function validateRequire(module, caller)
     currentlyLoading[caller] = module
+
+    local visited = {}
     local current = module
     while current do
-        current = currentlyLoading[current]
-        if current == module then error("[Havoc] Circular dependency in " .. module.Name) end
+        if visited[current] then
+            -- Found a cycle — build a readable chain for the error message
+            error("[Havoc] Circular dependency detected involving: " .. current.Name)
+        end
+        visited[current] = true
+        current = currentlyLoading[current]  -- follow the chain
     end
 end
 
+-- ─── Module Loader ────────────────────────────────────────────────────────────
+-- FIX 3: On pcall failure, mark the module as errored so subsequent requires
+-- get a clear error instead of silent nil.
+
 local function loadModule(obj, caller)
     local module = modules[obj]
-    if not module or module.isLoaded then return module and module.value end
-    validateRequire(obj, caller)
+    if not module then return nil end
+
+    if module.isLoaded then
+        return module.value
+    end
+
+    if module.isErrored then
+        error("[Havoc] Module previously failed to load: " .. obj.Name)
+    end
+
+    if caller then
+        validateRequire(obj, caller)
+    end
+
     local success, result = pcall(module.fn)
-    currentlyLoading[caller] = nil
-    if not success then error(tostring(result)) end
-    module.value, module.isLoaded = result, true
-    return result
+
+    if caller then
+        currentlyLoading[caller] = nil
+    end
+
+    if not success then
+        module.isErrored = true
+        error("[Havoc] Error loading module '" .. obj.Name .. "': " .. tostring(result), 2)
+    end
+
+    -- A module that returns nothing exports an empty table (not nil),
+    -- so callers can safely do `local x = require(mod); x.fn()` checks.
+    module.value    = (result ~= nil) and result or {}
+    module.isLoaded = true
+    return module.value
 end
 
 _G.__HAVOC_LOAD = loadModule
 
+-- ─── Instance Registration ────────────────────────────────────────────────────
+
 local function hMod(name, class, id, parentId, fn)
-    local inst = Instance.new(class)
-    inst.Name, inst.Parent = name, (parentId and instanceFromId[parentId] or nil)
-    instanceFromId[id], idFromInstance[inst] = inst, id
-    modules[inst] = { fn = fn, isLoaded = false }
+    local inst   = Instance.new(class)
+    inst.Name    = name
+    inst.Parent  = parentId and instanceFromId[parentId] or nil
+    instanceFromId[id]   = inst
+    idFromInstance[inst] = id
+    modules[inst] = { fn = fn, isLoaded = false, isErrored = false }
 end
 
 local function hInst(name, class, id, parentId)
-    local inst = Instance.new(class)
-    inst.Name, inst.Parent = name, (parentId and instanceFromId[parentId] or nil)
-    instanceFromId[id], idFromInstance[inst] = inst, id
+    local inst   = Instance.new(class)
+    inst.Name    = name
+    inst.Parent  = parentId and instanceFromId[parentId] or nil
+    instanceFromId[id]   = inst
+    idFromInstance[inst] = id
+    -- not a script, so no modules entry
 end
 
+-- ─── Bootstrap ────────────────────────────────────────────────────────────────
+-- Spawns all LocalScripts. ModuleScripts are loaded lazily on first require().
+
 local function hInit()
-    for obj in pairs(modules) do
-        if obj:IsA("LocalScript") then task.spawn(loadModule, obj, "root") end
+    for obj, _ in pairs(modules) do
+        if obj:IsA("LocalScript") then
+            task.spawn(loadModule, obj, "root")
+        end
     end
 end
 
@@ -11403,8 +11466,8 @@ return {
     hMod("Promise", "ModuleScript", "Havoc.include.Promise", "Havoc.include", function()
         return setfenv(function(...)
 
-	An implementation of Promises similar to Promise/A+.
-]]
+
+
 
 local ERROR_NON_PROMISE_IN_LIST = "Non-promise value passed into %s at index %s"
 local ERROR_NON_LIST = "Please pass a list of promises to %s"
@@ -11412,8 +11475,8 @@ local ERROR_NON_FUNCTION = "Please pass a handler function to %s!"
 local MODE_KEY_METATABLE = {__mode = "k"}
 
 
-	Creates an enum dictionary with some metamethods to prevent common mistakes.
-]]
+
+
 local function makeEnum(enumName, members)
 	local enum = {}
 
@@ -11432,10 +11495,10 @@ local function makeEnum(enumName, members)
 end
 
 
-	An object to represent runtime errors that occur during execution.
-	Promises that experience an error like this will be rejected with
-	an instance of this object.
-]]
+
+
+
+
 local Error do
 	Error = {
 		Kind = makeEnum("Promise.Error.Kind", {
@@ -11513,17 +11576,17 @@ local Error do
 end
 
 
-	Packs a number of arguments into a table and returns its length.
 
-	Used to cajole varargs without dropping sparse values.
-]]
+
+
+
 local function pack(...)
 	return select("#", ...), { ... }
 end
 
 
-	Returns first value (success), and packs all following values.
-]]
+
+
 local function packResult(success, ...)
 	return success, select("#", ...), { ... }
 end
@@ -11550,16 +11613,16 @@ local function makeErrorHandler(traceback)
 end
 
 
-	Calls a Promise executor with error handling.
-]]
+
+
 local function runExecutor(traceback, callback, ...)
 	return packResult(xpcall(callback, makeErrorHandler(traceback), ...))
 end
 
 
-	Creates a function that invokes a callback with correct error handling and
-	resolution mechanisms.
-]]
+
+
+
 local function createAdvancer(traceback, callback, resolve, reject)
 	return function(...)
 		local ok, resultLength, result = runExecutor(traceback, callback, ...)
@@ -11586,17 +11649,17 @@ Promise.prototype = {}
 Promise.__index = Promise.prototype
 
 
-	Constructs a new Promise with the given initializing callback.
 
-	This is generally only called when directly wrapping a non-promise API into
-	a promise-based version.
 
-	The callback will receive 'resolve' and 'reject' methods, used to start
-	invoking the promise chain.
 
-	Second parameter, parent, is used internally for tracking the "parent" in a
-	promise chain. External code shouldn't need to worry about this.
-]]
+
+
+
+
+
+
+
+
 function Promise._new(traceback, callback, parent)
 	if parent ~= nil and not Promise.is(parent) then
 		error("Argument #2 to Promise.new must be a promise or nil", 2)
@@ -11688,8 +11751,8 @@ function Promise:__tostring()
 end
 
 
-	Promise.new, except pcall on a new thread is automatic.
-]]
+
+
 function Promise.defer(callback)
 	local traceback = debug.traceback(nil, 2)
 	local promise
@@ -11712,8 +11775,8 @@ end
 Promise.async = Promise.defer
 
 
-	Create a promise that represents the immediately resolved value.
-]]
+
+
 function Promise.resolve(...)
 	local length, values = pack(...)
 	return Promise._new(debug.traceback(nil, 2), function(resolve)
@@ -11722,8 +11785,8 @@ function Promise.resolve(...)
 end
 
 
-	Create a promise that represents the immediately rejected value.
-]]
+
+
 function Promise.reject(...)
 	local length, values = pack(...)
 	return Promise._new(debug.traceback(nil, 2), function(_, reject)
@@ -11732,9 +11795,9 @@ function Promise.reject(...)
 end
 
 
-	Runs a non-promise-returning function as a Promise with the
-  given arguments.
-]]
+
+
+
 function Promise._try(traceback, callback, ...)
 	local valuesLength, values = pack(...)
 
@@ -11744,17 +11807,17 @@ function Promise._try(traceback, callback, ...)
 end
 
 
-	Begins a Promise chain, turning synchronous errors into rejections.
-]]
+
+
 function Promise.try(...)
 	return Promise._try(debug.traceback(nil, 2), ...)
 end
 
 
-	Returns a new promise that:
-		* is resolved when all input promises resolve
-		* is rejected if ANY input promises reject
-]]
+
+
+
+
 function Promise._all(traceback, promises, amount)
 	if type(promises) ~= "table" then
 		error(string.format(ERROR_NON_LIST, "Promise.all"), 3)
@@ -11924,9 +11987,9 @@ function Promise.allSettled(promises)
 end
 
 
-	Races a set of Promises and returns the first one that resolves,
-	cancelling the others.
-]]
+
+
+
 function Promise.race(promises)
 	assert(type(promises) == "table", string.format(ERROR_NON_LIST, "Promise.race"))
 
@@ -11967,13 +12030,13 @@ function Promise.race(promises)
 end
 
 
-	Iterates serially over the given an array of values, calling the predicate callback on each before continuing.
-	If the predicate returns a Promise, we wait for that Promise to resolve before continuing to the next item
-	in the array. If the Promise the predicate returns rejects, the Promise from Promise.each is also rejected with
-	the same value.
 
-	Returns a Promise containing an array of the return values from the predicate for each item in the original list.
-]]
+
+
+
+
+
+
 function Promise.each(list, predicate)
 	assert(type(list) == "table", string.format(ERROR_NON_LIST, "Promise.each"))
 	assert(type(predicate) == "function", string.format(ERROR_NON_FUNCTION, "Promise.each"))
@@ -12068,8 +12131,8 @@ function Promise.each(list, predicate)
 end
 
 
-	Is the given object a Promise instance?
-]]
+
+
 function Promise.is(object)
 	if type(object) ~= "table" then
 		return false
@@ -12096,8 +12159,8 @@ function Promise.is(object)
 end
 
 
-	Converts a yielding function into a Promise-returning one.
-]]
+
+
 function Promise.promisify(callback)
 	return function(...)
 		return Promise._try(debug.traceback(nil, 2), callback, ...)
@@ -12105,8 +12168,8 @@ function Promise.promisify(callback)
 end
 
 
-	Creates a Promise that resolves after given number of seconds.
-]]
+
+
 do
 	
 
@@ -12206,8 +12269,8 @@ do
 end
 
 
-	Rejects the promise after `seconds` seconds.
-]]
+
+
 function Promise.prototype:timeout(seconds, rejectionValue)
 	local traceback = debug.traceback(nil, 2)
 
@@ -12232,10 +12295,10 @@ function Promise.prototype:getStatus()
 end
 
 
-	Creates a new promise that receives the result of this promise.
 
-	The given callbacks are invoked depending on that result.
-]]
+
+
+
 function Promise.prototype:_andThen(traceback, successHandler, failureHandler)
 	self._unhandledRejection = false
 
@@ -12300,8 +12363,8 @@ function Promise.prototype:andThen(successHandler, failureHandler)
 end
 
 
-	Used to catch any errors that may have occurred in the promise.
-]]
+
+
 function Promise.prototype:catch(failureCallback)
 	assert(
 		failureCallback == nil or type(failureCallback) == "function",
@@ -12311,9 +12374,9 @@ function Promise.prototype:catch(failureCallback)
 end
 
 
-	Like andThen, but the value passed into the handler is also the
-	value returned from the handler.
-]]
+
+
+
 function Promise.prototype:tap(tapCallback)
 	assert(type(tapCallback) == "function", string.format(ERROR_NON_FUNCTION, "Promise:tap"))
 	return self:_andThen(debug.traceback(nil, 2), function(...)
@@ -12331,8 +12394,8 @@ function Promise.prototype:tap(tapCallback)
 end
 
 
-	Calls a callback on `andThen` with specific arguments.
-]]
+
+
 function Promise.prototype:andThenCall(callback, ...)
 	assert(type(callback) == "function", string.format(ERROR_NON_FUNCTION, "Promise:andThenCall"))
 	local length, values = pack(...)
@@ -12342,8 +12405,8 @@ function Promise.prototype:andThenCall(callback, ...)
 end
 
 
-	Shorthand for an andThen handler that returns the given value.
-]]
+
+
 function Promise.prototype:andThenReturn(...)
 	local length, values = pack(...)
 	return self:_andThen(debug.traceback(nil, 2), function()
@@ -12352,9 +12415,9 @@ function Promise.prototype:andThenReturn(...)
 end
 
 
-	Cancels the promise, disallowing it from rejecting or resolving, and calls
-	the cancellation hook if provided.
-]]
+
+
+
 function Promise.prototype:cancel()
 	if self._status ~= Promise.Status.Started then
 		return
@@ -12378,9 +12441,9 @@ function Promise.prototype:cancel()
 end
 
 
-	Used to decrease the number of consumers by 1, and if there are no more,
-	cancel this promise.
-]]
+
+
+
 function Promise.prototype:_consumerCancelled(consumer)
 	if self._status ~= Promise.Status.Started then
 		return
@@ -12394,9 +12457,9 @@ function Promise.prototype:_consumerCancelled(consumer)
 end
 
 
-	Used to set a handler for when the promise resolves, rejects, or is
-	cancelled. Returns a new promise chained from this promise.
-]]
+
+
+
 function Promise.prototype:_finally(traceback, finallyHandler, onlyOk)
 	if not onlyOk then
 		self._unhandledRejection = false
@@ -12444,8 +12507,8 @@ function Promise.prototype:finally(finallyHandler)
 end
 
 
-	Calls a callback on `finally` with specific arguments.
-]]
+
+
 function Promise.prototype:finallyCall(callback, ...)
 	assert(type(callback) == "function", string.format(ERROR_NON_FUNCTION, "Promise:finallyCall"))
 	local length, values = pack(...)
@@ -12455,8 +12518,8 @@ function Promise.prototype:finallyCall(callback, ...)
 end
 
 
-	Shorthand for a finally handler that returns the given value.
-]]
+
+
 function Promise.prototype:finallyReturn(...)
 	local length, values = pack(...)
 	return self:_finally(debug.traceback(nil, 2), function()
@@ -12465,8 +12528,8 @@ function Promise.prototype:finallyReturn(...)
 end
 
 
-	Similar to finally, except rejections are propagated through it.
-]]
+
+
 function Promise.prototype:done(finallyHandler)
 	assert(
 		finallyHandler == nil or type(finallyHandler) == "function",
@@ -12476,8 +12539,8 @@ function Promise.prototype:done(finallyHandler)
 end
 
 
-	Calls a callback on `done` with specific arguments.
-]]
+
+
 function Promise.prototype:doneCall(callback, ...)
 	assert(type(callback) == "function", string.format(ERROR_NON_FUNCTION, "Promise:doneCall"))
 	local length, values = pack(...)
@@ -12487,8 +12550,8 @@ function Promise.prototype:doneCall(callback, ...)
 end
 
 
-	Shorthand for a done handler that returns the given value.
-]]
+
+
 function Promise.prototype:doneReturn(...)
 	local length, values = pack(...)
 	return self:_finally(debug.traceback(nil, 2), function()
@@ -12497,10 +12560,10 @@ function Promise.prototype:doneReturn(...)
 end
 
 
-	Yield until the promise is completed.
 
-	This matches the execution model of normal Roblox functions.
-]]
+
+
+
 function Promise.prototype:awaitStatus()
 	self._unhandledRejection = false
 
@@ -12529,8 +12592,8 @@ local function awaitHelper(status, ...)
 end
 
 
-	Calls awaitStatus internally, returns (isResolved, values...)
-]]
+
+
 function Promise.prototype:await()
 	return awaitHelper(self:awaitStatus())
 end
@@ -12544,9 +12607,9 @@ local function expectHelper(status, ...)
 end
 
 
-	Calls await and only returns if the Promise resolves.
-	Throws if the Promise rejects or gets cancelled.
-]]
+
+
+
 function Promise.prototype:expect()
 	return expectHelper(self:awaitStatus())
 end
@@ -12555,12 +12618,12 @@ end
 Promise.prototype.awaitValue = Promise.prototype.expect
 
 
-	Intended for use in tests.
 
-	Similar to await(), but instead of yielding if the promise is unresolved,
-	_unwrap will throw. This indicates an assumption that a promise has
-	resolved.
-]]
+
+
+
+
+
 function Promise.prototype:_unwrap()
 	if self._status == Promise.Status.Started then
 		error("Promise has not resolved or rejected.", 2)
@@ -12696,10 +12759,10 @@ function Promise.prototype:_reject(...)
 end
 
 
-	Calls any :finally handlers. We need this to be a separate method and
-	queue because we must call all of the finally callbacks upon a success,
-	failure, *and* cancellation.
-]]
+
+
+
+
 function Promise.prototype:_finalize()
 	for _, callback in ipairs(self._queuedFinally) do
 		
@@ -12720,9 +12783,9 @@ function Promise.prototype:_finalize()
 end
 
 
-	Chains a Promise from this one that is resolved if this Promise is
-	resolved, and rejected if it is not resolved.
-]]
+
+
+
 function Promise.prototype:now(rejectionValue)
 	local traceback = debug.traceback(nil, 2)
 	if self:getStatus() == Promise.Status.Resolved then
@@ -12739,8 +12802,8 @@ function Promise.prototype:now(rejectionValue)
 end
 
 
-	Retries a Promise-returning callback N times until it succeeds.
-]]
+
+
 function Promise.retry(callback, times, ...)
 	assert(type(callback) == "function", "Parameter #1 to Promise.retry must be a function")
 	assert(type(times) == "number", "Parameter #2 to Promise.retry must be a number")
@@ -12757,8 +12820,8 @@ function Promise.retry(callback, times, ...)
 end
 
 
-	Converts an event into a Promise with an optional predicate
-]]
+
+
 function Promise.fromEvent(event, predicate)
 	predicate = predicate or function()
 		return true
