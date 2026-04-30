@@ -5,7 +5,6 @@ local output_file = args[2] or "latest.lua"
 local model_data = remodel.readModelFile(input_file)
 local model = model_data[1]
 local file = io.open(output_file, "w")
-local scriptCount = 0
 
 local function getRelParts(inst)
     local parts = {}
@@ -35,7 +34,6 @@ local function readSource(inst)
     return nil
 end
 
--- Header
 file:write("local function start()\n    local hInit, hMod, hInst, hEnv = (function()\n")
 file:write(remodel.readFile("ci/runtime.lua"))
 file:write("\n    end)()\n\n")
@@ -45,28 +43,21 @@ local function walk(parent)
         local name = string.format("%q", object.Name)
         local id = string.format("%q", object:GetFullName())
         local pId = string.format("%q", parent:GetFullName())
-        local class = object.ClassName
-
-        if (class == "ModuleScript" or class == "LocalScript") and object.Name ~= "node_modules" then
+        
+        if (object:IsA("ModuleScript") or object:IsA("LocalScript")) and object.Name ~= "node_modules" then
             local src = readSource(object)
             if src then
                 src = src:gsub("%-%-%[%[[%s%S]- %]%]", ""):gsub("%-%-[^\n]*", "")
-                scriptCount = scriptCount + 1
-                -- SNAPSHOT STRICT WRAPPER
-                file:write("    hMod("..name..", "..string.format("%q", class)..", "..id..", "..pId..", function()\n")
+                file:write("    hMod("..name..", "..string.format("%q", object.ClassName)..", "..id..", "..pId..", function()\n")
                 file:write("        return setfenv(function(...)\n" .. src .. "\n        end, hEnv(" .. id .. "))()\n")
                 file:write("    end)\n")
             else
-                file:write(string.format("    hInst(%s, %q, %s, %s)\n", name, class, id, pId))
+                file:write(string.format("    hInst(%s, %q, %s, %s)\n", name, object.ClassName, id, pId))
             end
         else
-            file:write(string.format("    hInst(%s, %q, %s, %s)\n", name, class, id, pId))
+            file:write(string.format("    hInst(%s, %q, %s, %s)\n", name, object.ClassName, id, pId))
         end
-
-        -- Always walk children unless it's node_modules
-        if object.Name ~= "node_modules" then
-            walk(object)
-        end
+        if object.Name ~= "node_modules" then walk(object) end
     end
 end
 
