@@ -29,7 +29,9 @@ function checkAlreadyLoaded(): boolean {
 async function mount(store: ReturnType<typeof configureStore>): Promise<ScreenGui> {
 	const container = Make("Folder", {
 		Name: "HavocMountContainer",
-		Parent: IS_DEV ? (Players.LocalPlayer.WaitForChild("PlayerGui") as Instance) : (game.GetService("CoreGui") as Instance)
+		Parent: IS_DEV
+			? (Players.LocalPlayer.WaitForChild("PlayerGui") as Instance)
+			: (game.GetService("CoreGui") as Instance),
 	});
 
 	Roact.mount(
@@ -40,7 +42,7 @@ async function mount(store: ReturnType<typeof configureStore>): Promise<ScreenGu
 	);
 
 	let appInstance = container.FindFirstChildWhichIsA("ScreenGui");
-	
+
 	if (!appInstance) {
 		const start = os.clock();
 		while (!appInstance && os.clock() - start < MOUNT_TIMEOUT) {
@@ -62,7 +64,7 @@ async function mount(store: ReturnType<typeof configureStore>): Promise<ScreenGu
 function render(app: ScreenGui): void {
 	// FIX: Use 'unknown' as a bridge to resolve the TS2352 conversion error
 	const protect = (syn as unknown as { protect_gui?: (gui: Instance) => void })?.protect_gui;
-	
+
 	if (protect) {
 		const [success, err] = pcall(() => protect(app));
 		if (!success) warn(`[Havoc] protect_gui failed: ${err}`);
@@ -95,7 +97,7 @@ async function main(): Promise<void> {
 
 		const g = (getgenv ? getgenv() : _G) as Record<string, unknown>;
 		g[LOAD_GUARD] = true;
-		
+
 		print("[Havoc] Successfully initialized.");
 	} catch (err) {
 		warn(`[Havoc] Initialization Error: ${tostring(err)}`);
