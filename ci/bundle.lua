@@ -51,38 +51,74 @@ local function getRelParts(inst)
 end
 
 -- ─── Source Finder ────────────────────────────────────────────────────────────
--- Probe order:
---   1. out/          — compiled TS app code
---   2. include/      — roblox-ts runtime shims (RuntimeLib, Promise, etc.)
---   3. node_modules/@rbxts/<pkg>/  — 4 common layouts per package
+-- The .rbxm stores @rbxts packages like this in the instance tree:
+--   node_modules → @rbxts → flipper → src          ("src" is the ModuleScript)
+--   node_modules → @rbxts → roact → src            ("src" is the ModuleScript)
+--   node_modules → @rbxts → roact-hooked → out     ("out" is the ModuleScript)
+--   node_modules → @rbxts → roact-hooked → out → hooks → use-state  (nested)
+--   node_modules → @rbxts → rodux → src            ("src" is the ModuleScript)
+--
+-- So parts[#parts] = "src"/"out"/"lib" — NOT the package name.
+-- We find "@rbxts" in the parts list and use everything after it to build
+-- the correct on-disk probe path.
+
+local function getRbxtsProbes(parts)
+    -- Find the "@rbxts" segment
+    local rbxtsIdx = nil
+    for i, p in ipairs(parts) do
+        if p == "@rbxts" then rbxtsIdx = i; break end
+    end
+    if not rbxtsIdx then return {} end
+
+    local pkgName = parts[rbxtsIdx + 1]  -- e.g. "roact-hooked"
+    if not pkgName then return {} end
+
+    -- Collect everything after the package name as the in-package sub-path
+    local subParts = {}
+    for i = rbxtsIdx + 2, #parts do
+        table.insert(subParts, parts[i])
+    end
+
+    local base = "node_modules/@rbxts/" .. pkgName
+
+    if #subParts == 0 then
+        -- Instance IS the package root — try all standard entry layouts
+        return {
+            base .. "/src/init.lua",
+            base .. "/lib/init.lua",
+            base .. "/out/init.lua",
+            base .. "/init.lua",
+        }
+    end
+
+    -- Instance is a nested module inside the package
+    -- e.g. roact-hooked/out/hooks/use-state → out/hooks/use-state.lua
+    local subPath = table.concat(subParts, "/")
+    return {
+        base .. "/" .. subPath .. ".lua",
+        base .. "/" .. subPath .. "/init.lua",
+    }
+end
 
 local function readSource(inst)
     local parts   = getRelParts(inst)
     local relPath = table.concat(parts, "/")
-
-    -- Strip leading path prefixes so the probes below work regardless of
-    -- where the instance sits in the tree
     local cleanRel = relPath:gsub("^include/", ""):gsub("^node_modules/", "")
-    local pkgName  = parts[#parts]  -- last segment = the package or file name
 
     local attempts = {
         -- ── App source (roblox-ts out/ output) ──────────────────────────────
         "out/" .. relPath .. ".lua",
         "out/" .. relPath .. "/init.lua",
         "out/" .. relPath .. ".client.lua",
-        -- ── roblox-ts include/ shims ─────────────────────────────────────────
+        -- ── roblox-ts include/ shims (RuntimeLib, Promise) ───────────────────
         "include/" .. cleanRel .. ".lua",
         "include/" .. cleanRel .. "/init.lua",
-        -- ── @rbxts node_modules — 4 common compiled layouts ──────────────────
-        -- (src/ = roact/rodux, lib/ = flipper, out/ = roact-hooked, root = services/make)
-        "node_modules/@rbxts/" .. pkgName .. "/src/init.lua",
-        "node_modules/@rbxts/" .. pkgName .. "/lib/init.lua",
-        "node_modules/@rbxts/" .. pkgName .. "/out/init.lua",
-        "node_modules/@rbxts/" .. pkgName .. "/init.lua",
-        -- ── Flat node_modules fallback (rare but exists in some forks) ────────
-        "node_modules/" .. cleanRel .. ".lua",
-        "node_modules/" .. cleanRel .. "/init.lua",
     }
+
+    -- ── @rbxts node_modules — smart probes based on real tree position ───────
+    for _, probe in ipairs(getRbxtsProbes(parts)) do
+        table.insert(attempts, probe)
+    end
 
     for _, loc in ipairs(attempts) do
         local ok, content = pcall(remodel.readFile, loc)
