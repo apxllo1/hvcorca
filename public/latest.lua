@@ -13121,180 +13121,12 @@ return TS
     hInst("flipper", "Folder", "Havoc.include.node_modules.flipper", "Havoc.include.node_modules")
     hInst("src", "ModuleScript", "Havoc.include.node_modules.flipper.src", "Havoc.include.node_modules.flipper")
     hInst("typings", "Folder", "Havoc.include.node_modules.flipper.typings", "Havoc.include.node_modules.flipper")
-    hMod("make", "ModuleScript", "Havoc.include.node_modules.make", "Havoc.include.node_modules", function()
-        return setfenv(function(...)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-local function Make(className, settings)
-	local _binding = settings
-	local children = _binding.Children
-	local parent = _binding.Parent
-	local instance = Instance.new(className)
-	for setting, value in pairs(settings) do
-		if setting ~= "Children" and setting ~= "Parent" then
-			local _binding_1 = instance
-			local prop = _binding_1[setting]
-			if typeof(prop) == "RBXScriptSignal" then
-				prop:Connect(value)
-			else
-				instance[setting] = value
-			end
-		end
-	end
-	if children then
-		for _, child in ipairs(children) do
-			child.Parent = instance
-		end
-	end
-	instance.Parent = parent
-	return instance
-end
-return Make
-
-        end, hEnv("Havoc.include.node_modules.make"))()
-    end)
+    hInst("make", "ModuleScript", "Havoc.include.node_modules.make", "Havoc.include.node_modules")
     hInst("node_modules", "Folder", "Havoc.include.node_modules.make.node_modules", "Havoc.include.node_modules.make")
     hInst("@rbxts", "Folder", "Havoc.include.node_modules.make.node_modules.@rbxts", "Havoc.include.node_modules.make.node_modules")
     hInst("compiler-types", "Folder", "Havoc.include.node_modules.make.node_modules.@rbxts.compiler-types", "Havoc.include.node_modules.make.node_modules.@rbxts")
     hInst("types", "Folder", "Havoc.include.node_modules.make.node_modules.@rbxts.compiler-types.types", "Havoc.include.node_modules.make.node_modules.@rbxts.compiler-types")
-    hMod("object-utils", "ModuleScript", "Havoc.include.node_modules.object-utils", "Havoc.include.node_modules", function()
-        return setfenv(function(...)
-local HttpService = game:GetService("HttpService")
-
-local Object = {}
-
-function Object.keys(object)
-	local result = table.create(#object)
-	for key in pairs(object) do
-		result[#result + 1] = key
-	end
-	return result
-end
-
-function Object.values(object)
-	local result = table.create(#object)
-	for _, value in pairs(object) do
-		result[#result + 1] = value
-	end
-	return result
-end
-
-function Object.entries(object)
-	local result = table.create(#object)
-	for key, value in pairs(object) do
-		result[#result + 1] = { key, value }
-	end
-	return result
-end
-
-function Object.assign(toObj, ...)
-	for i = 1, select("#", ...) do
-		local arg = select(i, ...)
-		if type(arg) == "table" then
-			for key, value in pairs(arg) do
-				toObj[key] = value
-			end
-		end
-	end
-	return toObj
-end
-
-function Object.copy(object)
-	local result = table.create(#object)
-	for k, v in pairs(object) do
-		result[k] = v
-	end
-	return result
-end
-
-local function deepCopyHelper(object, encountered)
-	local result = table.create(#object)
-	encountered[object] = result
-
-	for k, v in pairs(object) do
-		if type(k) == "table" then
-			k = encountered[k] or deepCopyHelper(k, encountered)
-		end
-
-		if type(v) == "table" then
-			v = encountered[v] or deepCopyHelper(v, encountered)
-		end
-
-		result[k] = v
-	end
-
-	return result
-end
-
-function Object.deepCopy(object)
-	return deepCopyHelper(object, {})
-end
-
-function Object.deepEquals(a, b)
-	
-	for k in pairs(a) do
-		local av = a[k]
-		local bv = b[k]
-		if type(av) == "table" and type(bv) == "table" then
-			local result = Object.deepEquals(av, bv)
-			if not result then
-				return false
-			end
-		elseif av ~= bv then
-			return false
-		end
-	end
-
-	
-	for k in pairs(b) do
-		if a[k] == nil then
-			return false
-		end
-	end
-
-	return true
-end
-
-function Object.toString(data)
-	return HttpService:JSONEncode(data)
-end
-
-function Object.isEmpty(object)
-	return next(object) == nil
-end
-
-function Object.fromEntries(entries)
-	local entriesLen = #entries
-
-	local result = table.create(entriesLen)
-	if entries then
-		for i = 1, entriesLen do
-			local pair = entries[i]
-			result[pair[1]] = pair[2]
-		end
-	end
-	return result
-end
-
-return Object
-
-        end, hEnv("Havoc.include.node_modules.object-utils"))()
-    end)
+    hInst("object-utils", "ModuleScript", "Havoc.include.node_modules.object-utils", "Havoc.include.node_modules")
     hInst("roact", "Folder", "Havoc.include.node_modules.roact", "Havoc.include.node_modules")
     hInst("src", "ModuleScript", "Havoc.include.node_modules.roact.src", "Havoc.include.node_modules.roact")
     hInst("roact-hooked", "Folder", "Havoc.include.node_modules.roact-hooked", "Havoc.include.node_modules")
@@ -13330,18 +13162,7 @@ return Object
     hInst("types", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.types", "Havoc.include.node_modules.roact-rodux-hooked.out")
     hInst("rodux", "Folder", "Havoc.include.node_modules.rodux", "Havoc.include.node_modules")
     hInst("src", "ModuleScript", "Havoc.include.node_modules.rodux.src", "Havoc.include.node_modules.rodux")
-    hMod("services", "ModuleScript", "Havoc.include.node_modules.services", "Havoc.include.node_modules", function()
-        return setfenv(function(...)
-return setmetatable({}, {
-	__index = function(self, serviceName)
-		local service = game:GetService(serviceName)
-		self[serviceName] = service
-		return service
-	end,
-})
-
-        end, hEnv("Havoc.include.node_modules.services"))()
-    end)
+    hInst("services", "ModuleScript", "Havoc.include.node_modules.services", "Havoc.include.node_modules")
     hInst("types", "Folder", "Havoc.include.node_modules.types", "Havoc.include.node_modules")
     hInst("include", "Folder", "Havoc.include.node_modules.types.include", "Havoc.include.node_modules.types")
     hInst("generated", "Folder", "Havoc.include.node_modules.types.include.generated", "Havoc.include.node_modules.types.include")
