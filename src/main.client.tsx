@@ -15,7 +15,6 @@ const MOUNT_TIMEOUT = 10;
  * Prevents double-loading in auto-execution environments.
  */
 function checkAlreadyLoaded(): boolean {
-	// Use a safer check for getgenv to support various executors
 	const g = (getgenv ? getgenv() : _G) as Record<string, unknown>;
 	if (g[LOAD_GUARD] === true) {
 		warn("[Havoc] Already loaded — skipping.");
@@ -30,7 +29,7 @@ function checkAlreadyLoaded(): boolean {
 async function mount(store: ReturnType<typeof configureStore>): Promise<ScreenGui> {
 	const container = Make("Folder", {
 		Name: "HavocMountContainer",
-		Parent: IS_DEV ? Players.LocalPlayer.WaitForChild("PlayerGui") : game.GetService("CoreGui"),
+		Parent: IS_DEV ? (Players.LocalPlayer.WaitForChild("PlayerGui") as Instance) : (game.GetService("CoreGui") as Instance)
 	});
 
 	Roact.mount(
@@ -40,12 +39,9 @@ async function mount(store: ReturnType<typeof configureStore>): Promise<ScreenGu
 		container,
 	);
 
-	// FIX: We need to find the ScreenGui.
-	// Since App returns a <screengui>, it will be a child of 'container'.
 	let appInstance = container.FindFirstChildWhichIsA("ScreenGui");
-
+	
 	if (!appInstance) {
-		// If it's not there immediately (async mount), poll for it briefly
 		const start = os.clock();
 		while (!appInstance && os.clock() - start < MOUNT_TIMEOUT) {
 			appInstance = container.FindFirstChildWhichIsA("ScreenGui");
@@ -64,19 +60,17 @@ async function mount(store: ReturnType<typeof configureStore>): Promise<ScreenGu
  * Parents the ScreenGui to the correct container.
  */
 function render(app: ScreenGui): void {
-	// syn.protect_gui is often necessary for strict executors
-	const protect = (syn as { protect_gui?: (gui: Instance) => void })?.protect_gui;
-
+	// FIX: Use 'unknown' as a bridge to resolve the TS2352 conversion error
+	const protect = (syn as unknown as { protect_gui?: (gui: Instance) => void })?.protect_gui;
+	
 	if (protect) {
 		const [success, err] = pcall(() => protect(app));
 		if (!success) warn(`[Havoc] protect_gui failed: ${err}`);
 	}
 
-	// In standard use, we move it from our temporary container to the final destination
 	if (IS_DEV) {
-		app.Parent = Players.LocalPlayer.WaitForChild("PlayerGui");
+		app.Parent = Players.LocalPlayer.WaitForChild("PlayerGui") as Instance;
 	} else {
-		// Prefer gethui() for executors like Opiumware/Wave
 		const host = (gethui ? gethui() : game.GetService("CoreGui")) as Instance;
 		app.Parent = host;
 	}
@@ -95,17 +89,13 @@ async function main(): Promise<void> {
 		const app = await mount(store);
 		render(app);
 
-		// Auto-open dashboard if the game has been running for more than 3 seconds
 		if (time() > 3) {
 			task.defer(() => store.dispatch(toggleDashboard()));
 		}
 
-		if (getgenv) {
-			getgenv()[LOAD_GUARD] = true;
-		} else {
-			(_G as Record<string, unknown>)[LOAD_GUARD] = true;
-		}
-
+		const g = (getgenv ? getgenv() : _G) as Record<string, unknown>;
+		g[LOAD_GUARD] = true;
+		
 		print("[Havoc] Successfully initialized.");
 	} catch (err) {
 		warn(`[Havoc] Initialization Error: ${tostring(err)}`);
