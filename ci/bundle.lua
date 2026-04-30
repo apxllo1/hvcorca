@@ -20,6 +20,7 @@ end
 
 local scriptCount = 0
 
+-- Helper: get path parts relative to model root
 local function getRelParts(inst)
     local parts = {}
     local curr = inst
@@ -30,9 +31,11 @@ local function getRelParts(inst)
     return parts
 end
 
+-- Helper: try to read source from several locations
 local function readSource(inst)
     local parts = getRelParts(inst)
     local relPath = table.concat(parts, "/")
+
     local includePath = relPath:match("^include/(.+)$") or relPath
     local nmPath = relPath:gsub("^include/node_modules/", "")
 
@@ -65,35 +68,48 @@ file:write("\n    end)()\n\n")
 local rootName = string.format("%q", model.Name)
 local rootPath = string.format("%q", model:GetFullName())
 file:write(string.format("    hInst(%s, \"Folder\", %s, nil)\n", rootName, rootPath))
-file:write(string.format("    hInst(\"include\", \"Folder\", %q, %q)\n", model.Name .. ".include", model.Name))
+
+file:write(string.format(
+    "    hInst(\"include\", \"Folder\", %q, %q)\n",
+    model.Name .. ".include",
+    model.Name
+))
 
 local SKIP_INLINE = { node_modules = true }
 
 local function walk(parent)
     for _, object in ipairs(parent:GetChildren()) do
-        local name  = string.format("%q", object.Name)
-        local path  = string.format("%q", object:GetFullName())
-        local pPath = string.format("%q", parent:GetFullName())
-        local class = object.ClassName
+        local name     = string.format("%q", object.Name)
+        local path     = string.format("%q", object:GetFullName())
+        local pPath    = string.format("%q", parent:GetFullName())
+        local class    = object.ClassName
         local isScript = class == "ModuleScript" or class == "LocalScript"
 
         if SKIP_INLINE[object.Name] then
             file:write(string.format("    hInst(%s, %q, %s, %s)\n", name, class, path, pPath))
             walk(object)
+
         elseif isScript then
             local src = readSource(object)
             if src and #src > 0 then
-                -- CRITICAL FIX: Cleaner stripping that won't break math operators or strings
+                -- FIX: Use newline-aware stripping for block comments
                 src = src:gsub("%-%-%[%[[%s%S]- %]%]", "")
+                -- Strip line comments
                 src = src:gsub("%-%-[^\n]*", "")
                 
+                -- CRITICAL FIX: Direct concatenation instead of string.format
+                -- This prevents math operators (+) and string patterns (%) from causing syntax errors
                 scriptCount = scriptCount + 1
-                -- Using [[]] for the source block to prevent quote-nesting errors
-                file:write(string.format("    hMod(%s, %q, %s, %s, function()\n        return (function(...)\n%s\n        end)\n    end)\n", name, class, path, pPath, src))
+                file:write("    hMod(" .. name .. ", " .. string.format("%q", class) .. ", " .. path .. ", " .. pPath .. ", function()\n")
+                file:write("        return (function(...)\n")
+                file:write(src)
+                file:write("\n        end)\n    end)\n")
             else
+                print("[WARN] No source found for: " .. object:GetFullName())
                 file:write(string.format("    hInst(%s, %q, %s, %s)\n", name, class, path, pPath))
             end
             walk(object)
+
         else
             file:write(string.format("    hInst(%s, %q, %s, %s)\n", name, class, path, pPath))
             walk(object)
@@ -107,4 +123,6 @@ walk(model)
 file:write("\n    hInit()\nend\n\nstart()\n")
 file:close()
 
-print("[Havoc] Bundled " .. scriptCount .. " scripts.")
+print("------------------------------------------")
+print("[Havoc] Bundled " .. scriptCount .. " scripts into " .. output_file)
+print("------------------------------------------")
