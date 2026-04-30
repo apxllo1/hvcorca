@@ -1,85 +1,102 @@
-local instanceFromId, modules = {}, {}
-local runEnv = (getgenv and getgenv()) or (getfenv and getfenv()) or _G or shared
-local ROOT_PARENT = "ROOT"
+local instanceFromId = {}
+local idFromInstance = {}
+local modules = {}
+local currentlyLoading = {}
 
-local function resolveParent(parentId)
-    if parentId == ROOT_PARENT then
-        return game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+local runEnv = (getgenv and getgenv()) or (getfenv and getfenv()) or _G or shared
+
+-- Forward declaration
+local newEnv
+
+local function validateRequire(module, caller)
+    currentlyLoading[caller] = module
+    local currentModule = module
+    local depth = 0
+    if not modules[module] then
+        while currentModule do
+            depth = depth + 1
+            currentModule = currentlyLoading[currentModule]
+            if currentModule == module then
+                local str = currentModule.Name
+                for _ = 1, depth do
+                    currentModule = currentlyLoading[currentModule]
+                    str = str .. "\n" .. currentModule.Name
+                end
+                error("Failed to load '" .. module.Name .. "'; Circular dependency:\n" .. str, 2)
+            end
+        end
     end
-    return instanceFromId[parentId] or error("[Havoc] resolveParent: no instance for " .. tostring(parentId))
+    return function()
+        if currentlyLoading[caller] == module then
+            currentlyLoading[caller] = nil
+        end
+    end
 end
 
-local hEnv
-local TS
+local function loadModule(obj, this)
+    local cleanup = this and validateRequire(obj, this)
+    local module = modules[obj]
+    if module.isLoaded then
+        if cleanup then cleanup() end
+        return module.value
+    end
+    local fn = module.fn()
+    setfenv(fn, newEnv(idFromInstance[obj]))
+    local ok, result = pcall(fn)
+    if not ok then
+        warn("[Havoc] Error in " .. obj:GetFullName() .. ": " .. tostring(result))
+    end
+    module.value = result
+    module.isLoaded = true
+    if cleanup then cleanup() end
+    return result
+end
 
-TS = {
-    import = function(self, s, ...)
-        local args = {...}
-        local last = s
-        for _, v in ipairs(args) do
-            last = (type(v) == "string" and last:FindFirstChild(v)) or v
-        end
-        if modules[last] then
-            local m = modules[last]
-            if not m.loaded then
-                m.loaded = true
-                local innerFunc = m.fn()
-                setfenv(innerFunc, hEnv(last:GetFullName()))
-                local ok, res = pcall(innerFunc)
-                if not ok then
-                    error("[Havoc] Import failed for " .. tostring(last) .. ": " .. tostring(res))
-                end
-                m.data = res
-            end
-            return m.data
-        end
-        return require(last)
-    end,
-    getModule = function(self, s, ...) return require(s) end,
-}
+local function requireModuleInternal(target, this)
+    if modules[target] and target:IsA("ModuleScript") then
+        return loadModule(target, this)
+    end
+    return require(target)
+end
 
-hEnv = function(id)
-    local inst = instanceFromId[id]
+newEnv = function(id)
     return setmetatable({
-        script = inst,
-        TS = TS,
-        require = function(target)
-            if modules[target] then
-                return TS:import(target)
-            end
-            return require(target)
+        script = instanceFromId[id],
+        require = function(module)
+            return requireModuleInternal(module, instanceFromId[id])
         end,
-    }, { __index = runEnv })
+    }, {
+        __index = runEnv,
+        __metatable = "This metatable is locked",
+    })
 end
 
 local function hMod(name, class, id, parentId, fn)
     local inst = Instance.new(class)
     inst.Name = name
-    inst.Parent = resolveParent(parentId)
+    inst.Parent = parentId ~= nil and instanceFromId[parentId] or nil
     instanceFromId[id] = inst
-    modules[inst] = { fn = fn, loaded = false, data = nil }
+    idFromInstance[inst] = id
+    modules[inst] = { fn = fn, isLoaded = false, value = nil }
 end
 
 local function hInst(name, class, id, parentId)
     local inst = Instance.new(class)
     inst.Name = name
-    inst.Parent = resolveParent(parentId)
+    inst.Parent = parentId ~= nil and instanceFromId[parentId] or nil
     instanceFromId[id] = inst
+    idFromInstance[inst] = id
 end
 
 local function hInit()
-    for inst, m in pairs(modules) do
-        if inst:IsA("LocalScript") then
-            task.spawn(function()
-                local fn = m.fn()
-                setfenv(fn, hEnv(inst:GetFullName()))
-                local ok, err = pcall(fn)
-                if not ok then
-                    warn("[Havoc] LocalScript error in " .. inst:GetFullName() .. ": " .. tostring(err))
-                end
-            end)
+    if not game:IsLoaded() then
+        game.Loaded:Wait()
+    end
+    for obj in pairs(modules) do
+        if obj:IsA("LocalScript") and not obj.Disabled then
+            task.spawn(loadModule, obj)
         end
     end
 end
 
-return hInit, hMod, hInst, hEnv
+return hInit, hMod, hInst, newEnv
