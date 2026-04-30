@@ -1,14 +1,5 @@
---[[
-    Havoc Studios Automated Bundle
-    Target: public/latest.lua
---]]
-
 local function start()
     local hInit, hMod, hInst, hEnv = (function()
---[[
-    Havoc Studios Runtime Engine (Tung-Stabilized)
-    This was generated using /bundle.lua and is not meant to be modified 
-]]
 local instanceFromId, modules = {}, {}
 local runEnv = (getgenv and getgenv()) or (getfenv and getfenv()) or _G or shared
 local ROOT_PARENT = "ROOT"
@@ -20,58 +11,61 @@ local function resolveParent(parentId)
     return instanceFromId[parentId] or error("[Havoc] resolveParent: no instance for " .. tostring(parentId))
 end
 
-local hEnv -- Forward declaration
+local hEnv
+local TS
 
-local TS = {
+TS = {
     import = function(self, s, ...)
         local args = {...}
         local last = s
         for _, v in ipairs(args) do
             last = (type(v) == "string" and last:FindFirstChild(v)) or v
         end
-        
         if modules[last] then
             local m = modules[last]
             if not m.loaded then
                 m.loaded = true
                 local innerFunc = m.fn()
-                -- Eager environment application
                 setfenv(innerFunc, hEnv(last:GetFullName()))
                 local ok, res = pcall(innerFunc)
-                if not ok then error("[Havoc Import Error]: " .. tostring(res)) end
+                if not ok then
+                    error("[Havoc] Import failed for " .. tostring(last) .. ": " .. tostring(res))
+                end
                 m.data = res
             end
             return m.data
         end
         return require(last)
     end,
-    getModule = function(self, s, ...) return require(s) end
+    getModule = function(self, s, ...) return require(s) end,
 }
 
 hEnv = function(id)
     local inst = instanceFromId[id]
-    local env = setmetatable({
+    return setmetatable({
         script = inst,
+        TS = TS,
         require = function(target)
             if modules[target] then
                 return TS:import(target)
             end
             return require(target)
-        end
+        end,
     }, { __index = runEnv })
-    return env
 end
 
 local function hMod(name, class, id, parentId, fn)
     local inst = Instance.new(class)
-    inst.Name, inst.Parent = name, resolveParent(parentId)
+    inst.Name = name
+    inst.Parent = resolveParent(parentId)
     instanceFromId[id] = inst
-    modules[inst] = { fn = fn, loaded = false }
+    modules[inst] = { fn = fn, loaded = false, data = nil }
 end
 
 local function hInst(name, class, id, parentId)
     local inst = Instance.new(class)
-    inst.Name, inst.Parent = name, resolveParent(parentId)
+    inst.Name = name
+    inst.Parent = resolveParent(parentId)
     instanceFromId[id] = inst
 end
 
@@ -81,7 +75,10 @@ local function hInit()
             task.spawn(function()
                 local fn = m.fn()
                 setfenv(fn, hEnv(inst:GetFullName()))
-                fn()
+                local ok, err = pcall(fn)
+                if not ok then
+                    warn("[Havoc] LocalScript error in " .. inst:GetFullName() .. ": " .. tostring(err))
+                end
             end)
         end
     end
@@ -89,9 +86,12 @@ end
 
 return hInit, hMod, hInst, hEnv
 
-    end)();
+    end)()
 
-    hMod("App", "ModuleScript", "Havoc.App", "Havoc", function() return (function(...)
+    hInst("Havoc", "Folder", "Havoc", "ROOT")
+    hInst("include", "Folder", "Havoc.include", "Havoc")
+    hMod("App", "ModuleScript", "Havoc.App", "Havoc", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -136,17 +136,21 @@ return {
 	default = default,
 }
 
-end) end);
-    hInst("components", "Folder", "Havoc.components", "Havoc");
-    hMod("Acrylic", "ModuleScript", "Havoc.components.Acrylic", "Havoc.components", function() return (function(...)
+        end)
+    end)
+    hInst("components", "Folder", "Havoc.components", "Havoc")
+    hMod("Acrylic", "ModuleScript", "Havoc.components.Acrylic", "Havoc.components", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Acrylic").default
 return exports
 
-end) end);
-    hMod("Acrylic", "ModuleScript", "Havoc.components.Acrylic.Acrylic", "Havoc.components.Acrylic", function() return (function(...)
+        end)
+    end)
+    hMod("Acrylic", "ModuleScript", "Havoc.components.Acrylic.Acrylic", "Havoc.components.Acrylic", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -315,8 +319,10 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("Acrylic.story", "ModuleScript", "Havoc.components.Acrylic.Acrylic.story", "Havoc.components.Acrylic", function() return (function(...)
+        end)
+    end)
+    hMod("Acrylic.story", "ModuleScript", "Havoc.components.Acrylic.Acrylic.story", "Havoc.components.Acrylic", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -360,8 +366,10 @@ return function(target)
 	end
 end
 
-end) end);
-    hMod("acrylic-instance", "ModuleScript", "Havoc.components.Acrylic.acrylic-instance", "Havoc.components.Acrylic", function() return (function(...)
+        end)
+    end)
+    hMod("acrylic-instance", "ModuleScript", "Havoc.components.Acrylic.acrylic-instance", "Havoc.components.Acrylic", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Make = TS.import(script, TS.getModule(script, "@rbxts", "make"))
@@ -454,8 +462,10 @@ return {
 	acrylicInstance = acrylicInstance,
 }
 
-end) end);
-    hMod("ActionButton", "ModuleScript", "Havoc.components.ActionButton", "Havoc.components", function() return (function(...)
+        end)
+    end)
+    hMod("ActionButton", "ModuleScript", "Havoc.components.ActionButton", "Havoc.components", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -558,8 +568,10 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("Border", "ModuleScript", "Havoc.components.Border", "Havoc.components", function() return (function(...)
+        end)
+    end)
+    hMod("Border", "ModuleScript", "Havoc.components.Border", "Havoc.components", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -632,8 +644,10 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("BrightButton", "ModuleScript", "Havoc.components.BrightButton", "Havoc.components", function() return (function(...)
+        end)
+    end)
+    hMod("BrightButton", "ModuleScript", "Havoc.components.BrightButton", "Havoc.components", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -770,8 +784,10 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("BrightSlider", "ModuleScript", "Havoc.components.BrightSlider", "Havoc.components", function() return (function(...)
+        end)
+    end)
+    hMod("BrightSlider", "ModuleScript", "Havoc.components.BrightSlider", "Havoc.components", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Spring = TS.import(script, TS.getModule(script, "@rbxts", "flipper").src).Spring
@@ -965,8 +981,10 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("Canvas", "ModuleScript", "Havoc.components.Canvas", "Havoc.components", function() return (function(...)
+        end)
+    end)
+    hMod("Canvas", "ModuleScript", "Havoc.components.Canvas", "Havoc.components", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -1000,7 +1018,7 @@ local function Canvas(_param)
 		ZIndex = zIndex,
 	}
 	for _k, _v in pairs(onChange) do
-		_attributes[Roact.Change[_k]] = _v
+		_attributes[Roact.Change[_k] ] = _v
 	end
 	local _children = {}
 	local _length = #_children
@@ -1046,8 +1064,10 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("Card", "ModuleScript", "Havoc.components.Card", "Havoc.components", function() return (function(...)
+        end)
+    end)
+    hMod("Card", "ModuleScript", "Havoc.components.Card", "Havoc.components", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -1145,8 +1165,10 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("Fill", "ModuleScript", "Havoc.components.Fill", "Havoc.components", function() return (function(...)
+        end)
+    end)
+    hMod("Fill", "ModuleScript", "Havoc.components.Fill", "Havoc.components", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -1226,8 +1248,10 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("Glow", "ModuleScript", "Havoc.components.Glow", "Havoc.components", function() return (function(...)
+        end)
+    end)
+    hMod("Glow", "ModuleScript", "Havoc.components.Glow", "Havoc.components", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -1365,8 +1389,10 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("ParallaxImage", "ModuleScript", "Havoc.components.ParallaxImage", "Havoc.components", function() return (function(...)
+        end)
+    end)
+    hMod("ParallaxImage", "ModuleScript", "Havoc.components.ParallaxImage", "Havoc.components", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -1408,8 +1434,10 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("constants", "ModuleScript", "Havoc.constants", "Havoc", function() return (function(...)
+        end)
+    end)
+    hMod("constants", "ModuleScript", "Havoc.constants", "Havoc", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local IS_DEV = getgenv == nil
 local _condition = VERSION
@@ -1422,9 +1450,11 @@ return {
 	VERSION_TAG = VERSION_TAG,
 }
 
-end) end);
-    hInst("context", "Folder", "Havoc.context", "Havoc");
-    hMod("scale-context", "ModuleScript", "Havoc.context.scale-context", "Havoc.context", function() return (function(...)
+        end)
+    end)
+    hInst("context", "Folder", "Havoc.context", "Havoc")
+    hMod("scale-context", "ModuleScript", "Havoc.context.scale-context", "Havoc.context", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -1433,10 +1463,12 @@ return {
 	ScaleContext = ScaleContext,
 }
 
-end) end);
-    hInst("hooks", "Folder", "Havoc.hooks", "Havoc");
-    hInst("common", "Folder", "Havoc.hooks.common", "Havoc.hooks");
-    hMod("flipper-hooks", "ModuleScript", "Havoc.hooks.common.flipper-hooks", "Havoc.hooks.common", function() return (function(...)
+        end)
+    end)
+    hInst("hooks", "Folder", "Havoc.hooks", "Havoc")
+    hInst("common", "Folder", "Havoc.hooks.common", "Havoc.hooks")
+    hMod("flipper-hooks", "ModuleScript", "Havoc.hooks.common.flipper-hooks", "Havoc.hooks.common", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local exports = {}
@@ -1448,8 +1480,10 @@ exports.useMotor = TS.import(script, script, "use-motor").useMotor
 exports.useSpring = TS.import(script, script, "use-spring").useSpring
 return exports
 
-end) end);
-    hMod("get-binding", "ModuleScript", "Havoc.hooks.common.flipper-hooks.get-binding", "Havoc.hooks.common.flipper-hooks", function() return (function(...)
+        end)
+    end)
+    hMod("get-binding", "ModuleScript", "Havoc.hooks.common.flipper-hooks.get-binding", "Havoc.hooks.common.flipper-hooks", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local isMotor = TS.import(script, TS.getModule(script, "@rbxts", "flipper").src).isMotor
@@ -1475,8 +1509,10 @@ return {
 	getBinding = getBinding,
 }
 
-end) end);
-    hMod("use-goal", "ModuleScript", "Havoc.hooks.common.flipper-hooks.use-goal", "Havoc.hooks.common.flipper-hooks", function() return (function(...)
+        end)
+    end)
+    hMod("use-goal", "ModuleScript", "Havoc.hooks.common.flipper-hooks.use-goal", "Havoc.hooks.common.flipper-hooks", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local getBinding = TS.import(script, script.Parent, "get-binding").getBinding
@@ -1490,8 +1526,10 @@ return {
 	useGoal = useGoal,
 }
 
-end) end);
-    hMod("use-instant", "ModuleScript", "Havoc.hooks.common.flipper-hooks.use-instant", "Havoc.hooks.common.flipper-hooks", function() return (function(...)
+        end)
+    end)
+    hMod("use-instant", "ModuleScript", "Havoc.hooks.common.flipper-hooks.use-instant", "Havoc.hooks.common.flipper-hooks", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Instant = TS.import(script, TS.getModule(script, "@rbxts", "flipper").src).Instant
@@ -1503,8 +1541,10 @@ return {
 	useInstant = useInstant,
 }
 
-end) end);
-    hMod("use-linear", "ModuleScript", "Havoc.hooks.common.flipper-hooks.use-linear", "Havoc.hooks.common.flipper-hooks", function() return (function(...)
+        end)
+    end)
+    hMod("use-linear", "ModuleScript", "Havoc.hooks.common.flipper-hooks.use-linear", "Havoc.hooks.common.flipper-hooks", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Linear = TS.import(script, TS.getModule(script, "@rbxts", "flipper").src).Linear
@@ -1516,8 +1556,10 @@ return {
 	useLinear = useLinear,
 }
 
-end) end);
-    hMod("use-motor", "ModuleScript", "Havoc.hooks.common.flipper-hooks.use-motor", "Havoc.hooks.common.flipper-hooks", function() return (function(...)
+        end)
+    end)
+    hMod("use-motor", "ModuleScript", "Havoc.hooks.common.flipper-hooks.use-motor", "Havoc.hooks.common.flipper-hooks", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local _flipper = TS.import(script, TS.getModule(script, "@rbxts", "flipper").src)
@@ -1540,8 +1582,10 @@ return {
 	useMotor = useMotor,
 }
 
-end) end);
-    hMod("use-spring", "ModuleScript", "Havoc.hooks.common.flipper-hooks.use-spring", "Havoc.hooks.common.flipper-hooks", function() return (function(...)
+        end)
+    end)
+    hMod("use-spring", "ModuleScript", "Havoc.hooks.common.flipper-hooks.use-spring", "Havoc.hooks.common.flipper-hooks", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Spring = TS.import(script, TS.getModule(script, "@rbxts", "flipper").src).Spring
@@ -1553,8 +1597,10 @@ return {
 	useSpring = useSpring,
 }
 
-end) end);
-    hMod("rodux-hooks", "ModuleScript", "Havoc.hooks.common.rodux-hooks", "Havoc.hooks.common", function() return (function(...)
+        end)
+    end)
+    hMod("rodux-hooks", "ModuleScript", "Havoc.hooks.common.rodux-hooks", "Havoc.hooks.common", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _roact_rodux_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-rodux-hooked").out)
@@ -1576,8 +1622,10 @@ return {
 	useAppStore = useAppStore,
 }
 
-end) end);
-    hMod("use-delayed-update", "ModuleScript", "Havoc.hooks.common.use-delayed-update", "Havoc.hooks.common", function() return (function(...)
+        end)
+    end)
+    hMod("use-delayed-update", "ModuleScript", "Havoc.hooks.common.use-delayed-update", "Havoc.hooks.common", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
@@ -1641,8 +1689,10 @@ return {
 	useDelayedUpdate = useDelayedUpdate,
 }
 
-end) end);
-    hMod("use-did-mount", "ModuleScript", "Havoc.hooks.common.use-did-mount", "Havoc.hooks.common", function() return (function(...)
+        end)
+    end)
+    hMod("use-did-mount", "ModuleScript", "Havoc.hooks.common.use-did-mount", "Havoc.hooks.common", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
@@ -1669,8 +1719,10 @@ return {
 	useIsMount = useIsMount,
 }
 
-end) end);
-    hMod("use-forced-update", "ModuleScript", "Havoc.hooks.common.use-forced-update", "Havoc.hooks.common", function() return (function(...)
+        end)
+    end)
+    hMod("use-forced-update", "ModuleScript", "Havoc.hooks.common.use-forced-update", "Havoc.hooks.common", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
@@ -1689,8 +1741,10 @@ return {
 	useForcedUpdate = useForcedUpdate,
 }
 
-end) end);
-    hMod("use-interval", "ModuleScript", "Havoc.hooks.common.use-interval", "Havoc.hooks.common", function() return (function(...)
+        end)
+    end)
+    hMod("use-interval", "ModuleScript", "Havoc.hooks.common.use-interval", "Havoc.hooks.common", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local useEffect = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).useEffect
@@ -1719,8 +1773,10 @@ return {
 	useInterval = useInterval,
 }
 
-end) end);
-    hMod("use-mouse-location", "ModuleScript", "Havoc.hooks.common.use-mouse-location", "Havoc.hooks.common", function() return (function(...)
+        end)
+    end)
+    hMod("use-mouse-location", "ModuleScript", "Havoc.hooks.common.use-mouse-location", "Havoc.hooks.common", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
@@ -1751,8 +1807,10 @@ return {
 	useMouseLocation = useMouseLocation,
 }
 
-end) end);
-    hMod("use-promise", "ModuleScript", "Havoc.hooks.common.use-promise", "Havoc.hooks.common", function() return (function(...)
+        end)
+    end)
+    hMod("use-promise", "ModuleScript", "Havoc.hooks.common.use-promise", "Havoc.hooks.common", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
@@ -1839,8 +1897,10 @@ return {
 	usePromise = usePromise,
 }
 
-end) end);
-    hMod("use-set-state", "ModuleScript", "Havoc.hooks.common.use-set-state", "Havoc.hooks.common", function() return (function(...)
+        end)
+    end)
+    hMod("use-set-state", "ModuleScript", "Havoc.hooks.common.use-set-state", "Havoc.hooks.common", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local useState = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).useState
@@ -1876,8 +1936,10 @@ return {
 	default = useSetState,
 }
 
-end) end);
-    hMod("use-spring", "ModuleScript", "Havoc.hooks.common.use-spring", "Havoc.hooks.common", function() return (function(...)
+        end)
+    end)
+    hMod("use-spring", "ModuleScript", "Havoc.hooks.common.use-spring", "Havoc.hooks.common", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Spring = TS.import(script, TS.getModule(script, "@rbxts", "flipper").src).Spring
@@ -1941,8 +2003,10 @@ return {
 	useSpring = useSpring,
 }
 
-end) end);
-    hMod("use-viewport-size", "ModuleScript", "Havoc.hooks.common.use-viewport-size", "Havoc.hooks.common", function() return (function(...)
+        end)
+    end)
+    hMod("use-viewport-size", "ModuleScript", "Havoc.hooks.common.use-viewport-size", "Havoc.hooks.common", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
@@ -1990,8 +2054,10 @@ return {
 	useViewportSize = useViewportSize,
 }
 
-end) end);
-    hMod("use-current-page", "ModuleScript", "Havoc.hooks.use-current-page", "Havoc.hooks", function() return (function(...)
+        end)
+    end)
+    hMod("use-current-page", "ModuleScript", "Havoc.hooks.use-current-page", "Havoc.hooks", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local useAppSelector = TS.import(script, script.Parent, "common", "rodux-hooks").useAppSelector
@@ -2010,8 +2076,10 @@ return {
 	useIsPageOpen = useIsPageOpen,
 }
 
-end) end);
-    hMod("use-friends", "ModuleScript", "Havoc.hooks.use-friends", "Havoc.hooks", function() return (function(...)
+        end)
+    end)
+    hMod("use-friends", "ModuleScript", "Havoc.hooks.use-friends", "Havoc.hooks", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local useMemo = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).useMemo
@@ -2102,8 +2170,10 @@ return {
 	useFriendActivity = useFriendActivity,
 }
 
-end) end);
-    hMod("use-parallax-offset", "ModuleScript", "Havoc.hooks.use-parallax-offset", "Havoc.hooks", function() return (function(...)
+        end)
+    end)
+    hMod("use-parallax-offset", "ModuleScript", "Havoc.hooks.use-parallax-offset", "Havoc.hooks", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Spring = TS.import(script, TS.getModule(script, "@rbxts", "flipper").src).Spring
@@ -2140,8 +2210,10 @@ return {
 	useParallaxOffset = useParallaxOffset,
 }
 
-end) end);
-    hMod("use-scale", "ModuleScript", "Havoc.hooks.use-scale", "Havoc.hooks", function() return (function(...)
+        end)
+    end)
+    hMod("use-scale", "ModuleScript", "Havoc.hooks.use-scale", "Havoc.hooks", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -2159,8 +2231,10 @@ return {
 	useScale = useScale,
 }
 
-end) end);
-    hMod("use-theme", "ModuleScript", "Havoc.hooks.use-theme", "Havoc.hooks", function() return (function(...)
+        end)
+    end)
+    hMod("use-theme", "ModuleScript", "Havoc.hooks.use-theme", "Havoc.hooks", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local useAppSelector = TS.import(script, script.Parent, "common", "rodux-hooks").useAppSelector
@@ -2178,7 +2252,7 @@ end
 -- ▲ ReadonlyArray.map ▲
 local _map = {}
 for _, _v in ipairs(_newValue) do
-	_map[_v[1]] = _v[2]
+	_map[_v[1] ] = _v[2]
 end
 local THEME_MAP = _map
 local function useTheme(key)
@@ -2196,8 +2270,10 @@ return {
 	useTheme = useTheme,
 }
 
-end) end);
-    hMod("jobs", "ModuleScript", "Havoc.jobs", "Havoc", function() return (function(...)
+        end)
+    end)
+    hMod("jobs", "ModuleScript", "Havoc.jobs", "Havoc", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.include.RuntimeLib)
 local exports = {}
@@ -2217,8 +2293,10 @@ TS.import(script, script, "players", "teleport")
 TS.import(script, script, "players", "facebang")
 return exports
 
-end) end);
-    hMod("acrylic", "ModuleScript", "Havoc.jobs.acrylic", "Havoc.jobs", function() return (function(...)
+        end)
+    end)
+    hMod("acrylic", "ModuleScript", "Havoc.jobs.acrylic", "Havoc.jobs", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Make = TS.import(script, TS.getModule(script, "@rbxts", "make"))
@@ -2278,9 +2356,11 @@ main():catch(function(err)
 end)
 return nil
 
-end) end);
-    hInst("character", "Folder", "Havoc.jobs.character", "Havoc.jobs");
-    hMod("flight", "ModuleScript", "Havoc.jobs.character.flight", "Havoc.jobs.character", function() return (function(...)
+        end)
+    end)
+    hInst("character", "Folder", "Havoc.jobs.character", "Havoc.jobs")
+    hMod("flight", "ModuleScript", "Havoc.jobs.character.flight", "Havoc.jobs.character", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _flipper = TS.import(script, TS.getModule(script, "@rbxts", "flipper").src)
@@ -2443,8 +2523,10 @@ main():catch(function(err)
 end)
 return nil
 
-end) end);
-    hMod("ghost", "ModuleScript", "Havoc.jobs.character.ghost", "Havoc.jobs.character", function() return (function(...)
+        end)
+    end)
+    hMod("ghost", "ModuleScript", "Havoc.jobs.character.ghost", "Havoc.jobs.character", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _services = TS.import(script, TS.getModule(script, "@rbxts", "services"))
@@ -2621,8 +2703,10 @@ main():catch(function(err)
 end)
 return nil
 
-end) end);
-    hMod("godmode", "ModuleScript", "Havoc.jobs.character.godmode", "Havoc.jobs.character", function() return (function(...)
+        end)
+    end)
+    hMod("godmode", "ModuleScript", "Havoc.jobs.character.godmode", "Havoc.jobs.character", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _services = TS.import(script, TS.getModule(script, "@rbxts", "services"))
@@ -2701,8 +2785,10 @@ main():catch(function(err)
 end)
 return nil
 
-end) end);
-    hMod("humanoid", "ModuleScript", "Havoc.jobs.character.humanoid", "Havoc.jobs.character", function() return (function(...)
+        end)
+    end)
+    hMod("humanoid", "ModuleScript", "Havoc.jobs.character.humanoid", "Havoc.jobs.character", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Players = TS.import(script, TS.getModule(script, "@rbxts", "services")).Players
@@ -2798,8 +2884,10 @@ main():catch(function(err)
 end)
 return nil
 
-end) end);
-    hMod("refresh", "ModuleScript", "Havoc.jobs.character.refresh", "Havoc.jobs.character", function() return (function(...)
+        end)
+    end)
+    hMod("refresh", "ModuleScript", "Havoc.jobs.character.refresh", "Havoc.jobs.character", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _services = TS.import(script, TS.getModule(script, "@rbxts", "services"))
@@ -2868,8 +2956,10 @@ main():catch(function(err)
 end)
 return nil
 
-end) end);
-    hMod("freecam", "ModuleScript", "Havoc.jobs.freecam", "Havoc.jobs", function() return (function(...)
+        end)
+    end)
+    hMod("freecam", "ModuleScript", "Havoc.jobs.freecam", "Havoc.jobs", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local _freecam = TS.import(script, script.Parent, "helpers", "freecam")
@@ -2890,9 +2980,11 @@ main():catch(function(err)
 end)
 return nil
 
-end) end);
-    hInst("helpers", "Folder", "Havoc.jobs.helpers", "Havoc.jobs");
-    hMod("freecam", "ModuleScript", "Havoc.jobs.helpers.freecam", "Havoc.jobs.helpers", function() return (function(...)
+        end)
+    end)
+    hInst("helpers", "Folder", "Havoc.jobs.helpers", "Havoc.jobs")
+    hMod("freecam", "ModuleScript", "Havoc.jobs.helpers.freecam", "Havoc.jobs.helpers", function()
+        return (function(...)
 ------------------------------------------------------------------------
 -- Freecam
 -- Cinematic free camera for spectating and video production.
@@ -3351,8 +3443,10 @@ return {
 	DisableFreecam = DisableFreecam,
 }
 
-end) end);
-    hMod("get-selected-player", "ModuleScript", "Havoc.jobs.helpers.get-selected-player", "Havoc.jobs.helpers", function() return (function(...)
+        end)
+    end)
+    hMod("get-selected-player", "ModuleScript", "Havoc.jobs.helpers.get-selected-player", "Havoc.jobs.helpers", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Players = TS.import(script, TS.getModule(script, "@rbxts", "services")).Players
@@ -3381,8 +3475,10 @@ return {
 	getSelectedPlayer = getSelectedPlayer,
 }
 
-end) end);
-    hMod("job-store", "ModuleScript", "Havoc.jobs.helpers.job-store", "Havoc.jobs.helpers", function() return (function(...)
+        end)
+    end)
+    hMod("job-store", "ModuleScript", "Havoc.jobs.helpers.job-store", "Havoc.jobs.helpers", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local setInterval = TS.import(script, script.Parent.Parent.Parent, "utils", "timeout").setInterval
@@ -3448,9 +3544,11 @@ return {
 	onJobChange = onJobChange,
 }
 
-end) end);
-    hInst("players", "Folder", "Havoc.jobs.players", "Havoc.jobs");
-    hMod("facebang", "ModuleScript", "Havoc.jobs.players.facebang", "Havoc.jobs.players", function() return (function(...)
+        end)
+    end)
+    hInst("players", "Folder", "Havoc.jobs.players", "Havoc.jobs")
+    hMod("facebang", "ModuleScript", "Havoc.jobs.players.facebang", "Havoc.jobs.players", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _services = TS.import(script, TS.getModule(script, "@rbxts", "services"))
@@ -3587,8 +3685,10 @@ onJobChange("facebang", function(job, state)
 end)
 return nil
 
-end) end);
-    hMod("hide", "ModuleScript", "Havoc.jobs.players.hide", "Havoc.jobs.players", function() return (function(...)
+        end)
+    end)
+    hMod("hide", "ModuleScript", "Havoc.jobs.players.hide", "Havoc.jobs.players", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Players = TS.import(script, TS.getModule(script, "@rbxts", "services")).Players
@@ -3667,8 +3767,10 @@ main():catch(function(err)
 end)
 return nil
 
-end) end);
-    hMod("kill", "ModuleScript", "Havoc.jobs.players.kill", "Havoc.jobs.players", function() return (function(...)
+        end)
+    end)
+    hMod("kill", "ModuleScript", "Havoc.jobs.players.kill", "Havoc.jobs.players", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _services = TS.import(script, TS.getModule(script, "@rbxts", "services"))
@@ -3821,8 +3923,10 @@ main():catch(function(err)
 end)
 return nil
 
-end) end);
-    hMod("spectate", "ModuleScript", "Havoc.jobs.players.spectate", "Havoc.jobs.players", function() return (function(...)
+        end)
+    end)
+    hMod("spectate", "ModuleScript", "Havoc.jobs.players.spectate", "Havoc.jobs.players", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Workspace = TS.import(script, TS.getModule(script, "@rbxts", "services")).Workspace
@@ -3883,8 +3987,10 @@ main():catch(function(err)
 end)
 return nil
 
-end) end);
-    hMod("teleport", "ModuleScript", "Havoc.jobs.players.teleport", "Havoc.jobs.players", function() return (function(...)
+        end)
+    end)
+    hMod("teleport", "ModuleScript", "Havoc.jobs.players.teleport", "Havoc.jobs.players", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Players = TS.import(script, TS.getModule(script, "@rbxts", "services")).Players
@@ -3939,8 +4045,10 @@ main():catch(function(err)
 end)
 return nil
 
-end) end);
-    hMod("server", "ModuleScript", "Havoc.jobs.server", "Havoc.jobs", function() return (function(...)
+        end)
+    end)
+    hMod("server", "ModuleScript", "Havoc.jobs.server", "Havoc.jobs", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local _services = TS.import(script, TS.getModule(script, "@rbxts", "services"))
@@ -4047,11 +4155,13 @@ main():catch(function(err)
 end)
 return nil
 
-end) end);
-    hInst("main", "LocalScript", "Havoc.main", "Havoc");
-    hInst("store", "Folder", "Havoc.store", "Havoc");
-    hInst("actions", "Folder", "Havoc.store.actions", "Havoc.store");
-    hMod("dashboard.action", "ModuleScript", "Havoc.store.actions.dashboard.action", "Havoc.store.actions", function() return (function(...)
+        end)
+    end)
+    hInst("main", "LocalScript", "Havoc.main", "Havoc")
+    hInst("store", "Folder", "Havoc.store", "Havoc")
+    hInst("actions", "Folder", "Havoc.store.actions", "Havoc.store")
+    hMod("dashboard.action", "ModuleScript", "Havoc.store.actions.dashboard.action", "Havoc.store.actions", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Rodux = TS.import(script, TS.getModule(script, "@rbxts", "rodux").src)
@@ -4088,8 +4198,10 @@ return {
 	playerDeselected = playerDeselected,
 }
 
-end) end);
-    hMod("jobs.action", "ModuleScript", "Havoc.store.actions.jobs.action", "Havoc.store.actions", function() return (function(...)
+        end)
+    end)
+    hMod("jobs.action", "ModuleScript", "Havoc.store.actions.jobs.action", "Havoc.store.actions", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local setJobActive = function(jobName, active)
 	return {
@@ -4119,8 +4231,10 @@ return {
 	setJobSlider = setJobSlider,
 }
 
-end) end);
-    hMod("options.action", "ModuleScript", "Havoc.store.actions.options.action", "Havoc.store.actions", function() return (function(...)
+        end)
+    end)
+    hMod("options.action", "ModuleScript", "Havoc.store.actions.options.action", "Havoc.store.actions", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Rodux = TS.import(script, TS.getModule(script, "@rbxts", "rodux").src)
@@ -4153,9 +4267,11 @@ return {
 	setTheme = setTheme,
 }
 
-end) end);
-    hInst("models", "Folder", "Havoc.store.models", "Havoc.store");
-    hMod("dashboard.model", "ModuleScript", "Havoc.store.models.dashboard.model", "Havoc.store.models", function() return (function(...)
+        end)
+    end)
+    hInst("models", "Folder", "Havoc.store.models", "Havoc.store")
+    hMod("dashboard.model", "ModuleScript", "Havoc.store.models.dashboard.model", "Havoc.store.models", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local DashboardPage
 do
@@ -4194,20 +4310,26 @@ return {
 	PAGE_TO_ICON = PAGE_TO_ICON,
 }
 
-end) end);
-    hMod("jobs.model", "ModuleScript", "Havoc.store.models.jobs.model", "Havoc.store.models", function() return (function(...)
+        end)
+    end)
+    hMod("jobs.model", "ModuleScript", "Havoc.store.models.jobs.model", "Havoc.store.models", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 
-end) end);
-    hMod("options.model", "ModuleScript", "Havoc.store.models.options.model", "Havoc.store.models", function() return (function(...)
+        end)
+    end)
+    hMod("options.model", "ModuleScript", "Havoc.store.models.options.model", "Havoc.store.models", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local __FIX_OPTIONS = true
 return {
 	__FIX_OPTIONS = __FIX_OPTIONS,
 }
 
-end) end);
-    hMod("persistent-state", "ModuleScript", "Havoc.store.persistent-state", "Havoc.store", function() return (function(...)
+        end)
+    end)
+    hMod("persistent-state", "ModuleScript", "Havoc.store.persistent-state", "Havoc.store", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local _services = TS.import(script, TS.getModule(script, "@rbxts", "services"))
@@ -4274,9 +4396,11 @@ return {
 	persistentState = persistentState,
 }
 
-end) end);
-    hInst("reducers", "Folder", "Havoc.store.reducers", "Havoc.store");
-    hMod("dashboard.reducer", "ModuleScript", "Havoc.store.reducers.dashboard.reducer", "Havoc.store.reducers", function() return (function(...)
+        end)
+    end)
+    hInst("reducers", "Folder", "Havoc.store.reducers", "Havoc.store")
+    hMod("dashboard.reducer", "ModuleScript", "Havoc.store.reducers.dashboard.reducer", "Havoc.store.reducers", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Rodux = TS.import(script, TS.getModule(script, "@rbxts", "rodux").src)
@@ -4355,8 +4479,10 @@ return {
 	dashboardReducer = dashboardReducer,
 }
 
-end) end);
-    hMod("jobs.reducer", "ModuleScript", "Havoc.store.reducers.jobs.reducer", "Havoc.store.reducers", function() return (function(...)
+        end)
+    end)
+    hMod("jobs.reducer", "ModuleScript", "Havoc.store.reducers.jobs.reducer", "Havoc.store.reducers", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Rodux = TS.import(script, TS.getModule(script, "@rbxts", "rodux").src)
@@ -4470,8 +4596,10 @@ return {
 	jobsReducer = jobsReducer,
 }
 
-end) end);
-    hMod("options.reducer", "ModuleScript", "Havoc.store.reducers.options.reducer", "Havoc.store.reducers", function() return (function(...)
+        end)
+    end)
+    hMod("options.reducer", "ModuleScript", "Havoc.store.reducers.options.reducer", "Havoc.store.reducers", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Rodux = TS.import(script, TS.getModule(script, "@rbxts", "rodux").src)
@@ -4543,8 +4671,10 @@ return {
 	optionsReducer = optionsReducer,
 }
 
-end) end);
-    hMod("store", "ModuleScript", "Havoc.store.store", "Havoc.store", function() return (function(...)
+        end)
+    end)
+    hMod("store", "ModuleScript", "Havoc.store.store", "Havoc.store", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Rodux = TS.import(script, TS.getModule(script, "@rbxts", "rodux").src)
@@ -4563,8 +4693,10 @@ return {
 	configureStore = configureStore,
 }
 
-end) end);
-    hMod("theme", "ModuleScript", "Havoc.theme", "Havoc", function() return (function(...)
+        end)
+    end)
+    hMod("theme", "ModuleScript", "Havoc.theme", "Havoc", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local UI_COLORS = {
 	Accent = Color3.fromRGB(235, 76, 105),
@@ -4596,8 +4728,10 @@ return {
 	UI_LAYOUT = UI_LAYOUT,
 }
 
-end) end);
-    hMod("themes", "ModuleScript", "Havoc.themes", "Havoc", function() return (function(...)
+        end)
+    end)
+    hMod("themes", "ModuleScript", "Havoc.themes", "Havoc", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.include.RuntimeLib)
 local darkTheme = TS.import(script, script, "sorbet").darkTheme
@@ -4649,8 +4783,10 @@ return {
 	darkTheme = darkTheme,
 }
 
-end) end);
-    hMod("crimson", "ModuleScript", "Havoc.themes.crimson", "Havoc.themes", function() return (function(...)
+        end)
+    end)
+    hMod("crimson", "ModuleScript", "Havoc.themes.crimson", "Havoc.themes", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local darkTheme = TS.import(script, script.Parent, "sorbet").darkTheme
@@ -4924,8 +5060,10 @@ return {
 	crimson = crimson,
 }
 
-end) end);
-    hMod("frosted-glass", "ModuleScript", "Havoc.themes.frosted-glass", "Havoc.themes", function() return (function(...)
+        end)
+    end)
+    hMod("frosted-glass", "ModuleScript", "Havoc.themes.frosted-glass", "Havoc.themes", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local darkTheme = TS.import(script, script.Parent, "sorbet").darkTheme
@@ -5214,8 +5352,10 @@ return {
 	frostedGlass = frostedGlass,
 }
 
-end) end);
-    hMod("high-contrast", "ModuleScript", "Havoc.themes.high-contrast", "Havoc.themes", function() return (function(...)
+        end)
+    end)
+    hMod("high-contrast", "ModuleScript", "Havoc.themes.high-contrast", "Havoc.themes", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local darkTheme = TS.import(script, script.Parent, "sorbet").darkTheme
@@ -5455,8 +5595,10 @@ return {
 	highContrast = highContrast,
 }
 
-end) end);
-    hMod("light-theme", "ModuleScript", "Havoc.themes.light-theme", "Havoc.themes", function() return (function(...)
+        end)
+    end)
+    hMod("light-theme", "ModuleScript", "Havoc.themes.light-theme", "Havoc.themes", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local darkTheme = TS.import(script, script.Parent, "sorbet").darkTheme
@@ -5689,8 +5831,10 @@ return {
 	lightTheme = lightTheme,
 }
 
-end) end);
-    hMod("obsidian", "ModuleScript", "Havoc.themes.obsidian", "Havoc.themes", function() return (function(...)
+        end)
+    end)
+    hMod("obsidian", "ModuleScript", "Havoc.themes.obsidian", "Havoc.themes", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local darkTheme = TS.import(script, script.Parent, "sorbet").darkTheme
@@ -6010,8 +6154,10 @@ return {
 	obsidian = obsidian,
 }
 
-end) end);
-    hMod("sorbet", "ModuleScript", "Havoc.themes.sorbet", "Havoc.themes", function() return (function(...)
+        end)
+    end)
+    hMod("sorbet", "ModuleScript", "Havoc.themes.sorbet", "Havoc.themes", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local hex = TS.import(script, script.Parent.Parent, "utils", "color3").hex
@@ -6262,13 +6408,17 @@ return {
 	darkTheme = darkTheme,
 }
 
-end) end);
-    hMod("theme.interface", "ModuleScript", "Havoc.themes.theme.interface", "Havoc.themes", function() return (function(...)
+        end)
+    end)
+    hMod("theme.interface", "ModuleScript", "Havoc.themes.theme.interface", "Havoc.themes", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 
-end) end);
-    hInst("utils", "Folder", "Havoc.utils", "Havoc");
-    hMod("array-util", "ModuleScript", "Havoc.utils.array-util", "Havoc.utils", function() return (function(...)
+        end)
+    end)
+    hInst("utils", "Folder", "Havoc.utils", "Havoc")
+    hMod("array-util", "ModuleScript", "Havoc.utils.array-util", "Havoc.utils", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local function arrayToMap(arr, mapper)
 	-- ▼ ReadonlyArray.map ▼
@@ -6279,7 +6429,7 @@ local function arrayToMap(arr, mapper)
 	-- ▲ ReadonlyArray.map ▲
 	local _map = {}
 	for _, _v in ipairs(_newValue) do
-		_map[_v[1]] = _v[2]
+		_map[_v[1] ] = _v[2]
 	end
 	return _map
 end
@@ -6287,8 +6437,10 @@ return {
 	arrayToMap = arrayToMap,
 }
 
-end) end);
-    hMod("binding-util", "ModuleScript", "Havoc.utils.binding-util", "Havoc.utils", function() return (function(...)
+        end)
+    end)
+    hMod("binding-util", "ModuleScript", "Havoc.utils.binding-util", "Havoc.utils", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -6307,8 +6459,10 @@ return {
 	asBinding = asBinding,
 }
 
-end) end);
-    hMod("color3", "ModuleScript", "Havoc.utils.color3", "Havoc.utils", function() return (function(...)
+        end)
+    end)
+    hMod("color3", "ModuleScript", "Havoc.utils.color3", "Havoc.utils", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local function getLuminance(color)
 	if typeof(color) == "ColorSequence" then
@@ -6366,8 +6520,10 @@ return {
 	hsl = hsl,
 }
 
-end) end);
-    hMod("debug", "ModuleScript", "Havoc.utils.debug", "Havoc.utils", function() return (function(...)
+        end)
+    end)
+    hMod("debug", "ModuleScript", "Havoc.utils.debug", "Havoc.utils", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Stats = TS.import(script, TS.getModule(script, "@rbxts", "services")).Stats
@@ -6426,8 +6582,10 @@ return {
 	logger = logger,
 }
 
-end) end);
-    hMod("http", "ModuleScript", "Havoc.utils.http", "Havoc.utils", function() return (function(...)
+        end)
+    end)
+    hMod("http", "ModuleScript", "Havoc.utils.http", "Havoc.utils", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local HttpService = TS.import(script, TS.getModule(script, "@rbxts", "services")).HttpService
@@ -6456,8 +6614,10 @@ return {
 	post = post,
 }
 
-end) end);
-    hMod("number-util", "ModuleScript", "Havoc.utils.number-util", "Havoc.utils", function() return (function(...)
+        end)
+    end)
+    hMod("number-util", "ModuleScript", "Havoc.utils.number-util", "Havoc.utils", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local function map(n, min0, max0, min1, max1)
 	return min1 + ((n - min0) * (max1 - min1)) / (max0 - min0)
@@ -6470,8 +6630,10 @@ return {
 	lerp = lerp,
 }
 
-end) end);
-    hMod("timeout", "ModuleScript", "Havoc.utils.timeout", "Havoc.utils", function() return (function(...)
+        end)
+    end)
+    hMod("timeout", "ModuleScript", "Havoc.utils.timeout", "Havoc.utils", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local RunService = TS.import(script, TS.getModule(script, "@rbxts", "services")).RunService
@@ -6556,8 +6718,10 @@ return {
 	Interval = Interval,
 }
 
-end) end);
-    hMod("udim2", "ModuleScript", "Havoc.utils.udim2", "Havoc.utils", function() return (function(...)
+        end)
+    end)
+    hMod("udim2", "ModuleScript", "Havoc.utils.udim2", "Havoc.utils", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local function px(x, y)
 	return UDim2.new(0, x, 0, y)
@@ -6577,17 +6741,21 @@ return {
 	applyUDim2 = applyUDim2,
 }
 
-end) end);
-    hInst("views", "Folder", "Havoc.views", "Havoc");
-    hMod("Clock", "ModuleScript", "Havoc.views.Clock", "Havoc.views", function() return (function(...)
+        end)
+    end)
+    hInst("views", "Folder", "Havoc.views", "Havoc")
+    hMod("Clock", "ModuleScript", "Havoc.views.Clock", "Havoc.views", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Clock").default
 return exports
 
-end) end);
-    hMod("Clock", "ModuleScript", "Havoc.views.Clock.Clock", "Havoc.views.Clock", function() return (function(...)
+        end)
+    end)
+    hMod("Clock", "ModuleScript", "Havoc.views.Clock.Clock", "Havoc.views.Clock", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -6707,16 +6875,20 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("Dashboard", "ModuleScript", "Havoc.views.Dashboard", "Havoc.views", function() return (function(...)
+        end)
+    end)
+    hMod("Dashboard", "ModuleScript", "Havoc.views.Dashboard", "Havoc.views", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Dashboard").default
 return exports
 
-end) end);
-    hMod("Dashboard", "ModuleScript", "Havoc.views.Dashboard.Dashboard", "Havoc.views.Dashboard", function() return (function(...)
+        end)
+    end)
+    hMod("Dashboard", "ModuleScript", "Havoc.views.Dashboard.Dashboard", "Havoc.views.Dashboard", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -6811,8 +6983,10 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("Dashboard.story", "ModuleScript", "Havoc.views.Dashboard.Dashboard.story", "Havoc.views.Dashboard", function() return (function(...)
+        end)
+    end)
+    hMod("Dashboard.story", "ModuleScript", "Havoc.views.Dashboard.Dashboard.story", "Havoc.views.Dashboard", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -6838,16 +7012,20 @@ return function(target)
 	end
 end
 
-end) end);
-    hMod("Hint", "ModuleScript", "Havoc.views.Hint", "Havoc.views", function() return (function(...)
+        end)
+    end)
+    hMod("Hint", "ModuleScript", "Havoc.views.Hint", "Havoc.views", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Hint").default
 return exports
 
-end) end);
-    hMod("Hint", "ModuleScript", "Havoc.views.Hint.Hint", "Havoc.views.Hint", function() return (function(...)
+        end)
+    end)
+    hMod("Hint", "ModuleScript", "Havoc.views.Hint.Hint", "Havoc.views.Hint", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -6906,16 +7084,20 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("Navbar", "ModuleScript", "Havoc.views.Navbar", "Havoc.views", function() return (function(...)
+        end)
+    end)
+    hMod("Navbar", "ModuleScript", "Havoc.views.Navbar", "Havoc.views", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Navbar").default
 return exports
 
-end) end);
-    hMod("Navbar", "ModuleScript", "Havoc.views.Navbar.Navbar", "Havoc.views.Navbar", function() return (function(...)
+        end)
+    end)
+    hMod("Navbar", "ModuleScript", "Havoc.views.Navbar.Navbar", "Havoc.views.Navbar", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -7074,8 +7256,10 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("Navbar.story", "ModuleScript", "Havoc.views.Navbar.Navbar.story", "Havoc.views.Navbar", function() return (function(...)
+        end)
+    end)
+    hMod("Navbar.story", "ModuleScript", "Havoc.views.Navbar.Navbar.story", "Havoc.views.Navbar", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -7101,8 +7285,10 @@ return function(target)
 	end
 end
 
-end) end);
-    hMod("NavbarTab", "ModuleScript", "Havoc.views.Navbar.NavbarTab", "Havoc.views.Navbar", function() return (function(...)
+        end)
+    end)
+    hMod("NavbarTab", "ModuleScript", "Havoc.views.Navbar.NavbarTab", "Havoc.views.Navbar", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -7167,24 +7353,30 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("Pages", "ModuleScript", "Havoc.views.Pages", "Havoc.views", function() return (function(...)
+        end)
+    end)
+    hMod("Pages", "ModuleScript", "Havoc.views.Pages", "Havoc.views", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Pages").default
 return exports
 
-end) end);
-    hMod("Apps", "ModuleScript", "Havoc.views.Pages.Apps", "Havoc.views.Pages", function() return (function(...)
+        end)
+    end)
+    hMod("Apps", "ModuleScript", "Havoc.views.Pages.Apps", "Havoc.views.Pages", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Apps").default
 return exports
 
-end) end);
-    hMod("Apps", "ModuleScript", "Havoc.views.Pages.Apps.Apps", "Havoc.views.Pages.Apps", function() return (function(...)
+        end)
+    end)
+    hMod("Apps", "ModuleScript", "Havoc.views.Pages.Apps.Apps", "Havoc.views.Pages.Apps", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -7210,16 +7402,20 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("Players", "ModuleScript", "Havoc.views.Pages.Apps.Players", "Havoc.views.Pages.Apps", function() return (function(...)
+        end)
+    end)
+    hMod("Players", "ModuleScript", "Havoc.views.Pages.Apps.Players", "Havoc.views.Pages.Apps", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Players").default
 return exports
 
-end) end);
-    hMod("Actions", "ModuleScript", "Havoc.views.Pages.Apps.Players.Actions", "Havoc.views.Pages.Apps.Players", function() return (function(...)
+        end)
+    end)
+    hMod("Actions", "ModuleScript", "Havoc.views.Pages.Apps.Players.Actions", "Havoc.views.Pages.Apps.Players", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -7273,8 +7469,10 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("Avatar", "ModuleScript", "Havoc.views.Pages.Apps.Players.Avatar", "Havoc.views.Pages.Apps.Players", function() return (function(...)
+        end)
+    end)
+    hMod("Avatar", "ModuleScript", "Havoc.views.Pages.Apps.Players.Avatar", "Havoc.views.Pages.Apps.Players", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -7329,8 +7527,10 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("Players", "ModuleScript", "Havoc.views.Pages.Apps.Players.Players", "Havoc.views.Pages.Apps.Players", function() return (function(...)
+        end)
+    end)
+    hMod("Players", "ModuleScript", "Havoc.views.Pages.Apps.Players.Players", "Havoc.views.Pages.Apps.Players", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -7363,8 +7563,10 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("Selection", "ModuleScript", "Havoc.views.Pages.Apps.Players.Selection", "Havoc.views.Pages.Apps.Players", function() return (function(...)
+        end)
+    end)
+    hMod("Selection", "ModuleScript", "Havoc.views.Pages.Apps.Players.Selection", "Havoc.views.Pages.Apps.Players", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -7690,8 +7892,10 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("Username", "ModuleScript", "Havoc.views.Pages.Apps.Players.Username", "Havoc.views.Pages.Apps.Players", function() return (function(...)
+        end)
+    end)
+    hMod("Username", "ModuleScript", "Havoc.views.Pages.Apps.Players.Username", "Havoc.views.Pages.Apps.Players", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -7747,24 +7951,30 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("Home", "ModuleScript", "Havoc.views.Pages.Home", "Havoc.views.Pages", function() return (function(...)
+        end)
+    end)
+    hMod("Home", "ModuleScript", "Havoc.views.Pages.Home", "Havoc.views.Pages", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Home").default
 return exports
 
-end) end);
-    hMod("FriendActivity", "ModuleScript", "Havoc.views.Pages.Home.FriendActivity", "Havoc.views.Pages.Home", function() return (function(...)
+        end)
+    end)
+    hMod("FriendActivity", "ModuleScript", "Havoc.views.Pages.Home.FriendActivity", "Havoc.views.Pages.Home", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "FriendActivity").default
 return exports
 
-end) end);
-    hMod("FriendActivity", "ModuleScript", "Havoc.views.Pages.Home.FriendActivity.FriendActivity", "Havoc.views.Pages.Home.FriendActivity", function() return (function(...)
+        end)
+    end)
+    hMod("FriendActivity", "ModuleScript", "Havoc.views.Pages.Home.FriendActivity.FriendActivity", "Havoc.views.Pages.Home.FriendActivity", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -7869,8 +8079,10 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("FriendItem", "ModuleScript", "Havoc.views.Pages.Home.FriendActivity.FriendItem", "Havoc.views.Pages.Home.FriendActivity", function() return (function(...)
+        end)
+    end)
+    hMod("FriendItem", "ModuleScript", "Havoc.views.Pages.Home.FriendActivity.FriendItem", "Havoc.views.Pages.Home.FriendActivity", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -7984,8 +8196,10 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("GameItem", "ModuleScript", "Havoc.views.Pages.Home.FriendActivity.GameItem", "Havoc.views.Pages.Home.FriendActivity", function() return (function(...)
+        end)
+    end)
+    hMod("GameItem", "ModuleScript", "Havoc.views.Pages.Home.FriendActivity.GameItem", "Havoc.views.Pages.Home.FriendActivity", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -8070,8 +8284,10 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("Home", "ModuleScript", "Havoc.views.Pages.Home.Home", "Havoc.views.Pages.Home", function() return (function(...)
+        end)
+    end)
+    hMod("Home", "ModuleScript", "Havoc.views.Pages.Home.Home", "Havoc.views.Pages.Home", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -8103,16 +8319,20 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("Profile", "ModuleScript", "Havoc.views.Pages.Home.Profile", "Havoc.views.Pages.Home", function() return (function(...)
+        end)
+    end)
+    hMod("Profile", "ModuleScript", "Havoc.views.Pages.Home.Profile", "Havoc.views.Pages.Home", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Profile").default
 return exports
 
-end) end);
-    hMod("Actions", "ModuleScript", "Havoc.views.Pages.Home.Profile.Actions", "Havoc.views.Pages.Home.Profile", function() return (function(...)
+        end)
+    end)
+    hMod("Actions", "ModuleScript", "Havoc.views.Pages.Home.Profile.Actions", "Havoc.views.Pages.Home.Profile", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -8165,8 +8385,10 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("Avatar", "ModuleScript", "Havoc.views.Pages.Home.Profile.Avatar", "Havoc.views.Pages.Home.Profile", function() return (function(...)
+        end)
+    end)
+    hMod("Avatar", "ModuleScript", "Havoc.views.Pages.Home.Profile.Avatar", "Havoc.views.Pages.Home.Profile", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -8212,8 +8434,10 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("Info", "ModuleScript", "Havoc.views.Pages.Home.Profile.Info", "Havoc.views.Pages.Home.Profile", function() return (function(...)
+        end)
+    end)
+    hMod("Info", "ModuleScript", "Havoc.views.Pages.Home.Profile.Info", "Havoc.views.Pages.Home.Profile", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -8330,8 +8554,10 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("Profile", "ModuleScript", "Havoc.views.Pages.Home.Profile.Profile", "Havoc.views.Pages.Home.Profile", function() return (function(...)
+        end)
+    end)
+    hMod("Profile", "ModuleScript", "Havoc.views.Pages.Home.Profile.Profile", "Havoc.views.Pages.Home.Profile", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -8374,8 +8600,10 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("Sliders", "ModuleScript", "Havoc.views.Pages.Home.Profile.Sliders", "Havoc.views.Pages.Home.Profile", function() return (function(...)
+        end)
+    end)
+    hMod("Sliders", "ModuleScript", "Havoc.views.Pages.Home.Profile.Sliders", "Havoc.views.Pages.Home.Profile", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -8550,8 +8778,10 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("Username", "ModuleScript", "Havoc.views.Pages.Home.Profile.Username", "Havoc.views.Pages.Home.Profile", function() return (function(...)
+        end)
+    end)
+    hMod("Username", "ModuleScript", "Havoc.views.Pages.Home.Profile.Username", "Havoc.views.Pages.Home.Profile", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -8597,16 +8827,20 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("Server", "ModuleScript", "Havoc.views.Pages.Home.Server", "Havoc.views.Pages.Home", function() return (function(...)
+        end)
+    end)
+    hMod("Server", "ModuleScript", "Havoc.views.Pages.Home.Server", "Havoc.views.Pages.Home", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Server").default
 return exports
 
-end) end);
-    hMod("Server", "ModuleScript", "Havoc.views.Pages.Home.Server.Server", "Havoc.views.Pages.Home.Server", function() return (function(...)
+        end)
+    end)
+    hMod("Server", "ModuleScript", "Havoc.views.Pages.Home.Server.Server", "Havoc.views.Pages.Home.Server", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -8688,8 +8922,10 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("ServerAction", "ModuleScript", "Havoc.views.Pages.Home.Server.ServerAction", "Havoc.views.Pages.Home.Server", function() return (function(...)
+        end)
+    end)
+    hMod("ServerAction", "ModuleScript", "Havoc.views.Pages.Home.Server.ServerAction", "Havoc.views.Pages.Home.Server", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -8786,8 +9022,10 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("StatusLabel", "ModuleScript", "Havoc.views.Pages.Home.Server.StatusLabel", "Havoc.views.Pages.Home.Server", function() return (function(...)
+        end)
+    end)
+    hMod("StatusLabel", "ModuleScript", "Havoc.views.Pages.Home.Server.StatusLabel", "Havoc.views.Pages.Home.Server", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -8854,8 +9092,10 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("Title", "ModuleScript", "Havoc.views.Pages.Home.Title", "Havoc.views.Pages.Home", function() return (function(...)
+        end)
+    end)
+    hMod("Title", "ModuleScript", "Havoc.views.Pages.Home.Title", "Havoc.views.Pages.Home", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -8994,16 +9234,20 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("Misc", "ModuleScript", "Havoc.views.Pages.Misc", "Havoc.views.Pages", function() return (function(...)
+        end)
+    end)
+    hMod("Misc", "ModuleScript", "Havoc.views.Pages.Misc", "Havoc.views.Pages", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Misc").default
 return exports
 
-end) end);
-    hMod("FacebangModal", "ModuleScript", "Havoc.views.Pages.Misc.FacebangModal", "Havoc.views.Pages.Misc", function() return (function(...)
+        end)
+    end)
+    hMod("FacebangModal", "ModuleScript", "Havoc.views.Pages.Misc.FacebangModal", "Havoc.views.Pages.Misc", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -9319,8 +9563,10 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("Misc", "ModuleScript", "Havoc.views.Pages.Misc.Misc", "Havoc.views.Pages.Misc", function() return (function(...)
+        end)
+    end)
+    hMod("Misc", "ModuleScript", "Havoc.views.Pages.Misc.Misc", "Havoc.views.Pages.Misc", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -9435,24 +9681,30 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("Options", "ModuleScript", "Havoc.views.Pages.Options", "Havoc.views.Pages", function() return (function(...)
+        end)
+    end)
+    hMod("Options", "ModuleScript", "Havoc.views.Pages.Options", "Havoc.views.Pages", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Options").default
 return exports
 
-end) end);
-    hMod("Config", "ModuleScript", "Havoc.views.Pages.Options.Config", "Havoc.views.Pages.Options", function() return (function(...)
+        end)
+    end)
+    hMod("Config", "ModuleScript", "Havoc.views.Pages.Options.Config", "Havoc.views.Pages.Options", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Config").default
 return exports
 
-end) end);
-    hMod("Config", "ModuleScript", "Havoc.views.Pages.Options.Config.Config", "Havoc.views.Pages.Options.Config", function() return (function(...)
+        end)
+    end)
+    hMod("Config", "ModuleScript", "Havoc.views.Pages.Options.Config.Config", "Havoc.views.Pages.Options.Config", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -9522,8 +9774,10 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("ConfigItem", "ModuleScript", "Havoc.views.Pages.Options.Config.ConfigItem", "Havoc.views.Pages.Options.Config", function() return (function(...)
+        end)
+    end)
+    hMod("ConfigItem", "ModuleScript", "Havoc.views.Pages.Options.Config.ConfigItem", "Havoc.views.Pages.Options.Config", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -9676,8 +9930,10 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("Options", "ModuleScript", "Havoc.views.Pages.Options.Options", "Havoc.views.Pages.Options", function() return (function(...)
+        end)
+    end)
+    hMod("Options", "ModuleScript", "Havoc.views.Pages.Options.Options", "Havoc.views.Pages.Options", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -9707,16 +9963,20 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("Shortcuts", "ModuleScript", "Havoc.views.Pages.Options.Shortcuts", "Havoc.views.Pages.Options", function() return (function(...)
+        end)
+    end)
+    hMod("Shortcuts", "ModuleScript", "Havoc.views.Pages.Options.Shortcuts", "Havoc.views.Pages.Options", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Shortcuts").default
 return exports
 
-end) end);
-    hMod("ShortcutItem", "ModuleScript", "Havoc.views.Pages.Options.Shortcuts.ShortcutItem", "Havoc.views.Pages.Options.Shortcuts", function() return (function(...)
+        end)
+    end)
+    hMod("ShortcutItem", "ModuleScript", "Havoc.views.Pages.Options.Shortcuts.ShortcutItem", "Havoc.views.Pages.Options.Shortcuts", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -9965,8 +10225,10 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("Shortcuts", "ModuleScript", "Havoc.views.Pages.Options.Shortcuts.Shortcuts", "Havoc.views.Pages.Options.Shortcuts", function() return (function(...)
+        end)
+    end)
+    hMod("Shortcuts", "ModuleScript", "Havoc.views.Pages.Options.Shortcuts.Shortcuts", "Havoc.views.Pages.Options.Shortcuts", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -10124,16 +10386,20 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("Themes", "ModuleScript", "Havoc.views.Pages.Options.Themes", "Havoc.views.Pages.Options", function() return (function(...)
+        end)
+    end)
+    hMod("Themes", "ModuleScript", "Havoc.views.Pages.Options.Themes", "Havoc.views.Pages.Options", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Themes").default
 return exports
 
-end) end);
-    hMod("ThemeItem", "ModuleScript", "Havoc.views.Pages.Options.Themes.ThemeItem", "Havoc.views.Pages.Options.Themes", function() return (function(...)
+        end)
+    end)
+    hMod("ThemeItem", "ModuleScript", "Havoc.views.Pages.Options.Themes.ThemeItem", "Havoc.views.Pages.Options.Themes", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -10371,8 +10637,10 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("Themes", "ModuleScript", "Havoc.views.Pages.Options.Themes.Themes", "Havoc.views.Pages.Options.Themes", function() return (function(...)
+        end)
+    end)
+    hMod("Themes", "ModuleScript", "Havoc.views.Pages.Options.Themes.Themes", "Havoc.views.Pages.Options.Themes", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -10455,8 +10723,10 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("Pages", "ModuleScript", "Havoc.views.Pages.Pages", "Havoc.views.Pages", function() return (function(...)
+        end)
+    end)
+    hMod("Pages", "ModuleScript", "Havoc.views.Pages.Pages", "Havoc.views.Pages", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -10547,16 +10817,20 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("Scripts", "ModuleScript", "Havoc.views.Pages.Scripts", "Havoc.views.Pages", function() return (function(...)
+        end)
+    end)
+    hMod("Scripts", "ModuleScript", "Havoc.views.Pages.Scripts", "Havoc.views.Pages", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Scripts").default
 return exports
 
-end) end);
-    hMod("Content", "ModuleScript", "Havoc.views.Pages.Scripts.Content", "Havoc.views.Pages.Scripts", function() return (function(...)
+        end)
+    end)
+    hMod("Content", "ModuleScript", "Havoc.views.Pages.Scripts.Content", "Havoc.views.Pages.Scripts", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -10703,8 +10977,10 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("ScriptCard", "ModuleScript", "Havoc.views.Pages.Scripts.ScriptCard", "Havoc.views.Pages.Scripts", function() return (function(...)
+        end)
+    end)
+    hMod("ScriptCard", "ModuleScript", "Havoc.views.Pages.Scripts.ScriptCard", "Havoc.views.Pages.Scripts", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -10887,8 +11163,10 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("Scripts", "ModuleScript", "Havoc.views.Pages.Scripts.Scripts", "Havoc.views.Pages.Scripts", function() return (function(...)
+        end)
+    end)
+    hMod("Scripts", "ModuleScript", "Havoc.views.Pages.Scripts.Scripts", "Havoc.views.Pages.Scripts", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -11064,8 +11342,10 @@ return {
 	default = default,
 }
 
-end) end);
-    hMod("constants", "ModuleScript", "Havoc.views.Pages.Scripts.constants", "Havoc.views.Pages.Scripts", function() return (function(...)
+        end)
+    end)
+    hMod("constants", "ModuleScript", "Havoc.views.Pages.Scripts.constants", "Havoc.views.Pages.Scripts", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local BASE_WINDOW_HEIGHT = 880
 local BASE_WINDOW_WIDTH = 1824
@@ -11076,17 +11356,19 @@ return {
 	BASE_PADDING = BASE_PADDING,
 }
 
-end) end);
-    hInst("include", "Folder", "Havoc.include", "Havoc");
-    hInst("Promise", "ModuleScript", "Havoc.include.Promise", "Havoc.include");
-    hInst("RuntimeLib", "ModuleScript", "Havoc.include.RuntimeLib", "Havoc.include");
-    hInst("node_modules", "Folder", "Havoc.include.node_modules", "Havoc.include");
-    hInst("compiler-types", "Folder", "Havoc.include.node_modules.compiler-types", "Havoc.include.node_modules");
-    hInst("types", "Folder", "Havoc.include.node_modules.compiler-types.types", "Havoc.include.node_modules.compiler-types");
-    hInst("exploit-types", "Folder", "Havoc.include.node_modules.exploit-types", "Havoc.include.node_modules");
-    hInst("types", "Folder", "Havoc.include.node_modules.exploit-types.types", "Havoc.include.node_modules.exploit-types");
-    hInst("flipper", "Folder", "Havoc.include.node_modules.flipper", "Havoc.include.node_modules");
-    hMod("src", "ModuleScript", "Havoc.include.node_modules.flipper.src", "Havoc.include.node_modules.flipper", function() return (function(...)
+        end)
+    end)
+    hInst("include", "Folder", "Havoc.include", "Havoc")
+    hInst("Promise", "ModuleScript", "Havoc.include.Promise", "Havoc.include")
+    hInst("RuntimeLib", "ModuleScript", "Havoc.include.RuntimeLib", "Havoc.include")
+    hInst("node_modules", "Folder", "Havoc.include.node_modules", "Havoc.include")
+    hInst("compiler-types", "Folder", "Havoc.include.node_modules.compiler-types", "Havoc.include.node_modules")
+    hInst("types", "Folder", "Havoc.include.node_modules.compiler-types.types", "Havoc.include.node_modules.compiler-types")
+    hInst("exploit-types", "Folder", "Havoc.include.node_modules.exploit-types", "Havoc.include.node_modules")
+    hInst("types", "Folder", "Havoc.include.node_modules.exploit-types.types", "Havoc.include.node_modules.exploit-types")
+    hInst("flipper", "Folder", "Havoc.include.node_modules.flipper", "Havoc.include.node_modules")
+    hMod("src", "ModuleScript", "Havoc.include.node_modules.flipper.src", "Havoc.include.node_modules.flipper", function()
+        return (function(...)
 local Flipper = {
 	SingleMotor = require(script.SingleMotor),
 	GroupMotor = require(script.GroupMotor),
@@ -11099,15 +11381,17 @@ local Flipper = {
 }
 
 return Flipper
-end) end);
-    hInst("typings", "Folder", "Havoc.include.node_modules.flipper.typings", "Havoc.include.node_modules.flipper");
-    hMod("make", "ModuleScript", "Havoc.include.node_modules.make", "Havoc.include.node_modules", function() return (function(...)
+        end)
+    end)
+    hInst("typings", "Folder", "Havoc.include.node_modules.flipper.typings", "Havoc.include.node_modules.flipper")
+    hMod("make", "ModuleScript", "Havoc.include.node_modules.make", "Havoc.include.node_modules", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.3
 --[[
 	*
 	* Returns a table wherein an object's writable properties can be specified,
 	* while also allowing functions to be passed in which can be bound to a RBXScriptSignal.
-]]
+] ]
 --[[
 	*
 	* Instantiates a new Instance of `className` with given `settings`,
@@ -11118,7 +11402,7 @@ end) end);
 	* Events can be set to a callback function, which will be connected.
 	*
 	* `settings.Parent` is always set last.
-]]
+] ]
 local function Make(className, settings)
 	local _binding = settings
 	local children = _binding.Children
@@ -11145,12 +11429,14 @@ local function Make(className, settings)
 end
 return Make
 
-end) end);
-    hInst("node_modules", "Folder", "Havoc.include.node_modules.make.node_modules", "Havoc.include.node_modules.make");
-    hInst("@rbxts", "Folder", "Havoc.include.node_modules.make.node_modules.@rbxts", "Havoc.include.node_modules.make.node_modules");
-    hInst("compiler-types", "Folder", "Havoc.include.node_modules.make.node_modules.@rbxts.compiler-types", "Havoc.include.node_modules.make.node_modules.@rbxts");
-    hInst("types", "Folder", "Havoc.include.node_modules.make.node_modules.@rbxts.compiler-types.types", "Havoc.include.node_modules.make.node_modules.@rbxts.compiler-types");
-    hMod("object-utils", "ModuleScript", "Havoc.include.node_modules.object-utils", "Havoc.include.node_modules", function() return (function(...)
+        end)
+    end)
+    hInst("node_modules", "Folder", "Havoc.include.node_modules.make.node_modules", "Havoc.include.node_modules.make")
+    hInst("@rbxts", "Folder", "Havoc.include.node_modules.make.node_modules.@rbxts", "Havoc.include.node_modules.make.node_modules")
+    hInst("compiler-types", "Folder", "Havoc.include.node_modules.make.node_modules.@rbxts.compiler-types", "Havoc.include.node_modules.make.node_modules.@rbxts")
+    hInst("types", "Folder", "Havoc.include.node_modules.make.node_modules.@rbxts.compiler-types.types", "Havoc.include.node_modules.make.node_modules.@rbxts.compiler-types")
+    hMod("object-utils", "ModuleScript", "Havoc.include.node_modules.object-utils", "Havoc.include.node_modules", function()
+        return (function(...)
 local HttpService = game:GetService("HttpService")
 
 local Object = {}
@@ -11262,7 +11548,7 @@ function Object.fromEntries(entries)
 	if entries then
 		for i = 1, entriesLen do
 			local pair = entries[i]
-			result[pair[1]] = pair[2]
+			result[pair[1] ] = pair[2]
 		end
 	end
 	return result
@@ -11270,12 +11556,14 @@ end
 
 return Object
 
-end) end);
-    hInst("roact", "Folder", "Havoc.include.node_modules.roact", "Havoc.include.node_modules");
-    hMod("src", "ModuleScript", "Havoc.include.node_modules.roact.src", "Havoc.include.node_modules.roact", function() return (function(...)
+        end)
+    end)
+    hInst("roact", "Folder", "Havoc.include.node_modules.roact", "Havoc.include.node_modules")
+    hMod("src", "ModuleScript", "Havoc.include.node_modules.roact.src", "Havoc.include.node_modules.roact", function()
+        return (function(...)
 --[[
 	Packages up the internals of Roact and exposes a public API for it.
-]]
+] ]
 
 local GlobalConfig = require(script.GlobalConfig)
 local createReconciler = require(script.createReconciler)
@@ -11322,9 +11610,11 @@ local Roact = strict {
 }
 
 return Roact
-end) end);
-    hInst("roact-hooked", "Folder", "Havoc.include.node_modules.roact-hooked", "Havoc.include.node_modules");
-    hMod("out", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out", "Havoc.include.node_modules.roact-hooked", function() return (function(...)
+        end)
+    end)
+    hInst("roact-hooked", "Folder", "Havoc.include.node_modules.roact-hooked", "Havoc.include.node_modules")
+    hMod("out", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out", "Havoc.include.node_modules.roact-hooked", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = _G[script]
 local exports = {}
@@ -11349,7 +11639,7 @@ end
 	* );
 	*
 	* @see https://reactjs.org/docs/hooks-intro.html
-]]
+] ]
 local function hooked(functionComponent)
 	return withHooks(functionComponent)
 end
@@ -11370,7 +11660,7 @@ end
 	*
 	* @see https://reactjs.org/docs/react-api.html
 	* @see https://roblox.github.io/roact/performance/reduce-reconciliation/
-]]
+] ]
 local function pure(functionComponent)
 	return withHooksPure(functionComponent)
 end
@@ -11378,8 +11668,10 @@ exports.hooked = hooked
 exports.pure = pure
 return exports
 
-end) end);
-    hMod("hooks", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks", "Havoc.include.node_modules.roact-hooked.out", function() return (function(...)
+        end)
+    end)
+    hMod("hooks", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks", "Havoc.include.node_modules.roact-hooked.out", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = _G[script]
 local exports = {}
@@ -11394,21 +11686,807 @@ exports.useMutable = TS.import(script, script, "use-mutable").useMutable
 exports.useRef = TS.import(script, script, "use-ref").useRef
 return exports
 
-end) end);
-    hInst("use-binding", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-binding", "Havoc.include.node_modules.roact-hooked.out.hooks");
-    hInst("use-callback", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-callback", "Havoc.include.node_modules.roact-hooked.out.hooks");
-    hInst("use-context", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-context", "Havoc.include.node_modules.roact-hooked.out.hooks");
-    hInst("use-effect", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-effect", "Havoc.include.node_modules.roact-hooked.out.hooks");
-    hInst("use-memo", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-memo", "Havoc.include.node_modules.roact-hooked.out.hooks");
-    hInst("use-mutable", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-mutable", "Havoc.include.node_modules.roact-hooked.out.hooks");
-    hInst("use-reducer", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-reducer", "Havoc.include.node_modules.roact-hooked.out.hooks");
-    hInst("use-ref", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-ref", "Havoc.include.node_modules.roact-hooked.out.hooks");
-    hInst("use-state", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-state", "Havoc.include.node_modules.roact-hooked.out.hooks");
-    hInst("types", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.types", "Havoc.include.node_modules.roact-hooked.out");
-    hInst("utils", "Folder", "Havoc.include.node_modules.roact-hooked.out.utils", "Havoc.include.node_modules.roact-hooked.out");
-    hInst("are-deps-equal", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.utils.are-deps-equal", "Havoc.include.node_modules.roact-hooked.out.utils");
-    hInst("memoized-hook", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.utils.memoized-hook", "Havoc.include.node_modules.roact-hooked.out.utils");
-    hMod("with-hooks", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.with-hooks", "Havoc.include.node_modules.roact-hooked.out", function() return (function(...)
+        end)
+    end)
+    hMod("use-binding", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-binding", "Havoc.include.node_modules.roact-hooked.out.hooks", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.7
+local TS = _G[script]
+local createBinding = TS.import(script, TS.getModule(script, "@rbxts", "roact").src).createBinding
+local memoizedHook = TS.import(script, script.Parent.Parent, "utils", "memoized-hook").memoizedHook
+--[[
+	*
+	* `useBinding` returns a memoized *`Binding`*, a special object that Roact automatically unwraps into values. When a
+	* binding is updated, Roact will only change the specific properties that are subscribed to it.
+	*
+	* The first value returned is a `Binding` object, which will typically be passed as a prop to a Roact host component.
+	* The second is a function that can be called with a new value to update the binding.
+	*
+	* @example
+	* const [binding, setBindingValue] = useBinding(initialValue);
+	*
+	* @param initialValue - Initialized as the `.current` property
+	* @returns A memoized `Binding` object, and a function to update the value of the binding.
+	*
+	* @see https://roblox.github.io/roact/advanced/bindings-and-refs/#bindings
+] ]
+local function useBinding(initialValue)
+	return memoizedHook(function()
+		local bindingSet = { createBinding(initialValue) }
+		return bindingSet
+	end).state
+end
+return {
+	useBinding = useBinding,
+}
+
+        end)
+    end)
+    hMod("use-callback", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-callback", "Havoc.include.node_modules.roact-hooked.out.hooks", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.7
+local TS = _G[script]
+local useMemo = TS.import(script, script.Parent, "use-memo").useMemo
+--[[
+	*
+	* Returns a memoized version of the callback that only changes if one of the dependencies has changed.
+	*
+	* This is useful when passing callbacks to optimized child components that rely on reference equality to prevent
+	* unnecessary renders.
+	*
+	* `useCallback(fn, deps)` is equivalent to `useMemo(() => fn, deps)`.
+	*
+	* @example
+	* const memoizedCallback = useCallback(
+	*   () => {
+	*     doSomething(a, b);
+	*   },
+	*   [a, b],
+	* );
+	*
+	* @param callback - An inline callback
+	* @param deps - An array of dependencies
+	* @returns A memoized version of the callback
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#usecallback
+] ]
+local function useCallback(callback, deps)
+	return useMemo(function()
+		return callback
+	end, deps)
+end
+return {
+	useCallback = useCallback,
+}
+
+        end)
+    end)
+    hMod("use-context", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-context", "Havoc.include.node_modules.roact-hooked.out.hooks", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.7
+local TS = _G[script]
+--[[
+	*
+	* @see https://github.com/Kampfkarren/roact-hooks/blob/main/src/createUseContext.lua
+] ]
+local _memoized_hook = TS.import(script, script.Parent.Parent, "utils", "memoized-hook")
+local memoizedHook = _memoized_hook.memoizedHook
+local resolveCurrentComponent = _memoized_hook.resolveCurrentComponent
+local useEffect = TS.import(script, script.Parent, "use-effect").useEffect
+local useState = TS.import(script, script.Parent, "use-state").useState
+local function copyComponent(component)
+	return setmetatable({}, {
+		__index = component,
+	})
+end
+--[[
+	*
+	* Accepts a context object (the value returned from `Roact.createContext`) and returns the current context value, as
+	* given by the nearest context provider for the given context.
+	*
+	* When the nearest `Context.Provider` above the component updates, this Hook will trigger a rerender with the latest
+	* context value.
+	*
+	* If there is no Provider, `useContext` returns the default value of the context.
+	*
+	* @param context - The Context object to read from
+	* @returns The latest context value of the nearest Provider
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#usecontext
+] ]
+local function useContext(context)
+	local thisContext = context
+	local _binding = memoizedHook(function()
+		local consumer = copyComponent(resolveCurrentComponent())
+		thisContext.Consumer.init(consumer)
+		return consumer.contextEntry
+	end)
+	local contextEntry = _binding.state
+	if contextEntry then
+		local _binding_1 = useState(contextEntry.value)
+		local value = _binding_1[1]
+		local setValue = _binding_1[2]
+		useEffect(function()
+			return contextEntry.onUpdate:subscribe(setValue)
+		end, {})
+		return value
+	else
+		return thisContext.defaultValue
+	end
+end
+return {
+	useContext = useContext,
+}
+
+        end)
+    end)
+    hMod("use-effect", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-effect", "Havoc.include.node_modules.roact-hooked.out.hooks", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.7
+local TS = _G[script]
+local areDepsEqual = TS.import(script, script.Parent.Parent, "utils", "are-deps-equal").areDepsEqual
+local _memoized_hook = TS.import(script, script.Parent.Parent, "utils", "memoized-hook")
+local memoizedHook = _memoized_hook.memoizedHook
+local resolveCurrentComponent = _memoized_hook.resolveCurrentComponent
+local function scheduleEffect(effect)
+	local _binding = resolveCurrentComponent()
+	local effects = _binding.effects
+	if effects.tail == nil then
+		-- This is the first effect in the list
+		effects.tail = effect
+		effects.head = effects.tail
+	else
+		-- Append to the end of the list
+		local _exp = effects.tail
+		_exp.next = effect
+		effects.tail = _exp.next
+	end
+	return effect
+end
+--[[
+	*
+	* Accepts a function that contains imperative, possibly effectful code. The function passed to `useEffect` will run
+	* synchronously (thread-blocking) after the Roblox Instance is created and rendered.
+	*
+	* The clean-up function (returned by the effect) runs before the component is removed from the UI to prevent memory
+	* leaks. Additionally, if a component renders multiple times, the **previous effect is cleaned up before executing
+	* the next effect**.
+	*
+	*`useEffect` runs in the same phase as `didMount` and `didUpdate`. All cleanup functions are called on `willUnmount`.
+	*
+	* @example
+	* useEffect(() => {
+	*   // use value
+	*   return () => {
+	*     // cleanup
+	*   }
+	* }, [value]);
+	*
+	* useEffect(() => {
+	*   // did update
+	* });
+	*
+	* useEffect(() => {
+	*   // did mount
+	*   return () => {
+	*     // will unmount
+	*   }
+	* }, []);
+	*
+	* @param callback - Imperative function that can return a cleanup function
+	* @param deps - If present, effect will only activate if the values in the list change
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#useeffect
+] ]
+local function useEffect(callback, deps)
+	local hook = memoizedHook(nil)
+	local _prevDeps = hook.state
+	if _prevDeps ~= nil then
+		_prevDeps = _prevDeps.deps
+	end
+	local prevDeps = _prevDeps
+	if deps and areDepsEqual(deps, prevDeps) then
+		return nil
+	end
+	hook.state = scheduleEffect({
+		id = hook.id,
+		callback = callback,
+		deps = deps,
+	})
+end
+return {
+	useEffect = useEffect,
+}
+
+        end)
+    end)
+    hMod("use-memo", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-memo", "Havoc.include.node_modules.roact-hooked.out.hooks", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.7
+local TS = _G[script]
+local areDepsEqual = TS.import(script, script.Parent.Parent, "utils", "are-deps-equal").areDepsEqual
+local memoizedHook = TS.import(script, script.Parent.Parent, "utils", "memoized-hook").memoizedHook
+--[[
+	*
+	* `useMemo` will only recompute the memoized value when one of the `deps` has changed. This optimization helps to
+	* avoid expensive calculations on every render.
+	*
+	* Remember that the function passed to `useMemo` runs during rendering. Don’t do anything there that you wouldn’t
+	* normally do while rendering. For example, side effects belong in `useEffect`, not `useMemo`.
+	*
+	* If no array is provided, a new value will be computed on every render. This is usually a mistake, so `deps` must be
+	* explicitly written as `undefined`.
+	*
+	* @example
+	* const memoizedValue = useMemo(() => computeExpensiveValue(a, b), [a, b]);
+	*
+	* @param factory - A "create" function that computes a value
+	* @param deps - An array of dependencies
+	* @returns A memoized value
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#usememo
+] ]
+local function useMemo(factory, deps)
+	local hook = memoizedHook(function()
+		return {}
+	end)
+	local _binding = hook.state
+	local prevValue = _binding[1]
+	local prevDeps = _binding[2]
+	if prevValue ~= nil and (deps and areDepsEqual(deps, prevDeps)) then
+		return prevValue
+	end
+	local nextValue = factory()
+	hook.state = { nextValue, deps }
+	return nextValue
+end
+return {
+	useMemo = useMemo,
+}
+
+        end)
+    end)
+    hMod("use-mutable", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-mutable", "Havoc.include.node_modules.roact-hooked.out.hooks", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.7
+local TS = _G[script]
+local memoizedHook = TS.import(script, script.Parent.Parent, "utils", "memoized-hook").memoizedHook
+-- Function overloads from https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/react/index.d.ts#L1061
+--[[
+	*
+	* `useMutable` returns a mutable object whose `.current` property is initialized to the argument `initialValue`.
+	* The returned object will persist for the full lifetime of the component.
+	*
+	* `useMutable()` is handy for keeping any mutable value around similar to how you’d use instance fields in classes.
+	*
+	* This cannot be used as a [Roact Ref](https://roblox.github.io/roact/advanced/bindings-and-refs/#refs). If you want
+	* to reference a Roblox Instance, refer to {@link useRef}.
+	*
+	* @example
+	* const container = useMutable(initialValue);
+	* useEffect(() => {
+	*   container.current = value;
+	* });
+	*
+	* @param initialValue - Initialized as the `.current` property
+	* @returns A memoized, mutable object
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#useref
+] ]
+--[[
+	*
+	* `useMutable` returns a mutable object whose `.current` property is initialized to the argument `initialValue`.
+	* The returned object will persist for the full lifetime of the component.
+	*
+	* `useMutable()` is handy for keeping any mutable value around similar to how you’d use instance fields in classes.
+	*
+	* This cannot be used as a [Roact Ref](https://roblox.github.io/roact/advanced/bindings-and-refs/#refs). If you want
+	* to reference a Roblox Instance, refer to {@link useRef}.
+	*
+	* @example
+	* const container = useMutable(initialValue);
+	* useEffect(() => {
+	*   container.current = value;
+	* });
+	*
+	* @param initialValue - Initialized as the `.current` property
+	* @returns A memoized, mutable object
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#useref
+] ]
+-- convenience overload for refs given as a ref prop as they typically start with a null value
+--[[
+	*
+	* `useMutable` returns a mutable object whose `.current` property is initialized to the argument `initialValue`.
+	* The returned object will persist for the full lifetime of the component.
+	*
+	* `useMutable()` is handy for keeping any mutable value around similar to how you’d use instance fields in classes.
+	*
+	* This cannot be used as a [Roact Ref](https://roblox.github.io/roact/advanced/bindings-and-refs/#refs). If you want
+	* to reference a Roblox Instance, refer to {@link useRef}.
+	*
+	* @example
+	* const container = useMutable(initialValue);
+	* useEffect(() => {
+	*   container.current = value;
+	* });
+	*
+	* @returns A memoized, mutable object
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#useref
+] ]
+-- convenience overload for potentially undefined initialValue / call with 0 arguments
+-- has a default to stop it from defaulting to {} instead
+--[[
+	*
+	* `useMutable` returns a mutable object whose `.current` property is initialized to the argument `initialValue`.
+	* The returned object will persist for the full lifetime of the component.
+	*
+	* `useMutable()` is handy for keeping any mutable value around similar to how you’d use instance fields in classes.
+	*
+	* This cannot be used as a [Roact Ref](https://roblox.github.io/roact/advanced/bindings-and-refs/#refs). If you want
+	* to reference a Roblox Instance, refer to {@link useRef}.
+	*
+	* @example
+	* const container = useMutable(initialValue);
+	* useEffect(() => {
+	*   container.current = value;
+	* });
+	*
+	* @param initialValue - Initialized as the `.current` property
+	* @returns A memoized, mutable object
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#useref
+] ]
+local function useMutable(initialValue)
+	return memoizedHook(function()
+		return {
+			current = initialValue,
+		}
+	end).state
+end
+return {
+	useMutable = useMutable,
+}
+
+        end)
+    end)
+    hMod("use-reducer", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-reducer", "Havoc.include.node_modules.roact-hooked.out.hooks", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.7
+local TS = _G[script]
+local _memoized_hook = TS.import(script, script.Parent.Parent, "utils", "memoized-hook")
+local memoizedHook = _memoized_hook.memoizedHook
+local resolveCurrentComponent = _memoized_hook.resolveCurrentComponent
+--[[
+	*
+	* Accepts a reducer of type `(state, action) => newState`, and returns the current state paired with a `dispatch`
+	* method.
+	*
+	* If a new state is the same value as the current state, this will bail out without rerendering the component.
+	*
+	* `useReducer` is usually preferable to `useState` when you have complex state logic that involves multiple sub-values.
+	* It also lets you optimize performance for components that trigger deep updates because [you can pass `dispatch` down
+	* instead of callbacks](https://reactjs.org/docs/hooks-faq.html#how-to-avoid-passing-callbacks-down).
+	*
+	* There are two different ways to initialize `useReducer` state. You can use the initial state as a second argument,
+	* or [create the initial state lazily](https://reactjs.org/docs/hooks-reference.html#lazy-initialization). To do this,
+	* you can pass an init function as the third argument. The initial state will be set to `initializer(initialArg)`.
+	*
+	* @param reducer - Function that returns a state given the current state and an action
+	* @param initializerArg - State used during the initial render, or passed to `initializer` if provided
+	* @param initializer - Optional function that returns an initial state given `initializerArg`
+	* @returns The current state, and an action dispatcher
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#usereducer
+] ]
+-- overload where dispatch could accept 0 arguments.
+--[[
+	*
+	* Accepts a reducer of type `(state, action) => newState`, and returns the current state paired with a `dispatch`
+	* method.
+	*
+	* If a new state is the same value as the current state, this will bail out without rerendering the component.
+	*
+	* `useReducer` is usually preferable to `useState` when you have complex state logic that involves multiple sub-values.
+	* It also lets you optimize performance for components that trigger deep updates because [you can pass `dispatch` down
+	* instead of callbacks](https://reactjs.org/docs/hooks-faq.html#how-to-avoid-passing-callbacks-down).
+	*
+	* There are two different ways to initialize `useReducer` state. You can use the initial state as a second argument,
+	* or [create the initial state lazily](https://reactjs.org/docs/hooks-reference.html#lazy-initialization). To do this,
+	* you can pass an init function as the third argument. The initial state will be set to `initializer(initialArg)`.
+	*
+	* @param reducer - Function that returns a state given the current state and an action
+	* @param initializerArg - State used during the initial render, or passed to `initializer` if provided
+	* @param initializer - Optional function that returns an initial state given `initializerArg`
+	* @returns The current state, and an action dispatcher
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#usereducer
+] ]
+-- overload where dispatch could accept 0 arguments.
+--[[
+	*
+	* Accepts a reducer of type `(state, action) => newState`, and returns the current state paired with a `dispatch`
+	* method.
+	*
+	* If a new state is the same value as the current state, this will bail out without rerendering the component.
+	*
+	* `useReducer` is usually preferable to `useState` when you have complex state logic that involves multiple sub-values.
+	* It also lets you optimize performance for components that trigger deep updates because [you can pass `dispatch` down
+	* instead of callbacks](https://reactjs.org/docs/hooks-faq.html#how-to-avoid-passing-callbacks-down).
+	*
+	* There are two different ways to initialize `useReducer` state. You can use the initial state as a second argument,
+	* or [create the initial state lazily](https://reactjs.org/docs/hooks-reference.html#lazy-initialization). To do this,
+	* you can pass an init function as the third argument. The initial state will be set to `initializer(initialArg)`.
+	*
+	* @param reducer - Function that returns a state given the current state and an action
+	* @param initializerArg - State used during the initial render, or passed to `initializer` if provided
+	* @param initializer - Optional function that returns an initial state given `initializerArg`
+	* @returns The current state, and an action dispatcher
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#usereducer
+] ]
+-- overload for free "I"; all goes as long as initializer converts it into "ReducerState<R>".
+--[[
+	*
+	* Accepts a reducer of type `(state, action) => newState`, and returns the current state paired with a `dispatch`
+	* method.
+	*
+	* If a new state is the same value as the current state, this will bail out without rerendering the component.
+	*
+	* `useReducer` is usually preferable to `useState` when you have complex state logic that involves multiple sub-values.
+	* It also lets you optimize performance for components that trigger deep updates because [you can pass `dispatch` down
+	* instead of callbacks](https://reactjs.org/docs/hooks-faq.html#how-to-avoid-passing-callbacks-down).
+	*
+	* There are two different ways to initialize `useReducer` state. You can use the initial state as a second argument,
+	* or [create the initial state lazily](https://reactjs.org/docs/hooks-reference.html#lazy-initialization). To do this,
+	* you can pass an init function as the third argument. The initial state will be set to `initializer(initialArg)`.
+	*
+	* @param reducer - Function that returns a state given the current state and an action
+	* @param initializerArg - State used during the initial render, or passed to `initializer` if provided
+	* @param initializer - Optional function that returns an initial state given `initializerArg`
+	* @returns The current state, and an action dispatcher
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#usereducer
+] ]
+-- overload where "I" may be a subset of ReducerState<R>; used to provide autocompletion.
+-- If "I" matches ReducerState<R> exactly then the last overload will allow initializer to be omitted.
+--[[
+	*
+	* Accepts a reducer of type `(state, action) => newState`, and returns the current state paired with a `dispatch`
+	* method.
+	*
+	* If a new state is the same value as the current state, this will bail out without rerendering the component.
+	*
+	* `useReducer` is usually preferable to `useState` when you have complex state logic that involves multiple sub-values.
+	* It also lets you optimize performance for components that trigger deep updates because [you can pass `dispatch` down
+	* instead of callbacks](https://reactjs.org/docs/hooks-faq.html#how-to-avoid-passing-callbacks-down).
+	*
+	* There are two different ways to initialize `useReducer` state. You can use the initial state as a second argument,
+	* or [create the initial state lazily](https://reactjs.org/docs/hooks-reference.html#lazy-initialization). To do this,
+	* you can pass an init function as the third argument. The initial state will be set to `initializer(initialArg)`.
+	*
+	* @param reducer - Function that returns a state given the current state and an action
+	* @param initializerArg - State used during the initial render, or passed to `initializer` if provided
+	* @param initializer - Optional function that returns an initial state given `initializerArg`
+	* @returns The current state, and an action dispatcher
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#usereducer
+] ]
+-- Implementation matches a previous overload, is this required?
+local function useReducer(reducer, initializerArg, initializer)
+	local currentComponent = resolveCurrentComponent()
+	local hook = memoizedHook(function()
+		local _result
+		if initializer then
+			_result = initializer(initializerArg)
+		else
+			_result = initializerArg
+		end
+		return _result
+	end)
+	local function dispatch(action)
+		local nextState = reducer(hook.state, action)
+		if hook.state ~= nextState then
+			currentComponent:setHookState(hook.id, function()
+				hook.state = nextState
+				return hook.state
+			end)
+		end
+	end
+	return { hook.state, dispatch }
+end
+return {
+	useReducer = useReducer,
+}
+
+        end)
+    end)
+    hMod("use-ref", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-ref", "Havoc.include.node_modules.roact-hooked.out.hooks", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.7
+local TS = _G[script]
+local createRef = TS.import(script, TS.getModule(script, "@rbxts", "roact").src).createRef
+local memoizedHook = TS.import(script, script.Parent.Parent, "utils", "memoized-hook").memoizedHook
+--[[
+	*
+	* `useRef` returns a memoized *`Ref`*, a special type of binding that points to Roblox Instance objects that are
+	* created by Roact. The returned object will persist for the full lifetime of the component.
+	*
+	* `useMutable()` is handy for keeping any mutable value around similar to how you’d use instance fields in classes.
+	*
+	* This is not mutable like React's `useRef` hook. If you want to use a mutable object, refer to {@link useMutable}.
+	*
+	* @example
+	* const ref = useRef<TextBox>();
+	*
+	* useEffect(() => {
+	* 	const textBox = ref.getValue();
+	* 	if (textBox) {
+	* 		textBox.CaptureFocus();
+	* 	}
+	* }, []);
+	*
+	* return <textbox Ref={ref} />;
+	*
+	* @returns A memoized `Ref` object
+	*
+	* @see https://roblox.github.io/roact/advanced/bindings-and-refs/#refs
+] ]
+local function useRef()
+	return memoizedHook(function()
+		return createRef()
+	end).state
+end
+return {
+	useRef = useRef,
+}
+
+        end)
+    end)
+    hMod("use-state", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.hooks.use-state", "Havoc.include.node_modules.roact-hooked.out.hooks", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.7
+local TS = _G[script]
+local useReducer = TS.import(script, script.Parent, "use-reducer").useReducer
+--[[
+	*
+	* Returns a stateful value, and a function to update it.
+	*
+	* During the initial render, the returned state (`state`) is the same as the value passed as the first argument
+	* (`initialState`).
+	*
+	* The `setState` function is used to update the state. It always knows the current state, so it's safe to omit from
+	* the `useEffect` or `useCallback` dependency lists.
+	*
+	* If you update a State Hook to the same value as the current state, this will bail out without rerendering the
+	* component.
+	*
+	* @example
+	* const [state, setState] = useState(initialState);
+	* const [state, setState] = useState(() => someExpensiveComputation());
+	* setState(newState);
+	* setState((prevState) => prevState + 1)
+	*
+	* @param initialState - State used during the initial render. Can be a function, which will be executed on initial render
+	* @returns A stateful value, and an updater function
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#usestate
+] ]
+--[[
+	*
+	* Returns a stateful value, and a function to update it.
+	*
+	* During the initial render, the returned state (`state`) is the same as the value passed as the first argument
+	* (`initialState`).
+	*
+	* The `setState` function is used to update the state. It always knows the current state, so it's safe to omit from
+	* the `useEffect` or `useCallback` dependency lists.
+	*
+	* If you update a State Hook to the same value as the current state, this will bail out without rerendering the
+	* component.
+	*
+	* @example
+	* const [state, setState] = useState(initialState);
+	* const [state, setState] = useState(() => someExpensiveComputation());
+	* setState(newState);
+	* setState((prevState) => prevState + 1)
+	*
+	* @param initialState - State used during the initial render. Can be a function, which will be executed on initial render
+	* @returns A stateful value, and an updater function
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#usestate
+] ]
+--[[
+	*
+	* Returns a stateful value, and a function to update it.
+	*
+	* During the initial render, the returned state (`state`) is the same as the value passed as the first argument
+	* (`initialState`).
+	*
+	* The `setState` function is used to update the state. It always knows the current state, so it's safe to omit from
+	* the `useEffect` or `useCallback` dependency lists.
+	*
+	* If you update a State Hook to the same value as the current state, this will bail out without rerendering the
+	* component.
+	*
+	* @example
+	* const [state, setState] = useState(initialState);
+	* const [state, setState] = useState(() => someExpensiveComputation());
+	* setState(newState);
+	* setState((prevState) => prevState + 1)
+	*
+	* @param initialState - State used during the initial render. Can be a function, which will be executed on initial render
+	* @returns A stateful value, and an updater function
+	*
+	* @see https://reactjs.org/docs/hooks-reference.html#usestate
+] ]
+local function useState(initialState)
+	local _binding = useReducer(function(state, action)
+		local _result
+		if type(action) == "function" then
+			_result = action(state)
+		else
+			_result = action
+		end
+		return _result
+	end, nil, function()
+		local _result
+		if type(initialState) == "function" then
+			_result = initialState()
+		else
+			_result = initialState
+		end
+		return _result
+	end)
+	local state = _binding[1]
+	local dispatch = _binding[2]
+	return { state, dispatch }
+end
+return {
+	useState = useState,
+}
+
+        end)
+    end)
+    hMod("types", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.types", "Havoc.include.node_modules.roact-hooked.out", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.7
+-- Roact
+-- Reducers
+-- Utility types
+-- Hooks
+return nil
+
+        end)
+    end)
+    hInst("utils", "Folder", "Havoc.include.node_modules.roact-hooked.out.utils", "Havoc.include.node_modules.roact-hooked.out")
+    hMod("are-deps-equal", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.utils.are-deps-equal", "Havoc.include.node_modules.roact-hooked.out.utils", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.7
+local function areDepsEqual(nextDeps, prevDeps)
+	if prevDeps == nil then
+		return false
+	end
+	if #nextDeps ~= #prevDeps then
+		return false
+	end
+	do
+		local i = 0
+		local _shouldIncrement = false
+		while true do
+			if _shouldIncrement then
+				i += 1
+			else
+				_shouldIncrement = true
+			end
+			if not (i < #nextDeps) then
+				break
+			end
+			if nextDeps[i + 1] == prevDeps[i + 1] then
+				continue
+			end
+			return false
+		end
+	end
+	return true
+end
+return {
+	areDepsEqual = areDepsEqual,
+}
+
+        end)
+    end)
+    hMod("memoized-hook", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.utils.memoized-hook", "Havoc.include.node_modules.roact-hooked.out.utils", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.7
+local EXCEPTION_INVALID_HOOK_CALL = table.concat({ "Invalid hook call. Hooks can only be called inside of the body of a function component.", "This is usually the result of conflicting versions of roact-hooked.", "See https://reactjs.org/link/invalid-hook-call for tips about how to debug and fix this problem." }, "\n")
+local EXCEPTION_RENDER_NOT_DONE = "Failed to render hook! (Another hooked component is rendering)"
+local EXCEPTION_RENDER_OVERLAP = "Failed to render hook! (Another hooked component rendered during this one)"
+local currentHook
+local currentlyRenderingComponent
+--[[
+	*
+	* Prepares for an upcoming render.
+] ]
+local function renderReady(component)
+	local _arg0 = currentlyRenderingComponent == nil
+	assert(_arg0, EXCEPTION_RENDER_NOT_DONE)
+	currentlyRenderingComponent = component
+end
+--[[
+	*
+	* Cleans up hooks. Must be called after finishing a render!
+] ]
+local function renderDone(component)
+	local _arg0 = currentlyRenderingComponent == component
+	assert(_arg0, EXCEPTION_RENDER_OVERLAP)
+	currentlyRenderingComponent = nil
+	currentHook = nil
+end
+--[[
+	*
+	* Returns the currently-rendering component. Throws an error if a component is not mid-render.
+] ]
+local function resolveCurrentComponent()
+	return currentlyRenderingComponent or error(EXCEPTION_INVALID_HOOK_CALL, 3)
+end
+--[[
+	*
+	* Gets or creates a new hook. Hooks are memoized for every component. See the original source
+	* {@link https://github.com/facebook/react/blob/main/packages/react-reconciler/src/ReactFiberHooks.new.js#L619 here}.
+	*
+	* @param initialValue - Initial value for `Hook.state` and `Hook.baseState`.
+] ]
+local function memoizedHook(initialValue)
+	local currentlyRenderingComponent = resolveCurrentComponent()
+	local _result
+	if currentHook then
+		_result = currentHook.next
+	else
+		_result = currentlyRenderingComponent.firstHook
+	end
+	local nextHook = _result
+	if nextHook then
+		-- The hook has already been created
+		currentHook = nextHook
+	else
+		-- This is a new hook, should be from an initial render
+		local _result_1
+		if type(initialValue) == "function" then
+			_result_1 = initialValue()
+		else
+			_result_1 = initialValue
+		end
+		local state = _result_1
+		local newHook = {
+			id = currentHook and currentHook.id + 1 or 0,
+			state = state,
+			baseState = state,
+		}
+		if not currentHook then
+			-- This is the first hook in the list
+			currentHook = newHook
+			currentlyRenderingComponent.firstHook = currentHook
+		else
+			-- Append to the end of the list
+			currentHook.next = newHook
+			currentHook = currentHook.next
+		end
+	end
+	return currentHook
+end
+return {
+	renderReady = renderReady,
+	renderDone = renderDone,
+	resolveCurrentComponent = resolveCurrentComponent,
+	memoizedHook = memoizedHook,
+}
+
+        end)
+    end)
+    hMod("with-hooks", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.with-hooks", "Havoc.include.node_modules.roact-hooked.out", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.7
 local TS = _G[script]
 local exports = {}
@@ -11417,11 +12495,150 @@ exports.withHooks = _with_hooks.withHooks
 exports.withHooksPure = _with_hooks.withHooksPure
 return exports
 
-end) end);
-    hInst("component-with-hooks", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.with-hooks.component-with-hooks", "Havoc.include.node_modules.roact-hooked.out.with-hooks");
-    hInst("with-hooks", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.with-hooks.with-hooks", "Havoc.include.node_modules.roact-hooked.out.with-hooks");
-    hInst("roact-rodux-hooked", "Folder", "Havoc.include.node_modules.roact-rodux-hooked", "Havoc.include.node_modules");
-    hMod("out", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out", "Havoc.include.node_modules.roact-rodux-hooked", function() return (function(...)
+        end)
+    end)
+    hMod("component-with-hooks", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.with-hooks.component-with-hooks", "Havoc.include.node_modules.roact-hooked.out.with-hooks", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.7
+local TS = _G[script]
+local _memoized_hook = TS.import(script, script.Parent.Parent, "utils", "memoized-hook")
+local renderDone = _memoized_hook.renderDone
+local renderReady = _memoized_hook.renderReady
+local ComponentWithHooks
+do
+	ComponentWithHooks = {}
+	function ComponentWithHooks:constructor()
+	end
+	function ComponentWithHooks:init()
+		self.effects = {}
+		self.effectHandles = {}
+	end
+	function ComponentWithHooks:setHookState(id, reducer)
+		self:setState(function(state)
+			return {
+				[id] = reducer(state[id]),
+			}
+		end)
+	end
+	function ComponentWithHooks:render()
+		renderReady(self)
+		local _functionComponent = self.functionComponent
+		local _props = self.props
+		local _success, _valueOrError = pcall(_functionComponent, _props)
+		local result = _success and {
+			success = true,
+			value = _valueOrError,
+		} or {
+			success = false,
+			error = _valueOrError,
+		}
+		renderDone(self)
+		if not result.success then
+			error("(ComponentWithHooks) " .. result.error)
+		end
+		return result.value
+	end
+	function ComponentWithHooks:didMount()
+		self:flushEffects()
+	end
+	function ComponentWithHooks:didUpdate()
+		self:flushEffects()
+	end
+	function ComponentWithHooks:willUnmount()
+		self:unmountEffects()
+		self.effects.head = nil
+	end
+	function ComponentWithHooks:flushEffectsHelper(effect)
+		if not effect then
+			return nil
+		end
+		local _effectHandles = self.effectHandles
+		local _id = effect.id
+		local _result = _effectHandles[_id]
+		if _result ~= nil then
+			_result()
+		end
+		local handle = effect.callback()
+		if handle then
+			local _effectHandles_1 = self.effectHandles
+			local _id_1 = effect.id
+			-- ▼ Map.set ▼
+			_effectHandles_1[_id_1] = handle
+			-- ▲ Map.set ▲
+		end
+		self:flushEffectsHelper(effect.next)
+	end
+	function ComponentWithHooks:flushEffects()
+		self:flushEffectsHelper(self.effects.head)
+		self.effects.head = nil
+		self.effects.tail = nil
+	end
+	function ComponentWithHooks:unmountEffects()
+		-- This does not clean up effects by order of id, but it should not matter
+		-- because this is on unmount
+		local _effectHandles = self.effectHandles
+		local _arg0 = function(handle)
+			return handle()
+		end
+		-- ▼ ReadonlyMap.forEach ▼
+		for _k, _v in pairs(_effectHandles) do
+			_arg0(_v, _k, _effectHandles)
+		end
+		-- ▲ ReadonlyMap.forEach ▲
+		-- ▼ Map.clear ▼
+		table.clear(self.effectHandles)
+		-- ▲ Map.clear ▲
+	end
+end
+return {
+	ComponentWithHooks = ComponentWithHooks,
+}
+
+        end)
+    end)
+    hMod("with-hooks", "ModuleScript", "Havoc.include.node_modules.roact-hooked.out.with-hooks.with-hooks", "Havoc.include.node_modules.roact-hooked.out.with-hooks", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.7
+local TS = _G[script]
+local ComponentWithHooks = TS.import(script, script.Parent, "component-with-hooks").ComponentWithHooks
+local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
+local function componentWithHooksMixin(ctor)
+	for k, v in pairs(ComponentWithHooks) do
+		ctor[k] = v
+	end
+end
+local function withHooks(functionComponent)
+	local ComponentClass
+	do
+		ComponentClass = Roact.Component:extend("ComponentClass")
+		function ComponentClass:init()
+		end
+		ComponentClass.functionComponent = functionComponent
+	end
+	componentWithHooksMixin(ComponentClass)
+	return ComponentClass
+end
+local function withHooksPure(functionComponent)
+	local ComponentClass
+	do
+		ComponentClass = Roact.PureComponent:extend("ComponentClass")
+		function ComponentClass:init()
+		end
+		ComponentClass.functionComponent = functionComponent
+	end
+	componentWithHooksMixin(ComponentClass)
+	return ComponentClass
+end
+return {
+	withHooks = withHooks,
+	withHooksPure = withHooksPure,
+}
+
+        end)
+    end)
+    hInst("roact-rodux-hooked", "Folder", "Havoc.include.node_modules.roact-rodux-hooked", "Havoc.include.node_modules")
+    hMod("out", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out", "Havoc.include.node_modules.roact-rodux-hooked", function()
+        return (function(...)
 -- Compiled with roblox-ts v1.2.3
 local TS = _G[script]
 local exports = {}
@@ -11433,19 +12650,321 @@ exports.shallowEqual = TS.import(script, script, "helpers", "shallow-equal").sha
 exports.RoactRoduxContext = TS.import(script, script, "components", "context").RoactRoduxContext
 return exports
 
-end) end);
-    hInst("components", "Folder", "Havoc.include.node_modules.roact-rodux-hooked.out.components", "Havoc.include.node_modules.roact-rodux-hooked.out");
-    hInst("context", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.components.context", "Havoc.include.node_modules.roact-rodux-hooked.out.components");
-    hInst("provider", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.components.provider", "Havoc.include.node_modules.roact-rodux-hooked.out.components");
-    hInst("helpers", "Folder", "Havoc.include.node_modules.roact-rodux-hooked.out.helpers", "Havoc.include.node_modules.roact-rodux-hooked.out");
-    hInst("shallow-equal", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.helpers.shallow-equal", "Havoc.include.node_modules.roact-rodux-hooked.out.helpers");
-    hInst("hooks", "Folder", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks", "Havoc.include.node_modules.roact-rodux-hooked.out");
-    hInst("use-dispatch", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks.use-dispatch", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks");
-    hInst("use-selector", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks.use-selector", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks");
-    hInst("use-store", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks.use-store", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks");
-    hInst("types", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.types", "Havoc.include.node_modules.roact-rodux-hooked.out");
-    hInst("rodux", "Folder", "Havoc.include.node_modules.rodux", "Havoc.include.node_modules");
-    hMod("src", "ModuleScript", "Havoc.include.node_modules.rodux.src", "Havoc.include.node_modules.rodux", function() return (function(...)
+        end)
+    end)
+    hInst("components", "Folder", "Havoc.include.node_modules.roact-rodux-hooked.out.components", "Havoc.include.node_modules.roact-rodux-hooked.out")
+    hMod("context", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.components.context", "Havoc.include.node_modules.roact-rodux-hooked.out.components", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.3
+local TS = _G[script]
+local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
+local RoactRoduxContext = Roact.createContext(nil)
+return {
+	RoactRoduxContext = RoactRoduxContext,
+}
+
+        end)
+    end)
+    hMod("provider", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.components.provider", "Havoc.include.node_modules.roact-rodux-hooked.out.components", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.3
+local TS = _G[script]
+local RoactRoduxContext = TS.import(script, script.Parent, "context").RoactRoduxContext
+local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
+local hooked = _roact_hooked.hooked
+local useMemo = _roact_hooked.useMemo
+local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
+--[[
+	*
+	* Makes the Rodux store available to the `useStore()` calls in the component hierarchy below.
+] ]
+local Provider = hooked(function(_param)
+	local store = _param.store
+	local children = _param[Roact.Children]
+	local contextValue = useMemo(function()
+		return {
+			store = store,
+		}
+	end, { store })
+	local _ptr = {
+		value = contextValue,
+	}
+	local _ptr_1 = {}
+	local _length = #_ptr_1
+	if children then
+		for _k, _v in pairs(children) do
+			if type(_k) == "number" then
+				_ptr_1[_length + _k] = _v
+			else
+				_ptr_1[_k] = _v
+			end
+		end
+	end
+	return Roact.createElement(RoactRoduxContext.Provider, _ptr, _ptr_1)
+end)
+return {
+	Provider = Provider,
+}
+
+        end)
+    end)
+    hInst("helpers", "Folder", "Havoc.include.node_modules.roact-rodux-hooked.out.helpers", "Havoc.include.node_modules.roact-rodux-hooked.out")
+    hMod("shallow-equal", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.helpers.shallow-equal", "Havoc.include.node_modules.roact-rodux-hooked.out.helpers", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.3
+local TS = _G[script]
+local Object = TS.import(script, TS.getModule(script, "@rbxts", "object-utils"))
+--[[
+	*
+	* Compares two arbitrary values for shallow equality. Object values are compared based on their keys, i.e. they must
+	* have the same keys and for each key the value must be equal.
+] ]
+local function shallowEqual(left, right)
+	if left == right then
+		return true
+	end
+	if not (type(left) == "table") or not (type(right) == "table") then
+		return false
+	end
+	local keysLeft = Object.keys(left)
+	local keysRight = Object.keys(right)
+	if #keysLeft ~= #keysRight then
+		return false
+	end
+	local _arg0 = function(value, index)
+		return value == right[index]
+	end
+	-- ▼ ReadonlyArray.every ▼
+	local _result = true
+	for _k, _v in ipairs(keysLeft) do
+		if not _arg0(_v, _k - 1, keysLeft) then
+			_result = false
+			break
+		end
+	end
+	-- ▲ ReadonlyArray.every ▲
+	return _result
+end
+return {
+	shallowEqual = shallowEqual,
+}
+
+        end)
+    end)
+    hInst("hooks", "Folder", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks", "Havoc.include.node_modules.roact-rodux-hooked.out")
+    hMod("use-dispatch", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks.use-dispatch", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.3
+local TS = _G[script]
+local useMutable = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).useMutable
+local useStore = TS.import(script, script.Parent, "use-store").useStore
+--[[
+	*
+	* A hook to access the Rodux Store's `dispatch` method.
+	*
+	* @returns Rodux store's `dispatch` method
+	*
+	* @example
+	* import Roact from "@rbxts/roact";
+	* import { hooked } from "@rbxts/roact-hooked";
+	* import { useDispatch } from "@rbxts/roact-rodux-hooked";
+	* import type { RootStore } from "./store";
+	*
+	* export const CounterComponent = hooked(() => {
+	*   const dispatch = useDispatch<RootStore>();
+	*   return (
+	*     <textlabel
+	*       Text={"Increase counter"}
+	*       Event={{
+	*         Activated: () => dispatch({ type: "increase-counter" }),
+	*       }}
+	*     />
+	*   );
+	* });
+] ]
+local function useDispatch()
+	local store = useStore()
+	return useMutable(function(action)
+		return store:dispatch(action)
+	end).current
+end
+return {
+	useDispatch = useDispatch,
+}
+
+        end)
+    end)
+    hMod("use-selector", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks.use-selector", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.3
+local TS = _G[script]
+local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
+local useEffect = _roact_hooked.useEffect
+local useMutable = _roact_hooked.useMutable
+local useReducer = _roact_hooked.useReducer
+local useStore = TS.import(script, script.Parent, "use-store").useStore
+--[[
+	*
+	* This interface allows you to easily create a hook that is properly typed for your store's root state.
+	*
+	* @example
+	* interface RootState {
+	*   property: string;
+	* }
+	*
+	* const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
+] ]
+--[[
+	*
+	* A hook to access the Rodux Store's state. This hook takes a selector function as an argument. The selector is called
+	* with the store state.
+	*
+	* This hook takes an optional equality comparison function as the second parameter that allows you to customize the
+	* way the selected state is compared to determine whether the component needs to be re-rendered.
+	*
+	* @param selector - The selector function
+	* @param equalityFn - The function that will be used to determine equality
+	*
+	* @returns The selected portion of the state
+	*
+	* @example
+	* import Roact from "@rbxts/roact";
+	* import { hooked } from "@rbxts/roact-hooked";
+	* import { useSelector } from "@rbxts/roact-rodux-hooked";
+	* import type { RootState } from "./store";
+	*
+	* export const CounterComponent = hooked(() => {
+	*   const count = useSelector((state: RootState) => state.counter);
+	*   return <textlabel Text={`Counter: ${count}`} />;
+	* });
+] ]
+local function useSelector(selector, equalityFn)
+	if equalityFn == nil then
+		equalityFn = function(a, b)
+			return a == b
+		end
+	end
+	local _binding = useReducer(function(s)
+		return s + 1
+	end, 0)
+	local forceRender = _binding[2]
+	local store = useStore()
+	local latestSubscriptionCallbackError = useMutable()
+	local latestSelector = useMutable()
+	local latestStoreState = useMutable()
+	local latestSelectedState = useMutable()
+	local storeState = store:getState()
+	local selectedState
+	TS.try(function()
+		local _value = selector ~= latestSelector.current or storeState ~= latestStoreState.current or latestSubscriptionCallbackError.current
+		if _value ~= "" and _value then
+			local newSelectedState = selector(storeState)
+			-- ensure latest selected state is reused so that a custom equality function can result in identical references
+			if latestSelectedState.current == nil or not equalityFn(newSelectedState, latestSelectedState.current) then
+				selectedState = newSelectedState
+			else
+				selectedState = latestSelectedState.current
+			end
+		else
+			selectedState = latestSelectedState.current
+		end
+	end, function(err)
+		if latestSubscriptionCallbackError.current ~= nil then
+			err ..= "\nThe error may be correlated with this previous error:\n" .. latestSubscriptionCallbackError.current .. "\n\n"
+		end
+		error(err)
+	end)
+	useEffect(function()
+		latestSelector.current = selector
+		latestStoreState.current = storeState
+		latestSelectedState.current = selectedState
+		latestSubscriptionCallbackError.current = nil
+	end)
+	useEffect(function()
+		local function checkForUpdates(newStoreState)
+			local _exitType, _returns = TS.try(function()
+				-- Avoid calling selector multiple times if the store's state has not changed
+				if newStoreState == latestStoreState.current then
+					return TS.TRY_RETURN, {}
+				end
+				local newSelectedState = latestSelector.current(newStoreState)
+				if equalityFn(newSelectedState, latestSelectedState.current) then
+					return TS.TRY_RETURN, {}
+				end
+				latestSelectedState.current = newSelectedState
+				latestStoreState.current = newStoreState
+			end, function(err)
+				-- we ignore all errors here, since when the component
+				-- is re-rendered, the selectors are called again, and
+				-- will throw again, if neither props nor store state
+				-- changed
+				latestSubscriptionCallbackError.current = err
+			end)
+			if _exitType then
+				return unpack(_returns)
+			end
+			task.spawn(forceRender)
+		end
+		local subscription = store.changed:connect(checkForUpdates)
+		checkForUpdates(store:getState())
+		return function()
+			return subscription:disconnect()
+		end
+	end, { store })
+	return selectedState
+end
+return {
+	useSelector = useSelector,
+}
+
+        end)
+    end)
+    hMod("use-store", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks.use-store", "Havoc.include.node_modules.roact-rodux-hooked.out.hooks", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.3
+local TS = _G[script]
+local RoactRoduxContext = TS.import(script, script.Parent.Parent, "components", "context").RoactRoduxContext
+local useContext = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).useContext
+--[[
+	*
+	* A hook to access the Rodux Store.
+	*
+	* @returns The Rodux store
+	*
+	* @example
+	* import Roact from "@rbxts/roact";
+	* import { hooked } from "@rbxts/roact-hooked";
+	* import { useStore } from "@rbxts/roact-rodux-hooked";
+	* import type { RootStore } from "./store";
+	*
+	* export const CounterComponent = hooked(() => {
+	*   const store = useStore<RootStore>();
+	*   return <textlabel Text={store.getState()} />;
+	* });
+] ]
+local function useStore()
+	return useContext(RoactRoduxContext).store
+end
+return {
+	useStore = useStore,
+}
+
+        end)
+    end)
+    hMod("types", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.out.types", "Havoc.include.node_modules.roact-rodux-hooked.out", function()
+        return (function(...)
+-- Compiled with roblox-ts v1.2.3
+--[[
+	*
+	* A Roact Context
+] ]
+return nil
+
+        end)
+    end)
+    hInst("rodux", "Folder", "Havoc.include.node_modules.rodux", "Havoc.include.node_modules")
+    hMod("src", "ModuleScript", "Havoc.include.node_modules.rodux.src", "Havoc.include.node_modules.rodux", function()
+        return (function(...)
 local Store = require(script.Store)
 local createReducer = require(script.createReducer)
 local combineReducers = require(script.combineReducers)
@@ -11462,8 +12981,10 @@ return {
 	thunkMiddleware = thunkMiddleware,
 }
 
-end) end);
-    hMod("services", "ModuleScript", "Havoc.include.node_modules.services", "Havoc.include.node_modules", function() return (function(...)
+        end)
+    end)
+    hMod("services", "ModuleScript", "Havoc.include.node_modules.services", "Havoc.include.node_modules", function()
+        return (function(...)
 return setmetatable({}, {
 	__index = function(self, serviceName)
 		local service = game:GetService(serviceName)
@@ -11472,13 +12993,13 @@ return setmetatable({}, {
 	end,
 })
 
-end) end);
-    hInst("types", "Folder", "Havoc.include.node_modules.types", "Havoc.include.node_modules");
-    hInst("include", "Folder", "Havoc.include.node_modules.types.include", "Havoc.include.node_modules.types");
-    hInst("generated", "Folder", "Havoc.include.node_modules.types.include.generated", "Havoc.include.node_modules.types.include");
+        end)
+    end)
+    hInst("types", "Folder", "Havoc.include.node_modules.types", "Havoc.include.node_modules")
+    hInst("include", "Folder", "Havoc.include.node_modules.types.include", "Havoc.include.node_modules.types")
+    hInst("generated", "Folder", "Havoc.include.node_modules.types.include.generated", "Havoc.include.node_modules.types.include")
 
-    hInit();
+    hInit()
 end
 
 start()
--- BUNDLE_COMPLETE
