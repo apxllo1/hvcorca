@@ -1,5 +1,6 @@
 local instanceFromId, idFromInstance, modules, currentlyLoading = {}, {}, {}, {}
 
+-- Environment Factory: Binds the 'script' object to each module
 local function hEnv(id)
     local inst = instanceFromId[id]
     return setmetatable({
@@ -16,6 +17,7 @@ local function hEnv(id)
     })
 end
 
+-- Circular Dependency Validator
 local function validateRequire(module, caller)
     currentlyLoading[caller] = module
     local current = module
@@ -36,7 +38,7 @@ local function loadModule(obj, caller)
     
     validateRequire(obj, caller)
     
-    -- Calling module.fn() triggers the setfenv factory in the bundle
+    -- module.fn is the setfenv factory from the bundle
     local success, result = pcall(module.fn)
     
     currentlyLoading[caller] = nil
