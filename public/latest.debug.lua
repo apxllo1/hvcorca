@@ -1434,7 +1434,7 @@ return {
     hMod("constants", "ModuleScript", "Havoc.constants", "Havoc", function()
         return (function(...)
 
-local IS_DEV = getgenv == nil
+local IS_DEV = type(getgenv) == "nil"
 local _condition = VERSION
 if _condition == nil then
 	_condition = "studio"
