@@ -9,9 +9,55 @@ local idFromInstance   = {}
 local modules          = {}
 local currentlyLoading = {}
 
+-- ─── setfenv / getfenv Polyfill ───────────────────────────────────────────────
+-- Modern Luau executors (Byfron/Hyperion: Xeno, Potassium, Delta, Codex, Zorara,
+-- Electron, and others) do not expose setfenv/getfenv — they are Lua 5.1 only.
+-- We polyfill via debug.setupvalue which IS available on all executors that
+-- support loadstring. If even debug is missing, a no-op shim prevents the crash
+-- (environment isolation is lost but execution continues).
+
+local _setfenv = setfenv
+local _getfenv = getfenv
+
+if not _setfenv then
+    if debug and debug.getupvalue and debug.setupvalue then
+        _setfenv = function(fn, env)
+            local i = 1
+            while true do
+                local name = debug.getupvalue(fn, i)
+                if name == "_ENV" then
+                    debug.setupvalue(fn, i, env)
+                    return fn
+                elseif name == nil then
+                    break
+                end
+                i = i + 1
+            end
+            return fn  -- _ENV upvalue not found — compiled without it, best effort
+        end
+        _getfenv = function(fn)
+            if type(fn) == "number" then
+                fn = debug.getinfo(fn + 1, "f").func
+            end
+            local i = 1
+            while true do
+                local name, val = debug.getupvalue(fn, i)
+                if name == "_ENV" then return val end
+                if name == nil then break end
+                i = i + 1
+            end
+            return _G
+        end
+    else
+        -- Total fallback — no isolation but no crash
+        _setfenv = function(fn, _) return fn end
+        _getfenv = function(_) return _G end
+    end
+end
+
 -- ─── Environment Builder ──────────────────────────────────────────────────────
--- getfenv(1) gets the executor's full injected environment (Drawing, getrawmetatable, etc.)
--- Falls back to _G for executors that don't expose getfenv (some Byfron-era ones)
+-- Builds a per-module environment that shadows `script` and `require`
+-- while inheriting all executor globals (Drawing, getrawmetatable, syn, etc.)
 
 local function hEnv(id)
     local inst = instanceFromId[id]
@@ -22,9 +68,6 @@ local function hEnv(id)
                 if modules[target] then
                     return _G.__HAVOC_LOAD(target, inst)
                 end
-                -- Loud error: instance exists in tree but has no module factory.
-                -- Means it was registered as hInst (plain folder/instance) not hMod.
-                -- Far easier to debug than a silent nil or infinite WaitForChild yield.
                 error(
                     "[Havoc] require: '" .. tostring(target.Name) ..
                     "' (" .. tostring(target:GetFullName()) .. ") is not a registered module." ..
@@ -32,18 +75,15 @@ local function hEnv(id)
                     2
                 )
             end
-            -- Non-instance require (shouldn't happen in this bundle, but safe fallback)
             return require(target)
         end,
-    }, { __index = getfenv and getfenv(1) or _G })
+    }, { __index = _getfenv and _getfenv(1) or _G })
 end
 
 -- ─── Circular Dependency Check ────────────────────────────────────────────────
--- Tracks a proper visited set so cycle detection terminates correctly.
 
 local function validateRequire(module, caller)
     currentlyLoading[caller] = module
-
     local visited = {}
     local current = module
     while current do
@@ -56,7 +96,6 @@ local function validateRequire(module, caller)
 end
 
 -- ─── Module Loader ────────────────────────────────────────────────────────────
--- isErrored flag: failed modules stay failed — no silent nil returns on re-require.
 
 local function loadModule(obj, caller)
     local module = modules[obj]
@@ -78,7 +117,6 @@ local function loadModule(obj, caller)
         error("[Havoc] Error in module '" .. obj.Name .. "': " .. tostring(result), 2)
     end
 
-    -- Return empty table instead of nil so callers can always safely index the result
     module.value    = (result ~= nil) and result or {}
     module.isLoaded = true
     return module.value
@@ -106,19 +144,12 @@ local function hInst(name, class, id, parentId)
 end
 
 -- ─── Bootstrap ────────────────────────────────────────────────────────────────
--- Waits for game to finish loading before spawning LocalScripts.
--- Prevents RuntimeLib's internal game.Loaded:Wait() from racing or hanging.
--- Works on: Synapse X, ScriptWare, KRNL, Fluxus, Xeno, Potassium, Electron,
---           Delta, Zorara, Codex, and any executor that respects task.spawn.
 
 local function hInit()
-    -- Some executors inject before game:IsLoaded() is true
     if not game:IsLoaded() then
         game.Loaded:Wait()
     end
-
     for obj in pairs(modules) do
-        -- Only auto-spawn LocalScripts; ModuleScripts load lazily on first require()
         if obj:IsA("LocalScript") and not obj.Disabled then
             task.spawn(loadModule, obj, "root")
         end
