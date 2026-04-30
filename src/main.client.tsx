@@ -101,7 +101,7 @@ async function main(): Promise<void> {
 		// Set the guard to prevent re-loads
 		const g = (getgenv ? getgenv() : _G) as Record<string, unknown>;
 		g[LOAD_GUARD] = true;
-		
+
 		print("[Havoc] Loaded successfully.");
 	} catch (err) {
 		warn(`[Havoc] Init Error: ${tostring(err)}`);
