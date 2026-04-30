@@ -28,8 +28,8 @@ function checkAlreadyLoaded(): boolean {
  */
 async function mount(store: ReturnType<typeof configureStore>): Promise<ScreenGui> {
 	// Identify the target host for the temporary container
-	const host = IS_DEV 
-		? (Players.LocalPlayer.WaitForChild("PlayerGui") as Instance) 
+	const host = IS_DEV
+		? (Players.LocalPlayer.WaitForChild("PlayerGui") as Instance)
 		: (game.GetService("CoreGui") as Instance);
 
 	const container = Make("Folder", {
