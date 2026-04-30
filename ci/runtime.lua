@@ -1,17 +1,13 @@
 local instanceFromId, idFromInstance, modules, currentlyLoading = {}, {}, {}, {}
 
--- SNAPSHOT STRICT: Environment Factory
--- This is called by the bundle for every hMod to bind the 'script' object
 local function hEnv(id)
     local inst = instanceFromId[id]
     return setmetatable({
         script = inst,
         require = function(target)
-            -- If requiring a bundled module
             if typeof(target) == "Instance" and modules[target] then
                 return _G.__HAVOC_LOAD(target, inst)
             end
-            -- Fallback to standard Roblox require (for built-ins)
             return require(target)
         end,
     }, { 
@@ -20,7 +16,6 @@ local function hEnv(id)
     })
 end
 
--- SNAPSHOT STRICT: Circular Dependency Validator
 local function validateRequire(module, caller)
     currentlyLoading[caller] = module
     local current = module
@@ -29,13 +24,7 @@ local function validateRequire(module, caller)
         depth = depth + 1
         current = currentlyLoading[current]
         if current == module then
-            local traceback = current.Name
-            -- Build a readable chain for the error
-            for _ = 1, depth do
-                current = currentlyLoading[current]
-                traceback = traceback .. " => " .. current.Name
-            end
-            error("[Havoc] Circular dependency detected: " .. traceback)
+            error("[Havoc] Circular dependency detected at " .. module.Name)
         end
     end
 end
@@ -45,18 +34,15 @@ local function loadModule(obj, caller)
     if not module then return nil end
     if module.isLoaded then return module.value end
     
-    -- Check for loops
     validateRequire(obj, caller)
     
-    -- Execute the factory function provided by hMod
-    -- In the Snapshot logic, module.fn() already contains the setfenv wrapper
+    -- Calling module.fn() triggers the setfenv factory in the bundle
     local success, result = pcall(module.fn)
     
-    -- Cleanup loading state
     currentlyLoading[caller] = nil
     
     if not success then 
-        error("[Havoc] Runtime Error in " .. obj:GetFullName() .. ": " .. tostring(result)) 
+        error("[Havoc] Runtime Error in " .. obj.Name .. ": " .. tostring(result)) 
     end
 
     module.value = result
@@ -64,7 +50,6 @@ local function loadModule(obj, caller)
     return result
 end
 
--- Global bridge for roblox-ts cross-module resolution
 _G.__HAVOC_LOAD = loadModule
 
 local function hMod(name, class, id, parentId, fn)
@@ -85,7 +70,6 @@ local function hInst(name, class, id, parentId)
 end
 
 local function hInit()
-    -- Start entry point scripts (LocalScripts)
     for obj in pairs(modules) do
         if obj:IsA("LocalScript") then 
             task.spawn(function()
@@ -96,5 +80,4 @@ local function hInit()
     end
 end
 
--- CRITICAL: Return hEnv so bundle.lua can use it for setfenv
 return hInit, hMod, hInst, hEnv
