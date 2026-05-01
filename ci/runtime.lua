@@ -1,8 +1,9 @@
--- ci/runtime.lua
+-- ci/runtime.lua (Orca-style module loader)
 local instanceFromId = {}
 local modules = {}
-local loading = {}
+local currentlyLoading = {}
 
+-- _setfenv polyfill for modern executors
 local function _setfenv(fn, env)
 	local i = 1
 	while true do
@@ -18,61 +19,72 @@ local function _setfenv(fn, env)
 	return fn
 end
 
-local function _getfenv(fn)
-	if type(fn) == "number" then
-		fn = debug.getinfo(fn + 1, "f").func
-	end
-	local i = 1
-	while true do
-		local name, val = debug.getupvalue(fn, i)
-		if name == "_ENV" then
-			return val
-		elseif not name then
-			break
+-- Circular dependency protection
+local function validateRequire(module, caller)
+	currentlyLoading[caller] = module
+	local currentModule = module
+	local depth = 0
+	while currentModule do
+		depth = depth + 1
+		currentModule = currentlyLoading[currentModule]
+		if currentModule == module then
+			local str = module.Name
+			for _ = 1, depth do
+				currentModule = currentlyLoading[currentModule]
+				str = str .. " → " .. currentModule.Name
+			end
+			error("Havoc: Circular dependency " .. str, 2)
 		end
-		i = i + 1
 	end
-	return _G
+	return function()
+		if currentlyLoading[caller] == module then
+			currentlyLoading[caller] = nil
+		end
+	end
 end
 
+-- Module loader (Orca pattern)
+local function loadModule(obj, caller)
+	local cleanup = caller and validateRequire(obj, caller)
+	local module = modules[obj]
+	if not module then 
+		if cleanup then cleanup() end
+		return nil 
+	end
+	
+	if module.isLoaded then
+		if cleanup then cleanup() end
+		return module.value
+	end
+	
+	local data = module.fn()
+	module.value = data
+	module.isLoaded = true
+	if cleanup then cleanup() end
+	return data
+end
+
+-- Custom require resolver
+local function requireModule(target, this)
+	if modules[target] and target:IsA("ModuleScript") then
+		return loadModule(target, this)
+	end
+	return require(target)
+end
+
+-- Environment builder
 local function hEnv(id)
 	local inst = instanceFromId[id]
 	return setmetatable({
 		script = inst,
-		require = function(target)
-			if typeof(target) == "Instance" then
-				local module = modules[target]
-				if module then
-					if module.loaded then
-						return module.value
-					end
-
-					if loading[target] then
-						error("[Havoc] Circular dependency involving " .. target:GetFullName(), 2)
-					end
-
-					loading[target] = true
-					local result = module.fn()
-					module.value = result
-					module.loaded = true
-					loading[target] = nil
-					return result
-				end
-
-				error(
-					"[Havoc] require: '" .. tostring(target.Name) .. "' (" .. tostring(target:GetFullName()) ..
-					") is not a registered module. Was the source file missing at bundle time?",
-					2
-				)
-			end
-
-			return require(target)
+		require = function(module)
+			return requireModule(module, instanceFromId[id])
 		end,
 		_setfenv = _setfenv,
-		_getfenv = _getfenv,
-	}, { __index = _G })
+	}, {__index = getfenv(0) or _G})
 end
 
+-- Instance creation
 local function hInst(name, class, id, parentId)
 	local inst = Instance.new(class)
 	inst.Name = name
@@ -81,31 +93,31 @@ local function hInst(name, class, id, parentId)
 	return inst
 end
 
+-- Module registration (key fix)
 local function hMod(name, class, id, parentId, fn)
 	local inst = hInst(name, class, id, parentId)
 	modules[inst] = {
-		fn = fn,
+		fn = function()
+			return _setfenv(fn, hEnv(id))()
+		end,
 		value = nil,
-		loaded = false,
+		isLoaded = false,
 	}
 	return inst
 end
 
+-- Bootstrap
 local function hInit()
 	if not game:IsLoaded() then
 		game.Loaded:Wait()
 	end
-
 	for obj in pairs(modules) do
 		if obj:IsA("LocalScript") and not obj.Disabled then
 			task.spawn(function()
-				local result = modules[obj].fn()
-				modules[obj].value = result
-				modules[obj].loaded = true
-				return result
+				loadModule(obj, nil)
 			end)
 		end
 	end
 end
 
-return hInit, hMod, hInst, hEnv, _setfenv
+return hInit, hMod, hInst, hEnv
