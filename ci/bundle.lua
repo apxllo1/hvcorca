@@ -76,9 +76,10 @@ end
 local function buildProductionBundle()
     print("🔨 Compiling Havoc v2.0 Enterprise...")
 
+    -- walk script.Parent.Parent (e.g., hvcorca or hvcorca.Modules)
     local modelSource = BundleWalker.walk(script.Parent.Parent)
 
-    -- Build the final bundle as one Lua string
+    -- Build the final bundle as one Lua string using real \n
     local bundleContent = table.concat({
         ErrorRecovery,
         "",
