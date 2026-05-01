@@ -46,9 +46,11 @@ local function hEnv(id)
 					if module.loaded then
 						return module.value
 					end
+
 					if loading[target] then
 						error("[Havoc] Circular dependency involving " .. target:GetFullName(), 2)
 					end
+
 					loading[target] = true
 					local result = module.fn()
 					module.value = result
@@ -97,9 +99,7 @@ local function hInit()
 	for obj in pairs(modules) do
 		if obj:IsA("LocalScript") and not obj.Disabled then
 			task.spawn(function()
-				local env = hEnv(obj:GetFullName())
-				local fn = modules[obj].fn
-				local result = fn()
+				local result = modules[obj].fn()
 				modules[obj].value = result
 				modules[obj].loaded = true
 				return result
