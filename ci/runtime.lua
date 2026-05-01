@@ -1,159 +1,152 @@
 --[[
-    ci/runtime.lua
-    Havoc Runtime — injected verbatim into bundle output by bundle.lua.
-    Returns: hInit, hMod, hInst, hEnv
+    ci/runtime.lua — Havoc Runtime
+    Injected verbatim into the bundle. Follows Orca's proven pattern exactly.
+    Returns nothing — defines newModule, newInstance, newEnv, init as upvalue-locals
+    that bundle.lua's emitted calls reference directly.
 --]]
 
-local instanceFromId   = {}
-local idFromInstance   = {}
-local modules          = {}
+---@class Module
+---@field fn function
+---@field isLoaded boolean
+---@field value any
+
+---@type table<string, Instance>
+local instanceFromId = {}
+
+---@type table<Instance, string>
+local idFromInstance = {}
+
+---@type table<Instance, Module>
+local modules = {}
+
+---Stores currently loading modules.
+---@type table<LocalScript | ModuleScript, ModuleScript>
 local currentlyLoading = {}
 
--- ─── setfenv / getfenv Polyfill ───────────────────────────────────────────────
--- Modern Luau executors (Byfron/Hyperion: Xeno, Potassium, Delta, Codex, Zorara,
--- Electron, and others) do not expose setfenv/getfenv — they are Lua 5.1 only.
--- We polyfill via debug.setupvalue which IS available on all executors that
--- support loadstring. If even debug is missing, a no-op shim prevents the crash
--- (environment isolation is lost but execution continues).
+-- ─── Module Resolution ────────────────────────────────────────────────────────
 
-local _setfenv = setfenv
-local _getfenv = getfenv
-
-if not _setfenv then
-    if debug and debug.getupvalue and debug.setupvalue then
-        _setfenv = function(fn, env)
-            local i = 1
-            while true do
-                local name = debug.getupvalue(fn, i)
-                if name == "_ENV" then
-                    debug.setupvalue(fn, i, env)
-                    return fn
-                elseif name == nil then
-                    break
-                end
-                i = i + 1
-            end
-            return fn  -- _ENV upvalue not found — compiled without it, best effort
-        end
-        _getfenv = function(fn)
-            if type(fn) == "number" then
-                fn = debug.getinfo(fn + 1, "f").func
-            end
-            local i = 1
-            while true do
-                local name, val = debug.getupvalue(fn, i)
-                if name == "_ENV" then return val end
-                if name == nil then break end
-                i = i + 1
-            end
-            return _G
-        end
-    else
-        -- Total fallback — no isolation but no crash
-        _setfenv = function(fn, _) return fn end
-        _getfenv = function(_) return _G end
-    end
-end
-
--- ─── Environment Builder ──────────────────────────────────────────────────────
--- Builds a per-module environment that shadows `script` and `require`
--- while inheriting all executor globals (Drawing, getrawmetatable, syn, etc.)
-
-local function hEnv(id)
-    local inst = instanceFromId[id]
-    return setmetatable({
-        script = inst,
-        require = function(target)
-            if typeof(target) == "Instance" then
-                if modules[target] then
-                    return _G.__HAVOC_LOAD(target, inst)
-                end
-                error(
-                    "[Havoc] require: '" .. tostring(target.Name) ..
-                    "' (" .. tostring(target:GetFullName()) .. ") is not a registered module." ..
-                    " Was the source file missing at bundle time?",
-                    2
-                )
-            end
-            return require(target)
-        end,
-    }, { __index = _getfenv and _getfenv(1) or _G })
-end
-
--- ─── Circular Dependency Check ────────────────────────────────────────────────
-
+---@param module LocalScript | ModuleScript
+---@param caller? LocalScript | ModuleScript
+---@return function | nil cleanup
 local function validateRequire(module, caller)
-    currentlyLoading[caller] = module
-    local visited = {}
-    local current = module
-    while current do
-        if visited[current] then
-            error("[Havoc] Circular dependency detected involving: " .. current.Name, 2)
-        end
-        visited[current] = true
-        current = currentlyLoading[current]
-    end
+	currentlyLoading[caller] = module
+
+	local currentModule = module
+	local depth = 0
+
+	if not modules[module] then
+		while currentModule do
+			depth = depth + 1
+			currentModule = currentlyLoading[currentModule]
+
+			if currentModule == module then
+				local str = currentModule.Name
+				for _ = 1, depth do
+					currentModule = currentlyLoading[currentModule]
+					str = str .. " ⇒ " .. currentModule.Name
+				end
+				error("[Havoc] Circular dependency: " .. str, 2)
+			end
+		end
+	end
+
+	return function()
+		if currentlyLoading[caller] == module then
+			currentlyLoading[caller] = nil
+		end
+	end
 end
 
--- ─── Module Loader ────────────────────────────────────────────────────────────
+---@param obj LocalScript | ModuleScript
+---@param this? LocalScript | ModuleScript
+---@return any
+local function loadModule(obj, this)
+	local cleanup = this and validateRequire(obj, this)
+	local module  = modules[obj]
 
-local function loadModule(obj, caller)
-    local module = modules[obj]
-    if not module then return nil end
-
-    if module.isLoaded  then return module.value end
-    if module.isErrored then
-        error("[Havoc] Module previously failed to load: " .. obj.Name, 2)
-    end
-
-    if caller then validateRequire(obj, caller) end
-
-    local success, result = pcall(module.fn)
-
-    if caller then currentlyLoading[caller] = nil end
-
-    if not success then
-        module.isErrored = true
-        error("[Havoc] Error in module '" .. obj.Name .. "': " .. tostring(result), 2)
-    end
-
-    module.value    = (result ~= nil) and result or {}
-    module.isLoaded = true
-    return module.value
+	if module.isLoaded then
+		if cleanup then cleanup() end
+		return module.value
+	else
+		local data      = module.fn()
+		module.value    = data
+		module.isLoaded = true
+		if cleanup then cleanup() end
+		return data
+	end
 end
 
-_G.__HAVOC_LOAD = loadModule
+---@param target ModuleScript
+---@param this? LocalScript | ModuleScript
+---@return any
+local function requireModuleInternal(target, this)
+	if modules[target] and target:IsA("ModuleScript") then
+		return loadModule(target, this)
+	else
+		return require(target)
+	end
+end
+
+-- ─── Environment ──────────────────────────────────────────────────────────────
+
+---@param id string
+---@return table<string, any>
+local function newEnv(id)
+	return setmetatable({
+		script = instanceFromId[id],
+		require = function(module)
+			return requireModuleInternal(module, instanceFromId[id])
+		end,
+	}, {
+		__index = getfenv(0),
+		__metatable = "This metatable is locked",
+	})
+end
 
 -- ─── Instance Registration ────────────────────────────────────────────────────
 
-local function hMod(name, class, id, parentId, fn)
-    local inst  = Instance.new(class)
-    inst.Name   = name
-    inst.Parent = parentId and instanceFromId[parentId] or nil
-    instanceFromId[id]   = inst
-    idFromInstance[inst] = id
-    modules[inst] = { fn = fn, isLoaded = false, isErrored = false }
+---@param name string
+---@param className string
+---@param path string
+---@param parent string | nil
+---@param fn function
+local function newModule(name, className, path, parent, fn)
+	local instance  = Instance.new(className)
+	instance.Name   = name
+	instance.Parent = instanceFromId[parent]
+
+	instanceFromId[path]    = instance
+	idFromInstance[instance] = path
+
+	modules[instance] = {
+		fn       = fn,
+		isLoaded = false,
+		value    = nil,
+	}
 end
 
-local function hInst(name, class, id, parentId)
-    local inst  = Instance.new(class)
-    inst.Name   = name
-    inst.Parent = parentId and instanceFromId[parentId] or nil
-    instanceFromId[id]   = inst
-    idFromInstance[inst] = id
+---@param name string
+---@param className string
+---@param path string
+---@param parent string | nil
+local function newInstance(name, className, path, parent)
+	local instance  = Instance.new(className)
+	instance.Name   = name
+	instance.Parent = instanceFromId[parent]
+
+	instanceFromId[path]    = instance
+	idFromInstance[instance] = path
 end
 
 -- ─── Bootstrap ────────────────────────────────────────────────────────────────
 
-local function hInit()
-    if not game:IsLoaded() then
-        game.Loaded:Wait()
-    end
-    for obj in pairs(modules) do
-        if obj:IsA("LocalScript") and not obj.Disabled then
-            task.spawn(loadModule, obj, "root")
-        end
-    end
+local function init()
+	if not game:IsLoaded() then
+		game.Loaded:Wait()
+	end
+	for object in pairs(modules) do
+		if object:IsA("LocalScript") and not object.Disabled then
+			task.spawn(loadModule, object)
+		end
+	end
 end
-
-return hInit, hMod, hInst, hEnv
