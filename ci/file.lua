@@ -5,10 +5,9 @@
 
 local File = {}
 
-local OUTPUT_PATH = "havoc.bundle.lua"  -- adjust path if needed
+local OUTPUT_PATH = "havoc.bundle.lua"  -- path on your machine
 
 function File.write(content)
-    -- If you're running in a local Lua env (e.g., Lune, Wax, etc.):
     local file, err = io.open(OUTPUT_PATH, "w")
     if not file then
         warn("HAVOC FileWriter: could not open file: " .. tostring(err))
