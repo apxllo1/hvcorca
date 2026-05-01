@@ -202,5 +202,3 @@ print(string.format(
     scriptCount, missingCount
 ))
 print("------------------------------------------")
-ENDOFFILE
-echo "bundle written"
