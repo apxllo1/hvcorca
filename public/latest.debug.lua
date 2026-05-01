@@ -6703,7 +6703,7 @@ local logger = {
 		return warn("[Havoc WARNING]: " .. msg)
 	end,
 	critical = function(msg)
-		warn("\n
+		warn("\n---------- CRITICAL ERROR ----------\n" .. (msg .. "\n------------------------------------\n"))
 	end,
 	debug = function(msg)
 		local _value = _G["__DEV__" + 1]
@@ -6714,10 +6714,10 @@ local logger = {
 }
 local function logPerformance()
 	local mem = Stats:GetTotalMemoryUsageMb()
-	print("\n
+	print("\n--- Havoc Performance ---")
 	print("Memory: " .. (tostring(math.floor(mem)) .. " MB"))
 	print("Lua GC: " .. (tostring(math.floor(collectgarbage("count"))) .. " KB"))
-	print("
+	print("-------------------------\n")
 end
 return {
 	startTimer = startTimer,
@@ -11601,7 +11601,7 @@ local Error do
 
 	function Error:__tostring()
 		local errorStrings = {
-			string.format("
+			string.format("-- Promise.Error(%s) --", self.kind or "?"),
 		}
 
 		for _, runtimeError in ipairs(self:getErrorChain()) do
