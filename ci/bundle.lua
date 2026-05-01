@@ -1,16 +1,6 @@
---[[
-    ci/bundle.lua — Havoc Build System
-    Same architecture as the working latest_lua_37 build.
-    Only change from that build: source is passed via loadstring() long-string
-    instead of raw injection — eliminates all comment/string stripping issues.
-
-    Usage:
-        remodel run ci/bundle.lua
-        remodel run ci/bundle.lua Havoc.rbxm public/latest.lua
---]]
-
-local args        = arg or {...} or {}
-local input_file  = args[1] or "Havoc.rbxm"
+-- ci/bundle.lua
+local args = arg or {...} or {}
+local input_file = args[1] or "Havoc.rbxm"
 local output_file = args[2] or "latest.lua"
 
 print("------------------------------------------")
@@ -18,117 +8,125 @@ print("[Havoc] Build System Initialized")
 print("[Havoc] Input:  " .. input_file)
 print("[Havoc] Output: " .. output_file)
 
--- ─── Load Model ───────────────────────────────────────────────────────────────
-
 local model_data = remodel.readModelFile(input_file)
 if not model_data or #model_data == 0 then
-    error("[Havoc] Model file invalid or empty: " .. input_file)
+	error("[Havoc] Model file invalid or empty: " .. input_file)
 end
 local model = model_data[1]
 
 local file, openErr = io.open(output_file, "w")
 if not file then
-    error("[Havoc] Cannot open output file: " .. tostring(openErr))
+	error("[Havoc] Cannot open output file: " .. tostring(openErr))
 end
 
-local scriptCount  = 0
+local scriptCount = 0
 local missingCount = 0
 
--- ─── Path Resolver ────────────────────────────────────────────────────────────
-
 local function getRelParts(inst)
-    local parts = {}
-    local curr  = inst
-    while curr and curr.Name ~= model.Name do
-        table.insert(parts, 1, curr.Name)
-        curr = curr.Parent
-    end
-    return parts
+	local parts = {}
+	local curr = inst
+	while curr and curr.Name ~= model.Name do
+		table.insert(parts, 1, curr.Name)
+		curr = curr.Parent
+	end
+	return parts
 end
 
--- ─── Source Finder ────────────────────────────────────────────────────────────
--- Confirmed working probe order from latest_lua_37 — found all 31 packages.
--- node_modules layout: no @rbxts/ subfolder in .rbxm, packages sit directly
--- under node_modules. Flat (make/services) and subfolder (flipper/src) both work.
+local function toLongString(src)
+	local level = 0
+	while src:find("%]" .. string.rep("=", level) .. "%]") do
+		level = level + 1
+	end
+	local eq = string.rep("=", level)
+	return "[" .. eq .. "[" .. src .. "]" .. eq .. "]"
+end
+
+local function readFile(path)
+	local ok, content = pcall(remodel.readFile, path)
+	if ok and content and #content > 0 then
+		return content
+	end
+	return nil
+end
+
+local function tryPaths(paths)
+	for _, p in ipairs(paths) do
+		local content = readFile(p)
+		if content then
+			return content, p
+		end
+	end
+	return nil
+end
 
 local function getNodeModulesProbes(parts)
-    local nmIdx = nil
-    for i, p in ipairs(parts) do
-        if p == "node_modules" then nmIdx = i; break end
-    end
-    if not nmIdx then return {} end
+	local nmIdx
+	for i, p in ipairs(parts) do
+		if p == "node_modules" then
+			nmIdx = i
+			break
+		end
+	end
+	if not nmIdx then
+		return {}
+	end
 
-    local pkgName = parts[nmIdx + 1]
-    if not pkgName then return {} end
+	local pkgName = parts[nmIdx + 1]
+	if not pkgName then
+		return {}
+	end
 
-    local subParts = {}
-    for i = nmIdx + 2, #parts do
-        table.insert(subParts, parts[i])
-    end
+	local subParts = {}
+	for i = nmIdx + 2, #parts do
+		table.insert(subParts, parts[i])
+	end
 
-    local bases = {
-        "node_modules/@rbxts/" .. pkgName,
-        "node_modules/"        .. pkgName,
-    }
+	local bases = {
+		"node_modules/@rbxts/" .. pkgName,
+		"node_modules/" .. pkgName,
+	}
 
-    local probes = {}
-    if #subParts == 0 then
-        for _, base in ipairs(bases) do
-            table.insert(probes, base .. "/src/init.lua")
-            table.insert(probes, base .. "/lib/init.lua")
-            table.insert(probes, base .. "/out/init.lua")
-            table.insert(probes, base .. "/init.lua")
-        end
-    else
-        local subPath = table.concat(subParts, "/")
-        for _, base in ipairs(bases) do
-            table.insert(probes, base .. "/" .. subPath .. ".lua")
-            table.insert(probes, base .. "/" .. subPath .. "/init.lua")
-        end
-    end
-    return probes
+	local probes = {}
+
+	if #subParts == 0 then
+		for _, base in ipairs(bases) do
+			table.insert(probes, base .. "/lib/init.lua")
+			table.insert(probes, base .. "/out/init.lua")
+			table.insert(probes, base .. "/src/init.lua")
+			table.insert(probes, base .. "/init.lua")
+		end
+	else
+		local subPath = table.concat(subParts, "/")
+		for _, base in ipairs(bases) do
+			table.insert(probes, base .. "/" .. subPath .. ".lua")
+			table.insert(probes, base .. "/" .. subPath .. "/init.lua")
+		end
+	end
+
+	return probes
 end
 
 local function readSource(inst)
-    local parts   = getRelParts(inst)
-    local relPath = table.concat(parts, "/")
-    local cleanRel = relPath:gsub("^include/", ""):gsub("^node_modules/", "")
+	local parts = getRelParts(inst)
+	local relPath = table.concat(parts, "/")
+	local cleanRel = relPath:gsub("^include/", ""):gsub("^node_modules/", "")
 
-    local attempts = {
-        "out/" .. relPath .. ".lua",
-        "out/" .. relPath .. "/init.lua",
-        "out/" .. relPath .. ".client.lua",
-        "include/" .. cleanRel .. ".lua",
-        "include/" .. cleanRel .. "/init.lua",
-    }
+	local attempts = {
+		"out/" .. relPath .. ".lua",
+		"out/" .. relPath .. "/init.lua",
+		"out/" .. relPath .. ".client.lua",
+		"out/" .. relPath .. ".server.lua",
+		"include/" .. cleanRel .. ".lua",
+		"include/" .. cleanRel .. "/init.lua",
+	}
 
-    for _, probe in ipairs(getNodeModulesProbes(parts)) do
-        table.insert(attempts, probe)
-    end
+	for _, probe in ipairs(getNodeModulesProbes(parts)) do
+		table.insert(attempts, probe)
+	end
 
-    for _, loc in ipairs(attempts) do
-        local ok, content = pcall(remodel.readFile, loc)
-        if ok and content and #content > 0 then
-            return content
-        end
-    end
-    return nil
+	local source = tryPaths(attempts)
+	return source
 end
-
--- ─── Long String Builder ──────────────────────────────────────────────────────
--- Wraps source in [==[...]==] with enough = signs to never conflict with
--- any ]] sequence inside the source. No comment stripping needed.
-
-local function toLongString(src)
-    local level = 0
-    while src:find("%]" .. string.rep("=", level) .. "%]") do
-        level = level + 1
-    end
-    local eq = string.rep("=", level)
-    return "[" .. eq .. "[" .. src .. "]" .. eq .. "]"
-end
-
--- ─── Bundle Header ────────────────────────────────────────────────────────────
 
 file:write("-- Havoc | Auto-generated by ci/bundle.lua — do not edit\n")
 file:write("local function start()\n")
@@ -136,69 +134,61 @@ file:write("    local hInit, hMod, hInst, hEnv = (function()\n")
 file:write(remodel.readFile("ci/runtime.lua"))
 file:write("\n    end)()\n\n")
 
--- ─── Walker ───────────────────────────────────────────────────────────────────
-
 local function walk(parent)
-    for _, object in ipairs(parent:GetChildren()) do
-        local name  = string.format("%q", object.Name)
-        local id    = string.format("%q", object:GetFullName())
-        local pId   = string.format("%q", parent:GetFullName())
-        local class = object.ClassName
-        local isScript = (class == "ModuleScript" or class == "LocalScript")
+	for _, object in ipairs(parent:GetChildren()) do
+		local name = string.format("%q", object.Name)
+		local id = string.format("%q", object:GetFullName())
+		local pId = string.format("%q", parent:GetFullName())
+		local class = object.ClassName
+		local isScript = (class == "ModuleScript" or class == "LocalScript")
 
-        if isScript then
-            local source = readSource(object)
+		if isScript then
+			local source = readSource(object)
+			if source then
+				scriptCount = scriptCount + 1
+				local longSrc = toLongString(source)
+				file:write(string.format(
+					"    hMod(%s, %q, %s, %s, function()\n",
+					name, class, id, pId
+				))
+				file:write(
+					"        return _setfenv(assert(loadstring(" .. longSrc .. ")), hEnv(" .. id .. "))()\n"
+				)
+				file:write("    end)\n")
+			else
+				missingCount = missingCount + 1
+				print(string.format(
+					"[Havoc] WARNING: no source for %s (%s) — registered as plain instance",
+					object:GetFullName(), class
+				))
+				file:write(string.format(
+					"    hInst(%s, %q, %s, %s)\n",
+					name, class, id, pId
+				))
+			end
+		else
+			file:write(string.format(
+				"    hInst(%s, %q, %s, %s)\n",
+				name, class, id, pId
+			))
+		end
 
-            if source then
-                scriptCount = scriptCount + 1
-                -- Pass source via loadstring long-string — no stripping needed,
-                -- handles any content including -- comments and [[ strings safely
-                local longSrc = toLongString(source)
-                file:write(string.format(
-                    "    hMod(%s, %q, %s, %s, function()\n",
-                    name, class, id, pId
-                ))
-                file:write(
-                    "        return _setfenv(assert(loadstring(" .. longSrc .. ")), hEnv(" .. id .. "))()\n"
-                )
-                file:write("    end)\n")
-            else
-                missingCount = missingCount + 1
-                print(string.format(
-                    "[Havoc] WARNING: no source for %s (%s) — registered as plain instance",
-                    object:GetFullName(), class
-                ))
-                file:write(string.format(
-                    "    hInst(%s, %q, %s, %s)\n",
-                    name, class, id, pId
-                ))
-            end
-        else
-            file:write(string.format(
-                "    hInst(%s, %q, %s, %s)\n",
-                name, class, id, pId
-            ))
-        end
-
-        walk(object)
-    end
+		walk(object)
+	end
 end
 
--- Model root
 file:write(string.format(
-    "    hInst(%q, \"Folder\", %q, nil)\n",
-    model.Name, model:GetFullName()
+	"    hInst(%q, %q, %q, nil)\n",
+	model.Name, "Folder", model:GetFullName()
 ))
 
 walk(model)
-
--- ─── Footer ───────────────────────────────────────────────────────────────────
 
 file:write("\n    hInit()\nend\nstart()\n")
 file:close()
 
 print(string.format(
-    "[Havoc] Build complete — %d scripts bundled, %d missing sources.",
-    scriptCount, missingCount
+	"[Havoc] Build complete — %d scripts bundled, %d missing sources.",
+	scriptCount, missingCount
 ))
 print("------------------------------------------")
