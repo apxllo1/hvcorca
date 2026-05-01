@@ -1,4 +1,3 @@
-ENDOFFILE'
 --[[
     ci/runtime.lua
     Havoc Runtime — injected verbatim into bundle output by bundle.lua.
