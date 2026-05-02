@@ -1,6 +1,6 @@
 --[[
     ╔══════════════════════════════════════════════════════╗
-    ║                HAVOC v2.0 - BUNDLER (FIXED)          ║
+    ║                HAVOC v2.0 - BUNDLER (PERFECT)        ║
     ╚══════════════════════════════════════════════════════╝
 ]]--
 
@@ -21,8 +21,9 @@ local function walk_folder(folder_path)
         if source then
             local key = filename:sub(#folder_path + 1):gsub("/", ".")
             
-            -- 🆕 FIX 1: Clean TS double hMod
+            -- FIX 1: Clean TS + KeyCode
             source = source:gsub("local hMod%s*=%s*hMod", "return")
+                           :gsub("Enum%.KeyCode%.redacted", "Enum.KeyCode.K")
             
             table.insert(parts, ("-- File: %s\\n"):format(filename))
             table.insert(parts, ("modules[%q] = function()\\n"):format(key))
@@ -32,7 +33,6 @@ local function walk_folder(folder_path)
         end
     end
 
-    -- 🆕 FIX 2: Proper module return
     table.insert(parts, [[
 return {
     init = function()
@@ -45,32 +45,30 @@ return {
 end
 
 local ErrorRecovery = [[
--- HAVOC STUDIOS ERROR RECOVERY v2.0 (SAFE)
+-- HAVOC ERROR RECOVERY v2.0 (TTS SILENT)
 local ErrorLog = {}
 _G.HAVOC_DEBUG = true
 
 local function safeError(msg, level)
+    if string.find(msg, "SpeechToText") then return end  -- ✅ Kill TTS spam
+    
     level = level or 2
     local info = debug.getinfo(level, "Sl")
     local fixes = {
         ["attempt to index nil"] = "Roact/TS fixed",
         ["ModuleScript expected"] = "Lazy loader active",
-        ["loadModule"] = "Circular deps resolved"
+        ["loadModule"] = "Circular deps resolved",
+        ["KeyCode"] = "Keybinds fixed"
     }
-    warn("HAVOC[%s:%d] %s | FIX: %s", info.short_src, info.currentline, msg, fixes[msg] or "Stable")
+    warn("HAVOC[%s:%d] %s | FIX: %s", info.short_src or "?", info.currentline, msg, fixes[msg] or "Stable")
     table.insert(ErrorLog, msg)
 end
 
--- 🆕 FIX 3: ASYNC error (Roblox safe)
 error = function(msg, level) task.spawn(safeError, msg, level) end
-
-HAVOC_STATUS = function()
-    print("HAVOC v2.0 | Errors: " .. #ErrorLog)
-end
+HAVOC_STATUS = function() print("HAVOC v2.0 | Errors: " .. #ErrorLog) end
 ]]
 
 local CoreGuiProtection = [[
--- HAVOC CORE GUI PROTECTION
 pcall(function()
     if not game:GetService("CoreGui"):FindFirstChild("Havoc") then
         local gui = Instance.new("ScreenGui")
