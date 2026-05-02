@@ -2,11 +2,11 @@ import Roact from "@rbxts/roact";
 import { hooked, useState } from "@rbxts/roact-hooked";
 import { px } from "utils/udim2";
 
-// @ts-expect-error
 const TextBoxWithDropdown: Roact.FunctionComponent<any> = ({ text, setText, options, onSelected }) => {
 	const [focused, setFocused] = useState(false);
 
-	const dropdownVisible = focused && options.length > 0;
+	// @ts-expect-error rbxtsc + noLib = no Array.length
+	const dropdownVisible = focused && (options as unknown as any[]).length > 0;
 
 	const handleTextChange = (rbx: TextBox) => {
 		setText(rbx.Text);
@@ -18,7 +18,11 @@ const TextBoxWithDropdown: Roact.FunctionComponent<any> = ({ text, setText, opti
 	};
 
 	return (
-		<frame Key="TextBoxWithDropdown" Size={px(300, 60)} BackgroundTransparency={1}>
+		<frame
+			Key="TextBoxWithDropdown"
+			Size={px(300, 60)}
+			BackgroundTransparency={1}
+		>
 			<textbox
 				Key="TextInput"
 				Text={text}
@@ -32,7 +36,10 @@ const TextBoxWithDropdown: Roact.FunctionComponent<any> = ({ text, setText, opti
 					Text: handleTextChange,
 				}}
 			>
-				<uipadding PaddingLeft={new UDim(0, 8)} PaddingRight={new UDim(0, 8)} />
+				<uipadding
+					PaddingLeft={new UDim(0, 8)}
+					PaddingRight={new UDim(0, 8)}
+				/>
 			</textbox>
 
 			{dropdownVisible && (
@@ -44,7 +51,10 @@ const TextBoxWithDropdown: Roact.FunctionComponent<any> = ({ text, setText, opti
 					ScrollBarThickness={2}
 					AutomaticCanvasSize={Enum.AutomaticSize.Y}
 				>
-					<uilistlayout Padding={new UDim(0, 2)} SortOrder={Enum.SortOrder.LayoutOrder} />
+					<uilistlayout
+						Padding={new UDim(0, 2)}
+						SortOrder={Enum.SortOrder.LayoutOrder}
+					/>
 					{(options as any[]).map((opt, i) => (
 						<textbutton
 							Key={`Option${i}`}
