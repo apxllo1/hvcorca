@@ -2,10 +2,7 @@ import Roact from "@rbxts/roact";
 
 function VerySimpleApp() {
 	return (
-		<screengui
-			ResetOnSpawn={false}
-			ZIndexBehavior={Enum.ZIndexBehavior.Sibling}
-		>
+		<screengui ResetOnSpawn={false} ZIndexBehavior={Enum.ZIndexBehavior.Sibling}>
 			<frame
 				Size={new UDim2(0.3, 0, 0.3, 0)}
 				Position={new UDim2(0.5, 0, 0.5, 0)}

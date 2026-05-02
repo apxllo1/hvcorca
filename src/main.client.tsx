@@ -31,10 +31,7 @@ async function main() {
 		const container = Make("Folder", { Name: "HavocMount", Parent: host });
 
 		// === 1. Use the minimal UI to test if compilation works ===
-		Roact.mount(
-			<VerySimpleApp />,
-			container,
-		);
+		Roact.mount(<VerySimpleApp />, container);
 
 		// === 2. Optional: when you want to test your full UI, use this instead:
 		// Roact.mount(
