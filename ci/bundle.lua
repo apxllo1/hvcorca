@@ -1,7 +1,7 @@
 --[[
     ╔══════════════════════════════════════════════════════╗
-    ║                HAVOC v2.0 - BUNDLER                   ║
-    ║              Production-Ready -  Syntax Clean          ║
+    ║                HAVOC v2.0 - BUNDLER                  ║
+    ║              Production-Ready -  Syntax Clean        ║
     ╚══════════════════════════════════════════════════════╝
 ]]--
 
