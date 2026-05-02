@@ -58,9 +58,9 @@ jobs:
 
       - name: Bundle modules
         run: |
-          cd ci
-          remodel run bundle.lua ../Havoc.rbxm ../public/latest.lua release minify
-          remodel run bundle.lua ../Havoc.rbxm ../public/latest.debug.lua release-dbg debug
+          # Run bundle.lua from the repo root, not from ci/
+          remodel run ci/bundle.lua ../Havoc.rbxm ../public/latest.lua release minify
+          remodel run ci/bundle.lua ../Havoc.rbxm ../public/latest.debug.lua release-dbg debug
 
       - name: Commit latest
         uses: EndBug/add-and-commit@v9
