@@ -1,11 +1,9 @@
---[[
-    src/Core.lua – Lua entrypoint for bundler
-]]--
-
+-- src/Core.lua
 local Core = {}
 
 function Core.init()
-    print("🚀 HVCoroa Core.init() loaded")
+    print("HAVOC Core.init()")
+    -- your Tung‑style wiring goes here
 end
 
 return Core
