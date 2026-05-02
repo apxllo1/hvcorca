@@ -11,6 +11,10 @@ jobs:
     runs-on: ubuntu-22.04
     permissions:
       contents: write
+
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -23,7 +27,7 @@ jobs:
         with:
           node-version: 20
 
-      # Remove the OpenSSL 1.1 step; it's not needed
+      # Remove OpenSSL 1.1 step (Ubuntu 22.04 already has modern OpenSSL)
       #      - name: Install OpenSSL 1.1
       #        run: |
       #          wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb
