@@ -5,7 +5,7 @@
     ╚══════════════════════════════════════════════════════╝
 ]]--
 
--- Load from ci/ subfolder (not the repo root)
+-- Load from ci/ folder under the repo root
 local BundleWalker = (loadfile "ci/walk.lua")()
 local FileWriter   = (loadfile "ci/file.lua")()
 
