@@ -10,7 +10,7 @@ local BundleWalker = (loadfile "walk.lua")()
 local FileWriter   = (loadfile "file.lua")()
 
 -- ============================================================================
--- HAVOC STUDIOS ERROR RECOVERY ENGINE (as Lua code string)
+-- STUDIOS ERROR RECOVERY ENGINE (as Lua code string)
 -- ============================================================================
 
 local ErrorRecovery = [[
@@ -74,11 +74,11 @@ end
 -- PRODUCTION BUNDLE GENERATOR
 -- ============================================================================
 
-local function buildProductionBundle()
+local function buildProductionBundle(srcRoot)
     print("🔨 Compiling Havoc v2.0 STUDIOS...")
 
-    -- Walk hvcoroa.src (under the repo)
-    local modelSource = BundleWalker.walk(script.Parent.Parent.src)
+    -- If srcRoot is nil, assume walk.lua defines a dummy root
+    local modelSource = BundleWalker.walk(srcRoot or hvcoroa.src)
 
     -- Build the final bundle as one Lua string
     local bundleContent = table.concat({
@@ -100,5 +100,11 @@ local function buildProductionBundle()
     print("   🛡️  Error Recovery: ACTIVE")
     print("   🛡️  CoreGui Shield: ACTIVE")
 end
+
+--[[
+    ── Initialize bundle build
+    In remodel, ensure `hvcoroa.src` is defined.
+    In Roblox, this can be set via environment injection or loading from data model.
+]]--
 
 buildProductionBundle()
