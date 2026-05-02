@@ -4,7 +4,6 @@
 
 local File = {}
 
--- Write bundle into repo's public/latest.lua
 local OUTPUT_PATH = "public/latest.lua"
 
 function File.write(content)
