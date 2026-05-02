@@ -10,11 +10,11 @@ local BundleWalker = (loadfile "walk.lua")()
 local FileWriter   = (loadfile "file.lua")()
 
 -- ============================================================================
--- ENTERPRISE ERROR RECOVERY ENGINE (as Lua code string)
+-- HAVOC STUDIOS ERROR RECOVERY ENGINE (as Lua code string)
 -- ============================================================================
 
 local ErrorRecovery = [[
--- HAVOC ENTERPRISE ERROR RECOVERY v2.0
+-- HAVOC STUDIOS ERROR RECOVERY v2.0
 local ErrorLog = {}
 local RecoveryCache = {}
 _G.HAVOC_DEBUG = true
@@ -43,7 +43,7 @@ end
 error = originalError
 
 HAVOC_STATUS = function()
-    print("HAVOC v2.0 Enterprise - " .. #ErrorLog .. " errors logged")
+    print("HAVOC v2.0 STUDIOS - " .. #ErrorLog .. " errors logged")
 end
 ]]
 
@@ -75,7 +75,7 @@ end
 -- ============================================================================
 
 local function buildProductionBundle()
-    print("🔨 Compiling Havoc v2.0 Enterprise...")
+    print("🔨 Compiling Havoc v2.0 STUDIOS...")
 
     -- Walk hvcoroa.src (under the repo)
     local modelSource = BundleWalker.walk(script.Parent.Parent.src)
@@ -95,7 +95,7 @@ local function buildProductionBundle()
 
     FileWriter.write(bundleContent)
 
-    print("✅ HAVOC v2.0 ENTERPRISE READY")
+    print("✅ HAVOC v2.0 STUDIOS READY")
     print("   📦 Size: " .. #bundleContent .. " bytes")
     print("   🛡️  Error Recovery: ACTIVE")
     print("   🛡️  CoreGui Shield: ACTIVE")
