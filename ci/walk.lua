@@ -1,4 +1,7 @@
--- walk.lua
+--[[
+    walk.lua – HAVOC v2.0 Module Walker
+]]--
+
 local Walk = {}
 
 local function stripModuleHeader(source)
@@ -26,6 +29,10 @@ local function walkModule(script, output)
 end
 
 local function walkRec(root, output)
+    if not root then
+        return  -- safely skip if root is nil
+    end
+
     for _, child in ipairs(root:GetDescendants()) do
         walkModule(child, output)
     end
