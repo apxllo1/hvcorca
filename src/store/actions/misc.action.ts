@@ -1,4 +1,4 @@
-import { Rodux } from "@rbxts/rodux";
+import Rodux = require("@rbxts/rodux");
 import { GistLoaderState } from "../models/misc.model";
 
 export type MiscAction =
