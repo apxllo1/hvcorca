@@ -44,10 +44,7 @@ function TextBoxWithDropdown({ text, setText, options, onSelected }: any) {
 					ScrollBarThickness={2}
 					AutomaticCanvasSize={Enum.AutomaticSize.Y}
 				>
-					<uilistlayout
-						Padding={new UDim(0, 2)}
-						SortOrder={Enum.SortOrder.LayoutOrder}
-					/>
+					<uilistlayout Padding={new UDim(0, 2)} SortOrder={Enum.SortOrder.LayoutOrder} />
 					{(options as any[]).map((opt, i) => (
 						<textbutton
 							Key={`Option${i}`}
