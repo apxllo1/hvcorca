@@ -2,59 +2,59 @@ import Roact, { Children, Change, Event } from "@rbxts/roact";
 import { hooked, useState, useBinding } from "@rbxts/roact-hooked";
 import { px } from "utils/udim2";
 
-// Option type for dropdown
+// Simple string‑option for now
 type Option = {
 	label: string;
-	value: any;
+	value: string;
 };
 
-// Props for TextBoxWithDropdown
-interface Props<T extends Option> {
+interface Props {
 	text: string;
 	setText: (text: string) => void;
-	options: T[];
-	onSelected: (option: T) => void;
-	theme?: any; // your theme (button.background, button.foreground etc.)
+	options: Option[];
+	onSelected: (option: Option) => void;
 }
 
-function TextBoxWithDropdown<T extends Option>({ text, setText, options, onSelected, theme }: Props<T>) {
+function TextBoxWithDropdown({ text, setText, options, onSelected }: Props) {
 	const [focused, setFocused] = useState(false);
-	// Use `Binding<boolean>` so `.getValue()` is valid
-	const dropdownVisible = useBinding<boolean>(focused && options.length > 0);
+	// Just use `boolean`, not `Binding<boolean>`
+	const dropdownVisible = focused && options.length > 0;
 
-	const handleInput = Event.textBox.FocusLost((rbx, entered, _input) => {
+	const handleInput = (rbx: TextBox, entered: boolean, _input: InputObject) => {
 		if (entered) {
 			setText(rbx.Text);
 		}
-	});
+	};
 
-	const handleSelection = (option: T) => {
+	const handleSelection = (option: Option) => {
 		setText(option.label);
 		onSelected(option);
 	};
 
 	return (
 		<frame Key="TextBoxWithDropdown" Size={px(300, 60)} BackgroundTransparency={1}>
-			{/* Roact‑style textbox; Roblox tag */}
 			<textbox
 				Key="TextInput"
 				Text={text}
-				BackgroundColor3={theme?.button?.background ?? new Color3(0.2, 0.2, 0.2)}
-				TextColor3={theme?.button?.foreground ?? new Color3(1, 1, 1)}
+				BackgroundColor3={new Color3(0.2, 0.2, 0.2)}
+				TextColor3={new Color3(1, 1, 1)}
 				Font={Enum.Font.Gotham}
 				TextSize={14}
 				AutoButtonColor={false}
 				Position={px(0, 0)}
 				Size={px(300, 30)}
-				Event={{
-					FocusLost: handleInput,
+				Change={{
+					Text: (rbx) => {
+						// Mirror text to state
+						setText(rbx.Text);
+					},
 				}}
 			>
 				<uipadding PaddingLeft={new UDim(0, 8)} PaddingRight={new UDim(0, 8)} />
 			</textbox>
 
 			{/* Dropdown only visible when focused and options exist */}
-			{dropdownVisible.getValue() && (
+			{dropdownVisible && (
 				<scrollingframe
 					Key="Dropdown"
 					Size={px(300, 120)}
@@ -62,10 +62,11 @@ function TextBoxWithDropdown<T extends Option>({ text, setText, options, onSelec
 					Position={px(0, 30)}
 					ScrollBarThickness={2}
 					AutomaticCanvasSize={Enum.AutomaticSize.Y}
-					BorderStyle={Enum.FrameStyle.RobloxRound}
 				>
-					<uilistlayout Padding={new UDim(0, 2)} SortOrder={Enum.SortOrder.LayoutOrder} />
-
+					<uilistlayout
+						Padding={new UDim(0, 2)}
+						SortOrder={Enum.SortOrder.LayoutOrder}
+					/>
 					{options.map((opt, i) => (
 						<textbutton
 							Key={`Option${i}`}
