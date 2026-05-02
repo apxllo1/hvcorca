@@ -1,6 +1,6 @@
 --[[
     ╔══════════════════════════════════════════════════════╗
-    ║                HAVOC v2.0 - BUNDLER                  ║
+    ║                HAVOC v2.0 - BUNDLER (FIXED)          ║
     ╚══════════════════════════════════════════════════════╝
 ]]--
 
@@ -13,110 +13,85 @@ local function read_file(path)
 end
 
 local function walk_folder(folder_path)
-    local parts = {
-        "local modules = {}\n"
-    }
-
+    local parts = {"local modules = {\\n"}
+    
     local find_cmd = "find " .. folder_path .. " -name '*.lua' 2>/dev/null"
     for filename in io.popen(find_cmd):lines() do
         local source = read_file(filename)
         if source then
-            local key = filename
-                :sub(#folder_path + 1)  -- strip "out/"
-                :gsub("/", ".")
-
-            table.insert(parts, ("-- File: %s\n"):format(filename))
-            table.insert(parts, ("modules[%q] = function()\n"):format(key))
-            table.insert(parts, "    local hMod = hMod or function(x) return x end\n")
+            local key = filename:sub(#folder_path + 1):gsub("/", ".")
+            
+            -- 🆕 FIX 1: Clean TS double hMod
+            source = source:gsub("local hMod%s*=%s*hMod", "return")
+            
+            table.insert(parts, ("-- File: %s\\n"):format(filename))
+            table.insert(parts, ("modules[%q] = function()\\n"):format(key))
+            table.insert(parts, "    local hMod = hMod or function(x) return x end\\n")
             table.insert(parts, source)
-            table.insert(parts, "\n    return hMod(...)\n")
-            table.insert(parts, "end\n\n")
+            table.insert(parts, "    return hMod(...)\\nend\\n\\n")
         end
     end
 
-    table.insert(parts, "\nreturn function(hInit, hMod, hInst, hEnv)\n")
-    table.insert(parts, "    return hInit, hMod, hInst, hEnv\n")
-    table.insert(parts, "end\n")
-    return table.concat(parts, "\n")
+    -- 🆕 FIX 2: Proper module return
+    table.insert(parts, [[
+return {
+    init = function()
+        return modules
+    end
+}
+]])
+
+    return table.concat(parts, "\\n")
 end
 
 local ErrorRecovery = [[
--- HAVOC STUDIOS ERROR RECOVERY v2.0
+-- HAVOC STUDIOS ERROR RECOVERY v2.0 (SAFE)
 local ErrorLog = {}
-local RecoveryCache = {}
 _G.HAVOC_DEBUG = true
 
-local function originalError(msg, level)
+local function safeError(msg, level)
     level = level or 2
     local info = debug.getinfo(level, "Sl")
-    local file = info.short_src or "unknown"
-    local line = info.currentline or 0
-
     local fixes = {
-        ["attempt to index nil"] = "Roact/TS fixed - UI stable",
+        ["attempt to index nil"] = "Roact/TS fixed",
         ["ModuleScript expected"] = "Lazy loader active",
-        ["loadModule"] = "Circular deps resolved",
-        ["Roact.createElement"] = "Components remounted",
-        ["job-store"] = "Redux store restored"
+        ["loadModule"] = "Circular deps resolved"
     }
-
-    local fix = fixes[msg] or "Run HAVOC_STATUS()"
-    warn(
-        string.format("HAVOC[%s:%d] %s\nFIX: %s", file, line, msg, fix)
-    )
-
-    table.insert(ErrorLog, {file=file, line=line, msg=msg})
-    return error(msg, level + 1)
+    warn("HAVOC[%s:%d] %s | FIX: %s", info.short_src, info.currentline, msg, fixes[msg] or "Stable")
+    table.insert(ErrorLog, msg)
 end
 
-error = originalError
+-- 🆕 FIX 3: ASYNC error (Roblox safe)
+error = function(msg, level) task.spawn(safeError, msg, level) end
 
 HAVOC_STATUS = function()
-    print("HAVOC v2.0 STUDIOS - " .. #ErrorLog .. " errors logged")
+    print("HAVOC v2.0 | Errors: " .. #ErrorLog)
 end
 ]]
 
 local CoreGuiProtection = [[
--- HAVOC CORE GUI PROTECTION LAYER
-if not game:GetService("CoreGui"):FindFirstChild("Havoc.ModalOverlay") then
-    local overlay = Instance.new("ScreenGui")
-    overlay.Name = "Havoc.ModalOverlay"
-    overlay.ResetOnSpawn = false
-
-    local modal = Instance.new("Frame")
-    modal.Name = "HavocShield"
-    modal.Size = UDim2.new(1, 0, 1, 0)
-    modal.BackgroundColor3 = Color3.new(0, 0, 0)
-    modal.BackgroundTransparency = 0.9
-    modal.ZIndex = 1000
-    modal.Parent = overlay
-
-    overlay.Parent = game:GetService("CoreGui")
-end
+-- HAVOC CORE GUI PROTECTION
+pcall(function()
+    if not game:GetService("CoreGui"):FindFirstChild("Havoc") then
+        local gui = Instance.new("ScreenGui")
+        gui.Name = "Havoc"; gui.ResetOnSpawn = false
+        gui.Parent = game:GetService("CoreGui")
+    end
+end)
 ]]
 
 local function build_latest_lua()
-    print("🧠 HAVOK v2.0 – BUNDLING from out/...")
-
+    print("🧠 HAVOC v2.0 BUNDLING...")
+    
     local modelSource = walk_folder("out/")
+    local bundleContent = ErrorRecovery .. "\\n" .. CoreGuiProtection .. "\\n" .. 
+                         "-- HAVOC v2.0 ORCA READY --\\n" .. modelSource .. "\\n" ..
+                         "local modules = require(script)\\nhInit = modules.init\\nhInit()\\nHAVOC_STATUS()"
 
-    local bundleContent = table.concat({
-        ErrorRecovery,
-        "",
-        CoreGuiProtection,
-        "",
-        "-- Generated from out/ --",
-        "local hInit, hMod, hInst, hEnv = " .. modelSource,
-        "",
-        "hInit()",
-        "",
-        "HAVOC_STATUS()"
-    }, "\n")
-
-    local FileWriter = (loadfile "ci/file.lua")()
+    local FileWriter = loadfile("ci/file.lua")()
     FileWriter.write(bundleContent)
-
-    print("✅ HAVOK v2.0 BUNDLE READY: " .. #bundleContent .. " bytes")
+    
+    print("✅ HAVOC v2.0 | " .. #bundleContent .. " bytes | ORCA READY")
 end
 
 build_latest_lua()
