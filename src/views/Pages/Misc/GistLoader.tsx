@@ -3,17 +3,13 @@ import { hooked, useState, useCallback } from "@rbxts/roact-hooked";
 import TextBoxWithDropdown from "components/TextBoxWithDropdown";
 import { px } from "utils/udim2";
 
-type GistInfo = {
+interface GistInfo {
 	id: string;
 	url: string;
 	description: string;
-};
+}
 
 function GistLoader() {
-	const [gistUrl, setGistUrl] = useState("");
-	const [gistList, setGistList] = useState<GistInfo[]>([]);
-	const [selectedGist, setSelectedGist] = useState<GistInfo | undefined>(undefined);
-
 	const theme = {
 		button: {
 			background: new Color3(0.15, 0.15, 0.15),
@@ -21,10 +17,14 @@ function GistLoader() {
 		},
 	};
 
+	const [gistUrl, setGistUrl] = useState("");
+	const [gistList, setGistList] = useState<GistInfo[]>([]);
+	const [selectedGist, setSelectedGist] = useState<GistInfo | undefined>(undefined);
+
 	const fetchGists = useCallback((query: string) => {
-		// @ts-expect-error rbxtsc + noLib = no string.length
-		// But query is a string
-		if (query.length > 0) {
+		// rbxtsc wants a number or boolean, so we cast length
+		const queryLen = query.size();
+		if (queryLen > 0) {
 			const fakeGists: GistInfo[] = [
 				{ id: "123", url: "https://api.github.com/gists/123", description: "Misc utilities" },
 				{ id: "456", url: "https://api.github.com/gists/456", description: "UI tweaks" },
@@ -45,6 +45,7 @@ function GistLoader() {
 
 	const runGist = useCallback(() => {
 		if (!selectedGist) return;
+		// No real Havoc call now
 		print("Would run:", selectedGist.url);
 	}, [selectedGist]);
 
@@ -68,7 +69,12 @@ function GistLoader() {
 			>
 				<uicorner CornerRadius={new UDim(0, 8)} />
 			</textbutton>
-			<TextBoxWithDropdown text={gistUrl} setText={updateGistList} options={gistList} onSelected={onSelected} />
+			<TextBoxWithDropdown
+				text={gistUrl}
+				setText={updateGistList}
+				options={gistList}
+				onSelected={onSelected}
+			/>
 		</frame>
 	);
 }
