@@ -29,12 +29,22 @@ local function walkModule(script, output)
 end
 
 local function walkRec(root, output)
+    -- If root is nil, use game
     if not root then
-        print("⚠️  walkRec: root is nil, using game as fallback")
         root = game
     end
 
-    for _, child in ipairs(root:GetDescendants()) do
+    -- Now root is guaranteed not nil
+    local descendants
+    pcall(function()
+        descendants = root:GetDescendants()
+    end)
+
+    if not descendants then
+        descendants = {}
+    end
+
+    for _, child in ipairs(descendants) do
         walkModule(child, output)
     end
 end
