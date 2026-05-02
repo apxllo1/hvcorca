@@ -1,17 +1,11 @@
 --[[
     ╔══════════════════════════════════════════════════════╗
     ║                HAVOC v2.0 - BUNDLER                  ║
-    ║              Option B – Runtime Separate             ║
     ╚══════════════════════════════════════════════════════╝
 ]]--
 
--- Load from ci/ folder
 local BundleWalker = (loadfile "ci/walk.lua")()
 local FileWriter   = (loadfile "ci/file.lua")()
-
--- ============================================================================
--- STUDIOS ERROR RECOVERY ENGINE (as Lua code string)
--- ============================================================================
 
 local ErrorRecovery = [[
 -- HAVOC STUDIOS ERROR RECOVERY v2.0
@@ -49,10 +43,6 @@ HAVOC_STATUS = function()
 end
 ]]
 
--- ============================================================================
--- CORE GUI PROTECTION LAYER (as Lua code string)
--- ============================================================================
-
 local CoreGuiProtection = [[
 -- HAVOC CORE GUI PROTECTION LAYER
 if not game:GetService("CoreGui"):FindFirstChild("Havoc.ModalOverlay") then
@@ -72,26 +62,19 @@ if not game:GetService("CoreGui"):FindFirstChild("Havoc.ModalOverlay") then
 end
 ]]
 
--- ============================================================================
--- PRODUCTION BUNDLE GENERATOR
--- ============================================================================
-
 local function buildProductionBundle(srcRoot)
     print("🔨 Compiling Havoc v2.0 STUDIOS...")
 
-    -- If srcRoot is nil, walk.lua uses game as fallback
     local modelSource = BundleWalker.walk(srcRoot)
 
-    -- Build final bundle as one Lua string (no runtime.lua inlined)
     local bundleContent = table.concat({
         ErrorRecovery,
         "",
         CoreGuiProtection,
         "",
-        -- modelSource must already define hInit, hMod, hInst, hEnv
         "local hInit, hMod, hInst, hEnv = " .. modelSource,
         "",
-        "hInit()",             -- boots the loader
+        "hInit()",
         "",
         "HAVOC_STATUS()"
     }, "\n")
@@ -100,13 +83,7 @@ local function buildProductionBundle(srcRoot)
 
     print("✅ HAVOC v2.0 STUDIOS READY")
     print("   📦 Size: " .. #bundleContent .. " bytes")
-    print("   🛡️  Error Recovery: ACTIVE")
-    print("   🛡️  CoreGui Shield: ACTIVE")
 end
 
--- ============================================================================
--- INITIALIZE BUNDLE BUILD
--- ============================================================================
-
--- Let `src` come from environment (or be nil)
-buildProductionBundle(src)
+-- Explicitly load Havoc.rbxm and walk its root (or ReplicatedStorage.Havoc)
+buildProductionBundle(game)
