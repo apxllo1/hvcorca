@@ -1,6 +1,13 @@
-local File = {}
-local OUTPUT_PATH = "public/latest.lua"
-function File.write(content)
-    remodel.writeFile(OUTPUT_PATH, content)
+local FileStream = {}
+
+function FileStream.write(content)
+    local file = io.open("public/latest.lua", "w")
+    if not file then
+        error("Failed to open public/latest.lua for writing")
+    end
+    file:write(content)
+    file:close()
+    print("✅ Wrote public/latest.lua")
 end
-return File
+
+return FileStream
