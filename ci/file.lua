@@ -4,21 +4,11 @@
 
 local File = {}
 
--- Write bundle to public/latest.lua (or wherever you want)
+-- Write bundle into repo's public/latest.lua
 local OUTPUT_PATH = "public/latest.lua"
 
 function File.write(content)
-    local file, err = io.open(OUTPUT_PATH, "w")
-    if not file then
-        -- If `warn` doesn't exist, use `print` as fallback
-        (warn or print)("HAVOC FileWriter: could not open file: " .. tostring(err))
-        return
-    end
-
-    file:write(content)
-    file:close()
-
-    (warn or print)("📦 HAVOC bundle written to: " .. OUTPUT_PATH)
+    remodel.writeFile(OUTPUT_PATH, content)
 end
 
 return File
