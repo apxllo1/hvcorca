@@ -1,0 +1,11 @@
+# Ignore Lua files from auto‑formatting
+ci/*.lua
+public/latest.lua
+public/latest.debug.lua
+
+# Optional: if you add more Lua‑related folders later
+*.rbxm
+*.rbxl
+build/
+.rojo/
+node_modules/
