@@ -1,13 +1,13 @@
 --[[
     ╔══════════════════════════════════════════════════════╗
     ║                HAVOC v2.0 - BUNDLER                  ║
-    ║              Production-Ready • Syntax Clean         ║
+    ║              Option B – Runtime Separate              ║
     ╚══════════════════════════════════════════════════════╝
 ]]--
 
 -- Load walk.lua and file.lua as sibling files in ci/
-local BundleWalker = (loadfile "walk.lua")()
-local FileWriter   = (loadfile "file.lua")()
+local BundleWalker = (loadfile "ci/walk.lua")()
+local FileWriter   = (loadfile "ci/file.lua")()
 
 -- ============================================================================
 -- STUDIOS ERROR RECOVERY ENGINE (as Lua code string)
@@ -34,7 +34,9 @@ local function originalError(msg, level)
     }
 
     local fix = fixes[msg] or "Run HAVOC_STATUS()"
-    warn(string.format("HAVOC[%s:%d] %s\nFIX: %s", file, line, msg, fix))
+    warn(
+        string.format("HAVOC[%s:%d] %s\nFIX: %s", file, line, msg, fix)
+    )
 
     table.insert(ErrorLog, {file=file, line=line, msg=msg})
     return error(msg, level + 1)
@@ -77,21 +79,22 @@ end
 local function buildProductionBundle(srcRoot)
     print("🔨 Compiling Havoc v2.0 STUDIOS...")
 
-    -- Allow walk.lua to handle nil `srcRoot` safely (dummy / empty bundle)
+    -- If no root given, walk.lua defines its own dummy root
     local modelSource = BundleWalker.walk(srcRoot)
 
-    -- Build the final bundle as one Lua string
+    -- Build final bundle as one Lua string (no runtime.lua inlined)
     local bundleContent = table.concat({
         ErrorRecovery,
         "",
         CoreGuiProtection,
         "",
+        -- modelSource must already define hInit, hMod, hInst, hEnv
         "local hInit, hMod, hInst, hEnv = " .. modelSource,
         "",
-        "hInit()",
+        "hInit()",             -- boots the loader
         "",
         "HAVOC_STATUS()"
-    }, "\n")
+    }, "\n")  -- use proper \n, not \\n
 
     FileWriter.write(bundleContent)
 
