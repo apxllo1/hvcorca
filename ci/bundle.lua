@@ -86,4 +86,4 @@ local function buildProductionBundle(srcRoot)
 end
 
 -- Explicitly load Havoc.rbxm and walk its root (or ReplicatedStorage.Havoc)
-buildProductionBundle(game)
+buildProductionBundle(ReplicatedStorage:FindFirstChild("Havoc"))
