@@ -3,10 +3,12 @@ import { hooked, useState, useCallback } from "@rbxts/roact-hooked";
 import TextBoxWithDropdown from "components/TextBoxWithDropdown";
 import { px } from "utils/udim2";
 
-interface GistInfo {
+export interface GistInfo {
 	id: string;
 	url: string;
 	description: string;
+	label: string;
+	value: string;
 }
 
 function GistLoader() {
@@ -22,12 +24,23 @@ function GistLoader() {
 	const [selectedGist, setSelectedGist] = useState<GistInfo | undefined>(undefined);
 
 	const fetchGists = useCallback((query: string) => {
-		// rbxtsc wants a number or boolean, so we cast length
 		const queryLen = query.size();
 		if (queryLen > 0) {
 			const fakeGists: GistInfo[] = [
-				{ id: "123", url: "https://api.github.com/gists/123", description: "Misc utilities" },
-				{ id: "456", url: "https://api.github.com/gists/456", description: "UI tweaks" },
+				{
+					id: "123",
+					url: "https://api.github.com/gists/123",
+					description: "Misc utilities",
+					label: "Misc utilities",
+					value: "https://api.github.com/gists/123",
+				},
+				{
+					id: "456",
+					url: "https://api.github.com/gists/456",
+					description: "UI tweaks",
+					label: "UI tweaks",
+					value: "https://api.github.com/gists/456",
+				},
 			];
 			setGistList(fakeGists);
 		} else {
@@ -45,7 +58,6 @@ function GistLoader() {
 
 	const runGist = useCallback(() => {
 		if (!selectedGist) return;
-		// No real Havoc call now
 		print("Would run:", selectedGist.url);
 	}, [selectedGist]);
 
@@ -54,7 +66,11 @@ function GistLoader() {
 	}, []);
 
 	return (
-		<frame Key="GistLoader" Size={px(400, 300)} BackgroundTransparency={1}>
+		<frame
+			Key="GistLoader"
+			Size={px(400, 300)}
+			BackgroundTransparency={1}
+		>
 			<textbutton
 				Key="RunButton"
 				Text="Run Gist"
@@ -67,9 +83,16 @@ function GistLoader() {
 					Activated: runGist,
 				}}
 			>
-				<uicorner CornerRadius={new UDim(0, 8)} />
+				<uicorner
+					CornerRadius={new UDim(0, 8)}
+				/>
 			</textbutton>
-			<TextBoxWithDropdown text={gistUrl} setText={updateGistList} options={gistList} onSelected={onSelected} />
+			<TextBoxWithDropdown
+				text={gistUrl}
+				setText={updateGistList}
+				options={gistList}
+				onSelected={onSelected}
+			/>
 		</frame>
 	);
 }
