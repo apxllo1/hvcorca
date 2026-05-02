@@ -1,16 +1,12 @@
 import Make from "@rbxts/make";
 import Roact from "@rbxts/roact";
-
-// Minimal UI for testing
-import VerySimpleApp from "./VerySimpleApp";
-// When you want full UI, use this:
-// import App from "./App";
 import { Provider } from "@rbxts/roact-rodux-hooked";
 import { configureStore } from "store/store";
 import { setStore } from "jobs";
 import { toggleDashboard } from "store/actions/dashboard.action";
 import { Players, RunService } from "@rbxts/services";
 import { IS_DEV } from "constants";
+import App from "./App";
 
 const LOAD_GUARD = "_HAVOC_IS_LOADED";
 
@@ -19,30 +15,26 @@ async function main() {
 	if (g[LOAD_GUARD] === true) return;
 
 	try {
-		// Rodux store (you can keep this, even if you switch UI)
 		const store = configureStore();
 		setStore(store);
 
-		// Parent to CoreGui / PlayerGui
 		const host = IS_DEV
 			? (Players.LocalPlayer.WaitForChild("PlayerGui") as Instance)
 			: (game.GetService("CoreGui") as Instance);
 
-		const container = Make("Folder", { Name: "HavocMount", Parent: host });
+		const container = Make("Folder", {
+			Name: "HavocMount",
+			Parent: host,
+		});
 
-		// === 1. Test UI that should compile ===
 		Roact.mount(
-			<Provider store={store}>
+			<Provider
+				store={store}
+			>
 				<App />
 			</Provider>,
 			container,
 		);
-
-		// === 2. OPTIONAL: VerySimpleApp (no Rodux)
-		// Roact.mount(
-		// 	<VerySimpleApp />,
-		// 	container,
-		// );
 
 		let app = container.FindFirstChildWhichIsA("ScreenGui");
 		const start = os.clock();
@@ -53,12 +45,12 @@ async function main() {
 
 		if (!app) throw "ScreenGui failed to render";
 
-		// Executor Protection
 		const synObj = syn as unknown as { protect_gui?: (gui: Instance) => void };
 		if (synObj?.protect_gui) pcall(() => synObj.protect_gui!(app!));
 
-		// Fix: gethui is not in normal TS; use CoreGui
-		app.Parent = game.GetService("CoreGui") as Instance;
+		// Use CoreGui, not gethui (rbxtsc doesn't know it)
+		app.Parent = (game.GetService("CoreGui") as Instance);
+		// Or if you prefer, just comment this line out
 
 		g[LOAD_GUARD] = true;
 		if (time() > 3) task.defer(() => store.dispatch(toggleDashboard()));
