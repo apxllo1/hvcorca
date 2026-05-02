@@ -1,12 +1,12 @@
-import Roact, { Children, Change, Event } from "@rbxts/roact";
-import { hooked, useState, useBinding } from "@rbxts/roact-hooked";
+import Roact from "@rbxts/roact";
+import { hooked, useState } from "@rbxts/roact-hooked";
 import { px } from "utils/udim2";
 
-// Simple string‑option for now
-type Option = {
+// Simple concrete option type (no generics, no Rodux‑style typing mess)
+interface Option {
 	label: string;
 	value: string;
-};
+}
 
 interface Props {
 	text: string;
@@ -17,16 +17,13 @@ interface Props {
 
 function TextBoxWithDropdown({ text, setText, options, onSelected }: Props) {
 	const [focused, setFocused] = useState(false);
-	// Just use `boolean`, not `Binding<boolean>`
-	const dropdownVisible = focused && options.length > 0;
+	const dropdownVisible = focused && options.length > 0; // This should now WORK
 
-	const handleInput = (rbx: TextBox, entered: boolean, _input: InputObject) => {
-		if (entered) {
-			setText(rbx.Text);
-		}
+	const handleTextChange = (rbx: TextBox) => {
+		setText(rbx.Text);
 	};
 
-	const handleSelection = (option: Option) => {
+	const handleSelect = (option: Option) => {
 		setText(option.label);
 		onSelected(option);
 	};
@@ -40,20 +37,15 @@ function TextBoxWithDropdown({ text, setText, options, onSelected }: Props) {
 				TextColor3={new Color3(1, 1, 1)}
 				Font={Enum.Font.Gotham}
 				TextSize={14}
-				AutoButtonColor={false}
 				Position={px(0, 0)}
 				Size={px(300, 30)}
 				Change={{
-					Text: (rbx) => {
-						// Mirror text to state
-						setText(rbx.Text);
-					},
+					Text: handleTextChange,
 				}}
 			>
 				<uipadding PaddingLeft={new UDim(0, 8)} PaddingRight={new UDim(0, 8)} />
 			</textbox>
 
-			{/* Dropdown only visible when focused and options exist */}
 			{dropdownVisible && (
 				<scrollingframe
 					Key="Dropdown"
@@ -63,7 +55,10 @@ function TextBoxWithDropdown({ text, setText, options, onSelected }: Props) {
 					ScrollBarThickness={2}
 					AutomaticCanvasSize={Enum.AutomaticSize.Y}
 				>
-					<uilistlayout Padding={new UDim(0, 2)} SortOrder={Enum.SortOrder.LayoutOrder} />
+					<uilistlayout
+						Padding={new UDim(0, 2)}
+						SortOrder={Enum.SortOrder.LayoutOrder}
+					/>
 					{options.map((opt, i) => (
 						<textbutton
 							Key={`Option${i}`}
@@ -76,7 +71,7 @@ function TextBoxWithDropdown({ text, setText, options, onSelected }: Props) {
 							AutoButtonColor={false}
 							Event={{
 								Activated: () => {
-									handleSelection(opt);
+									handleSelect(opt);
 								},
 							}}
 						/>
