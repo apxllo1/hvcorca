@@ -1,5 +1,6 @@
 {
 	"compilerOptions": {
+		"noLib": true,
 		"allowSyntheticDefaultImports": true,
 		"downlevelIteration": true,
 		"jsx": "react",
@@ -12,11 +13,7 @@
 		"strict": true,
 		"target": "es2017",
 		"typeRoots": ["node_modules/@rbxts", "types"],
-
-		"lib": ["es2017"],
-
 		"esModuleInterop": true,
-
 		"rootDir": "src",
 		"outDir": "out",
 		"baseUrl": "src",
