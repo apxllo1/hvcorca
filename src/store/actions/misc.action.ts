@@ -6,17 +6,11 @@ export type MiscAction =
 	| Rodux.InferActionFromCreator<typeof setCurrentGist>
 	| Rodux.InferActionFromCreator<typeof clearGistError>;
 
-export const setGistActive = Rodux.makeActionCreator(
-	"misc/setGistActive",
-	(active: boolean) => ({ active }),
-);
+export const setGistActive = Rodux.makeActionCreator("misc/setGistActive", (active: boolean) => ({ active }));
 
 export const setCurrentGist = Rodux.makeActionCreator(
 	"misc/setCurrentGist",
-	(gist: { url: string; id: string } | null) => ({ gist }),
+	(gist: { url: string; id: string } | undefined) => ({ gist }),
 );
 
-export const clearGistError = Rodux.makeActionCreator(
-	"misc/clearGistError",
-	() => ({}),
-);
+export const clearGistError = Rodux.makeActionCreator("misc/clearGistError", () => ({}));
