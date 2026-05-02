@@ -62,10 +62,12 @@ if not game:GetService("CoreGui"):FindFirstChild("Havoc.ModalOverlay") then
 end
 ]]
 
-local function buildProductionBundle(srcRoot)
+local function buildProductionBundle()
     print("🔨 Compiling Havoc v2.0 STUDIOS...")
 
-    local modelSource = BundleWalker.walk(srcRoot)
+    -- Let walk.lua own its own dummy srcRoot logic
+    -- (or change it to read out/ from the filesystem instead)
+    local modelSource = BundleWalker.walk(game)
 
     local bundleContent = table.concat({
         ErrorRecovery,
@@ -85,5 +87,5 @@ local function buildProductionBundle(srcRoot)
     print("   📦 Size: " .. #bundleContent .. " bytes")
 end
 
--- Explicitly load Havoc.rbxm and walk its root (or ReplicatedStorage.Havoc)
-buildProductionBundle(ReplicatedStorage:FindFirstChild("Havoc"))
+-- Run with game as the root
+buildProductionBundle()
