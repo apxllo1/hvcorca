@@ -5,6 +5,7 @@ import { useTheme } from "hooks/use-theme";
 import { DashboardPage } from "store/models/dashboard.model";
 import { px } from "utils/udim2";
 import FacebangModal from "./FacebangModal";
+import GistLoader from "./GistLoader"; // ← new import
 
 function MiscPage() {
 	const theme = useTheme("apps").players;
@@ -34,6 +35,7 @@ function MiscPage() {
 					HorizontalAlignment={Enum.HorizontalAlignment.Center}
 				/>
 
+				{/* Facebang section */}
 				<textbutton
 					Key="FacebangButton"
 					Text="Facebang Settings"
@@ -59,6 +61,9 @@ function MiscPage() {
 						Transparency={isHovered ? 0.2 : 0.6}
 					/>
 				</textbutton>
+
+				{/* Gist‑loader section (search + dropdown + run button) */}
+				<GistLoader />
 			</scrollingframe>
 
 			{modalVisible && (
