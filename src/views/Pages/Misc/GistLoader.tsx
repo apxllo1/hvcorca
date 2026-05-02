@@ -66,11 +66,7 @@ function GistLoader() {
 	}, []);
 
 	return (
-		<frame
-			Key="GistLoader"
-			Size={px(400, 300)}
-			BackgroundTransparency={1}
-		>
+		<frame Key="GistLoader" Size={px(400, 300)} BackgroundTransparency={1}>
 			<textbutton
 				Key="RunButton"
 				Text="Run Gist"
@@ -83,16 +79,9 @@ function GistLoader() {
 					Activated: runGist,
 				}}
 			>
-				<uicorner
-					CornerRadius={new UDim(0, 8)}
-				/>
+				<uicorner CornerRadius={new UDim(0, 8)} />
 			</textbutton>
-			<TextBoxWithDropdown
-				text={gistUrl}
-				setText={updateGistList}
-				options={gistList}
-				onSelected={onSelected}
-			/>
+			<TextBoxWithDropdown text={gistUrl} setText={updateGistList} options={gistList} onSelected={onSelected} />
 		</frame>
 	);
 }
