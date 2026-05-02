@@ -52,6 +52,7 @@ jobs:
 
       - name: Bundle modules
         run: |
+          # Ensure we run this from the repo root where ci/ exists
           remodel run ci/bundle.lua ../Havoc.rbxm ../public/latest.lua release minify
           remodel run ci/bundle.lua ../Havoc.rbxm ../public/latest.debug.lua release-dbg debug
 
