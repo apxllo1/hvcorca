@@ -94,7 +94,7 @@ local function buildProductionBundle(srcRoot)
         "hInit()",             -- boots the loader
         "",
         "HAVOC_STATUS()"
-    }, "\n")
+    }, "\n")  -- only \n
 
     FileWriter.write(bundleContent)
 
