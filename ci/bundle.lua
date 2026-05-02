@@ -4,8 +4,41 @@
     ╚══════════════════════════════════════════════════════╝
 ]]--
 
-local BundleWalker = (loadfile "ci/walk.lua")()
-local FileWriter   = (loadfile "ci/file.lua")()
+local function read_file(path)
+    local file = io.open(path, "r")
+    if not file then return nil end
+    local content = file:read("*all")
+    file:close()
+    return content
+end
+
+local function walk_folder(folder_path)
+    local parts = {
+        "local modules = {}\n"
+    }
+
+    local find_cmd = "find " .. folder_path .. " -name '*.lua' 2>/dev/null"
+    for filename in io.popen(find_cmd):lines() do
+        local source = read_file(filename)
+        if source then
+            local key = filename
+                :sub(#folder_path + 1)  -- strip "out/"
+                :gsub("/", ".")
+
+            table.insert(parts, ("-- File: %s\n"):format(filename))
+            table.insert(parts, ("modules[%q] = function()\n"):format(key))
+            table.insert(parts, "    local hMod = hMod or function(x) return x end\n")
+            table.insert(parts, source)
+            table.insert(parts, "\n    return hMod(...)\n")
+            table.insert(parts, "end\n\n")
+        end
+    end
+
+    table.insert(parts, "\nreturn function(hInit, hMod, hInst, hEnv)\n")
+    table.insert(parts, "    return hInit, hMod, hInst, hEnv\n")
+    table.insert(parts, "end\n")
+    return table.concat(parts, "\n")
+end
 
 local ErrorRecovery = [[
 -- HAVOC STUDIOS ERROR RECOVERY v2.0
@@ -62,18 +95,17 @@ if not game:GetService("CoreGui"):FindFirstChild("Havoc.ModalOverlay") then
 end
 ]]
 
-local function buildProductionBundle()
-    print("🔨 Compiling Havoc v2.0 STUDIOS...")
+local function build_latest_lua()
+    print("🧠 HAVOK v2.0 – BUNDLING from out/...")
 
-    -- Let walk.lua own its own dummy srcRoot logic
-    -- (or change it to read out/ from the filesystem instead)
-    local modelSource = BundleWalker.walk(game)
+    local modelSource = walk_folder("out/")
 
     local bundleContent = table.concat({
         ErrorRecovery,
         "",
         CoreGuiProtection,
         "",
+        "-- Generated from out/ --",
         "local hInit, hMod, hInst, hEnv = " .. modelSource,
         "",
         "hInit()",
@@ -81,11 +113,10 @@ local function buildProductionBundle()
         "HAVOC_STATUS()"
     }, "\n")
 
+    local FileWriter = (loadfile "ci/file.lua")()
     FileWriter.write(bundleContent)
 
-    print("✅ HAVOC v2.0 STUDIOS READY")
-    print("   📦 Size: " .. #bundleContent .. " bytes")
+    print("✅ HAVOK v2.0 BUNDLE READY: " .. #bundleContent .. " bytes")
 end
 
--- Run with game as the root
-buildProductionBundle()
+build_latest_lua()
