@@ -23,7 +23,7 @@ jobs:
         with:
           node-version: 20
 
-      # Remove this whole OpenSSL step; it's not needed on ubuntu-22.04
+      # Remove the OpenSSL 1.1 step; it's not needed
       #      - name: Install OpenSSL 1.1
       #        run: |
       #          wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb
@@ -54,8 +54,9 @@ jobs:
 
       - name: Bundle modules
         run: |
-          remodel run ci/bundle.lua Havoc.rbxm public/latest.lua release minify
-          remodel run ci/bundle.lua Havoc.rbxm public/latest.debug.lua release-dbg debug
+          cd ci
+          remodel run bundle.lua ../Havoc.rbxm ../public/latest.lua release minify
+          remodel run bundle.lua ../Havoc.rbxm ../public/latest.debug.lua release-dbg debug
 
       - name: Commit latest
         uses: EndBug/add-and-commit@v9
