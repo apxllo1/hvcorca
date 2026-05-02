@@ -77,8 +77,8 @@ end
 local function buildProductionBundle(srcRoot)
     print("🔨 Compiling Havoc v2.0 STUDIOS...")
 
-    -- If srcRoot is nil, assume walk.lua defines a dummy root
-    local modelSource = BundleWalker.walk(srcRoot or hvcoroa.src)
+    -- If no root given, let walk.lua define its own dummy root
+    local modelSource = BundleWalker.walk(srcRoot)
 
     -- Build the final bundle as one Lua string
     local bundleContent = table.concat({
@@ -101,10 +101,10 @@ local function buildProductionBundle(srcRoot)
     print("   🛡️  CoreGui Shield: ACTIVE")
 end
 
---[[
-    ── Initialize bundle build
-    In remodel, ensure `hvcoroa.src` is defined.
-    In Roblox, this can be set via environment injection or loading from data model.
-]]--
+-- ============================================================================
+-- INITIALIZE BUNDLE BUILD
+-- ============================================================================
 
+-- Pass the src root from the environment here; if not passed, allow walk.lua to define it
+-- In remodel, ideally call this via: remodel run bundle.lua --arg "src = ...some_instance"
 buildProductionBundle()
