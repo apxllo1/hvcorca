@@ -23,3 +23,13 @@ npm-debug.log*
 
 # roblox-ts
 tsconfig.tsbuildinfo
+
+# Prettier / ESLint cache
+.yarn/cache
+.prettier-cache
+
+# Optional: temp editor / build folders
+.cache/
+.rojo/
+.place-temp/
+.tgt-temp/
