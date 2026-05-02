@@ -2,17 +2,29 @@ import Roact from "@rbxts/roact";
 import { hooked, useState } from "@rbxts/roact-hooked";
 import { px } from "utils/udim2";
 
-const TextBoxWithDropdown: Roact.FunctionComponent<any> = ({ text, setText, options, onSelected }) => {
+interface Option {
+	label: string;
+	value: string;
+}
+
+interface Props {
+	text: string;
+	setText: (text: string) => void;
+	options: Option[];
+	onSelected: (option: Option) => void;
+}
+
+function TextBoxWithDropdown({ text, setText, options, onSelected }: Props) {
 	const [focused, setFocused] = useState(false);
 
-	// @ts-expect-error rbxtsc + noLib = no Array.length
-	const dropdownVisible = focused && (options as unknown as any[]).length > 0;
+	// rbxtsc wants a number or boolean, so we cast length to number
+	const dropdownVisible = focused && (options ? options.size() : 0) > 0;
 
 	const handleTextChange = (rbx: TextBox) => {
 		setText(rbx.Text);
 	};
 
-	const handleSelect = (option: any) => {
+	const handleSelect = (option: Option) => {
 		setText(option.label);
 		onSelected(option);
 	};
@@ -44,8 +56,11 @@ const TextBoxWithDropdown: Roact.FunctionComponent<any> = ({ text, setText, opti
 					ScrollBarThickness={2}
 					AutomaticCanvasSize={Enum.AutomaticSize.Y}
 				>
-					<uilistlayout Padding={new UDim(0, 2)} SortOrder={Enum.SortOrder.LayoutOrder} />
-					{(options as any[]).map((opt, i) => (
+					<uilistlayout
+						Padding={new UDim(0, 2)}
+						SortOrder={Enum.SortOrder.LayoutOrder}
+					/>
+					{options.map((opt, i) => (
 						<textbutton
 							Key={`Option${i}`}
 							Text={opt.label}
@@ -66,6 +81,6 @@ const TextBoxWithDropdown: Roact.FunctionComponent<any> = ({ text, setText, opti
 			)}
 		</frame>
 	);
-};
+}
 
 export default hooked(TextBoxWithDropdown);
