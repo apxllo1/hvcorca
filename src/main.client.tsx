@@ -1,9 +1,9 @@
 import Make from "@rbxts/make";
 import Roact from "@rbxts/roact";
 
-// Try a minimal UI first (no Rodux / hooks / dashboard)
+// Minimal UI for testing
 import VerySimpleApp from "./VerySimpleApp";
-// When you want to go back to full UI, uncomment this and comment VerySimpleApp:
+// When you want full UI, use this:
 // import App from "./App";
 import { Provider } from "@rbxts/roact-rodux-hooked";
 import { configureStore } from "store/store";
@@ -30,14 +30,17 @@ async function main() {
 
 		const container = Make("Folder", { Name: "HavocMount", Parent: host });
 
-		// === 1. Use the minimal UI to test if compilation works ===
-		Roact.mount(<VerySimpleApp />, container);
+		// === 1. Test UI that should compile ===
+		Roact.mount(
+			<Provider store={store}>
+				<App />
+			</Provider>,
+			container,
+		);
 
-		// === 2. Optional: when you want to test your full UI, use this instead:
+		// === 2. OPTIONAL: VerySimpleApp (no Rodux)
 		// Roact.mount(
-		// 	<Provider store={store}>
-		// 		<App />
-		// 	</Provider>,
+		// 	<VerySimpleApp />,
 		// 	container,
 		// );
 
@@ -54,9 +57,8 @@ async function main() {
 		const synObj = syn as unknown as { protect_gui?: (gui: Instance) => void };
 		if (synObj?.protect_gui) pcall(() => synObj.protect_gui!(app!));
 
-		if (!IS_DEV) {
-			app.Parent = (gethui ? gethui() : game.GetService("CoreGui")) as Instance;
-		}
+		// Fix: gethui is not in normal TS; use CoreGui
+		app.Parent = game.GetService("CoreGui") as Instance;
 
 		g[LOAD_GUARD] = true;
 		if (time() > 3) task.defer(() => store.dispatch(toggleDashboard()));
