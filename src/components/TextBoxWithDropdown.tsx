@@ -6,7 +6,6 @@ import { px } from "utils/udim2";
 const TextBoxWithDropdown: Roact.FunctionComponent<any> = ({ text, setText, options, onSelected }) => {
 	const [focused, setFocused] = useState(false);
 
-	// @ts-expect-error
 	const dropdownVisible = focused && options.length > 0;
 
 	const handleTextChange = (rbx: TextBox) => {
