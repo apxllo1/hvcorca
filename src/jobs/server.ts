@@ -20,7 +20,9 @@ interface GameServersResponse {
 async function onServerHop(): Promise<void> {
 	queueExecution();
 
-	const serversResult = await http.get(`https://games.roblox.com/v1/games/${game.PlaceId}/servers/Public?sortOrder=Asc&limit=100`);
+	const serversResult = await http.get(
+		`https://games.roblox.com/v1/games/${game.PlaceId}/servers/Public?sortOrder=Asc&limit=100`,
+	);
 	const servers = HttpService.JSONDecode(serversResult) as GameServersResponse;
 
 	const serversAvailable = servers.data.filter(
