@@ -5,9 +5,9 @@
     ╚══════════════════════════════════════════════════════╝
 ]]--
 
--- Load walk.lua and file.lua in the same ci/ folder (no "ci/" prefix)
-local BundleWalker = (loadfile "walk.lua")()
-local FileWriter   = (loadfile "file.lua")()
+-- Load from ci/ subfolder (not the repo root)
+local BundleWalker = (loadfile "ci/walk.lua")()
+local FileWriter   = (loadfile "ci/file.lua")()
 
 -- ============================================================================
 -- STUDIOS ERROR RECOVERY ENGINE (as Lua code string)
@@ -94,7 +94,7 @@ local function buildProductionBundle(srcRoot)
         "hInit()",             -- boots the loader
         "",
         "HAVOC_STATUS()"
-    }, "\n")  -- only \n
+    }, "\n")
 
     FileWriter.write(bundleContent)
 
