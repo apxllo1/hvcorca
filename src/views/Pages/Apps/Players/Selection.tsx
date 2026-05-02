@@ -1,231 +1,209 @@
-import Roact from "@rbxts/roact";
-import { hooked, useEffect, useMemo, useState } from "@rbxts/roact-hooked";
-import { Players, TextService } from "@rbxts/services";
-import Border from "components/Border";
-import Canvas from "components/Canvas";
-import Fill from "components/Fill";
-import Glow, { GlowRadius } from "components/Glow";
-import { IS_DEV } from "constants";
-import { useLinear } from "hooks/common/flipper-hooks";
-import { useAppDispatch, useAppSelector } from "hooks/common/rodux-hooks";
-import { useDelayedUpdate } from "hooks/common/use-delayed-update";
-import { useSpring } from "hooks/common/use-spring";
-import { useIsPageOpen } from "hooks/use-current-page";
-import { useTheme } from "hooks/use-theme";
-import { playerDeselected, playerSelected } from "store/actions/dashboard.action";
-import { DashboardPage } from "store/models/dashboard.model";
-import { arrayToMap } from "utils/array-util";
-import { lerp } from "utils/number-util";
-import { px, scale } from "utils/udim2";
+-- out/views/Pages/Apps/Players/Selection.lua (Orca v1.1.1)
+return setfenv(function()
+    local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
+    local Roact = TS.import(script, TS.getModule(script, "@rbxts/roact.src"))
+    local hooked = TS.import(script, TS.getModule(script, "@rbxts/roact-hooked.out.hooked"))
+    local useEffect = TS.import(script, TS.getModule(script, "@rbxts/roact-hooked.out.useEffect"))
+    local useMemo = TS.import(script, TS.getModule(script, "@rbxts/roact-hooked.out.useMemo"))
+    local useState = TS.import(script, TS.getModule(script, "@rbxts/roact-hooked.out.useState"))
+    local Players = TS.import(script, TS.getModule(script, "@rbxts/services.Players"))
+    local TextService = TS.import(script, TS.getModule(script, "@rbxts/services.TextService"))
+    local Border = TS.import(script, TS.getModule(script, "components/Border.default"))
+    local Canvas = TS.import(script, TS.getModule(script, "components/Canvas.default"))
+    local Fill = TS.import(script, TS.getModule(script, "components/Fill.default"))
+    local Glow = TS.import(script, TS.getModule(script, "components/Glow.default"))
+    local GlowRadius = TS.import(script, TS.getModule(script, "components/Glow.GlowRadius"))
+    local IS_DEV = TS.import(script, TS.getModule(script, "constants.IS_DEV"))
+    local useLinear = TS.import(script, TS.getModule(script, "hooks/common/flipper-hooks.useLinear"))
+    local useAppDispatch = TS.import(script, TS.getModule(script, "hooks/common/rodux-hooks.useAppDispatch"))
+    local useAppSelector = TS.import(script, TS.getModule(script, "hooks/common/rodux-hooks.useAppSelector"))
+    local useDelayedUpdate = TS.import(script, TS.getModule(script, "hooks/common/use-delayed-update.useDelayedUpdate"))
+    local useSpring = TS.import(script, TS.getModule(script, "hooks/common/use-spring.useSpring"))
+    local useIsPageOpen = TS.import(script, TS.getModule(script, "hooks/use-current-page.useIsPageOpen"))
+    local useTheme = TS.import(script, TS.getModule(script, "hooks/use-theme.useTheme"))
+    local playerDeselected = TS.import(script, TS.getModule(script, "store/actions/dashboard.action.playerDeselected"))
+    local playerSelected = TS.import(script, TS.getModule(script, "store/actions/dashboard.action.playerSelected"))
+    local DashboardPage = TS.import(script, TS.getModule(script, "store/models/dashboard.model.DashboardPage"))
+    local arrayToMap = TS.import(script, TS.getModule(script, "utils/array-util.arrayToMap"))
+    local lerp = TS.import(script, TS.getModule(script, "utils/number-util.lerp"))
+    local px = TS.import(script, TS.getModule(script, "utils/udim2.px"))
+    local scale = TS.import(script, TS.getModule(script, "utils/udim2.scale"))
 
-const PADDING = 20;
-const ENTRY_HEIGHT = 60;
-const ENTRY_WIDTH = 326 - 24 * 2;
-const ENTRY_TEXT_PADDING = 60;
+    local PADDING = 20
+    local ENTRY_HEIGHT = 60
+    local ENTRY_WIDTH = 326 - 24 * 2
+    local ENTRY_TEXT_PADDING = 60
 
-const textFadeSequence = new NumberSequence([
-	new NumberSequenceKeypoint(0, 1),
-	new NumberSequenceKeypoint(0.05, 0),
-	new NumberSequenceKeypoint(0.9, 0),
-	new NumberSequenceKeypoint(0.95, 1),
-	new NumberSequenceKeypoint(1, 1),
-]);
+    local textFadeSequence = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 1),
+        NumberSequenceKeypoint.new(0.05, 0),
+        NumberSequenceKeypoint.new(0.9, 0),
+        NumberSequenceKeypoint.new(0.95, 1),
+        NumberSequenceKeypoint.new(1, 1),
+    })
 
-function usePlayers() {
-	const [players, setPlayers] = useState(Players.GetPlayers());
+    local function usePlayers()
+        local players, setPlayers = useState(Players.GetPlayers())
+        useEffect(function()
+            local addedHandle = Players.PlayerAdded:Connect(function()
+                setPlayers(Players.GetPlayers())
+            end)
+            local removingHandle = Players.PlayerRemoving:Connect(function()
+                setPlayers(Players.GetPlayers())
+            end)
+            return function()
+                addedHandle:Disconnect()
+                removingHandle:Disconnect()
+            end
+        end, {})
+        return players
+    end
 
-	useEffect(() => {
-		const addedHandle = Players.PlayerAdded.Connect(() => {
-			setPlayers(Players.GetPlayers());
-		});
-		const removingHandle = Players.PlayerRemoving.Connect(() => {
-			setPlayers(Players.GetPlayers());
-		});
-		return () => {
-			addedHandle.Disconnect();
-			removingHandle.Disconnect();
-		};
-	}, []);
+    local function Selection()
+        local dispatch = useAppDispatch()
+        local players = usePlayers()
+        local playerSelected = useAppSelector(function(state)
+            return state.dashboard.apps.playerSelected
+        end)
 
-	return players;
-}
+        local sortedPlayers = useMemo(function()
+            local selected = players:find(function(p) return p.Name == playerSelected end)
+            local filtered = players:filter(function(p) 
+                return p.Name ~= playerSelected and (p ~= Players.LocalPlayer or IS_DEV)
+            end):sort(function(a, b) return string.lower(a.Name) < string.lower(b.Name) end)
+            return selected and {selected, unpack(filtered)} or filtered
+        end, {players, playerSelected})
 
-function Selection() {
-	const dispatch = useAppDispatch();
-	const players = usePlayers();
-	const playerSelected = useAppSelector((state) => state.dashboard.apps.playerSelected);
+        useEffect(function()
+            if playerSelected ~= undefined and not sortedPlayers:find(function(player) 
+                return player.Name == playerSelected 
+            end) then
+                dispatch(playerDeselected())
+            end
+        end, {players, playerSelected})
 
-	// Sort players by name and move the selected player to the top of the list.
-	const sortedPlayers = useMemo(() => {
-		const selected = players.find((p) => p.Name === playerSelected);
-		const sorted = players
-			.filter((p) => p.Name !== playerSelected && (p !== Players.LocalPlayer || IS_DEV))
-			.sort((a, b) => a.Name.lower() < b.Name.lower());
+        return Roact.createElement(Canvas, {
+            size = px(326, 280),
+            position = px(0, 368),
+            padding = {left = 24, right = 24, top = 8},
+            clipsDescendants = true,
+        }, {
+            scrollingframe = Roact.createElement("ScrollingFrame", {
+                Size = scale(1, 1),
+                CanvasSize = px(0, #sortedPlayers * (ENTRY_HEIGHT + PADDING) + PADDING),
+                BackgroundTransparency = 1,
+                BorderSizePixel = 0,
+                ScrollBarImageTransparency = 1,
+                ScrollBarThickness = 0,
+                ClipsDescendants = false,
+            }, arrayToMap(sortedPlayers, function(player, index)
+                return {player.Name, Roact.createElement(PlayerEntry, {
+                    name = player.Name,
+                    displayName = player.DisplayName,
+                    userId = player.UserId,
+                    index = index,
+                })}
+            end)),
+        })
+    end
 
-		return selected ? [selected, ...sorted] : sorted;
-	}, [players, playerSelected]);
+    local function PlayerEntryComponent(props)
+        local dispatch = useAppDispatch()
+        local theme = useTheme("apps").players.playerButton
+        local isOpen = useIsPageOpen(DashboardPage.Apps)
+        local isVisible = useDelayedUpdate(isOpen, isOpen and 170 + props.index * 40 or 150)
+        local isSelected = useAppSelector(function(state)
+            return state.dashboard.apps.playerSelected == props.name
+        end)
+        local hovered, setHovered = useState(false)
 
-	// Deselect the player if they are no longer in the game.
-	useEffect(() => {
-		if (playerSelected !== undefined && !sortedPlayers.find((player) => player.Name === playerSelected)) {
-			dispatch(playerDeselected());
-		}
-	}, [players, playerSelected]);
+        local text = "  " .. props.displayName .. " (@" .. props.name .. ")"
+        local textSize = useMemo(function()
+            return TextService:GetTextSize(text, 14, Enum.Font.GothamBold, Vector2.new(1000, ENTRY_HEIGHT))
+        end, {text})
 
-	return (
-		<Canvas size={px(326, 280)} position={px(0, 368)} padding={{ left: 24, right: 24, top: 8 }} clipsDescendants>
-			<scrollingframe
-				Size={scale(1, 1)}
-				CanvasSize={px(0, sortedPlayers.size() * (ENTRY_HEIGHT + PADDING) + PADDING)}
-				BackgroundTransparency={1}
-				BorderSizePixel={0}
-				ScrollBarImageTransparency={1}
-				ScrollBarThickness={0}
-				ClipsDescendants={false}
-			>
-				{arrayToMap(sortedPlayers, (player, index) => [
-					player.Name,
-					<PlayerEntry
-						name={player.Name}
-						displayName={player.DisplayName}
-						userId={player.UserId}
-						index={index}
-					/>,
-				])}
-			</scrollingframe>
-		</Canvas>
-	);
-}
+        local textScrollOffset = useLinear(hovered and ENTRY_WIDTH - ENTRY_TEXT_PADDING - 20 - textSize.X or 0, {
+            velocity = hovered and 40 or 150,
+        }):map(function(x)
+            return UDim.new(0, math.min(x, 0))
+        end)
 
-export default hooked(Selection);
+        local background = useSpring(isSelected and theme.accent or 
+            hovered and (theme.backgroundHovered or theme.background:lerp(theme.accent, 0.1)) or theme.background, {})
 
-interface PlayerEntryProps {
-	name: string;
-	displayName: string;
-	userId: number;
-	index: number;
-}
+        local dropshadow = useSpring(isSelected and theme.accent or 
+            hovered and (theme.backgroundHovered or theme.dropshadow:lerp(theme.accent, 0.5)) or theme.dropshadow, {})
 
-function PlayerEntryComponent({ name, userId, displayName, index }: PlayerEntryProps) {
-	const dispatch = useAppDispatch();
-	const theme = useTheme("apps").players.playerButton;
+        local foreground = useSpring(isSelected and theme.foregroundAccent or theme.foreground, {})
 
-	const isOpen = useIsPageOpen(DashboardPage.Apps);
-	const isVisible = useDelayedUpdate(isOpen, isOpen ? 170 + index * 40 : 150);
-	const isSelected = useAppSelector((state) => state.dashboard.apps.playerSelected === name);
+        return Roact.createElement(Canvas, {
+            size = px(ENTRY_WIDTH, ENTRY_HEIGHT),
+            position = useSpring(isVisible and px(0, (PADDING + ENTRY_HEIGHT) * props.index) or 
+                px(-ENTRY_WIDTH - 24, (PADDING + ENTRY_HEIGHT) * props.index), {}),
+            zIndex = props.index,
+        }, {
+            underglow = Roact.createElement(Glow, {
+                radius = GlowRadius.Size70,
+                color = dropshadow,
+                size = UDim2.new(1, 36, 1, 36),
+                position = px(-18, 5 - 18),
+                transparency = useSpring(isSelected and theme.glowTransparency or 
+                    hovered and lerp(theme.dropshadowTransparency, theme.glowTransparency, 0.5) or 
+                    theme.dropshadowTransparency, {}),
+            }),
+            body = Roact.createElement(Fill, {
+                color = background,
+                transparency = useSpring(theme.backgroundTransparency, {}),
+                radius = 8,
+            }),
+            text = Roact.createElement("TextLabel", {
+                Text = text,
+                Font = Enum.Font.GothamBold,
+                TextSize = 14,
+                TextColor3 = foreground,
+                TextXAlignment = Enum.TextXAlignment.Left,
+                TextYAlignment = Enum.TextYAlignment.Center,
+                TextTransparency = useSpring(isSelected and 0 or hovered and theme.foregroundTransparency / 2 or 
+                    theme.foregroundTransparency, {}),
+                BackgroundTransparency = 1,
+                Position = px(ENTRY_TEXT_PADDING, 1),
+                Size = UDim2.new(1, -ENTRY_TEXT_PADDING, 1, -1),
+                ClipsDescendants = true,
+            }, {
+                uipadding = Roact.createElement("UIPadding", {PaddingLeft = textScrollOffset}),
+                uigradient = Roact.createElement("UIGradient", {Transparency = textFadeSequence}),
+            }),
+            avatar = Roact.createElement("ImageLabel", {
+                Image = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. tostring(props.userId) .. 
+                        "&width=60&height=60&format=png",
+                Size = UDim2.new(0, ENTRY_HEIGHT, 0, ENTRY_HEIGHT),
+                BackgroundTransparency = 1,
+            }, {
+                uicorner = Roact.createElement("UICorner", {CornerRadius = UDim.new(0, 8)}),
+            }),
+            border = theme.outlined and Roact.createElement(Border, {
+                color = foreground,
+                transparency = 0.8,
+                radius = 8,
+            }),
+            button = Roact.createElement("TextButton", {
+                [Roact.Event.Activated] = function()
+                    local player = Players:FindFirstChild(props.name)
+                    if not isSelected and player and player:IsA("Player") then
+                        dispatch(playerSelected(player))
+                    else
+                        dispatch(playerDeselected())
+                    end
+                end,
+                [Roact.Event.MouseEnter] = function() setHovered(true) end,
+                [Roact.Event.MouseLeave] = function() setHovered(false) end,
+                Text = "",
+                Transparency = 1,
+                Size = scale(1, 1),
+            }),
+        })
+    end
 
-	const [hovered, setHovered] = useState(false);
-
-	const text = `  ${displayName} (@${name})`;
-	const textSize = useMemo(
-		() => TextService.GetTextSize(text, 14, Enum.Font.GothamBold, new Vector2(1000, ENTRY_HEIGHT)),
-		[text],
-	);
-	const textScrollOffset = useLinear(hovered ? ENTRY_WIDTH - ENTRY_TEXT_PADDING - 20 - textSize.X : 0, {
-		velocity: hovered ? 40 : 150,
-	}).map((x) => new UDim(0, math.min(x, 0)));
-
-	const background = useSpring(
-		isSelected
-			? theme.accent
-			: hovered
-			? theme.backgroundHovered ?? theme.background.Lerp(theme.accent, 0.1)
-			: theme.background,
-		{},
-	);
-	const dropshadow = useSpring(
-		isSelected
-			? theme.accent
-			: hovered
-			? theme.backgroundHovered ?? theme.dropshadow.Lerp(theme.accent, 0.5)
-			: theme.dropshadow,
-		{},
-	);
-	const foreground = useSpring(isSelected && theme.foregroundAccent ? theme.foregroundAccent : theme.foreground, {});
-
-	return (
-		<Canvas
-			size={px(ENTRY_WIDTH, ENTRY_HEIGHT)}
-			position={useSpring(
-				isVisible
-					? px(0, (PADDING + ENTRY_HEIGHT) * index)
-					: px(-ENTRY_WIDTH - 24, (PADDING + ENTRY_HEIGHT) * index),
-				{},
-			)}
-			zIndex={index}
-		>
-			{/* Underglow */}
-			<Glow
-				radius={GlowRadius.Size70}
-				color={dropshadow}
-				size={new UDim2(1, 36, 1, 36)}
-				position={px(-18, 5 - 18)}
-				transparency={useSpring(
-					isSelected
-						? theme.glowTransparency
-						: hovered
-						? lerp(theme.dropshadowTransparency, theme.glowTransparency, 0.5)
-						: theme.dropshadowTransparency,
-					{},
-				)}
-			/>
-
-			{/* Body */}
-			<Fill color={background} transparency={useSpring(theme.backgroundTransparency, {})} radius={8} />
-
-			{/* Text */}
-			<textlabel
-				Text={text}
-				Font="GothamBold"
-				TextSize={14}
-				TextColor3={foreground}
-				TextXAlignment={Enum.TextXAlignment.Left}
-				TextYAlignment={Enum.TextYAlignment.Center}
-				TextTransparency={useSpring(
-					isSelected ? 0 : hovered ? theme.foregroundTransparency / 2 : theme.foregroundTransparency,
-					{},
-				)}
-				BackgroundTransparency={1}
-				Position={px(ENTRY_TEXT_PADDING, 1)}
-				Size={new UDim2(1, -ENTRY_TEXT_PADDING, 1, -1)}
-				ClipsDescendants
-			>
-				<uipadding PaddingLeft={textScrollOffset} />
-				<uigradient Transparency={textFadeSequence} />
-			</textlabel>
-
-			{/* Avatar */}
-			<imagelabel
-				Image={`https://www.roblox.com/headshot-thumbnail/image?userId=${userId}&width=60&height=60&format=png`}
-				Size={new UDim2(0, ENTRY_HEIGHT, 0, ENTRY_HEIGHT)}
-				BackgroundTransparency={1}
-			>
-				<uicorner CornerRadius={new UDim(0, 8)} />
-			</imagelabel>
-
-			{/* Border overlaps content */}
-			{theme.outlined && <Border color={foreground} transparency={0.8} radius={8} />}
-
-			{/* Input capture */}
-			<textbutton
-				Event={{
-					Activated: () => {
-						const player = Players.FindFirstChild(name);
-						if (!isSelected && player?.IsA("Player")) {
-							dispatch(playerSelected(player));
-						} else {
-							dispatch(playerDeselected());
-						}
-					},
-					MouseEnter: () => setHovered(true),
-					MouseLeave: () => setHovered(false),
-				}}
-				Text=""
-				Transparency={1}
-				Size={scale(1, 1)}
-			/>
-		</Canvas>
-	);
-}
-
-const PlayerEntry = hooked(PlayerEntryComponent);
+    local PlayerEntry = hooked(PlayerEntryComponent)
+    return hooked(Selection)
+end, hEnv("views/Pages/Apps/Players/Selection"))
