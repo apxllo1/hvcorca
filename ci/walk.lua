@@ -30,7 +30,7 @@ end
 
 local function walkRec(root, output)
     if not root then
-        return  -- safely skip if root is nil
+        return
     end
 
     for _, child in ipairs(root:GetDescendants()) do
