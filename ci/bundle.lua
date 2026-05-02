@@ -5,7 +5,6 @@
     ╚══════════════════════════════════════════════════════╝
 ]]--
 
--- Load from ci/ folder under the repo root
 local BundleWalker = (loadfile "ci/walk.lua")()
 local FileWriter   = (loadfile "ci/file.lua")()
 
@@ -79,7 +78,7 @@ end
 local function buildProductionBundle(srcRoot)
     print("🔨 Compiling Havoc v2.0 STUDIOS...")
 
-    -- If no root given, walk.lua defines its own dummy root
+    -- If srcRoot is nil, walk game as fallback
     local modelSource = BundleWalker.walk(srcRoot)
 
     -- Build final bundle as one Lua string (no runtime.lua inlined)
@@ -108,6 +107,6 @@ end
 -- INITIALIZE BUNDLE BUILD
 -- ============================================================================
 
--- Let `src` come from environment or be nil (safe dummy bundle)
-local src = src
+-- Let `src` be passed in by environment
+-- If nil, walk.lua will use game as fallback
 buildProductionBundle(src)
