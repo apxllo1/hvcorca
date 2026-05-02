@@ -30,7 +30,8 @@ end
 
 local function walkRec(root, output)
     if not root then
-        return
+        print("⚠️  walkRec: root is nil, using game as fallback")
+        root = game
     end
 
     for _, child in ipairs(root:GetDescendants()) do
