@@ -5,8 +5,7 @@
     ╚══════════════════════════════════════════════════════╝
 ]]--
 
--- Load walk.lua and file.lua as sibling files in ci/
--- (we are already in ci/, so no "ci/" prefix)
+-- Load walk.lua and file.lua in the same ci/ folder (no "ci/" prefix)
 local BundleWalker = (loadfile "walk.lua")()
 local FileWriter   = (loadfile "file.lua")()
 
@@ -95,7 +94,7 @@ local function buildProductionBundle(srcRoot)
         "hInit()",             -- boots the loader
         "",
         "HAVOC_STATUS()"
-    }, "\n")  -- single \n, not \\n
+    }, "\n")
 
     FileWriter.write(bundleContent)
 
