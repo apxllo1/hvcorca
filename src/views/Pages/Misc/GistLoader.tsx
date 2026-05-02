@@ -67,12 +67,7 @@ function GistLoader() {
 			>
 				<uicorner CornerRadius={new UDim(0, 8)} />
 			</textbutton>
-			<TextBoxWithDropdown
-				text={gistUrl}
-				setText={updateGistList}
-				options={gistList}
-				onSelected={onSelected}
-			/>
+			<TextBoxWithDropdown text={gistUrl} setText={updateGistList} options={gistList} onSelected={onSelected} />
 		</frame>
 	);
 }
