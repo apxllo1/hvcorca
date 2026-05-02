@@ -1,11 +1,7 @@
---[[
-    file.lua – HAVOC v2.0 FileWriter
-    Handles writing the bundle string to a file.
-]]--
-
+-- file.lua
 local File = {}
 
-local OUTPUT_PATH = "havoc.bundle.lua"  -- path on your machine
+local OUTPUT_PATH = "havoc.bundle.lua"
 
 function File.write(content)
     local file, err = io.open(OUTPUT_PATH, "w")
