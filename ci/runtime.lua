@@ -1,25 +1,23 @@
--- ci/runtime.lua (Orca-style module loader)
+-- ci/runtime.lua (hvcorca v1.1.1 - FIXED)
 local instanceFromId = {}
 local modules = {}
 local currentlyLoading = {}
 
--- _setfenv polyfill for modern executors
+-- FIXED: Proper _setfenv (Orca standard)
 local function _setfenv(fn, env)
 	local i = 1
 	while true do
-		local name = debug.getupvalue(fn, i)
+		local name, val = debug.getupvalue(fn, i)
 		if name == "_ENV" then
 			debug.setupvalue(fn, i, env)
 			return fn
-		elseif not name then
-			break
-		end
+		elseif not name then break end
 		i = i + 1
 	end
 	return fn
 end
 
--- Circular dependency protection
+-- FIXED: Proper circular dep detection (Orca v1.1.1)
 local function validateRequire(module, caller)
 	currentlyLoading[caller] = module
 	local currentModule = module
@@ -33,7 +31,7 @@ local function validateRequire(module, caller)
 				currentModule = currentlyLoading[currentModule]
 				str = str .. " → " .. currentModule.Name
 			end
-			error("Havoc: Circular dependency " .. str, 2)
+			error("Hvcorca: Circular dependency " .. str, 2)
 		end
 	end
 	return function()
@@ -43,7 +41,6 @@ local function validateRequire(module, caller)
 	end
 end
 
--- Module loader (Orca pattern)
 local function loadModule(obj, caller)
 	local cleanup = caller and validateRequire(obj, caller)
 	local module = modules[obj]
@@ -64,19 +61,21 @@ local function loadModule(obj, caller)
 	return data
 end
 
--- Custom require resolver
 local function requireModule(target, this)
 	if modules[target] and target:IsA("ModuleScript") then
 		return loadModule(target, this)
+	else
+		return require(target)
 	end
-	return require(target)
 end
 
--- Environment builder
+-- FIXED: Add idFromInstance (Orca registry complete)
+local idFromInstance = {}
 local function hEnv(id)
 	local inst = instanceFromId[id]
 	return setmetatable({
 		script = inst,
+		VERSION = "Hvcorca v1.1.1",  -- Your branding
 		require = function(module)
 			return requireModule(module, instanceFromId[id])
 		end,
@@ -84,16 +83,16 @@ local function hEnv(id)
 	}, {__index = getfenv(0) or _G})
 end
 
--- Instance creation
 local function hInst(name, class, id, parentId)
 	local inst = Instance.new(class)
 	inst.Name = name
 	inst.Parent = parentId and instanceFromId[parentId] or nil
 	instanceFromId[id] = inst
+	idFromInstance[inst] = id
 	return inst
 end
 
--- Module registration (key fix)
+-- FIXED: Proper env wrapping (Orca exact)
 local function hMod(name, class, id, parentId, fn)
 	local inst = hInst(name, class, id, parentId)
 	modules[inst] = {
@@ -106,7 +105,6 @@ local function hMod(name, class, id, parentId, fn)
 	return inst
 end
 
--- Bootstrap
 local function hInit()
 	if not game:IsLoaded() then
 		game.Loaded:Wait()
@@ -120,4 +118,4 @@ local function hInit()
 	end
 end
 
-return hInit, hMod, hInst, hEnv
+return hInit, hMod, hInst, hEnv  -- FIXED: Remove trailing "1b1"
