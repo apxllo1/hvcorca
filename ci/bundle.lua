@@ -5,12 +5,13 @@
     ╚══════════════════════════════════════════════════════╝
 ]]--
 
-local BundleWalker = require(script.Parent.walk)
-local FileWriter   = require(script.Parent.file)
+-- In remodel, we can't rely on 'script'; use normal require from the same dir.
+local BundleWalker = require("walk")
+local FileWriter   = require("file")
 
--- ============================================================================
--- ENTERPRISE ERROR RECOVERY ENGINE (as Lua code string)
--- ============================================================================
+-- Same as before...
+
+-- [Everything else below stays the same]
 
 local ErrorRecovery = [[
 -- HAVOC ENTERPRISE ERROR RECOVERY v2.0
@@ -46,10 +47,6 @@ HAVOC_STATUS = function()
 end
 ]]
 
--- ============================================================================
--- CORE GUI PROTECTION LAYER (as Lua code string)
--- ============================================================================
-
 local CoreGuiProtection = [[
 -- HAVOC CORE GUI PROTECTION LAYER
 if not game:GetService("CoreGui"):FindFirstChild("Havoc.ModalOverlay") then
@@ -69,17 +66,12 @@ if not game:GetService("CoreGui"):FindFirstChild("Havoc.ModalOverlay") then
 end
 ]]
 
--- ============================================================================
--- PRODUCTION BUNDLE GENERATOR
--- ============================================================================
-
 local function buildProductionBundle()
     print("🔨 Compiling Havoc v2.0 Enterprise...")
 
-    -- walk hvcorca.src (not script.Parent.Parent directly)
+    -- Walk hvcoroa.src (under the repo root)
     local modelSource = BundleWalker.walk(script.Parent.Parent.src)
 
-    -- Build the final bundle as one Lua string using real \n (not \\n)
     local bundleContent = table.concat({
         ErrorRecovery,
         "",
@@ -99,7 +91,5 @@ local function buildProductionBundle()
     print("   🛡️  Error Recovery: ACTIVE")
     print("   🛡️  CoreGui Shield: ACTIVE")
 end
-
--- ============================================================================
 
 buildProductionBundle()
