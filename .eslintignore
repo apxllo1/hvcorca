@@ -1,0 +1,5 @@
+# ESLint should not touch these paths
+ci/*.lua
+out/
+public/latest.lua
+public/latest.debug.lua
