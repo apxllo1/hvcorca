@@ -1,13 +1,14 @@
 --[[
     ╔══════════════════════════════════════════════════════╗
     ║                HAVOC v2.0 - BUNDLER                  ║
-    ║              Option B – Runtime Separate              ║
+    ║              Option B – Runtime Separate             ║
     ╚══════════════════════════════════════════════════════╝
 ]]--
 
 -- Load walk.lua and file.lua as sibling files in ci/
-local BundleWalker = (loadfile "ci/walk.lua")()
-local FileWriter   = (loadfile "ci/file.lua")()
+-- (we are already in ci/, so no "ci/" prefix)
+local BundleWalker = (loadfile "walk.lua")()
+local FileWriter   = (loadfile "file.lua")()
 
 -- ============================================================================
 -- STUDIOS ERROR RECOVERY ENGINE (as Lua code string)
@@ -94,7 +95,7 @@ local function buildProductionBundle(srcRoot)
         "hInit()",             -- boots the loader
         "",
         "HAVOC_STATUS()"
-    }, "\n")  -- use proper \n, not \\n
+    }, "\n")  -- single \n, not \\n
 
     FileWriter.write(bundleContent)
 
