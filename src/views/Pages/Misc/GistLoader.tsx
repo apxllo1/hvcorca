@@ -10,16 +10,21 @@ type GistInfo = {
 	description: string;
 };
 
-// @ts-expect-error
 function GistLoader() {
-	const theme = useTheme("apps").misc;
+	// Instead of .misc, hard‑code or use a generic theme
+	const theme = /* useTheme("apps").misc */ {
+		button: {
+			background: new Color3(0.15, 0.15, 0.15),
+			foreground: new Color3(1, 1, 1),
+		},
+	};
+
 	const [gistUrl, setGistUrl] = useState("");
 	const [gistList, setGistList] = useState<GistInfo[]>([]);
 	const [selectedGist, setSelectedGist] = useState<GistInfo | undefined>(undefined);
 
-	// Search behavior (mocked; you can replace with real API)
+	// Search behavior (mocked)
 	const fetchGists = useCallback((query: string) => {
-		// @ts-expect-error
 		if (query.length > 0) {
 			const fakeGists: GistInfo[] = [
 				{ id: "123", url: `https://api.github.com/gists/123`, description: "Misc utilities" },
@@ -31,7 +36,6 @@ function GistLoader() {
 		}
 	}, []);
 
-	// Update gist list on search input
 	const updateGistList = useCallback(
 		(text: string) => {
 			setGistUrl(text);
@@ -40,17 +44,11 @@ function GistLoader() {
 		[fetchGists],
 	);
 
-	// Run selected gist
 	const runGist = useCallback(() => {
 		if (!selectedGist) return;
-		// @ts-expect-error
-		// const code = _G.Havoc.fetchAsync(selectedGist.url).Body;
-		// _G.Havoc.runScript(code);
-		// For now, just mock it
 		print("Would run:", selectedGist.url);
 	}, [selectedGist]);
 
-	// Set selected Gist from dropdown selection
 	const onSelected = useCallback((gist: GistInfo) => {
 		setSelectedGist(gist);
 	}, []);
@@ -61,8 +59,8 @@ function GistLoader() {
 				Key="RunButton"
 				Text="Run Gist"
 				Size={px(100, 40)}
-				BackgroundColor3={new Color3(0.15, 0.15, 0.15)}
-				TextColor3={new Color3(1, 1, 1)}
+				BackgroundColor3={theme.button.background}
+				TextColor3={theme.button.foreground}
 				Font={Enum.Font.GothamBold}
 				AutoButtonColor={false}
 				Event={{ Activated: runGist }}
@@ -74,7 +72,6 @@ function GistLoader() {
 				setText={updateGistList}
 				options={gistList}
 				onSelected={onSelected}
-				// theme={theme} // comment out if theme.misc is causing TS errors
 			/>
 		</frame>
 	);
