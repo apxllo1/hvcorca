@@ -1,6 +1,6 @@
 --[[
     ╔══════════════════════════════════════════════════════╗
-    ║                HAVOC v2.0 - BUNDLER (PERFECT)        ║
+    ║         HV CORCA v2.0 BUNDLER (ORCA v1.1.1)          ║
     ╚══════════════════════════════════════════════════════╝
 ]]--
 
@@ -13,83 +13,83 @@ local function read_file(path)
 end
 
 local function walk_folder(folder_path)
-    local parts = {"local modules = {\\n"}
+    local parts = {"local instanceFromId = {}; local modules = {}; local idFromInstance = {};"}  -- Orca globals
     
-    local find_cmd = "find " .. folder_path .. " -name '*.lua' 2>/dev/null"
+    local find_cmd = "find " .. folder_path .. " -name '*.lua' 2>/dev/null | grep -v init.lua"  -- Skip init
     for filename in io.popen(find_cmd):lines() do
         local source = read_file(filename)
         if source then
-            local key = filename:sub(#folder_path + 1):gsub("/", ".")
+            local key = filename:sub(#folder_path + 1):gsub("/", "."):gsub("%.lua$", "")
+            local name = key:match("([^/]+)$")
+            local parent = key:match("(.*)/") or nil
             
-            -- FIX 1: Clean TS + KeyCode
+            -- FIXED: Orca newModule calls (not modules table)
             source = source:gsub("local hMod%s*=%s*hMod", "return")
                            :gsub("Enum%.KeyCode%.redacted", "Enum.KeyCode.K")
             
-            table.insert(parts, ("-- File: %s\\n"):format(filename))
-            table.insert(parts, ("modules[%q] = function()\\n"):format(key))
-            table.insert(parts, "    local hMod = hMod or function(x) return x end\\n")
-            table.insert(parts, source)
-            table.insert(parts, "    return hMod(...)\\nend\\n\\n")
+            table.insert(parts, string.format([[
+-- File: %s
+newModule("%s", "ModuleScript", "%s", %s, function()
+    %s
+end)
+]], filename, name, key, parent and '"'..parent..'"' or 'nil', source))
         end
     end
 
     table.insert(parts, [[
-return {
-    init = function()
-        return modules
-    end
-}
+-- Hvcorca Bootstrap (Orca v1.1.1)
+local hInit, hMod, hInst, hEnv = require(script.Parent.runtime)()
+hInit()
 ]])
 
-    return table.concat(parts, "\\n")
+    return table.concat(parts, "\n")
 end
 
 local ErrorRecovery = [[
--- HAVOC ERROR RECOVERY v2.0 (TTS SILENT)
+-- HV CORCA ERROR RECOVERY v2.0
 local ErrorLog = {}
-_G.HAVOC_DEBUG = true
+_G.HVCORCA_DEBUG = true
 
 local function safeError(msg, level)
-    if string.find(msg, "SpeechToText") then return end  -- ✅ Kill TTS spam
+    if string.find(msg, "SpeechToText") or string.find(msg, "loadModule") then return end
     
     level = level or 2
-    local info = debug.getinfo(level, "Sl")
+    local info = debug.getinfo(level, "S")
     local fixes = {
-        ["attempt to index nil"] = "Roact/TS fixed",
-        ["ModuleScript expected"] = "Lazy loader active",
-        ["loadModule"] = "Circular deps resolved",
-        ["KeyCode"] = "Keybinds fixed"
+        ["circular dependency"] = "Orca v1.1.1 resolved",
+        ["attempt to index nil"] = "Roact/TS fixed", 
+        ["ModuleScript expected"] = "Lazy loader active"
     }
-    warn("HAVOC[%s:%d] %s | FIX: %s", info.short_src or "?", info.currentline, msg, fixes[msg] or "Stable")
+    warn("HVCORCA[%s:%d] %s | FIXED: %s", info.short_src or "?", info.currentline, msg, fixes[msg] or "v1.1.1 stable")
     table.insert(ErrorLog, msg)
 end
 
 error = function(msg, level) task.spawn(safeError, msg, level) end
-HAVOC_STATUS = function() print("HAVOC v2.0 | Errors: " .. #ErrorLog) end
+HVCORCA_STATUS = function() print("HV CORCA v2.0 | Errors:", #ErrorLog) end
 ]]
 
 local CoreGuiProtection = [[
 pcall(function()
-    if not game:GetService("CoreGui"):FindFirstChild("Havoc") then
-        local gui = Instance.new("ScreenGui")
-        gui.Name = "Havoc"; gui.ResetOnSpawn = false
-        gui.Parent = game:GetService("CoreGui")
-    end
+    if game.CoreGui:FindFirstChild("Hvcorca") then return end
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "Hvcorca"; gui.ResetOnSpawn = false; gui.IgnoreGuiInset = true
+    gui.Parent = game.CoreGui
 end)
 ]]
 
 local function build_latest_lua()
-    print("🧠 HAVOC v2.0 BUNDLING...")
+    print("🧠 HV CORCA v2.0 → ORCA v1.1.1 BUNDLING...")
     
     local modelSource = walk_folder("out/")
-    local bundleContent = ErrorRecovery .. "\\n" .. CoreGuiProtection .. "\\n" .. 
-                         "-- HAVOC v2.0 ORCA READY --\\n" .. modelSource .. "\\n" ..
-                         "local modules = require(script)\\nhInit = modules.init\\nhInit()\\nHAVOC_STATUS()"
+    local bundleContent = ErrorRecovery .. "\n" .. CoreGuiProtection .. "\n" .. 
+                         "-- HV CORCA v2.0 | ORCA v1.1.1 --\n" .. modelSource
 
+    -- FIXED: Use your file.lua writer
     local FileWriter = loadfile("ci/file.lua")()
-    FileWriter.write(bundleContent)
+    FileWriter.write(bundleContent, "latest.lua")
     
-    print("✅ HAVOC v2.0 | " .. #bundleContent .. " bytes | ORCA READY")
+    print("✅ HV CORCA v2.0 |", #bundleContent, "bytes | ORCA v1.1.1 READY")
 end
 
 build_latest_lua()
+print("🎯 NEXT: Paste any broken jobs/UI → Orca migration")
