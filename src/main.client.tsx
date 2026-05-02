@@ -28,9 +28,7 @@ async function main() {
 		});
 
 		Roact.mount(
-			<Provider
-				store={store}
-			>
+			<Provider store={store}>
 				<App />
 			</Provider>,
 			container,
@@ -49,7 +47,7 @@ async function main() {
 		if (synObj?.protect_gui) pcall(() => synObj.protect_gui!(app!));
 
 		// Use CoreGui, not gethui (rbxtsc doesn't know it)
-		app.Parent = (game.GetService("CoreGui") as Instance);
+		app.Parent = game.GetService("CoreGui") as Instance;
 		// Or if you prefer, just comment this line out
 
 		g[LOAD_GUARD] = true;
