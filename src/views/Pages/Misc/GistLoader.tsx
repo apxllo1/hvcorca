@@ -14,25 +14,29 @@ function GistLoader() {
 	const theme = useTheme("apps").misc;
 	const [gistUrl, setGistUrl] = useState("");
 	const [gistList, setGistList] = useState<GistInfo[]>([]);
-	const [selectedGist, setSelectedGist] = useState<GistInfo | null>(null);
+	const [selectedGist, setSelectedGist] = useState<GistInfo | undefined>(undefined);
 
 	// Search behavior (mocked; you can replace with real API)
 	const fetchGists = useCallback((query: string) => {
 		// Example: simulate fetching gists
-		const fakeGists: GistInfo[] = query.length > 0 ?
-			[
-				{ id: "123", url: `https://api.github.com/gists/123`, description: "Misc utilities" },
-				{ id: "456", url: `https://api.github.com/gists/456`, description: "UI tweaks" },
-			] :
-			[];
+		const fakeGists: GistInfo[] =
+			query.length > 0
+				? [
+						{ id: "123", url: `https://api.github.com/gists/123`, description: "Misc utilities" },
+						{ id: "456", url: `https://api.github.com/gists/456`, description: "UI tweaks" },
+				  ]
+				: [];
 		setGistList(fakeGists);
 	}, []);
 
 	// Update gist list on search input
-	const updateGistList = useCallback((text: string) => {
-		setGistUrl(text);
-		fetchGists(text);
-	}, [fetchGists]);
+	const updateGistList = useCallback(
+		(text: string) => {
+			setGistUrl(text);
+			fetchGists(text);
+		},
+		[fetchGists],
+	);
 
 	// Run selected gist
 	const runGist = useCallback(() => {
