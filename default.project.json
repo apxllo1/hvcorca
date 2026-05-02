@@ -8,8 +8,13 @@
         "**/*.d.lua"
     ],
     "tree": {
+        "$className": "DataModel",
         "ReplicatedStorage": {
-            "Havoc": "out/"
+            "$className": "Folder",
+            "Havoc": {
+                "$className": "Folder",
+                "$path": "out/"
+            }
         }
     }
 }
