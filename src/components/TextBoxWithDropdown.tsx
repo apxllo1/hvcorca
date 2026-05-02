@@ -2,11 +2,12 @@ import Roact from "@rbxts/roact";
 import { hooked, useState } from "@rbxts/roact-hooked";
 import { px } from "utils/udim2";
 
-// Just a plain object; no generics, no interfaces
-function TextBoxWithDropdown({ text, setText, options, onSelected }: any) {
+// @ts-expect-error
+const TextBoxWithDropdown: Roact.FunctionComponent<any> = ({ text, setText, options, onSelected }) => {
 	const [focused, setFocused] = useState(false);
-	// TypeScript literally ignores this; just let JS do it
-	const dropdownVisible = focused && (options as never as any[]).length > 0;
+
+	// @ts-expect-error
+	const dropdownVisible = focused && options.length > 0;
 
 	const handleTextChange = (rbx: TextBox) => {
 		setText(rbx.Text);
@@ -66,6 +67,6 @@ function TextBoxWithDropdown({ text, setText, options, onSelected }: any) {
 			)}
 		</frame>
 	);
-}
+};
 
 export default hooked(TextBoxWithDropdown);
