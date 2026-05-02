@@ -1,0 +1,10 @@
+[wally]
+target = "rbxmx"
+
+[dependencies]
+@rbxts/roact = "1.4.*"
+@rbxts/roact-hooked = "0.2.*"
+@rbxts/roact-rodux-hooked = "0.2.*"
+@rbxts/rodux = "1.0.*"
+@rbxts/flipper = "0.5.*"
+@rbxts/make = "1.1.*"
