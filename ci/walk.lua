@@ -1,12 +1,7 @@
---[[
-    walk.lua – HAVOC v2.0 Module Walker
-    Walks a Roblox model tree and concatenates all ModuleScripts into one string.
-]]--
-
+-- walk.lua
 local Walk = {}
 
 local function stripModuleHeader(source)
-    -- remove `return { ... }` line and any extra whitespace
     local _, afterReturn = source:find("^%s*return%s*")
     if afterReturn then
         local _, afterBrace = source:find("^{", afterReturn)
@@ -44,7 +39,6 @@ function Walk.walk(root)
     walkRec(root, parts)
 
     table.insert(parts, "\nreturn function(hInit, hMod, hInst, hEnv)\n")
-    table.insert(parts, "    -- register all modules here\n")
     table.insert(parts, "    return hInit, hMod, hInst, hEnv\n")
     table.insert(parts, "end\n")
 
