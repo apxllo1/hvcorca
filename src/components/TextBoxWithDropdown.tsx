@@ -17,13 +17,7 @@ interface Props<T extends Option> {
 	theme?: any; // your theme (button.background, button.foreground etc.)
 }
 
-function TextBoxWithDropdown<T extends Option>({
-	text,
-	setText,
-	options,
-	onSelected,
-	theme,
-}: Props<T>) {
+function TextBoxWithDropdown<T extends Option>({ text, setText, options, onSelected, theme }: Props<T>) {
 	const [focused, setFocused] = useState(false);
 	// Use `Binding<boolean>` so `.getValue()` is valid
 	const dropdownVisible = useBinding<boolean>(focused && options.length > 0);
@@ -70,10 +64,7 @@ function TextBoxWithDropdown<T extends Option>({
 					AutomaticCanvasSize={Enum.AutomaticSize.Y}
 					BorderStyle={Enum.FrameStyle.RobloxRound}
 				>
-					<uilistlayout
-						Padding={new UDim(0, 2)}
-						SortOrder={Enum.SortOrder.LayoutOrder}
-					/>
+					<uilistlayout Padding={new UDim(0, 2)} SortOrder={Enum.SortOrder.LayoutOrder} />
 
 					{options.map((opt, i) => (
 						<textbutton
