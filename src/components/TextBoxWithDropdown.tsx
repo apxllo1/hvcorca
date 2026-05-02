@@ -1,11 +1,9 @@
 import Roact from "@rbxts/roact";
 import { hooked, useState } from "@rbxts/roact-hooked";
 import { px } from "utils/udim2";
+import { GistInfo } from "views/Pages/Misc/GistLoader";
 
-interface Option {
-	label: string;
-	value: string;
-}
+interface Option extends GistInfo {}
 
 interface Props {
 	text: string;
@@ -17,7 +15,6 @@ interface Props {
 function TextBoxWithDropdown({ text, setText, options, onSelected }: Props) {
 	const [focused, setFocused] = useState(false);
 
-	// rbxtsc wants a number or boolean, so we cast length to number
 	const dropdownVisible = focused && (options ? options.size() : 0) > 0;
 
 	const handleTextChange = (rbx: TextBox) => {
@@ -30,7 +27,11 @@ function TextBoxWithDropdown({ text, setText, options, onSelected }: Props) {
 	};
 
 	return (
-		<frame Key="TextBoxWithDropdown" Size={px(300, 60)} BackgroundTransparency={1}>
+		<frame
+			Key="TextBoxWithDropdown"
+			Size={px(300, 60)}
+			BackgroundTransparency={1}
+		>
 			<textbox
 				Key="TextInput"
 				Text={text}
@@ -44,7 +45,10 @@ function TextBoxWithDropdown({ text, setText, options, onSelected }: Props) {
 					Text: handleTextChange,
 				}}
 			>
-				<uipadding PaddingLeft={new UDim(0, 8)} PaddingRight={new UDim(0, 8)} />
+				<uipadding
+					PaddingLeft={new UDim(0, 8)}
+					PaddingRight={new UDim(0, 8)}
+				/>
 			</textbox>
 
 			{dropdownVisible && (
@@ -56,7 +60,10 @@ function TextBoxWithDropdown({ text, setText, options, onSelected }: Props) {
 					ScrollBarThickness={2}
 					AutomaticCanvasSize={Enum.AutomaticSize.Y}
 				>
-					<uilistlayout Padding={new UDim(0, 2)} SortOrder={Enum.SortOrder.LayoutOrder} />
+					<uilistlayout
+						Padding={new UDim(0, 2)}
+						SortOrder={Enum.SortOrder.LayoutOrder}
+					/>
 					{options.map((opt, i) => (
 						<textbutton
 							Key={`Option${i}`}
