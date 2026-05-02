@@ -3998,6 +3998,7 @@ local useTheme = TS.import(script, script.Parent.Parent.Parent.Parent, "hooks", 
 local DashboardPage = TS.import(script, script.Parent.Parent.Parent.Parent, "store", "models", "dashboard.model").DashboardPage
 local px = TS.import(script, script.Parent.Parent.Parent.Parent, "utils", "udim2").px
 local FacebangModal = TS.import(script, script.Parent, "FacebangModal").default
+local GistLoader = TS.import(script, script.Parent, "GistLoader").default
 local function MiscPage()
 	local theme = useTheme("apps").players
 	local _binding = useState(false)
@@ -4064,6 +4065,7 @@ local function MiscPage()
 					Transparency = isHovered and 0.2 or 0.6,
 				}),
 			}),
+			Roact.createElement(GistLoader),
 		}),
 	}
 	local _length = #_children
@@ -4096,6 +4098,109 @@ local function MiscPage()
 	return Roact.createElement(Card, _attributes, _children)
 end
 local default = hooked(MiscPage)
+return {
+	default = default,
+}
+
+
+    return hMod(...)
+
+end
+
+
+-- File: out/views/Pages/Misc/GistLoader.lua
+
+modules["views.Pages.Misc.GistLoader.lua"] = function()
+
+    local hMod = hMod or function(x) return x end
+
+-- Compiled with roblox-ts v1.2.7
+local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
+local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
+local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
+local hooked = _roact_hooked.hooked
+local useState = _roact_hooked.useState
+local useCallback = _roact_hooked.useCallback
+local TextBoxWithDropdown = TS.import(script, script.Parent.Parent.Parent.Parent, "components", "TextBoxWithDropdown").default
+local px = TS.import(script, script.Parent.Parent.Parent.Parent, "utils", "udim2").px
+local function GistLoader()
+	local theme = {
+		button = {
+			background = Color3.new(0.15, 0.15, 0.15),
+			foreground = Color3.new(1, 1, 1),
+		},
+	}
+	local _binding = useState("")
+	local gistUrl = _binding[1]
+	local setGistUrl = _binding[2]
+	local _binding_1 = useState({})
+	local gistList = _binding_1[1]
+	local setGistList = _binding_1[2]
+	local _binding_2 = useState(nil)
+	local selectedGist = _binding_2[1]
+	local setSelectedGist = _binding_2[2]
+	local fetchGists = useCallback(function(query)
+		local queryLen = #query
+		if queryLen > 0 then
+			local fakeGists = { {
+				id = "123",
+				url = "https://api.github.com/gists/123",
+				description = "Misc utilities",
+				label = "Misc utilities",
+				value = "https://api.github.com/gists/123",
+			}, {
+				id = "456",
+				url = "https://api.github.com/gists/456",
+				description = "UI tweaks",
+				label = "UI tweaks",
+				value = "https://api.github.com/gists/456",
+			} }
+			setGistList(fakeGists)
+		else
+			setGistList({})
+		end
+	end, {})
+	local updateGistList = useCallback(function(text)
+		setGistUrl(text)
+		fetchGists(text)
+	end, { fetchGists })
+	local runGist = useCallback(function()
+		if not selectedGist then
+			return nil
+		end
+		print("Would run:", selectedGist.url)
+	end, { selectedGist })
+	local onSelected = useCallback(function(gist)
+		setSelectedGist(gist)
+	end, {})
+	return Roact.createFragment({
+		GistLoader = Roact.createElement("Frame", {
+			Size = px(400, 300),
+			BackgroundTransparency = 1,
+		}, {
+			RunButton = Roact.createElement("TextButton", {
+				Text = "Run Gist",
+				Size = px(100, 40),
+				BackgroundColor3 = theme.button.background,
+				TextColor3 = theme.button.foreground,
+				Font = Enum.Font.GothamBold,
+				AutoButtonColor = false,
+				[Roact.Event.Activated] = runGist,
+			}, {
+				Roact.createElement("UICorner", {
+					CornerRadius = UDim.new(0, 8),
+				}),
+			}),
+			Roact.createElement(TextBoxWithDropdown, {
+				text = gistUrl,
+				setText = updateGistList,
+				options = gistList,
+				onSelected = onSelected,
+			}),
+		}),
+	})
+end
+local default = hooked(GistLoader)
 return {
 	default = default,
 }
@@ -5221,6 +5326,45 @@ return {
 end
 
 
+-- File: out/store/actions/misc.action.lua
+
+modules["store.actions.misc.action.lua"] = function()
+
+    local hMod = hMod or function(x) return x end
+
+-- Compiled with roblox-ts v1.2.7
+local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
+local Rodux = TS.import(script, TS.getModule(script, "@rbxts", "rodux").src)
+local setGistActive = Rodux.makeActionCreator("misc/setGistActive", function(active)
+	return {
+		active = active,
+	}
+end)
+local setCurrentGist = Rodux.makeActionCreator("misc/setCurrentGist", function(gist)
+	local _object = {}
+	local _left = "gist"
+	local _condition = gist
+	if _condition == nil then
+		_condition = {}
+	end
+	_object[_left] = _condition
+	return _object
+end)
+local clearGistError = Rodux.makeActionCreator("misc/clearGistError", function()
+	return {}
+end)
+return {
+	setGistActive = setGistActive,
+	setCurrentGist = setCurrentGist,
+	clearGistError = clearGistError,
+}
+
+
+    return hMod(...)
+
+end
+
+
 -- File: out/store/actions/options.action.lua
 
 modules["store.actions.options.action.lua"] = function()
@@ -5290,6 +5434,29 @@ modules["store.models.jobs.model.lua"] = function()
     local hMod = hMod or function(x) return x end
 
 -- Compiled with roblox-ts v1.2.7
+
+
+    return hMod(...)
+
+end
+
+
+-- File: out/store/models/misc.model.lua
+
+modules["store.models.misc.model.lua"] = function()
+
+    local hMod = hMod or function(x) return x end
+
+-- Compiled with roblox-ts v1.2.7
+local MiscInitialState = {
+	active = false,
+	currentScript = nil,
+	lastRunTimestamp = nil,
+	error = nil,
+}
+return {
+	MiscInitialState = MiscInitialState,
+}
 
 
     return hMod(...)
@@ -7916,6 +8083,126 @@ return {
 end
 
 
+-- File: out/components/TextBoxWithDropdown.lua
+
+modules["components.TextBoxWithDropdown.lua"] = function()
+
+    local hMod = hMod or function(x) return x end
+
+-- Compiled with roblox-ts v1.2.7
+local TS = require(script.Parent.Parent.include.RuntimeLib)
+local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
+local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
+local hooked = _roact_hooked.hooked
+local useState = _roact_hooked.useState
+local px = TS.import(script, script.Parent.Parent, "utils", "udim2").px
+local function TextBoxWithDropdown(_param)
+	local text = _param.text
+	local setText = _param.setText
+	local options = _param.options
+	local onSelected = _param.onSelected
+	local _binding = useState(false)
+	local focused = _binding[1]
+	local setFocused = _binding[2]
+	local dropdownVisible = focused and (options and #options or 0) > 0
+	local handleTextChange = function(rbx)
+		setText(rbx.Text)
+	end
+	local handleSelect = function(option)
+		setText(option.label)
+		onSelected(option)
+	end
+	local _condition = dropdownVisible
+	if _condition then
+		local _arg0 = function(opt, i)
+			return Roact.createFragment({
+				["Option" .. tostring(i)] = Roact.createElement("TextButton", {
+					Text = opt.label,
+					Size = px(300, 30),
+					BackgroundColor3 = Color3.new(0.15, 0.15, 0.15),
+					TextColor3 = Color3.new(1, 1, 1),
+					Font = Enum.Font.Gotham,
+					TextSize = 14,
+					AutoButtonColor = false,
+					[Roact.Event.Activated] = function()
+						handleSelect(opt)
+					end,
+				}),
+			})
+		end
+		-- ▼ ReadonlyArray.map ▼
+		local _newValue = table.create(#options)
+		for _k, _v in ipairs(options) do
+			_newValue[_k] = _arg0(_v, _k - 1, options)
+		end
+		-- ▲ ReadonlyArray.map ▲
+		local _attributes = {
+			Size = px(300, 120),
+			BackgroundColor3 = Color3.new(0.1, 0.1, 0.1),
+			Position = px(0, 30),
+			ScrollBarThickness = 2,
+			AutomaticCanvasSize = Enum.AutomaticSize.Y,
+		}
+		local _children = {
+			Roact.createElement("UIListLayout", {
+				Padding = UDim.new(0, 2),
+				SortOrder = Enum.SortOrder.LayoutOrder,
+			}),
+		}
+		local _length = #_children
+		for _k, _v in ipairs(_newValue) do
+			_children[_length + _k] = _v
+		end
+		_condition = (Roact.createFragment({
+			Dropdown = Roact.createElement("ScrollingFrame", _attributes, _children),
+		}))
+	end
+	local _attributes = {
+		Size = px(300, 60),
+		BackgroundTransparency = 1,
+	}
+	local _children = {
+		TextInput = Roact.createElement("TextBox", {
+			Text = text,
+			BackgroundColor3 = Color3.new(0.2, 0.2, 0.2),
+			TextColor3 = Color3.new(1, 1, 1),
+			Font = Enum.Font.Gotham,
+			TextSize = 14,
+			Position = px(0, 0),
+			Size = px(300, 30),
+			[Roact.Change.Text] = handleTextChange,
+		}, {
+			Roact.createElement("UIPadding", {
+				PaddingLeft = UDim.new(0, 8),
+				PaddingRight = UDim.new(0, 8),
+			}),
+		}),
+	}
+	local _length = #_children
+	if _condition then
+		if _condition.elements ~= nil or _condition.props ~= nil and _condition.component ~= nil then
+			_children[_length + 1] = _condition
+		else
+			for _k, _v in ipairs(_condition) do
+				_children[_length + _k] = _v
+			end
+		end
+	end
+	return Roact.createFragment({
+		TextBoxWithDropdown = Roact.createElement("Frame", _attributes, _children),
+	})
+end
+local default = hooked(TextBoxWithDropdown)
+return {
+	default = default,
+}
+
+
+    return hMod(...)
+
+end
+
+
 -- File: out/components/Canvas.lua
 
 modules["components.Canvas.lua"] = function()
@@ -8878,7 +9165,8 @@ local setTimeout = TS.import(script, script.Parent.Parent, "utils", "timeout").s
 local queueExecution
 local onServerHop = TS.async(function()
 	queueExecution()
-	local servers = HttpService:JSONDecode(TS.await(http.get("https://games.roblox.com/v1/games/" .. (tostring(game.PlaceId) .. "/servers/Public?sortOrder=Asc&limit=100"))))
+	local serversResult = TS.await(http.get("https://games.roblox.com/v1/games/" .. (tostring(game.PlaceId) .. "/servers/Public?sortOrder=Asc&limit=100")))
+	local servers = HttpService:JSONDecode(serversResult)
 	local _data = servers.data
 	local _arg0 = function(server)
 		return server.playing < server.maxPlayers and server.id ~= game.JobId
@@ -8910,20 +9198,9 @@ local onRejoin = TS.async(function()
 	end
 end)
 function queueExecution()
-	local isRelease = { string.match(VERSION, "^.+%..+%..+$") } ~= nil
+	local isRelease = true
 	local code = isRelease and 'loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/richie0866/orca/master/public/latest.lua"))()' or 'loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/richie0866/orca/master/public/snapshot.lua"))()'
-	local _result = syn
-	if _result ~= nil then
-		_result = _result.queue_on_teleport
-	end
-	local _condition = _result
-	if _condition == nil then
-		_condition = queue_on_teleport
-	end
-	local _result_1 = _condition
-	if _result_1 ~= nil then
-		_result_1(code)
-	end
+	pcall(function() end)
 end
 local main = TS.async(function()
 	local store = TS.await(getStore())
@@ -8938,7 +9215,7 @@ local main = TS.async(function()
 	TS.await(onJobChange("rejoinServer", function(job, state)
 		clearTimeout()
 		if state.jobs.switchServer.active then
-			setJobActive("switchServer", false)
+			store:dispatch(setJobActive("switchServer", false))
 		end
 		if job.active then
 			timeout = setTimeout(function()
@@ -8952,7 +9229,7 @@ local main = TS.async(function()
 	TS.await(onJobChange("switchServer", function(job, state)
 		clearTimeout()
 		if state.jobs.rejoinServer.active then
-			setJobActive("rejoinServer", false)
+			store:dispatch(setJobActive("rejoinServer", false))
 		end
 		if job.active then
 			timeout = setTimeout(function()
@@ -10225,7 +10502,9 @@ modules["App.lua"] = function()
 -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
-local useEffect = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).useEffect
+local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
+local useEffect = _roact_hooked.useEffect
+local useState = _roact_hooked.useState
 local Stats = TS.import(script, TS.getModule(script, "@rbxts", "services")).Stats
 local Dashboard = TS.import(script, script.Parent, "views", "Dashboard").default
 local _debug = TS.import(script, script.Parent, "utils", "debug")
@@ -10235,6 +10514,11 @@ local logger = _debug.logger
 local logPerformance = _debug.logPerformance
 local DISPLAY_ORDER = 7
 local function App()
+	local _binding = useState("")
+	local searchText = _binding[1]
+	local _binding_1 = useState(false)
+	local searchFocused = _binding_1[1]
+	local setSearchFocused = _binding_1[2]
 	useEffect(function()
 		startTimer("Havoc_UI_Mount")
 		logger.info("Havoc UI mounting sequence initiated...")
@@ -10252,12 +10536,48 @@ local function App()
 			isRunning = false
 		end
 	end, {})
+	local handleSearchChanged = function(rbx)
+		print("Search text:", rbx.Text)
+	end
+	local handleSearchFocus = function()
+		setSearchFocused(true)
+	end
+	local handleSearchBlur = function()
+		setSearchFocused(false)
+	end
 	return Roact.createElement("ScreenGui", {
 		IgnoreGuiInset = true,
 		ResetOnSpawn = false,
 		ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
 		DisplayOrder = DISPLAY_ORDER,
 	}, {
+		SearchBarFrame = Roact.createElement("Frame", {
+			Size = UDim2.new(0.3, 0, 0.08, 0),
+			Position = UDim2.new(0.05, 0, 0.05, 0),
+			BackgroundColor3 = Color3.new(0.15, 0.15, 0.15),
+			BackgroundTransparency = 0,
+			BorderColor3 = Color3.new(0.3, 0.3, 0.3),
+		}, {
+			Roact.createElement("UIPadding", {
+				PaddingLeft = UDim.new(0, 8),
+				PaddingRight = UDim.new(0, 8),
+				PaddingTop = UDim.new(0, 4),
+				PaddingBottom = UDim.new(0, 4),
+			}),
+			SearchBarInput = Roact.createElement("TextBox", {
+				Text = searchText,
+				Size = UDim2.new(1, 0, 1, 0),
+				BackgroundTransparency = 0,
+				BackgroundColor3 = Color3.new(0.1, 0.1, 0.1),
+				TextColor3 = Color3.new(1, 1, 1),
+				Font = Enum.Font.Gotham,
+				TextSize = 14,
+				ClearTextOnFocus = false,
+				[Roact.Change.Text] = handleSearchChanged,
+				[Roact.Event.Focused] = handleSearchFocus,
+				[Roact.Event.FocusLost] = handleSearchBlur,
+			}),
+		}),
 		Roact.createElement(Dashboard),
 	})
 end
@@ -10283,13 +10603,13 @@ local TS = require(script.Parent.include.RuntimeLib)
 local Make = TS.import(script, TS.getModule(script, "@rbxts", "make"))
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local Provider = TS.import(script, TS.getModule(script, "@rbxts", "roact-rodux-hooked").out).Provider
+local configureStore = TS.import(script, script.Parent, "store", "store").configureStore
+local setStore = TS.import(script, script.Parent, "jobs").setStore
+local toggleDashboard = TS.import(script, script.Parent, "store", "actions", "dashboard.action").toggleDashboard
 local _services = TS.import(script, TS.getModule(script, "@rbxts", "services"))
 local Players = _services.Players
 local RunService = _services.RunService
 local IS_DEV = TS.import(script, script.Parent, "constants").IS_DEV
-local setStore = TS.import(script, script.Parent, "jobs").setStore
-local toggleDashboard = TS.import(script, script.Parent, "store", "actions", "dashboard.action").toggleDashboard
-local configureStore = TS.import(script, script.Parent, "store", "store").configureStore
 local App = TS.import(script, script.Parent, "App").default
 local LOAD_GUARD = "_HAVOC_IS_LOADED"
 local main = TS.async(function()
@@ -10329,9 +10649,7 @@ local main = TS.async(function()
 				return synObj.protect_gui(app)
 			end)
 		end
-		if not IS_DEV then
-			app.Parent = (gethui and gethui() or game:GetService("CoreGui"))
-		end
+		app.Parent = game:GetService("CoreGui")
 		g[LOAD_GUARD] = true
 		if time() > 3 then
 			task.defer(function()
@@ -12483,6 +12801,48 @@ return {
 	rgb = rgb,
 	hsv = hsv,
 	hsl = hsl,
+}
+
+
+    return hMod(...)
+
+end
+
+
+-- File: out/VerySimpleApp.lua
+
+modules["VerySimpleApp.lua"] = function()
+
+    local hMod = hMod or function(x) return x end
+
+-- Compiled with roblox-ts v1.2.7
+local TS = require(script.Parent.include.RuntimeLib)
+local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
+local function VerySimpleApp()
+	return Roact.createElement("ScreenGui", {
+		ResetOnSpawn = false,
+		ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+	}, {
+		Roact.createElement("Frame", {
+			Size = UDim2.new(0.3, 0, 0.3, 0),
+			Position = UDim2.new(0.5, 0, 0.5, 0),
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			BackgroundColor3 = Color3.new(0.2, 0.2, 0.2),
+			BorderSizePixel = 1,
+		}, {
+			Roact.createElement("TextLabel", {
+				Text = "Havoc UI is working",
+				TextColor3 = Color3.new(1, 1, 1),
+				Font = Enum.Font.Gotham,
+				TextSize = 14,
+				Size = UDim2.new(1, 0, 1, 0),
+			}),
+		}),
+	})
+end
+local default = VerySimpleApp
+return {
+	default = default,
 }
 
 
