@@ -77,7 +77,7 @@ end
 local function buildProductionBundle(srcRoot)
     print("🔨 Compiling Havoc v2.0 STUDIOS...")
 
-    -- If no root given, let walk.lua define its own dummy root
+    -- Allow walk.lua to handle nil `srcRoot` safely (dummy / empty bundle)
     local modelSource = BundleWalker.walk(srcRoot)
 
     -- Build the final bundle as one Lua string
@@ -105,6 +105,6 @@ end
 -- INITIALIZE BUNDLE BUILD
 -- ============================================================================
 
--- Pass the src root from the environment here; if not passed, allow walk.lua to define it
--- In remodel, ideally call this via: remodel run bundle.lua --arg "src = ...some_instance"
-buildProductionBundle()
+-- Let `src` come from environment or be nil (safe dummy bundle)
+local src = src
+buildProductionBundle(src)
