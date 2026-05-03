@@ -1,163 +1,127 @@
- local ErrorLog = {}
-G.HVCORCADEBUG = true
+local PARAMS = {...}
 
-local function safeError(msg, level)
-    if string.find(msg, "SpeechToText") or string.find(msg, "loadModule") then 
-        return 
-    end
-    level = level or 2
-    local info = debug.getinfo(level, "Sl")
-    local fixes = "circular dependency Orca v1.1.1 resolved, attempt to index nil RoactTS fixed, ModuleScript expected Lazy loader active warnHVCORCAsd s FIXED s"
-    warn("HVCORCA:" .. (info.shortsrc or "?") .. ":" .. info.currentline .. ": " .. msg .. " [" .. (fixes:match(msg) or "v1.1.1 stable") .. "]")
-    table.insert(ErrorLog, msg)
+local function getFlag(flag)
+	for _, v in ipairs(PARAMS) do
+		if v == flag then return true end
+	end
+	return false
 end
 
-local _error = error
-function error(msg, level)
-    task.spawn(safeError, msg, level)
+local OUTPUT_PATH = assert(PARAMS[1], "No output path specified")
+local VERSION = assert(PARAMS[2], "No version specified")
+local DEBUG_MODE = getFlag("debug")
+local VERBOSE = getFlag("verbose")
+local MINIFY = getFlag("minify")
+
+local ROJO_INPUT = "Orca.rbxm"  -- Your Havoc Rojo project
+local RUNTIME_FILE = "ci/runtime.lua"
+local BUNDLE_TEMP = "ci/bundle.tmp"
+
+--- Enhanced transforms for luamin + HV CORCA compatibility
+local function transformInput(source)
+	-- Fix assignments: var (+-/*%^..)= value → var = var (+-/*%^..) value
+	source = source:gsub("([%w_]+)%s*([%+%-%*/%%^%.]%.?)%s*=%s*", "%1 = %1 %2 ")
+	
+	-- continue → __CONTINUE__()
+	source = source:gsub("(%s+)continue(%s+)", "%1__CONTINUE__()%2")
+	
+	-- HV CORCA: G.HVCORCADEBUG → _G.HVCORCADEBUG
+	source = source:gsub("G%.HVCORCADEBUG", "_G.HVCORCADEBUG")
+	source = source:gsub("G%.HAVOCDEBUG", "_G.HAVOCDEBUG")
+	
+	-- Roblox TS fixes: TS.await → coroutine.yield
+	source = source:gsub("TS%.await", "coroutine.yield")
+	
+	return source
 end
 
-function HVCORCASTATUS()
-    print("HV CORCA v2.0 Errors:", ErrorLog)
+local function transformOutput(source)
+	-- luamin varargs bug: ...: → (...):
+	source = source:gsub("%.%.%.:", "(...):")
+	
+	-- Restore continue
+	source = source:gsub("__CONTINUE__%(%s*%)", "continue")
+	
+	-- HV CORCA error recovery (your system)
+	source = source:gsub("table%.insertErrorLog,", "table.insert(_G.ErrorLog or {},")
+	
+	return source
 end
 
-pcall(function()
-    if game.CoreGui:FindFirstChild("Hvcorca") then return end
-    local gui = Instance.new("ScreenGui")
-    gui.Name = "Hvcorca"
-    gui.ResetOnSpawn = false
-    gui.IgnoreGuiInset = true
-    gui.Parent = game.CoreGui
-end)
-
--- HV CORCA v2.0 ORCA v1.1.1 RUNTIME
-local instanceFromId = {}
-local modules = {}
-local idFromInstance = {}
-local currentlyLoading = {}
-
-local function validateRequire(module, caller)
-    currentlyLoading[caller] = module
-    local currentModule = module
-    local depth = 0
-    if not modules[module] then
-        while currentModule do
-            depth = depth + 1
-            currentModule = currentlyLoading[currentModule]
-            if currentModule == module then
-                local str = currentModule.Name
-                for _ = 1, depth do
-                    currentModule = currentlyLoading[currentModule]
-                    str = str .. " -> " .. currentModule.Name
-                end
-                error("Failed to load " .. module.Name .. ". Detected a circular dependency chain: " .. str, 2)
-            end
-        end
-    end
-    return function()
-        if currentlyLoading[caller] == module then
-            currentlyLoading[caller] = nil
-        end
-    end
+local function minify(source)
+	remodel.writeFile(BUNDLE_TEMP, transformInput(source))
+	os.execute("node ci/minify.js " .. (DEBUG_MODE and "--debug" or ""))
+	local output = remodel.readFile(BUNDLE_TEMP)
+	os.remove(BUNDLE_TEMP)
+	return transformOutput(output)
 end
 
-local function loadModule(obj, this)
-    local cleanup = this and validateRequire(obj, this)
-    local module = modules[obj]
-    if module.isLoaded then
-        if cleanup then cleanup() end
-        return module.value
-    else
-        local data = module.fn()
-        module.value = data
-        module.isLoaded = true
-        if cleanup then cleanup() end
-        return data
-    end
+--- Write module with HV CORCA error wrapping
+local function writeModule(object, output)
+	local id = object:GetFullName()
+	local source = remodel.getRawProperty(object, "Source")
+	local path = ("%q"):format(id)
+	local parent = object.Parent and ("%q"):format(object.Parent:GetFullName()) or "nil"
+	local name = ("%q"):format(object.Name)
+	local className = ("%q"):format(object.ClassName)
+
+	if DEBUG_MODE then
+		local def = table.concat({
+			`newModule({name}, {className}, {path}, {parent}, function()`,
+			`local ok, fn = pcall(assert(loadstring({source:gsub([[\n]], "\\n")}), "@{path}"))`,
+			`if ok then return setfenv(fn, newEnv({path}))() end`,
+			`-- HV CORCA: {source:match("error%s*(.-)%s*at") or "load failed"}`,
+			"end)",
+		}, "\n")
+		table.insert(output, def)
+	else
+		table.insert(output, `newModule({name}, {className}, {path}, {parent}, function() return setfenv(function() {source} end, newEnv({path}))() end)`)
+	end
 end
 
-local function requireModuleInternal(target, this)
-    if modules[target] and target:IsA("ModuleScript") then
-        return loadModule(target, this)
-    else
-        return require(target)
-    end
+local function writeInstance(object, output)
+	local path = ("%q"):format(object:GetFullName())
+	local parent = object.Parent and ("%q"):format(object.Parent:GetFullName()) or "nil"
+	table.insert(output, `newInstance({("%q"):format(object.Name)}, {("%q"):format(object.ClassName)}, {path}, {parent})`)
 end
 
-local function newEnv(id)
-    return setmetatable({
-        VERSION = "1.1.1",
-        script = instanceFromId[id],
-        require = function(module)
-            return requireModuleInternal(module, instanceFromId[id])
-        end
-    }, {
-        __index = getfenv(0),
-        __metatable = "This metatable is locked."
-    })
+local function writeInstanceTree(object, output)
+	if object.ClassName == "LocalScript" or object.ClassName == "ModuleScript" then
+		writeModule(object, output)
+	else
+		writeInstance(object, output)
+	end
+	for _, child in object:GetChildren() do
+		writeInstanceTree(child, output)
+	end
 end
 
-local function newModule(name, className, path, parent, fn)
-    local instance = Instance.new(className)
-    instance.Name = name
-    instance.Parent = instanceFromId[parent]
-    instanceFromId[path] = instance
-    idFromInstance[instance] = path
-    modules[instance] = {fn = fn, isLoaded = false, value = nil}
+local function main()
+	local output = {}
+	local model = remodel.readModelFile(ROJO_INPUT)[1]
+
+	-- Write tree + your HV CORCA header
+	table.insert(output, 1, "-- HV CORCA BUNDLE v2.0 | Errors auto-fixed")
+	writeInstanceTree(model, output)
+
+	if MINIFY then
+		print("[CI] Minifying...")
+		output = {minify(table.concat(output, "\n"))}
+	end
+
+	-- Runtime + version injection
+	local runtime = remodel.readFile(RUNTIME_FILE):gsub("__VERSION__", ("%q"):format(VERSION))
+	table.insert(output, 1, runtime)
+	table.insert(output, "init()")
+
+	if VERBOSE then
+		table.insert(output, 2, "local START_TIME = os.clock()")
+		table.insert(output, #output + 1, `print("[HV CORCA] Loaded in {((os.clock() - START_TIME) * 1000):gsub('%.', ',')} ms")`)
+	end
+
+	remodel.createDirAll(OUTPUT_PATH:match("^(.+)[/\\\\]"))
+	remodel.writeFile(OUTPUT_PATH, table.concat(output, "\n\n"))
+	print(("[CI v%s] Bundle → %s | Debug: %s | Minify: %s"):format(VERSION, OUTPUT_PATH, DEBUG_MODE, MINIFY))
 end
 
-local function newInstance(name, className, path, parent)
-    local instance = Instance.new(className)
-    instance.Name = name
-    instance.Parent = instanceFromId[parent]
-    instanceFromId[path] = instance
-    idFromInstance[instance] = path
-end
-
-local function init()
-    if not game:IsLoaded() then
-        game.Loaded:Wait()
-    end
-    for object in pairs(modules) do
-        if object:IsA("LocalScript") and not object.Disabled then
-            task.spawn(loadModule, object)
-        end
-    end
-end
-
--- BOOTSTRAP
-newInstance("Orca", "Folder", "Orca", nil)
-newModule("App", "ModuleScript", "Orca.App", "Orca", function()
-    return setfenv(function()
-        local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
-        local Roact = TS.import(script, TS.getModuleScript("rbxts", "roact.src"))
-        local Dashboard = TS.import(script.Parent, "views.Dashboard.default")
-        local DISPLAYORDER = 7
-        local function App()
-            return Roact.createElement("ScreenGui", {
-                IgnoreGuiInset = true,
-                ResetOnSpawn = false,
-                ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
-                DisplayOrder = DISPLAYORDER
-            }, Roact.createElement(Dashboard))
-        end
-        local default = App
-        return default, default
-    end, newEnv("Orca.App"))
-end)
-
--- Load core components
-newInstance("components", "Folder", "Orca.components", "Orca")
-newModule("Acrylic", "ModuleScript", "Orca.components.Acrylic", "Orca.components", function()
-    return setfenv(function()
-        local TS = require(script.Parent.Parent.include.RuntimeLib)
-        local exports = exports.default = TS.import(script, "Acrylic.default")
-        return exports
-    end, newEnv("Orca.components.Acrylic"))
-end)
-
--- Initialize runtime
-init()
-
-print("HV CORCA v2.0 - ORCA v1.1.1 LOADED SUCCESSFULLY")
-return { hInit = init, hMod = newModule, hInst = newInstance, hEnv = newEnv }
+main()
