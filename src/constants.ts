@@ -1,7 +1,5 @@
-declare const VERSION: string | undefined;
-
-// Use type check for getgenv to prevent "cannot find name" errors during compile
-export const IS_DEV = type(getgenv) === "nil";
-
-// Fallback to "studio" if VERSION is not injected during bundling
+// src/constants.ts
+export const IS_DEV = getgenv() === undefined; // getgenv is now global
+export const LOAD_GUARD = "_HAVOC_IS_LOADED";
+declare const VERSION: string;
 export const VERSION_TAG = VERSION ?? "studio";

@@ -1,24 +1,24 @@
 import { GroupMotor, SingleMotor } from "@rbxts/flipper";
-import { useMutable } from "@rbxts/roact-hooked/out/hooks";
+import { useMutable } from "@rbxts/roact-hooked"; // Import directly from package root
 
 // Overload bc it messes up implementation
 function createMotor<T extends number | Array<number> | Record<string, number>>(
-	initialValue: T,
+    initialValue: T,
 ): T extends number ? SingleMotor : GroupMotor<T>;
 function createMotor<T extends number | Array<number> | Record<string, number>>(
-	initialValue: T,
+    initialValue: T,
 ): SingleMotor | GroupMotor<T> {
-	if (typeIs(initialValue, "number")) {
-		return new SingleMotor(initialValue);
-	} else if (typeIs(initialValue, "table")) {
-		return new GroupMotor(initialValue);
-	} else {
-		throw `Invalid type for initialValue. Expected 'number' or 'table', got '${initialValue}'`;
-	}
+    if (typeIs(initialValue, "number")) {
+        return new SingleMotor(initialValue);
+    } else if (typeIs(initialValue, "table")) {
+        return new GroupMotor(initialValue);
+    } else {
+        throw `Invalid type for initialValue. Expected 'number' or 'table', got '${typeOf(initialValue)}'`;
+    }
 }
 
 export function useMotor<T extends number | Array<number> | Record<string, number>>(
-	initialValue: T,
+    initialValue: T,
 ): T extends number ? SingleMotor : GroupMotor<T> {
-	return useMutable(createMotor(initialValue)).current;
+    return useMutable(createMotor(initialValue)).current;
 }

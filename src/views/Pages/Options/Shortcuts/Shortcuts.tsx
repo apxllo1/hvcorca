@@ -1,5 +1,5 @@
 import Roact from "@rbxts/roact";
-import { hooked, useState } from "@rbxts/roact-hooked";
+import { useState } from "@rbxts/roact-hooked"; // Removed 'hooked'
 import Canvas from "components/Canvas";
 import Card from "components/Card";
 import { useAppDispatch, useAppStore } from "hooks/common/rodux-hooks";
@@ -15,120 +15,120 @@ import ShortcutItem, { ENTRY_HEIGHT, PADDING } from "./ShortcutItem";
 const ENTRY_COUNT = 7;
 
 function Shortcuts() {
-	const store = useAppStore();
-	const dispatch = useAppDispatch();
-	const theme = useTheme("options").shortcuts;
+    const store = useAppStore();
+    const dispatch = useAppDispatch();
+    const theme = useTheme("options").shortcuts;
 
-	const [selectedItem, setSelectedItem] = useState<string | undefined>(undefined);
+    const [selectedItem, setSelectedItem] = useState<string | undefined>(undefined);
 
-	return (
-		<Card index={1} page={DashboardPage.Options} theme={theme} size={px(326, 416)} position={new UDim2(0, 0, 1, 0)}>
-			<textlabel
-				Text="Shortcuts"
-				Font="GothamBlack"
-				TextSize={20}
-				TextColor3={theme.foreground}
-				TextXAlignment="Left"
-				TextYAlignment="Top"
-				Position={px(24, 24)}
-				BackgroundTransparency={1}
-			/>
-			<Canvas size={px(326, 348)} position={px(0, 68)} padding={{ left: 24, right: 24, top: 8 }} clipsDescendants>
-				<scrollingframe
-					Size={scale(1, 1)}
-					CanvasSize={px(0, ENTRY_COUNT * (ENTRY_HEIGHT + PADDING) + PADDING)}
-					BackgroundTransparency={1}
-					BorderSizePixel={0}
-					ScrollBarImageTransparency={1}
-					ScrollBarThickness={0}
-					ClipsDescendants={false}
-				>
-					<ShortcutItem
-						onActivate={() => {
-							dispatch(toggleDashboard());
-						}}
-						onSelect={setSelectedItem}
-						selectedItem={selectedItem}
-						action="toggleDashboard"
-						description="Open Orca"
-						index={0}
-					/>
-					<ShortcutItem
-						onActivate={() => {
-							const state = store.getState() as RootState;
-							const job = state.jobs.flight as Job;
-							dispatch(setJobActive("flight", !job.active));
-						}}
-						onSelect={setSelectedItem}
-						selectedItem={selectedItem}
-						action="toggleFlight"
-						description="Toggle flight"
-						index={1}
-					/>
-					<ShortcutItem
-						onActivate={() => {
-							const state = store.getState() as RootState;
-							const job = state.jobs.freecam as Job;
-							dispatch(setJobActive("freecam", !job.active));
-						}}
-						onSelect={setSelectedItem}
-						selectedItem={selectedItem}
-						action="setFreecam"
-						description="Set freecam"
-						index={2}
-					/>
-					<ShortcutItem
-						onActivate={() => {
-							const state = store.getState() as RootState;
-							const job = state.jobs.ghost as Job;
-							dispatch(setJobActive("ghost", !job.active));
-						}}
-						onSelect={setSelectedItem}
-						selectedItem={selectedItem}
-						action="setGhost"
-						description="Set ghost mode"
-						index={3}
-					/>
-					<ShortcutItem
-						onActivate={() => {
-							const state = store.getState() as RootState;
-							const job = state.jobs.walkSpeed as Job;
-							dispatch(setJobActive("walkSpeed", !job.active));
-						}}
-						onSelect={setSelectedItem}
-						selectedItem={selectedItem}
-						action="setSpeed"
-						description="Set walk speed"
-						index={4}
-					/>
-					<ShortcutItem
-						onActivate={() => {
-							const state = store.getState() as RootState;
-							const job = state.jobs.jumpHeight as Job;
-							dispatch(setJobActive("jumpHeight", !job.active));
-						}}
-						onSelect={setSelectedItem}
-						selectedItem={selectedItem}
-						action="setJumpHeight"
-						description="Set jump height"
-						index={5}
-					/>
-					<ShortcutItem
-						onActivate={() => {
-							const state = store.getState() as RootState;
-							const job = state.jobs.facebang as Job;
-							dispatch(setJobActive("facebang", !job.active));
-						}}
-						onSelect={setSelectedItem}
-						selectedItem={selectedItem}
-						action="setFacebang"
-						description="Toggle Facebang"
-						index={6}
-					/>
-				</scrollingframe>
-			</Canvas>
-		</Card>
-	);
+    return (
+        <Card index={1} page={DashboardPage.Options} theme={theme} size={px(326, 416)} position={new UDim2(0, 0, 1, 0)}>
+            <textlabel
+                Text="Shortcuts"
+                Font="GothamBlack"
+                TextSize={20}
+                TextColor3={theme.foreground}
+                TextXAlignment="Left"
+                TextYAlignment="Top"
+                Position={px(24, 24)}
+                BackgroundTransparency={1}
+            />
+            <Canvas size={px(326, 348)} position={px(0, 68)} padding={{ left: 24, right: 24, top: 8 }} clipsDescendants>
+                <scrollingframe
+                    Size={scale(1, 1)}
+                    CanvasSize={px(0, ENTRY_COUNT * (ENTRY_HEIGHT + PADDING) + PADDING)}
+                    BackgroundTransparency={1}
+                    BorderSizePixel={0}
+                    ScrollBarImageTransparency={1}
+                    ScrollBarThickness={0}
+                    ClipsDescendants={false}
+                >
+                    <ShortcutItem
+                        onActivate={() => {
+                            dispatch(toggleDashboard());
+                        }}
+                        onSelect={setSelectedItem}
+                        selectedItem={selectedItem}
+                        action="toggleDashboard"
+                        description="Open Orca"
+                        index={0}
+                    />
+                    <ShortcutItem
+                        onActivate={() => {
+                            const state = store.getState() as RootState;
+                            const job = state.jobs.flight as Job;
+                            dispatch(setJobActive("flight", !job.active));
+                        }}
+                        onSelect={setSelectedItem}
+                        selectedItem={selectedItem}
+                        action="toggleFlight"
+                        description="Toggle flight"
+                        index={1}
+                    />
+                    <ShortcutItem
+                        onActivate={() => {
+                            const state = store.getState() as RootState;
+                            const job = state.jobs.freecam as Job;
+                            dispatch(setJobActive("freecam", !job.active));
+                        }}
+                        onSelect={setSelectedItem}
+                        selectedItem={selectedItem}
+                        action="setFreecam"
+                        description="Set freecam"
+                        index={2}
+                    />
+                    <ShortcutItem
+                        onActivate={() => {
+                            const state = store.getState() as RootState;
+                            const job = state.jobs.ghost as Job;
+                            dispatch(setJobActive("ghost", !job.active));
+                        }}
+                        onSelect={setSelectedItem}
+                        selectedItem={selectedItem}
+                        action="setGhost"
+                        description="Set ghost mode"
+                        index={3}
+                    />
+                    <ShortcutItem
+                        onActivate={() => {
+                            const state = store.getState() as RootState;
+                            const job = state.jobs.walkSpeed as Job;
+                            dispatch(setJobActive("walkSpeed", !job.active));
+                        }}
+                        onSelect={setSelectedItem}
+                        selectedItem={selectedItem}
+                        action="setSpeed"
+                        description="Set walk speed"
+                        index={4}
+                    />
+                    <ShortcutItem
+                        onActivate={() => {
+                            const state = store.getState() as RootState;
+                            const job = state.jobs.jumpHeight as Job;
+                            dispatch(setJobActive("jumpHeight", !job.active));
+                        }}
+                        onSelect={setSelectedItem}
+                        selectedItem={selectedItem}
+                        action="setJumpHeight"
+                        description="Set jump height"
+                        index={5}
+                    />
+                    <ShortcutItem
+                        onActivate={() => {
+                            const state = store.getState() as RootState;
+                            const job = state.jobs.facebang as Job;
+                            dispatch(setJobActive("facebang", !job.active));
+                        }}
+                        onSelect={setSelectedItem}
+                        selectedItem={selectedItem}
+                        action="setFacebang"
+                        description="Toggle Facebang"
+                        index={6}
+                    />
+                </scrollingframe>
+            </Canvas>
+        </Card>
+    );
 }
 
-export default hooked(Shortcuts);
+export default Shortcuts; // Exported directly

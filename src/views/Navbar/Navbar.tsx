@@ -1,5 +1,5 @@
 import Roact from "@rbxts/roact";
-import { hooked } from "@rbxts/roact-hooked";
+// Removed: import { hooked } from "@rbxts/roact-hooked";
 import Acrylic from "components/Acrylic";
 import Border from "components/Border";
 import Canvas from "components/Canvas";
@@ -17,90 +17,90 @@ import NavbarTab from "./NavbarTab";
 const NAVBAR_SIZE = px(500, 56);
 
 function Navbar() {
-	const theme = useTheme("navbar");
-	const page = useCurrentPage();
-	const isOpen = useAppSelector((state) => state.dashboard.isOpen);
+    const theme = useTheme("navbar");
+    const page = useCurrentPage();
+    const isOpen = useAppSelector((state) => state.dashboard.isOpen);
 
-	// Normalizing for 5 tabs: (Index / (Total - 1)) -> Index / 4
-	const alpha = useSpring(PAGE_TO_INDEX[page] / 4, { frequency: 3.9, dampingRatio: 0.76 });
+    // Normalizing for 5 tabs: (Index / (Total - 1)) -> Index / 4
+    const alpha = useSpring(PAGE_TO_INDEX[page] / 4, { frequency: 3.9, dampingRatio: 0.76 });
 
-	return (
-		<frame
-			Key="Navbar"
-			Size={NAVBAR_SIZE}
-			Position={useSpring(isOpen ? new UDim2(0.5, 0, 1, -20) : new UDim2(0.5, 0, 1, 100), {})}
-			AnchorPoint={new Vector2(0.5, 1)}
-			BackgroundTransparency={1}
-		>
-			<Glow
-				radius={GlowRadius.Size146}
-				size={new UDim2(1, 80, 0, 146)}
-				position={px(-40, -20)}
-				color={theme.dropshadow}
-				gradient={theme.dropshadowGradient}
-				transparency={theme.transparency}
-			/>
+    return (
+        <frame
+            Key="Navbar"
+            Size={NAVBAR_SIZE}
+            Position={useSpring(isOpen ? new UDim2(0.5, 0, 1, -20) : new UDim2(0.5, 0, 1, 100), {})}
+            AnchorPoint={new Vector2(0.5, 1)}
+            BackgroundTransparency={1}
+        >
+            <Glow
+                radius={GlowRadius.Size146}
+                size={new UDim2(1, 80, 0, 146)}
+                position={px(-40, -20)}
+                color={theme.dropshadow}
+                gradient={theme.dropshadowGradient}
+                transparency={theme.transparency}
+            />
 
-			<Underglow
-				transparency={theme.glowTransparency}
-				position={alpha}
-				sequenceColor={alpha.map((a) => getColorInSequence(theme.accentGradient.color, a))}
-			/>
+            <Underglow
+                transparency={theme.glowTransparency}
+                position={alpha}
+                sequenceColor={alpha.map((a) => getColorInSequence(theme.accentGradient.color, a))}
+            />
 
-			<Fill
-				color={theme.background}
-				gradient={theme.backgroundGradient}
-				radius={8}
-				transparency={theme.transparency}
-			/>
+            <Fill
+                color={theme.background}
+                gradient={theme.backgroundGradient}
+                radius={8}
+                transparency={theme.transparency}
+            />
 
-			<Canvas size={px(100, 56)} position={alpha.map((a) => scale(a, 0))} clipsDescendants>
-				<frame
-					Size={NAVBAR_SIZE}
-					Position={alpha.map((a) => scale(-a, 0))}
-					BackgroundColor3={hex("#FFFFFF")}
-					BorderSizePixel={0}
-				>
-					<uigradient
-						Color={theme.accentGradient.color}
-						Transparency={theme.accentGradient.transparency}
-						Rotation={theme.accentGradient.rotation}
-					/>
-					<uicorner CornerRadius={new UDim(0, 8)} />
-				</frame>
-			</Canvas>
+            <Canvas size={px(100, 56)} position={alpha.map((a) => scale(a, 0))} clipsDescendants>
+                <frame
+                    Size={NAVBAR_SIZE}
+                    Position={alpha.map((a) => scale(-a, 0))}
+                    BackgroundColor3={hex("#FFFFFF")}
+                    BorderSizePixel={0}
+                >
+                    <uigradient
+                        Color={theme.accentGradient.color}
+                        Transparency={theme.accentGradient.transparency}
+                        Rotation={theme.accentGradient.rotation}
+                    />
+                    <uicorner CornerRadius={new UDim(0, 8)} />
+                </frame>
+            </Canvas>
 
-			{theme.outlined && <Border Key="border" color={theme.foreground} radius={8} transparency={0.8} />}
+            {theme.outlined && <Border Key="border" color={theme.foreground} radius={8} transparency={0.8} />}
 
-			{/* Render all 5 tabs defined in DashboardPage */}
-			<NavbarTab page={DashboardPage.Home} />
-			<NavbarTab page={DashboardPage.Apps} />
-			<NavbarTab page={DashboardPage.Scripts} />
-			<NavbarTab page={DashboardPage.Options} />
-			<NavbarTab page={DashboardPage.Misc} />
+            {/* Render all 5 tabs defined in DashboardPage */}
+            <NavbarTab page={DashboardPage.Home} />
+            <NavbarTab page={DashboardPage.Apps} />
+            <NavbarTab page={DashboardPage.Scripts} />
+            <NavbarTab page={DashboardPage.Options} />
+            <NavbarTab page={DashboardPage.Misc} />
 
-			{theme.acrylic && <Acrylic />}
-		</frame>
-	);
+            {theme.acrylic && <Acrylic />}
+        </frame>
+    );
 }
 
-export default hooked(Navbar);
+export default Navbar; // Exported directly
 
 function Underglow(props: {
-	sequenceColor: Roact.Binding<Color3>;
-	position: Roact.Binding<number>;
-	transparency: number;
+    sequenceColor: Roact.Binding<Color3>;
+    position: Roact.Binding<number>;
+    transparency: number;
 }) {
-	return (
-		<imagelabel
-			Key="Underglow"
-			Image="rbxassetid://8992238178"
-			ImageColor3={props.sequenceColor}
-			ImageTransparency={props.transparency}
-			Size={px(148, 104)}
-			Position={props.position.map((a) => new UDim2(a, 0, 0, -18))}
-			AnchorPoint={new Vector2(0.5, 0)}
-			BackgroundTransparency={1}
-		/>
-	);
+    return (
+        <imagelabel
+            Key="Underglow"
+            Image="rbxassetid://8992238178"
+            ImageColor3={props.sequenceColor}
+            ImageTransparency={props.transparency}
+            Size={px(148, 104)}
+            Position={props.position.map((a) => new UDim2(a, 0, 0, -18))}
+            AnchorPoint={new Vector2(0.5, 0)}
+            BackgroundTransparency={1}
+        />
+    );
 }

@@ -1,27 +1,22 @@
-/**
- * Global variables injected by the Havoc Bundler & Runtime
- */
-declare const VERSION: string;
+declare global {
+    const VERSION: string;
+    const queue_on_teleport: ((script: string) => void) | undefined;
+    const gethui: (() => BasePlayerGui) | undefined;
+    const protect_gui: ((object: ScreenGui) => void) | undefined;
+    
+    function getgenv(): Record<string, any>;
 
-/**
- * Roblox Executor Globals
- */
-declare const queue_on_teleport: ((script: string) => void) | undefined;
-declare const gethui: (() => BasePlayerGui) | undefined;
-declare const protect_gui: ((object: ScreenGui) => void) | undefined;
-declare function getgenv(): any;
+    namespace syn {
+        function queue_on_teleport(script: string): void;
+        function protect_gui(object: ScreenGui): void;
+    }
 
-declare namespace syn {
-	function queue_on_teleport(script: string): void;
-	function protect_gui(object: ScreenGui): void;
+    interface _G {
+        [key: string]: any;
+        Havoc_Init: (env: any) => void;
+        Havoc_NewModule: (...args: any[]) => void;
+        Havoc_NewInstance: (...args: any[]) => void;
+    }
 }
 
-/**
- * Havoc Runtime Handshake Globals
- * (Optional: only needed if you call these from TS)
- */
-declare namespace _G {
-    let Havoc_Init: (env: any) => void;
-    let Havoc_NewModule: (...args: any[]) => void;
-    let Havoc_NewInstance: (...args: any[]) => void;
-}
+export {};
