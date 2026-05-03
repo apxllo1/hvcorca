@@ -4543,23 +4543,18 @@ local HttpService = _services.HttpService\
 local Players = _services.Players\
 local getStore = TS.import(script, script.Parent.Parent, \"jobs\", \"helpers\", \"job-store\").getStore\
 local setInterval = TS.import(script, script.Parent.Parent, \"utils\", \"timeout\").setInterval\
-if makefolder and not isfolder(\"_orca\") then\
+if type(makefolder) == \"function\" and not isfolder(\"_orca\") then\
 \9makefolder(\"_orca\")\
 end\
 local function read(file)\
-\9if readfile then\
-\9\9return isfile(file) and readfile(file) or nil\
-\9else\
-\9\9print(\"READ   \" .. file)\
-\9\9return nil\
+\9if type(readfile) == \"function\" and isfile(file) then\
+\9\9return readfile(file)\
 \9end\
+\9return nil\
 end\
 local function write(file, content)\
-\9if writefile then\
-\9\9return writefile(file, content)\
-\9else\
-\9\9print(\"WRITE  \" .. (file .. (\" => \\n\" .. content)))\
-\9\9return nil\
+\9if type(writefile) == \"function\" then\
+\9\9writefile(file, content)\
 \9end\
 end\
 local autosave\
@@ -4568,15 +4563,14 @@ local function persistentState(name, selector, defaultValue)\
 \9\9local serializedState = read(\"_orca/\" .. (name .. \".json\"))\
 \9\9if serializedState == nil then\
 \9\9\9write(\"_orca/\" .. (name .. \".json\"), HttpService:JSONEncode(defaultValue))\
+\9\9\9autosave(name, selector)\
 \9\9\9return TS.TRY_RETURN, { defaultValue }\
 \9\9end\
 \9\9local value = HttpService:JSONDecode(serializedState)\
-\9\9autosave(name, selector):catch(function()\
-\9\9\9warn(\"Autosave failed\")\
-\9\9end)\
+\9\9autosave(name, selector)\
 \9\9return TS.TRY_RETURN, { value }\
 \9end, function(err)\
-\9\9warn(\"Failed to load \" .. (name .. (\".json: \" .. tostring(err))))\
+\9\9warn(\"[PersistentState] Load failed for \" .. (name .. (\": \" .. tostring(err))))\
 \9\9return TS.TRY_RETURN, { defaultValue }\
 \9end)\
 \9if _exitType then\
@@ -4585,13 +4579,15 @@ local function persistentState(name, selector, defaultValue)\
 end\
 autosave = TS.async(function(name, selector)\
 \9local store = TS.await(getStore())\
-\9local function save()\
-\9\9local state = selector(store:getState())\
-\9\9write(\"_orca/\" .. (name .. \".json\"), HttpService:JSONEncode(state))\
+\9local save = function()\
+\9\9TS.try(function()\
+\9\9\9local state = selector(store:getState())\
+\9\9\9write(\"_orca/\" .. (name .. \".json\"), HttpService:JSONEncode(state))\
+\9\9end, function(err)\
+\9\9\9warn(\"[PersistentState] Autosave failed for \" .. (name .. (\": \" .. tostring(err))))\
+\9\9end)\
 \9end\
-\9setInterval(function()\
-\9\9return save\
-\9end, 60000)\
+\9setInterval(save, 60000)\
 \9Players.PlayerRemoving:Connect(function(player)\
 \9\9if player == Players.LocalPlayer then\
 \9\9\9save()\
