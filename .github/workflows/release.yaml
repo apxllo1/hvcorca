@@ -42,8 +42,8 @@ jobs:
         run: npm run build
       - name: Bundle modules
         run: |
-          remodel run ci/bundle.lua Havoc.rbxm public/latest.lua v2.0 release minify
-          remodel run ci/bundle.lua Havoc.rbxm public/latest.debug.lua v2.0 release-dbg debug
+          remodel run ci/bundle.lua public/latest.lua v2.0 release minify
+          remodel run ci/bundle.lua public/latest.debug.lua v2.0 release-dbg debug
       - name: Commit latest builds
         uses: EndBug/add-and-commit@v9
         with:
@@ -61,7 +61,7 @@ jobs:
           name: Latest Release - ${{ github.sha }}
           body: |
             **Auto-built** from [${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})
-            
+
             - Minified: [latest.lua](https://github.com/${{ github.repository }}/raw/master/public/latest.lua)
             - Debug: [latest.debug.lua](https://github.com/${{ github.repository }}/raw/master/public/latest.debug.lua)
             - Model: [Havoc.rbxm](https://github.com/${{ github.repository }}/raw/master/Havoc.rbxm)
