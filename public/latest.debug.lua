@@ -4740,28 +4740,40 @@ local initialState = {\
 }\
 local jobsReducer = Rodux.createReducer(initialState, {\
 \9[\"jobs/setJobActive\"] = function(state, action)\
+\9\9if not (state[action.jobName] ~= nil) then\
+\9\9\9return state\
+\9\9end\
 \9\9local _object = {}\
 \9\9for _k, _v in pairs(state) do\
 \9\9\9_object[_k] = _v\
 \9\9end\
 \9\9local _left = action.jobName\
 \9\9local _object_1 = {}\
-\9\9for _k, _v in pairs(state[action.jobName]) do\
-\9\9\9_object_1[_k] = _v\
+\9\9local _spread = (state[action.jobName])\
+\9\9if type(_spread) == \"table\" then\
+\9\9\9for _k, _v in pairs(_spread) do\
+\9\9\9\9_object_1[_k] = _v\
+\9\9\9end\
 \9\9end\
 \9\9_object_1.active = action.active\
 \9\9_object[_left] = _object_1\
 \9\9return _object\
 \9end,\
 \9[\"jobs/setJobValue\"] = function(state, action)\
+\9\9if not (state[action.jobName] ~= nil) then\
+\9\9\9return state\
+\9\9end\
 \9\9local _object = {}\
 \9\9for _k, _v in pairs(state) do\
 \9\9\9_object[_k] = _v\
 \9\9end\
 \9\9local _left = action.jobName\
 \9\9local _object_1 = {}\
-\9\9for _k, _v in pairs(state[action.jobName]) do\
-\9\9\9_object_1[_k] = _v\
+\9\9local _spread = (state[action.jobName])\
+\9\9if type(_spread) == \"table\" then\
+\9\9\9for _k, _v in pairs(_spread) do\
+\9\9\9\9_object_1[_k] = _v\
+\9\9\9end\
 \9\9end\
 \9\9_object_1.value = action.value\
 \9\9_object[_left] = _object_1\
@@ -4769,7 +4781,7 @@ local jobsReducer = Rodux.createReducer(initialState, {\
 \9end,\
 \9[\"jobs/setJobSlider\"] = function(state, action)\
 \9\9local job = state[action.jobName]\
-\9\9if job.sliders ~= nil then\
+\9\9if job and job.sliders ~= nil then\
 \9\9\9local jobWithSliders = job\
 \9\9\9local _object = {}\
 \9\9\9for _k, _v in pairs(state) do\
