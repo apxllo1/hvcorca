@@ -146,7 +146,8 @@ local function main()
 	end
 
 	-- Write to file
-	remodel.createDirAll(string.match(OUTPUT_PATH, "^(.*)[/\\]"))
+	local dir = string.match(OUTPUT_PATH, "^(.*)[/\\]") or "."
+	remodel.createDirAll(dir)
 	remodel.writeFile(OUTPUT_PATH, table.concat(output, "\n\n"))
 
 	print("[CI " .. VERSION .. "] Bundle written to " .. OUTPUT_PATH)
