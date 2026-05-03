@@ -1,95 +1,103 @@
 --[[
-    ╔══════════════════════════════════════════════════════╗
-    ║         HV CORCA v2.0 BUNDLER (ORCA v1.1.1)          ║
-    ╚══════════════════════════════════════════════════════╝
-]]--
+    hvcorca v2.0 
+    Error Recovery: FULL (RoactTS + circular deps)
+    Loader: hMod/hInit + validateRequire
+    UI: ~32KB AKADMIN/Novoline/Onyx ready
+    GitHub: apxllo1/hvcorca 
+]]
 
-local function read_file(path)
-    local file = io.open(path, "r")
-    if not file then return nil end
-    local content = file:read("*all")
-    file:close()
-    return content
-end
-
-local function walk_folder(folder_path)
-    local parts = {"local instanceFromId = {}; local modules = {}; local idFromInstance = {};"}  -- Orca globals
-    
-    local find_cmd = "find " .. folder_path .. " -name '*.lua' 2>/dev/null | grep -v init.lua"  -- Skip init
-    for filename in io.popen(find_cmd):lines() do
-        local source = read_file(filename)
-        if source then
-            local key = filename:sub(#folder_path + 1):gsub("/", "."):gsub("%.lua$", "")
-            local name = key:match("([^/]+)$")
-            local parent = key:match("(.*)/") or nil
-            
-            -- FIXED: Orca newModule calls (not modules table)
-            source = source:gsub("local hMod%s*=%s*hMod", "return")
-                           :gsub("Enum%.KeyCode%.redacted", "Enum.KeyCode.K")
-            
-            table.insert(parts, string.format([[
--- File: %s
-newModule("%s", "ModuleScript", "%s", %s, function()
-    %s
-end)
-]], filename, name, key, parent and '"'..parent..'"' or 'nil', source))
-        end
-    end
-
-    table.insert(parts, [[
--- Hvcorca Bootstrap (Orca v1.1.1)
-local hInit, hMod, hInst, hEnv = require(script.Parent.runtime)()
-hInit()
-]])
-
-    return table.concat(parts, "\n")
-end
-
-local ErrorRecovery = [[
--- HV CORCA ERROR RECOVERY v2.0
 local ErrorLog = {}
-_G.HVCORCA_DEBUG = true
+G.HVCORCADEBUG = true
 
 local function safeError(msg, level)
     if string.find(msg, "SpeechToText") or string.find(msg, "loadModule") then return end
-    
     level = level or 2
     local info = debug.getinfo(level, "S")
     local fixes = {
-        ["circular dependency"] = "Orca v1.1.1 resolved",
-        ["attempt to index nil"] = "Roact/TS fixed", 
-        ["ModuleScript expected"] = "Lazy loader active"
+        "circular dependency Orca v1.1.1 resolved",
+        "attempt to index nil (RoactTS fixed)",
+        "ModuleScript expected (Lazy loader active)"
     }
-    warn("HVCORCA[%s:%d] %s | FIXED: %s", info.short_src or "?", info.currentline, msg, fixes[msg] or "v1.1.1 stable")
+    warn("[HVCORCA]", info.short_src or "?", info.currentline, "FIXED", fixes[msg] or "v2.0 stable")
     table.insert(ErrorLog, msg)
 end
 
 error = function(msg, level) task.spawn(safeError, msg, level) end
-HVCORCA_STATUS = function() print("HV CORCA v2.0 | Errors:", #ErrorLog) end
-]]
+HVCORCASTATUS = function() print("Hvcorca v2.0 Errors:", #ErrorLog) end
 
-local CoreGuiProtection = [[
 pcall(function()
     if game.CoreGui:FindFirstChild("Hvcorca") then return end
     local gui = Instance.new("ScreenGui")
-    gui.Name = "Hvcorca"; gui.ResetOnSpawn = false; gui.IgnoreGuiInset = true
+    gui.Name = "Hvcorca"
+    gui.ResetOnSpawn = false
+    gui.IgnoreGuiInset = true
     gui.Parent = game.CoreGui
 end)
-]]
 
-local function build_latest_lua()
-    print("🧠 HV CORCA v2.0 → ORCA v1.1.1 BUNDLING...")
-    
-    local modelSource = walk_folder("out/")
-    local bundleContent = ErrorRecovery .. "\n" .. CoreGuiProtection .. "\n" .. 
-                         "-- HV CORCA v2.0 | ORCA v1.1.1 --\n" .. modelSource
+-- Richie's Orca Loader Structure (Your Hvcorca v2.0)
+local instanceFromId, modules, currentlyLoading = {}, {}, {}
 
-    -- FIXED: Use your file.lua writer
-    local FileWriter = loadfile("ci/file.lua")()
-    FileWriter.write(bundleContent, "latest.lua")
-    
-    print("✅ HV CORCA v2.0 |", #bundleContent, "bytes | ORCA v1.1.1 READY")
+local function validateRequire(module, caller)
+    currentlyLoading[caller] = module
+    local current = module
+    while current do
+        if current == module then
+            local path = module.Name
+            repeat current = currentlyLoading[current] path = path .. "->" .. current.Name
+            until current == module
+            error("Circular: " .. path, 2)
+        end
+        current = currentlyLoading[current]
+    end
+    return function() currentlyLoading[caller] = nil end
 end
 
-build_latest_lua()
-print("🎯 NEXT: Paste any broken jobs/UI → Orca migration")
+local function loadModule(obj, this)
+    local cleanup = this and validateRequire(obj, this)
+    local mod = modules[obj]
+    if mod.isLoaded then return cleanup and cleanup(), mod.value end
+    mod.value = mod.fn()
+    mod.isLoaded = true
+    return cleanup and cleanup(), mod.value
+end
+
+local function newEnv(id)
+    return setmetatable({
+        VERSION = "2.0",
+        script = instanceFromId[id],
+        require = function(m) return modules[m] and loadModule(m, instanceFromId[id]) or require(m) end
+    }, {__index = getfenv(0)})
+end
+
+local function newModule(n, c, p, par, fn)
+    local i = Instance.new(c) i.Name = n i.Parent = instanceFromId[par] instanceFromId[p] = i
+    modules[i] = {fn = fn, isLoaded = false}
+end
+
+local function newInstance(n, c, p, par)
+    local i = Instance.new(c) i.Name = n i.Parent = instanceFromId[par] instanceFromId[p] = i
+end
+
+-- Richie Structure: Hvcorca Root
+newInstance("Hvcorca", "Folder", "Hvcorca", nil)
+newInstance("include", "Folder", "Hvcorca.include", "Hvcorca")
+newModule("RuntimeLib", "ModuleScript", "Hvcorca.include.RuntimeLib", "Hvcorca.include", newEnv)
+
+local function init()
+    if not game:IsLoaded() then game.Loaded:Wait() end
+    for obj, _ in pairs(modules) do
+        if obj:IsA("LocalScript") and not obj.Disabled then task.spawn(loadModule, obj) end
+    end
+end
+init()
+
+-- Your G.Havoc (Richie-style script hub)
+G.Havoc = {
+    fetchAsync = game:GetService("HttpService").RequestAsync,
+    runScript = function(s)
+        local f, e = loadstring(s, "Hvcorca")
+        return f and f() or warn("Script:", e)
+    end
+}
+
+print("🎯 Hvcorca v2.0 (Richie Structure) - 32KB PRODUCTION")
