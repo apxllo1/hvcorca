@@ -2,86 +2,123 @@ local PARAMS = {...}
 
 local function getFlag(flag)
 	for _, v in ipairs(PARAMS) do
-		if v == flag then return true end
+		if v == flag then
+			return true
+		end
 	end
 	return false
 end
 
-local ROJO_INPUT = assert(PARAMS[1], "No input .rbxm specified")
-local OUTPUT_PATH = assert(PARAMS[2], "No output path specified")
-local VERSION = assert(PARAMS[3], "No version specified")
+local OUTPUT_PATH = assert(PARAMS[1], "No output path specified")
+local VERSION = assert(PARAMS[2], "No version specified")
 local DEBUG_MODE = getFlag("debug")
 local VERBOSE = getFlag("verbose")
 local MINIFY = getFlag("minify")
 
+local ROJO_INPUT = "Havoc.rbxm"
 local RUNTIME_FILE = "ci/runtime.lua"
 local BUNDLE_TEMP = "ci/bundle.tmp"
 
---- Enhanced transforms for luamin + HV CORCA compatibility
+---Convert some specific snippets to work in luamin.
+---@param source string
+---@return string
 local function transformInput(source)
-	source = source:gsub("([%w_]+)%s*([%+%-%*/%%^%.]%.?)%s*=%s*", "%1 = %1 %2 ")
-	source = source:gsub("(%s+)continue(%s+)", "%1__CONTINUE__()%2")
-	source = source:gsub("G%.HVCORCADEBUG", "_G.HVCORCADEBUG")
-	source = source:gsub("G%.HAVOCDEBUG", "_G.HAVOCDEBUG")
-	source = source:gsub("TS%.await", "coroutine.yield")
+	-- Capture (var) (+-/*%^..)= (value)
+	-- Substitute %1 = %1 %2 %3
+	source = string.gsub(source, "([%w_]+)%s*([%+%-%*/%%^%.]%.?)=%s*", "%1 = %1 %2")
+
+	-- Capture whole word 'continue'
+	-- Substitute __CONTINUE__()
+	source = string.gsub(source, "(%s+)continue(%s+)", "%1__CONTINUE__()%2")
+
 	return source
 end
 
+---@param source string
+---@return string
 local function transformOutput(source)
-	source = source:gsub("%.%.%.:", "(...):")
-	source = source:gsub("__CONTINUE__%(%s*%)", "continue")
-	source = source:gsub("table%.insertErrorLog,", "table.insert(_G.ErrorLog or {},")
+	-- Substitute ...: with (...):
+	-- For a luamin bug caused by calling varargs
+	source = string.gsub(source, "%.%.%.:", "(...):")
+
+	-- Capture __CONTINUE__()
+	-- Substitute continue
+	source = string.gsub(source, "__CONTINUE__%(%)", "continue;")
+
 	return source
 end
 
+---@param source string
+---@return string
 local function minify(source)
 	remodel.writeFile(BUNDLE_TEMP, transformInput(source))
-	os.execute("node ci/minify.js " .. (DEBUG_MODE and "--debug" or ""))
+
+	os.execute("node ci/minify.js")
 	local output = remodel.readFile(BUNDLE_TEMP)
+
 	os.remove(BUNDLE_TEMP)
+
 	return transformOutput(output)
 end
 
---- Write module with HV CORCA error wrapping
+---@param object LocalScript | ModuleScript
+---@param output table<number, string>
 local function writeModule(object, output)
 	local id = object:GetFullName()
 	local source = remodel.getRawProperty(object, "Source")
-	local path = ("%q"):format(id)
-	local parent = object.Parent and ("%q"):format(object.Parent:GetFullName()) or "nil"
-	local name = ("%q"):format(object.Name)
-	local className = ("%q"):format(object.ClassName)
+
+	local path = string.format("%q", id)
+	local parent = object.Parent and string.format("%q", object.Parent:GetFullName()) or "nil"
+	local name = string.format("%q", object.Name)
+	local className = string.format("%q", object.ClassName)
 
 	if DEBUG_MODE then
 		local def = table.concat({
-			string.format('newModule(%s, %s, %s, %s, function()', name, className, path, parent),
-			string.format('local ok, fn = pcall(assert(loadstring(%s), "@%s"))', ("%q"):format(source:gsub("\\", "\\\\"):gsub("\n", "\\n")), path),
-			'if ok then return setfenv(fn, newEnv(' .. path .. '))() end',
-			string.format('-- HV CORCA: %s', source:match("error%s*(.-)%s*at") or "load failed"),
-			'end)',
-		}, "\n")
+			"newModule(" .. name .. ", " .. className .. ", " .. path .. ", " .. parent .. ", function ()",
+			"local fn = assert(loadstring(" .. string.format("%q", source) .. ", '@'.." .. path .. "))",
+			"setfenv(fn, newEnv(" .. path .. "))",
+			"return fn()",
+			"end)",
+		}, " ")
 		table.insert(output, def)
 	else
-		table.insert(output, string.format('newModule(%s, %s, %s, %s, function() return setfenv(function() %s end, newEnv(%s))() end)', 
-			name, className, path, parent, source, path))
+		local def = table.concat({
+			"newModule(" .. name .. ", " .. className .. ", " .. path .. ", " .. parent .. ", function ()",
+			"return setfenv(function()",
+			source,
+			"end, newEnv(" .. path .. "))()",
+			"end)",
+		}, " ")
+		table.insert(output, def)
 	end
 end
 
+---@param object Instance
+---@param output table<number, string>
 local function writeInstance(object, output)
-	local path = ("%q"):format(object:GetFullName())
-	local parent = object.Parent and ("%q"):format(object.Parent:GetFullName()) or "nil"
-	table.insert(output, string.format('newInstance(%s, %s, %s, %s)', 
-		("%q"):format(object.Name), 
-		("%q"):format(object.ClassName), 
-		path, parent))
+	local id = object:GetFullName()
+
+	local path = string.format("%q", id)
+	local parent = object.Parent and string.format("%q", object.Parent:GetFullName()) or "nil"
+	local name = string.format("%q", object.Name)
+	local className = string.format("%q", object.ClassName)
+
+	local def = table.concat({
+		"newInstance(" .. name .. ", " .. className .. ", " .. path .. ", " .. parent .. ")",
+	}, "\n")
+	table.insert(output, def)
 end
 
+---@param object LocalScript | ModuleScript
+---@param output table<number, string>
 local function writeInstanceTree(object, output)
 	if object.ClassName == "LocalScript" or object.ClassName == "ModuleScript" then
 		writeModule(object, output)
 	else
 		writeInstance(object, output)
 	end
-	for _, child in object:GetChildren() do
+
+	for _, child in ipairs(object:GetChildren()) do
 		writeInstanceTree(child, output)
 	end
 end
@@ -90,29 +127,29 @@ local function main()
 	local output = {}
 	local model = remodel.readModelFile(ROJO_INPUT)[1]
 
-	table.insert(output, 1, "-- HV CORCA BUNDLE v2.1 | Errors auto-fixed | Generated by ci/bundle.lua")
+	-- Add instances
 	writeInstanceTree(model, output)
 
+	-- Minify current output
 	if MINIFY then
-		print("[CI] Minifying...")
-		output = {minify(table.concat(output, "\n"))}
+		output = { minify(table.concat(output, "\n")) }
 	end
 
-	local runtime = remodel.readFile(RUNTIME_FILE):gsub("__VERSION__", ("%q"):format(VERSION))
+	-- Core runtime
+	local runtime = string.gsub(remodel.readFile(RUNTIME_FILE), "__VERSION__", string.format("%q", VERSION))
 	table.insert(output, 1, runtime)
-	table.insert(output, "hInit()")
+	table.insert(output, "init()")
 
 	if VERBOSE then
 		table.insert(output, 2, "local START_TIME = os.clock()")
-		table.insert(output, #output + 1, string.format('print("[HV CORCA] Loaded in " .. ((os.clock() - START_TIME) * 1000):gsub("%%.", ",") .. " ms")'))
+		table.insert(output, "print(\"[CI " .. VERSION .. "] Orca run in \" .. (os.clock() - START_TIME) * 1000 .. \" ms\")")
 	end
 
-	local outputDir = OUTPUT_PATH:match("^(.+)[/\\\\]")
-	if outputDir then
-		remodel.createDirAll(outputDir)
-	end
+	-- Write to file
+	remodel.createDirAll(string.match(OUTPUT_PATH, "^(.*)[/\\]"))
 	remodel.writeFile(OUTPUT_PATH, table.concat(output, "\n\n"))
-	print(("[CI v%s] Bundle → %s | Debug: %s | Minify: %s"):format(VERSION, OUTPUT_PATH, DEBUG_MODE, MINIFY))
+
+	print("[CI " .. VERSION .. "] Bundle written to " .. OUTPUT_PATH)
 end
 
 main()
