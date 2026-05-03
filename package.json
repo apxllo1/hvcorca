@@ -27,13 +27,12 @@
 		"roblox-ts": "^1.2.7",
 		"typescript": "^4.5.5"
 	},
-	"dependencies": {
-		"@rbxts/flipper": "^2.0.1",
-		"@rbxts/make": "^1.0.6",
-		"@rbxts/roact": "^1.4.1",
-		"@rbxts/roact-hooked": "^1.3.0",
-		"@rbxts/roact-rodux-hooked": "^1.1.0",
-		"@rbxts/rodux": "^3.0.0",
-		"@rbxts/services": "^1.2.0"
-	}
+"dependencies": {
+    "@rbxts/flipper": "^2.0.1",
+    "@rbxts/make": "^1.0.6",
+    "@rbxts/roact": "^1.4.1",
+    "@rbxts/roact-hooked": "^2.0.0",
+    "@rbxts/roact-rodux-hooked": "^1.1.3",
+    "@rbxts/rodux": "^3.0.0",
+    "@rbxts/services": "^1.2.0"
 }
