@@ -138,7 +138,7 @@ local function main()
 	-- Core runtime
 	local runtime = string.gsub(remodel.readFile(RUNTIME_FILE), "__VERSION__", string.format("%q", VERSION))
 	table.insert(output, 1, runtime)
-	table.insert(output, "init()")
+	table.insert(output, "hInit()")
 
 	if VERBOSE then
 		table.insert(output, 2, "local START_TIME = os.clock()")
