@@ -3,24 +3,28 @@ import { getStore } from "../jobs/helpers/job-store";
 import { RootState } from "./store";
 import { setInterval } from "../utils/timeout";
 
-if (typeof makefolder === "function" && !isfolder("_orca")) {
+if (typeIs(makefolder, "function") && !isfolder("_orca")) {
 	makefolder("_orca");
 }
 
 function read(file: string): string | undefined {
-	if (typeof readfile === "function" && isfile(file)) {
+	if (typeIs(readfile, "function") && isfile(file)) {
 		return readfile(file);
 	}
 	return undefined;
 }
 
 function write(file: string, content: string): void {
-	if (typeof writefile === "function") {
+	if (typeIs(writefile, "function")) {
 		writefile(file, content);
 	}
 }
 
-export function persistentState<T extends object>(name: string, selector: (state: RootState) => T, defaultValue: T): T {
+export function persistentState<T extends object>(
+	name: string,
+	selector: (state: RootState) => T,
+	defaultValue: T,
+): T {
 	try {
 		const serializedState = read(`_orca/${name}.json`);
 
