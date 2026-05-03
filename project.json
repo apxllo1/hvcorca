@@ -1,0 +1,21 @@
+{
+	"name": "Havoc",
+	"globIgnorePaths": [
+		"**/package.json",
+		"**/tsconfig.json",
+		"**/*.spec.*",
+		"**/*.d.*",
+		"**/node_modules/**",
+		"**/src/**"
+	],
+	"tree": {
+		"$className": "Folder",
+		"$path": "out",
+		"include": {
+			"$path": "include"
+		},
+		"node_modules": {
+			"$path": "node_modules/@rbxts"
+		}
+	}
+}
