@@ -5,33 +5,27 @@ on:
     branches: [master]
     paths:
       - 'src/**'
-
 jobs:
   bundle-release:
     runs-on: ubuntu-22.04
     permissions:
       contents: write
-
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
     steps:
       - uses: actions/checkout@v4
         with:
           repository: ${{ github.event.repository.full_name }}
           ref: "master"
           fetch-depth: 0
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-
       - name: Install Rojo/Aftman
         uses: ok-nick/setup-aftman@v0.4.2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Install Remodel
         run: |
           curl -L --fail --retry 3 --retry-delay 2 \
@@ -40,22 +34,16 @@ jobs:
           unzip remodel.zip
           chmod +x remodel
           sudo mv remodel /usr/local/bin/remodel
-
       - name: Install NPM dependencies
         run: npm install
-
       - name: Compile roblox-ts
         run: npm run compile
-
       - name: Build model
         run: npm run build
-
       - name: Bundle modules
         run: |
-          # Ensure we run this from the repo root where ci/ exists
-          remodel run ci/bundle.lua ../Havoc.rbxm ../public/latest.lua release minify
-          remodel run ci/bundle.lua ../Havoc.rbxm ../public/latest.debug.lua release-dbg debug
-
+          remodel run ci/bundle.lua Havoc.rbxm public/latest.lua v2.0 release minify
+          remodel run ci/bundle.lua Havoc.rbxm public/latest.debug.lua v2.0 release-dbg debug
       - name: Commit latest builds
         uses: EndBug/add-and-commit@v9
         with:
@@ -65,7 +53,6 @@ jobs:
             public/latest.debug.lua
           message: "🔥 Release v$(date +%Y%m%d-%H%M) - Auto-build from src"
           push: '--force-with-lease'
-
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
