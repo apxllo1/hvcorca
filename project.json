@@ -1,9 +1,0 @@
-{
-	"name": "Havoc",
-	"tree": {
-		"$path": "out",
-		"include": {
-			"$path": "include"
-		}
-	}
-}
