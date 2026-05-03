@@ -4,18 +4,14 @@
 		"**/package.json",
 		"**/tsconfig.json",
 		"**/*.spec.*",
-		"**/*.d.*",
-		"**/node_modules/**",
-		"**/src/**"
+		"**/*.d.*"
 	],
 	"tree": {
-		"$className": "Folder",
+		"$className": "ReplicatedStorage",
 		"$path": "out",
 		"include": {
+			"$className": "Folder",
 			"$path": "include"
-		},
-		"node_modules": {
-			"$path": "node_modules/@rbxts"
 		}
 	}
 }
