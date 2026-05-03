@@ -17,132 +17,132 @@ import { hex } from "utils/color3";
 import { scale } from "utils/udim2";
 
 interface Props extends Roact.PropsWithChildren {
-    index: number;
-    backgroundImage: string;
-    backgroundImageSize: Vector2;
-    dropshadow: string;
-    dropshadowSize: Vector2;
-    dropshadowPosition: Vector2;
-    anchorPoint?: Vector2;
-    size: UDim2;
-    position: UDim2;
-    onActivate: () => void;
+	index: number;
+	backgroundImage: string;
+	backgroundImageSize: Vector2;
+	dropshadow: string;
+	dropshadowSize: Vector2;
+	dropshadowPosition: Vector2;
+	anchorPoint?: Vector2;
+	size: UDim2;
+	position: UDim2;
+	onActivate: () => void;
 }
 
 const shineSpringOptions: SpringOptions = {
-    dampingRatio: 3,
-    frequency: 2,
+	dampingRatio: 3,
+	frequency: 2,
 };
 
 function ScriptCard({
-    index,
-    backgroundImage,
-    backgroundImageSize,
-    dropshadow,
-    dropshadowSize,
-    dropshadowPosition,
-    anchorPoint,
-    size,
-    position,
-    onActivate,
-    [Roact.Children]: children,
+	index,
+	backgroundImage,
+	backgroundImageSize,
+	dropshadow,
+	dropshadowSize,
+	dropshadowPosition,
+	anchorPoint,
+	size,
+	position,
+	onActivate,
+	[Roact.Children]: children,
 }: Props) {
-    const rerender = useForcedUpdate();
+	const rerender = useForcedUpdate();
 
-    const isCurrentlyOpen = useIsPageOpen(DashboardPage.Scripts);
-    const isOpen = useIsMount() ? false : isCurrentlyOpen;
-    const isTransitioning = useDelayedUpdate(isOpen, index * 30);
+	const isCurrentlyOpen = useIsPageOpen(DashboardPage.Scripts);
+	const isOpen = useIsMount() ? false : isCurrentlyOpen;
+	const isTransitioning = useDelayedUpdate(isOpen, index * 30);
 
-    // Force a rerender to start the intro transition
-    useEffect(() => rerender(), []);
+	// Force a rerender to start the intro transition
+	useEffect(() => rerender(), []);
 
-    const offset = useParallaxOffset();
+	const offset = useParallaxOffset();
 
-    const [{ isHovered, isPressed }, setButtonState] = useSetState({ isHovered: false, isPressed: false });
+	const [{ isHovered, isPressed }, setButtonState] = useSetState({ isHovered: false, isPressed: false });
 
-    return (
-        <Canvas
-            anchor={anchorPoint}
-            size={size}
-            position={useSpring(isTransitioning ? position : position.add(new UDim2(0, 0, 1, 48 * 3 + 56)), {
-                frequency: 2.2,
-                dampingRatio: 0.75,
-            })}
-        >
-            {/* Body */}
-            <Canvas
-                anchor={new Vector2(0.5, 0.5)}
-                size={useSpring(isHovered && !isPressed ? new UDim2(1, 48, 1, 48) : scale(1, 1), {
-                    frequency: 2,
-                })}
-                position={scale(0.5, 0.5)}
-            >
-                {/* Dropshadow */}
-                <imagelabel
-                    Image={dropshadow}
-                    AnchorPoint={new Vector2(0.5, 0.5)}
-                    Size={scale(dropshadowSize.X, dropshadowSize.Y)}
-                    Position={scale(dropshadowPosition.X, dropshadowPosition.Y)}
-                    BackgroundTransparency={1}
-                />
+	return (
+		<Canvas
+			anchor={anchorPoint}
+			size={size}
+			position={useSpring(isTransitioning ? position : position.add(new UDim2(0, 0, 1, 48 * 3 + 56)), {
+				frequency: 2.2,
+				dampingRatio: 0.75,
+			})}
+		>
+			{/* Body */}
+			<Canvas
+				anchor={new Vector2(0.5, 0.5)}
+				size={useSpring(isHovered && !isPressed ? new UDim2(1, 48, 1, 48) : scale(1, 1), {
+					frequency: 2,
+				})}
+				position={scale(0.5, 0.5)}
+			>
+				{/* Dropshadow */}
+				<imagelabel
+					Image={dropshadow}
+					AnchorPoint={new Vector2(0.5, 0.5)}
+					Size={scale(dropshadowSize.X, dropshadowSize.Y)}
+					Position={scale(dropshadowPosition.X, dropshadowPosition.Y)}
+					BackgroundTransparency={1}
+				/>
 
-                {/* Art with parallax */}
-                <ParallaxImage
-                    image={backgroundImage}
-                    imageSize={backgroundImageSize}
-                    padding={new Vector2(50, 50)}
-                    offset={offset}
-                >
-                    <uicorner CornerRadius={new UDim(0, 16)} />
-                </ParallaxImage>
+				{/* Art with parallax */}
+				<ParallaxImage
+					image={backgroundImage}
+					imageSize={backgroundImageSize}
+					padding={new Vector2(50, 50)}
+					offset={offset}
+				>
+					<uicorner CornerRadius={new UDim(0, 16)} />
+				</ParallaxImage>
 
-                {/* Content */}
-                <Canvas clipsDescendants>{children}</Canvas>
+				{/* Content */}
+				<Canvas clipsDescendants>{children}</Canvas>
 
-                {/* Shine */}
-                <Fill
-                    radius={16}
-                    color={hex("#ffffff")}
-                    transparency={useSpring(isHovered ? 0 : 1, shineSpringOptions)}
-                >
-                    <uigradient
-                        Transparency={new NumberSequence(0.75, 1)}
-                        Offset={useSpring(isHovered ? new Vector2(0, 0) : new Vector2(-1, -1), shineSpringOptions)}
-                        Rotation={45}
-                    />
-                </Fill>
-                <Border
-                    radius={18}
-                    size={3}
-                    color={hex("#ffffff")}
-                    transparency={useSpring(isHovered ? 0 : 1, shineSpringOptions)}
-                >
-                    <uigradient
-                        Transparency={new NumberSequence(0.7, 0.9)}
-                        Offset={useSpring(isHovered ? new Vector2(0, 0) : new Vector2(-1, -1), shineSpringOptions)}
-                        Rotation={45}
-                    />
-                </Border>
+				{/* Shine */}
+				<Fill
+					radius={16}
+					color={hex("#ffffff")}
+					transparency={useSpring(isHovered ? 0 : 1, shineSpringOptions)}
+				>
+					<uigradient
+						Transparency={new NumberSequence(0.75, 1)}
+						Offset={useSpring(isHovered ? new Vector2(0, 0) : new Vector2(-1, -1), shineSpringOptions)}
+						Rotation={45}
+					/>
+				</Fill>
+				<Border
+					radius={18}
+					size={3}
+					color={hex("#ffffff")}
+					transparency={useSpring(isHovered ? 0 : 1, shineSpringOptions)}
+				>
+					<uigradient
+						Transparency={new NumberSequence(0.7, 0.9)}
+						Offset={useSpring(isHovered ? new Vector2(0, 0) : new Vector2(-1, -1), shineSpringOptions)}
+						Rotation={45}
+					/>
+				</Border>
 
-                {/* Border */}
-                <Border color={hex("#ffffff")} radius={16} transparency={useSpring(isHovered ? 1 : 0.8, {})} />
-            </Canvas>
+				{/* Border */}
+				<Border color={hex("#ffffff")} radius={16} transparency={useSpring(isHovered ? 1 : 0.8, {})} />
+			</Canvas>
 
-            {/* Input capture */}
-            <textbutton
-                Event={{
-                    Activated: () => onActivate(),
-                    MouseEnter: () => setButtonState({ isHovered: true }),
-                    MouseLeave: () => setButtonState({ isHovered: false, isPressed: false }),
-                    MouseButton1Down: () => setButtonState({ isPressed: true }),
-                    MouseButton1Up: () => setButtonState({ isPressed: false }),
-                }}
-                Size={scale(1, 1)}
-                Text=""
-                Transparency={1}
-            />
-        </Canvas>
-    );
+			{/* Input capture */}
+			<textbutton
+				Event={{
+					Activated: () => onActivate(),
+					MouseEnter: () => setButtonState({ isHovered: true }),
+					MouseLeave: () => setButtonState({ isHovered: false, isPressed: false }),
+					MouseButton1Down: () => setButtonState({ isPressed: true }),
+					MouseButton1Up: () => setButtonState({ isPressed: false }),
+				}}
+				Size={scale(1, 1)}
+				Text=""
+				Transparency={1}
+			/>
+		</Canvas>
+	);
 }
 
 export default ScriptCard; // Exporting the component directly

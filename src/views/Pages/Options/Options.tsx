@@ -8,16 +8,16 @@ import Shortcuts from "./Shortcuts";
 import Themes from "./Themes";
 
 function Options() {
-    const scaleFactor = useScale();
+	const scaleFactor = useScale();
 
-    return (
-        <Canvas position={scale(0, 1)} anchor={new Vector2(0, 1)}>
-            <uiscale Scale={scaleFactor} />
-            <Config />
-            <Themes />
-            <Shortcuts />
-        </Canvas>
-    );
+	return (
+		<Canvas position={scale(0, 1)} anchor={new Vector2(0, 1)}>
+			<uiscale Scale={scaleFactor} />
+			<Config />
+			<Themes />
+			<Shortcuts />
+		</Canvas>
+	);
 }
 
 export default Options; // Exported directly

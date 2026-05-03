@@ -6,14 +6,14 @@ import { scale } from "utils/udim2";
 import Players from "./Players";
 
 function Apps() {
-    const scaleFactor = useScale();
+	const scaleFactor = useScale();
 
-    return (
-        <Canvas position={scale(0, 1)} anchor={new Vector2(0, 1)}>
-            <uiscale Scale={scaleFactor} />
-            <Players />
-        </Canvas>
-    );
+	return (
+		<Canvas position={scale(0, 1)} anchor={new Vector2(0, 1)}>
+			<uiscale Scale={scaleFactor} />
+			<Players />
+		</Canvas>
+	);
 }
 
 export default Apps; // Exported directly

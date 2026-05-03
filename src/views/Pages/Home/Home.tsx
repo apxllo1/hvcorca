@@ -8,17 +8,17 @@ import Server from "./Server";
 import Title from "./Title";
 
 function Home() {
-    const scaleFactor = useScale();
+	const scaleFactor = useScale();
 
-    return (
-        <Canvas position={scale(0, 1)} anchor={new Vector2(0, 1)}>
-            <uiscale Scale={scaleFactor} />
-            <Title />
-            <Server />
-            <FriendActivity />
-            <Profile />
-        </Canvas>
-    );
+	return (
+		<Canvas position={scale(0, 1)} anchor={new Vector2(0, 1)}>
+			<uiscale Scale={scaleFactor} />
+			<Title />
+			<Server />
+			<FriendActivity />
+			<Profile />
+		</Canvas>
+	);
 }
 
 export = Home;

@@ -12,19 +12,19 @@ import Sliders from "./Sliders";
 import Username from "./Username";
 
 function Profile() {
-    const theme = useTheme("home").profile;
+	const theme = useTheme("home").profile;
 
-    return (
-        <Card index={1} page={DashboardPage.Home} theme={theme} size={px(326, 648)} position={new UDim2(0, 0, 1, 0)}>
-            <Canvas padding={{ left: 24, right: 24 }}>
-                <Avatar />
-                <Username />
-                <Info />
-                <Sliders />
-                <Actions />
-            </Canvas>
-        </Card>
-    );
+	return (
+		<Card index={1} page={DashboardPage.Home} theme={theme} size={px(326, 648)} position={new UDim2(0, 0, 1, 0)}>
+			<Canvas padding={{ left: 24, right: 24 }}>
+				<Avatar />
+				<Username />
+				<Info />
+				<Sliders />
+				<Actions />
+			</Canvas>
+		</Card>
+	);
 }
 
 export default Profile; // Exported directly

@@ -20,11 +20,7 @@ function write(file: string, content: string): void {
 	}
 }
 
-export function persistentState<T extends object>(
-	name: string,
-	selector: (state: RootState) => T,
-	defaultValue: T,
-): T {
+export function persistentState<T extends object>(name: string, selector: (state: RootState) => T, defaultValue: T): T {
 	try {
 		const serializedState = read(`_orca/${name}.json`);
 
