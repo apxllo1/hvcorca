@@ -178,7 +178,7 @@ end
 
 -- Error recovery & debug functions (your HV CORCA feature)
 local ErrorLog = {}
-G.HVCORCADEBUG = true
+_G.HVCORCA_DEBUG = true
 
 local function safeError(msg, level)
 	if string.find(msg, "SpeechToText") or string.find(msg, "loadModule") then return end
