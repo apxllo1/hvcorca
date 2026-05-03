@@ -1,5 +1,5 @@
 import Rodux from "@rbxts/rodux";
-import { JobsAction } from "store/actions/jobs.action";
+import { JobsAction } from "../actions/jobs.action";
 import { JobsState, JobWithSliders } from "../models/jobs.model";
 
 const initialState: JobsState = {
@@ -20,25 +20,29 @@ const initialState: JobsState = {
 };
 
 export const jobsReducer = Rodux.createReducer<JobsState, JobsAction>(initialState, {
-	"jobs/setJobActive": (state, action) => ({
-		...state,
-		[action.jobName]: {
-			...state[action.jobName],
-			active: action.active,
-		},
-	}),
-	"jobs/setJobValue": (state, action) => ({
-		...state,
-		[action.jobName]: {
-			...state[action.jobName],
-			value: action.value,
-		},
-	}),
+	"jobs/setJobActive": (state, action) => {
+		if (!(action.jobName in state)) return state;
+		return {
+			...state,
+			[action.jobName]: {
+				...(state[action.jobName] as object),
+				active: action.active,
+			},
+		};
+	},
+	"jobs/setJobValue": (state, action) => {
+		if (!(action.jobName in state)) return state;
+		return {
+			...state,
+			[action.jobName]: {
+				...(state[action.jobName] as object),
+				value: action.value,
+			},
+		};
+	},
 	"jobs/setJobSlider": (state, action) => {
 		const job = state[action.jobName];
-
-		// Use a type guard and explicit cast to ensure slider property accessibility
-		if ("sliders" in job) {
+		if (job && "sliders" in job) {
 			const jobWithSliders = job as JobWithSliders;
 			return {
 				...state,
@@ -51,7 +55,6 @@ export const jobsReducer = Rodux.createReducer<JobsState, JobsAction>(initialSta
 				},
 			};
 		}
-
 		return state;
 	},
 });
