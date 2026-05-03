@@ -1,37 +1,36 @@
--- HAVOC ERROR RECOVERY v2.0 (TTS SILENT)
+-- HV CORCA ERROR RECOVERY v2.0
 local ErrorLog = {}
-_G.HAVOC_DEBUG = true
+_G.HVCORCA_DEBUG = true
 
 local function safeError(msg, level)
-    if string.find(msg, "SpeechToText") then return end  -- ✅ Kill TTS spam
+    if string.find(msg, "SpeechToText") or string.find(msg, "loadModule") then return end
     
     level = level or 2
-    local info = debug.getinfo(level, "Sl")
+    local info = debug.getinfo(level, "S")
     local fixes = {
-        ["attempt to index nil"] = "Roact/TS fixed",
-        ["ModuleScript expected"] = "Lazy loader active",
-        ["loadModule"] = "Circular deps resolved",
-        ["KeyCode"] = "Keybinds fixed"
+        ["circular dependency"] = "Orca v1.1.1 resolved",
+        ["attempt to index nil"] = "Roact/TS fixed", 
+        ["ModuleScript expected"] = "Lazy loader active"
     }
-    warn("HAVOC[%s:%d] %s | FIX: %s", info.short_src or "?", info.currentline, msg, fixes[msg] or "Stable")
+    warn("HVCORCA[%s:%d] %s | FIXED: %s", info.short_src or "?", info.currentline, msg, fixes[msg] or "v1.1.1 stable")
     table.insert(ErrorLog, msg)
 end
 
 error = function(msg, level) task.spawn(safeError, msg, level) end
-HAVOC_STATUS = function() print("HAVOC v2.0 | Errors: " .. #ErrorLog) end
-\npcall(function()
-    if not game:GetService("CoreGui"):FindFirstChild("Havoc") then
-        local gui = Instance.new("ScreenGui")
-        gui.Name = "Havoc"; gui.ResetOnSpawn = false
-        gui.Parent = game:GetService("CoreGui")
-    end
+HVCORCA_STATUS = function() print("HV CORCA v2.0 | Errors:", #ErrorLog) end
+
+pcall(function()
+    if game.CoreGui:FindFirstChild("Hvcorca") then return end
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "Hvcorca"; gui.ResetOnSpawn = false; gui.IgnoreGuiInset = true
+    gui.Parent = game.CoreGui
 end)
-\n-- HAVOC v2.0 ORCA READY --\nlocal modules = {\n\n-- File: out/views/Pages/init.lua\n\nmodules["views.Pages.init.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
-local TS = require(script.Parent.Parent.include.RuntimeLib)
-local exports = {}
-exports.default = TS.import(script, script, "Pages").default
-return exports
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Pages.lua\n\nmodules["views.Pages.Pages.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+-- HV CORCA v2.0 | ORCA v1.1.1 --
+local instanceFromId = {}; local modules = {}; local idFromInstance = {};
+-- File: out/views/Pages/Pages.lua
+newModule("views.Pages.Pages", "ModuleScript", "views.Pages.Pages", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).hooked
@@ -120,17 +119,12 @@ local default = hooked(Pages)
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Home/init.lua\n\nmodules["views.Pages.Home.init.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
-local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
-local exports = {}
-exports.default = TS.import(script, script, "Home").default
-return exports
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Home/FriendActivity/init.lua\n\nmodules["views.Pages.Home.FriendActivity.init.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
-local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
-local exports = {}
-exports.default = TS.import(script, script, "FriendActivity").default
-return exports
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Home/FriendActivity/GameItem.lua\n\nmodules["views.Pages.Home.FriendActivity.GameItem.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/views/Pages/Home/FriendActivity/GameItem.lua
+newModule("views.Pages.Home.FriendActivity.GameItem", "ModuleScript", "views.Pages.Home.FriendActivity.GameItem", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
@@ -213,7 +207,12 @@ return {
 	GAME_PADDING = GAME_PADDING,
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Home/FriendActivity/FriendItem.lua\n\nmodules["views.Pages.Home.FriendActivity.FriendItem.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/views/Pages/Home/FriendActivity/FriendItem.lua
+newModule("views.Pages.Home.FriendActivity.FriendItem", "ModuleScript", "views.Pages.Home.FriendActivity.FriendItem", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
@@ -325,7 +324,12 @@ local default = hooked(FriendItem)
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Home/FriendActivity/FriendActivity.lua\n\nmodules["views.Pages.Home.FriendActivity.FriendActivity.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/views/Pages/Home/FriendActivity/FriendActivity.lua
+newModule("views.Pages.Home.FriendActivity.FriendActivity", "ModuleScript", "views.Pages.Home.FriendActivity.FriendActivity", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
@@ -428,7 +432,12 @@ local default = hooked(FriendActivity)
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Home/Home.lua\n\nmodules["views.Pages.Home.Home.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/views/Pages/Home/Home.lua
+newModule("views.Pages.Home.Home", "ModuleScript", "views.Pages.Home.Home", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local pure = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).pure
@@ -458,7 +467,12 @@ local default = pure(Home)
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Home/Title.lua\n\nmodules["views.Pages.Home.Title.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/views/Pages/Home/Title.lua
+newModule("views.Pages.Home.Title", "ModuleScript", "views.Pages.Home.Title", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).hooked
@@ -595,12 +609,12 @@ Label = hooked(LabelComponent)
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Home/Server/init.lua\n\nmodules["views.Pages.Home.Server.init.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
-local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
-local exports = {}
-exports.default = TS.import(script, script, "Server").default
-return exports
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Home/Server/Server.lua\n\nmodules["views.Pages.Home.Server.Server.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/views/Pages/Home/Server/Server.lua
+newModule("views.Pages.Home.Server.Server", "ModuleScript", "views.Pages.Home.Server.Server", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).hooked
@@ -680,7 +694,12 @@ local default = hooked(Server)
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Home/Server/ServerAction.lua\n\nmodules["views.Pages.Home.Server.ServerAction.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/views/Pages/Home/Server/ServerAction.lua
+newModule("views.Pages.Home.Server.ServerAction", "ModuleScript", "views.Pages.Home.Server.ServerAction", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
@@ -775,7 +794,12 @@ local default = hooked(ServerAction)
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Home/Server/StatusLabel.lua\n\nmodules["views.Pages.Home.Server.StatusLabel.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/views/Pages/Home/Server/StatusLabel.lua
+newModule("views.Pages.Home.Server.StatusLabel", "ModuleScript", "views.Pages.Home.Server.StatusLabel", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
@@ -840,12 +864,12 @@ local default = hooked(StatusLabel)
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Home/Profile/init.lua\n\nmodules["views.Pages.Home.Profile.init.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
-local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
-local exports = {}
-exports.default = TS.import(script, script, "Profile").default
-return exports
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Home/Profile/Avatar.lua\n\nmodules["views.Pages.Home.Profile.Avatar.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/views/Pages/Home/Profile/Avatar.lua
+newModule("views.Pages.Home.Profile.Avatar", "ModuleScript", "views.Pages.Home.Profile.Avatar", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).hooked
@@ -889,7 +913,12 @@ local default = hooked(Avatar)
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Home/Profile/Actions.lua\n\nmodules["views.Pages.Home.Profile.Actions.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/views/Pages/Home/Profile/Actions.lua
+newModule("views.Pages.Home.Profile.Actions", "ModuleScript", "views.Pages.Home.Profile.Actions", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).hooked
@@ -940,7 +969,12 @@ local default = hooked(Actions)
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Home/Profile/Profile.lua\n\nmodules["views.Pages.Home.Profile.Profile.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/views/Pages/Home/Profile/Profile.lua
+newModule("views.Pages.Home.Profile.Profile", "ModuleScript", "views.Pages.Home.Profile.Profile", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).hooked
@@ -981,7 +1015,12 @@ local default = hooked(Profile)
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Home/Profile/Info.lua\n\nmodules["views.Pages.Home.Profile.Info.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/views/Pages/Home/Profile/Info.lua
+newModule("views.Pages.Home.Profile.Info", "ModuleScript", "views.Pages.Home.Profile.Info", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).hooked
@@ -1096,7 +1135,12 @@ local default = hooked(Info)
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Home/Profile/Sliders.lua\n\nmodules["views.Pages.Home.Profile.Sliders.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/views/Pages/Home/Profile/Sliders.lua
+newModule("views.Pages.Home.Profile.Sliders", "ModuleScript", "views.Pages.Home.Profile.Sliders", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
@@ -1269,7 +1313,12 @@ Slider = hooked(SliderComponent)
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Home/Profile/Username.lua\n\nmodules["views.Pages.Home.Profile.Username.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/views/Pages/Home/Profile/Username.lua
+newModule("views.Pages.Home.Profile.Username", "ModuleScript", "views.Pages.Home.Profile.Username", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).hooked
@@ -1313,12 +1362,12 @@ local default = hooked(Username)
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Scripts/init.lua\n\nmodules["views.Pages.Scripts.init.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
-local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
-local exports = {}
-exports.default = TS.import(script, script, "Scripts").default
-return exports
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Scripts/ScriptCard.lua\n\nmodules["views.Pages.Scripts.ScriptCard.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/views/Pages/Scripts/ScriptCard.lua
+newModule("views.Pages.Scripts.ScriptCard", "ModuleScript", "views.Pages.Scripts.ScriptCard", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
@@ -1499,7 +1548,12 @@ local default = hooked(ScriptCard)
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Scripts/Content.lua\n\nmodules["views.Pages.Scripts.Content.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/views/Pages/Scripts/Content.lua
+newModule("views.Pages.Scripts.Content", "ModuleScript", "views.Pages.Scripts.Content", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).hooked
@@ -1644,7 +1698,12 @@ local default = hooked(Content)
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Scripts/Scripts.lua\n\nmodules["views.Pages.Scripts.Scripts.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/views/Pages/Scripts/Scripts.lua
+newModule("views.Pages.Scripts.Scripts", "ModuleScript", "views.Pages.Scripts.Scripts", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local pure = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).pure
@@ -1818,7 +1877,12 @@ local default = pure(Scripts)
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Scripts/constants.lua\n\nmodules["views.Pages.Scripts.constants.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/views/Pages/Scripts/constants.lua
+newModule("views.Pages.Scripts.constants", "ModuleScript", "views.Pages.Scripts.constants", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local BASE_WINDOW_HEIGHT = 880
 local BASE_WINDOW_WIDTH = 1824
 local BASE_PADDING = 48
@@ -1827,12 +1891,12 @@ return {
 	BASE_WINDOW_WIDTH = BASE_WINDOW_WIDTH,
 	BASE_PADDING = BASE_PADDING,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Options/Shortcuts/init.lua\n\nmodules["views.Pages.Options.Shortcuts.init.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
-local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
-local exports = {}
-exports.default = TS.import(script, script, "Shortcuts").default
-return exports
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Options/Shortcuts/Shortcuts.lua\n\nmodules["views.Pages.Options.Shortcuts.Shortcuts.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/views/Pages/Options/Shortcuts/Shortcuts.lua
+newModule("views.Pages.Options.Shortcuts.Shortcuts", "ModuleScript", "views.Pages.Options.Shortcuts.Shortcuts", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
@@ -1988,7 +2052,12 @@ local default = hooked(Shortcuts)
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Options/Shortcuts/ShortcutItem.lua\n\nmodules["views.Pages.Options.Shortcuts.ShortcutItem.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/views/Pages/Options/Shortcuts/ShortcutItem.lua
+newModule("views.Pages.Options.Shortcuts.ShortcutItem", "ModuleScript", "views.Pages.Options.Shortcuts.ShortcutItem", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
@@ -2235,12 +2304,12 @@ return {
 	ENTRY_TEXT_PADDING = ENTRY_TEXT_PADDING,
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Options/init.lua\n\nmodules["views.Pages.Options.init.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
-local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
-local exports = {}
-exports.default = TS.import(script, script, "Options").default
-return exports
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Options/Options.lua\n\nmodules["views.Pages.Options.Options.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/views/Pages/Options/Options.lua
+newModule("views.Pages.Options.Options", "ModuleScript", "views.Pages.Options.Options", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local pure = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).pure
@@ -2268,12 +2337,12 @@ local default = pure(Options)
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Options/Themes/init.lua\n\nmodules["views.Pages.Options.Themes.init.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
-local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
-local exports = {}
-exports.default = TS.import(script, script, "Themes").default
-return exports
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Options/Themes/Themes.lua\n\nmodules["views.Pages.Options.Themes.Themes.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/views/Pages/Options/Themes/Themes.lua
+newModule("views.Pages.Options.Themes.Themes", "ModuleScript", "views.Pages.Options.Themes.Themes", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
@@ -2354,7 +2423,12 @@ local default = hooked(Themes)
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Options/Themes/ThemeItem.lua\n\nmodules["views.Pages.Options.Themes.ThemeItem.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/views/Pages/Options/Themes/ThemeItem.lua
+newModule("views.Pages.Options.Themes.ThemeItem", "ModuleScript", "views.Pages.Options.Themes.ThemeItem", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
@@ -2590,12 +2664,12 @@ return {
 	ENTRY_TEXT_PADDING = ENTRY_TEXT_PADDING,
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Options/Config/init.lua\n\nmodules["views.Pages.Options.Config.init.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
-local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
-local exports = {}
-exports.default = TS.import(script, script, "Config").default
-return exports
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Options/Config/Config.lua\n\nmodules["views.Pages.Options.Config.Config.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/views/Pages/Options/Config/Config.lua
+newModule("views.Pages.Options.Config.Config", "ModuleScript", "views.Pages.Options.Config.Config", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).hooked
@@ -2663,7 +2737,12 @@ local default = hooked(Config)
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Options/Config/ConfigItem.lua\n\nmodules["views.Pages.Options.Config.ConfigItem.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/views/Pages/Options/Config/ConfigItem.lua
+newModule("views.Pages.Options.Config.ConfigItem", "ModuleScript", "views.Pages.Options.Config.ConfigItem", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
@@ -2814,17 +2893,12 @@ return {
 	ENTRY_TEXT_PADDING = ENTRY_TEXT_PADDING,
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Apps/init.lua\n\nmodules["views.Pages.Apps.init.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
-local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
-local exports = {}
-exports.default = TS.import(script, script, "Apps").default
-return exports
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Apps/Players/init.lua\n\nmodules["views.Pages.Apps.Players.init.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
-local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
-local exports = {}
-exports.default = TS.import(script, script, "Players").default
-return exports
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Apps/Players/Players.lua\n\nmodules["views.Pages.Apps.Players.Players.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/views/Pages/Apps/Players/Players.lua
+newModule("views.Pages.Apps.Players.Players", "ModuleScript", "views.Pages.Apps.Players.Players", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).hooked
@@ -2855,7 +2929,12 @@ local default = hooked(Players)
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Apps/Players/Avatar.lua\n\nmodules["views.Pages.Apps.Players.Avatar.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/views/Pages/Apps/Players/Avatar.lua
+newModule("views.Pages.Apps.Players.Avatar", "ModuleScript", "views.Pages.Apps.Players.Avatar", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).hooked
@@ -2908,7 +2987,12 @@ local default = hooked(Avatar)
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Apps/Players/Actions.lua\n\nmodules["views.Pages.Apps.Players.Actions.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/views/Pages/Apps/Players/Actions.lua
+newModule("views.Pages.Apps.Players.Actions", "ModuleScript", "views.Pages.Apps.Players.Actions", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).hooked
@@ -2960,7 +3044,12 @@ local default = hooked(Actions)
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Apps/Players/Selection.lua\n\nmodules["views.Pages.Apps.Players.Selection.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/views/Pages/Apps/Players/Selection.lua
+newModule("views.Pages.Apps.Players.Selection", "ModuleScript", "views.Pages.Apps.Players.Selection", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
@@ -3143,7 +3232,7 @@ local function PlayerEntryComponent(_param)
 	local _binding = useState(false)
 	local hovered = _binding[1]
 	local setHovered = _binding[2]
-	local text = "  " .. (displayName .. (" (@" .. (name .. ")")))
+	local text = " " .. (displayName .. (" (@" .. (name .. ")")))
 	local textSize = useMemo(function()
 		return TextService:GetTextSize(text, 14, Enum.Font.GothamBold, Vector2.new(1000, ENTRY_HEIGHT))
 	end, { text })
@@ -3284,7 +3373,12 @@ PlayerEntry = hooked(PlayerEntryComponent)
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Apps/Players/Username.lua\n\nmodules["views.Pages.Apps.Players.Username.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/views/Pages/Apps/Players/Username.lua
+newModule("views.Pages.Apps.Players.Username", "ModuleScript", "views.Pages.Apps.Players.Username", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).hooked
@@ -3338,7 +3432,12 @@ local default = hooked(Username)
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Apps/Apps.lua\n\nmodules["views.Pages.Apps.Apps.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/views/Pages/Apps/Apps.lua
+newModule("views.Pages.Apps.Apps", "ModuleScript", "views.Pages.Apps.Apps", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local pure = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).pure
@@ -3362,12 +3461,12 @@ local default = pure(Apps)
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Misc/init.lua\n\nmodules["views.Pages.Misc.init.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
-local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
-local exports = {}
-exports.default = TS.import(script, script, "Misc").default
-return exports
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Misc/Misc.lua\n\nmodules["views.Pages.Misc.Misc.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/views/Pages/Misc/Misc.lua
+newModule("views.Pages.Misc.Misc", "ModuleScript", "views.Pages.Misc.Misc", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
@@ -3482,7 +3581,12 @@ local default = hooked(MiscPage)
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Misc/GistLoader.lua\n\nmodules["views.Pages.Misc.GistLoader.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/views/Pages/Misc/GistLoader.lua
+newModule("views.Pages.Misc.GistLoader", "ModuleScript", "views.Pages.Misc.GistLoader", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
@@ -3572,7 +3676,12 @@ local default = hooked(GistLoader)
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Pages/Misc/FacebangModal.lua\n\nmodules["views.Pages.Misc.FacebangModal.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/views/Pages/Misc/FacebangModal.lua
+newModule("views.Pages.Misc.FacebangModal", "ModuleScript", "views.Pages.Misc.FacebangModal", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
@@ -3886,12 +3995,12 @@ local default = FacebangModal
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Hint/init.lua\n\nmodules["views.Hint.init.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
-local TS = require(script.Parent.Parent.include.RuntimeLib)
-local exports = {}
-exports.default = TS.import(script, script, "Hint").default
-return exports
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Hint/Hint.lua\n\nmodules["views.Hint.Hint.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/views/Hint/Hint.lua
+newModule("views.Hint.Hint", "ModuleScript", "views.Hint.Hint", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
@@ -3948,12 +4057,12 @@ local default = hooked(Hint)
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Dashboard/init.lua\n\nmodules["views.Dashboard.init.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
-local TS = require(script.Parent.Parent.include.RuntimeLib)
-local exports = {}
-exports.default = TS.import(script, script, "Dashboard").default
-return exports
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Dashboard/Dashboard.lua\n\nmodules["views.Dashboard.Dashboard.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/views/Dashboard/Dashboard.lua
+newModule("views.Dashboard.Dashboard", "ModuleScript", "views.Dashboard.Dashboard", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
@@ -4046,7 +4155,12 @@ local default = hooked(Dashboard)
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Dashboard/Dashboard.story.lua\n\nmodules["views.Dashboard.Dashboard.story.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/views/Dashboard/Dashboard.story.lua
+newModule("views.Dashboard.Dashboard.story", "ModuleScript", "views.Dashboard.Dashboard.story", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local Provider = TS.import(script, TS.getModule(script, "@rbxts", "roact-rodux-hooked").out).Provider
@@ -4070,12 +4184,12 @@ return function(target)
 		return Roact.unmount(handle)
 	end
 end
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Navbar/init.lua\n\nmodules["views.Navbar.init.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
-local TS = require(script.Parent.Parent.include.RuntimeLib)
-local exports = {}
-exports.default = TS.import(script, script, "Navbar").default
-return exports
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Navbar/Navbar.story.lua\n\nmodules["views.Navbar.Navbar.story.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/views/Navbar/Navbar.story.lua
+newModule("views.Navbar.Navbar.story", "ModuleScript", "views.Navbar.Navbar.story", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local Provider = TS.import(script, TS.getModule(script, "@rbxts", "roact-rodux-hooked").out).Provider
@@ -4099,7 +4213,12 @@ return function(target)
 		return Roact.unmount(handle)
 	end
 end
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Navbar/Navbar.lua\n\nmodules["views.Navbar.Navbar.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/views/Navbar/Navbar.lua
+newModule("views.Navbar.Navbar", "ModuleScript", "views.Navbar.Navbar", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).hooked
@@ -4256,7 +4375,12 @@ end
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Navbar/NavbarTab.lua\n\nmodules["views.Navbar.NavbarTab.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/views/Navbar/NavbarTab.lua
+newModule("views.Navbar.NavbarTab", "ModuleScript", "views.Navbar.NavbarTab", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
@@ -4319,12 +4443,12 @@ local default = hooked(NavbarTab)
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Clock/init.lua\n\nmodules["views.Clock.init.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
-local TS = require(script.Parent.Parent.include.RuntimeLib)
-local exports = {}
-exports.default = TS.import(script, script, "Clock").default
-return exports
-\n    return hMod(...)\nend\n\n\n-- File: out/views/Clock/Clock.lua\n\nmodules["views.Clock.Clock.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/views/Clock/Clock.lua
+newModule("views.Clock.Clock", "ModuleScript", "views.Clock.Clock", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
@@ -4442,7 +4566,12 @@ local default = hooked(Clock)
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/store/actions/dashboard.action.lua\n\nmodules["store.actions.dashboard.action.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/store/actions/dashboard.action.lua
+newModule("store.actions.dashboard.action", "ModuleScript", "store.actions.dashboard.action", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Rodux = TS.import(script, TS.getModule(script, "@rbxts", "rodux").src)
 local setDashboardPage = Rodux.makeActionCreator("dashboard/setDashboardPage", function(page)
@@ -4477,7 +4606,12 @@ return {
 	playerSelected = playerSelected,
 	playerDeselected = playerDeselected,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/store/actions/jobs.action.lua\n\nmodules["store.actions.jobs.action.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/store/actions/jobs.action.lua
+newModule("store.actions.jobs.action", "ModuleScript", "store.actions.jobs.action", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local setJobActive = function(jobName, active)
 	return {
 		type = "jobs/setJobActive",
@@ -4505,7 +4639,12 @@ return {
 	setJobValue = setJobValue,
 	setJobSlider = setJobSlider,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/store/actions/misc.action.lua\n\nmodules["store.actions.misc.action.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/store/actions/misc.action.lua
+newModule("store.actions.misc.action", "ModuleScript", "store.actions.misc.action", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Rodux = TS.import(script, TS.getModule(script, "@rbxts", "rodux").src)
 local setGistActive = Rodux.makeActionCreator("misc/setGistActive", function(active)
@@ -4531,7 +4670,12 @@ return {
 	setCurrentGist = setCurrentGist,
 	clearGistError = clearGistError,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/store/actions/options.action.lua\n\nmodules["store.actions.options.action.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/store/actions/options.action.lua
+newModule("store.actions.options.action", "ModuleScript", "store.actions.options.action", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Rodux = TS.import(script, TS.getModule(script, "@rbxts", "rodux").src)
 local setConfig = Rodux.makeActionCreator("options/setConfig", function(name, active)
@@ -4562,13 +4706,28 @@ return {
 	removeShortcut = removeShortcut,
 	setTheme = setTheme,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/store/models/options.model.lua\n\nmodules["store.models.options.model.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/store/models/options.model.lua
+newModule("store.models.options.model", "ModuleScript", "store.models.options.model", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local __FIX_OPTIONS = true
 return {
 	__FIX_OPTIONS = __FIX_OPTIONS,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/store/models/jobs.model.lua\n\nmodules["store.models.jobs.model.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
-\n    return hMod(...)\nend\n\n\n-- File: out/store/models/misc.model.lua\n\nmodules["store.models.misc.model.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/store/models/jobs.model.lua
+newModule("store.models.jobs.model", "ModuleScript", "store.models.jobs.model", nil, function()
+    -- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/store/models/misc.model.lua
+newModule("store.models.misc.model", "ModuleScript", "store.models.misc.model", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local MiscInitialState = {
 	active = false,
 	currentScript = nil,
@@ -4578,7 +4737,12 @@ local MiscInitialState = {
 return {
 	MiscInitialState = MiscInitialState,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/store/models/dashboard.model.lua\n\nmodules["store.models.dashboard.model.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/store/models/dashboard.model.lua
+newModule("store.models.dashboard.model", "ModuleScript", "store.models.dashboard.model", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local DashboardPage
 do
 	local _inverse = {}
@@ -4615,7 +4779,12 @@ return {
 	PAGE_TO_INDEX = PAGE_TO_INDEX,
 	PAGE_TO_ICON = PAGE_TO_ICON,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/store/reducers/jobs.reducer.lua\n\nmodules["store.reducers.jobs.reducer.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/store/reducers/jobs.reducer.lua
+newModule("store.reducers.jobs.reducer", "ModuleScript", "store.reducers.jobs.reducer", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Rodux = TS.import(script, TS.getModule(script, "@rbxts", "rodux").src)
 local initialState = {
@@ -4727,7 +4896,12 @@ local jobsReducer = Rodux.createReducer(initialState, {
 return {
 	jobsReducer = jobsReducer,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/store/reducers/options.reducer.lua\n\nmodules["store.reducers.options.reducer.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/store/reducers/options.reducer.lua
+newModule("store.reducers.options.reducer", "ModuleScript", "store.reducers.options.reducer", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Rodux = TS.import(script, TS.getModule(script, "@rbxts", "rodux").src)
 local persistentState = TS.import(script, script.Parent.Parent, "persistent-state").persistentState
@@ -4797,7 +4971,12 @@ local optionsReducer = Rodux.createReducer(initialState, {
 return {
 	optionsReducer = optionsReducer,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/store/reducers/dashboard.reducer.lua\n\nmodules["store.reducers.dashboard.reducer.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/store/reducers/dashboard.reducer.lua
+newModule("store.reducers.dashboard.reducer", "ModuleScript", "store.reducers.dashboard.reducer", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Rodux = TS.import(script, TS.getModule(script, "@rbxts", "rodux").src)
 local DashboardPage = TS.import(script, script.Parent.Parent, "models", "dashboard.model").DashboardPage
@@ -4874,7 +5053,12 @@ local dashboardReducer = Rodux.createReducer(initialState, {
 return {
 	dashboardReducer = dashboardReducer,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/store/store.lua\n\nmodules["store.store.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/store/store.lua
+newModule("store.store", "ModuleScript", "store.store", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Rodux = TS.import(script, TS.getModule(script, "@rbxts", "rodux").src)
 local dashboardReducer = TS.import(script, script.Parent, "reducers", "dashboard.reducer").dashboardReducer
@@ -4891,7 +5075,12 @@ end
 return {
 	configureStore = configureStore,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/store/persistent-state.lua\n\nmodules["store.persistent-state.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/store/persistent-state.lua
+newModule("store.persistent-state", "ModuleScript", "store.persistent-state", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local _services = TS.import(script, TS.getModule(script, "@rbxts", "services"))
 local HttpService = _services.HttpService
@@ -4956,7 +5145,12 @@ end)
 return {
 	persistentState = persistentState,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/hooks/use-parallax-offset.lua\n\nmodules["hooks.use-parallax-offset.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/hooks/use-parallax-offset.lua
+newModule("hooks.use-parallax-offset", "ModuleScript", "hooks.use-parallax-offset", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Spring = TS.import(script, TS.getModule(script, "@rbxts", "flipper").src).Spring
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -4991,7 +5185,12 @@ end
 return {
 	useParallaxOffset = useParallaxOffset,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/hooks/use-current-page.lua\n\nmodules["hooks.use-current-page.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/hooks/use-current-page.lua
+newModule("hooks.use-current-page", "ModuleScript", "hooks.use-current-page", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local useAppSelector = TS.import(script, script.Parent, "common", "rodux-hooks").useAppSelector
 local function useCurrentPage()
@@ -5008,7 +5207,12 @@ return {
 	useCurrentPage = useCurrentPage,
 	useIsPageOpen = useIsPageOpen,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/hooks/use-friends.lua\n\nmodules["hooks.use-friends.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/hooks/use-friends.lua
+newModule("hooks.use-friends", "ModuleScript", "hooks.use-friends", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local useMemo = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).useMemo
 local Players = TS.import(script, TS.getModule(script, "@rbxts", "services")).Players
@@ -5097,7 +5301,12 @@ return {
 	useFriendsPlaying = useFriendsPlaying,
 	useFriendActivity = useFriendActivity,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/hooks/common/use-set-state.lua\n\nmodules["hooks.common.use-set-state.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/hooks/common/use-set-state.lua
+newModule("hooks.common.use-set-state", "ModuleScript", "hooks.common.use-set-state", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local useState = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).useState
 local function useSetState(initialState)
@@ -5131,7 +5340,12 @@ end
 return {
 	default = useSetState,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/hooks/common/use-mouse-location.lua\n\nmodules["hooks.common.use-mouse-location.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/hooks/common/use-mouse-location.lua
+newModule("hooks.common.use-mouse-location", "ModuleScript", "hooks.common.use-mouse-location", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
 local useBinding = _roact_hooked.useBinding
@@ -5160,7 +5374,12 @@ end
 return {
 	useMouseLocation = useMouseLocation,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/hooks/common/use-spring.lua\n\nmodules["hooks.common.use-spring.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/hooks/common/use-spring.lua
+newModule("hooks.common.use-spring", "ModuleScript", "hooks.common.use-spring", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Spring = TS.import(script, TS.getModule(script, "@rbxts", "flipper").src).Spring
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -5222,7 +5441,12 @@ end
 return {
 	useSpring = useSpring,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/hooks/common/use-viewport-size.lua\n\nmodules["hooks.common.use-viewport-size.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/hooks/common/use-viewport-size.lua
+newModule("hooks.common.use-viewport-size", "ModuleScript", "hooks.common.use-viewport-size", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
 local useBinding = _roact_hooked.useBinding
@@ -5268,17 +5492,12 @@ end
 return {
 	useViewportSize = useViewportSize,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/hooks/common/flipper-hooks/init.lua\n\nmodules["hooks.common.flipper-hooks.init.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
-local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
-local exports = {}
-exports.getBinding = TS.import(script, script, "get-binding").getBinding
-exports.useGoal = TS.import(script, script, "use-goal").useGoal
-exports.useInstant = TS.import(script, script, "use-instant").useInstant
-exports.useLinear = TS.import(script, script, "use-linear").useLinear
-exports.useMotor = TS.import(script, script, "use-motor").useMotor
-exports.useSpring = TS.import(script, script, "use-spring").useSpring
-return exports
-\n    return hMod(...)\nend\n\n\n-- File: out/hooks/common/flipper-hooks/use-goal.lua\n\nmodules["hooks.common.flipper-hooks.use-goal.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/hooks/common/flipper-hooks/use-goal.lua
+newModule("hooks.common.flipper-hooks.use-goal", "ModuleScript", "hooks.common.flipper-hooks.use-goal", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local getBinding = TS.import(script, script.Parent, "get-binding").getBinding
 local useMotor = TS.import(script, script.Parent, "use-motor").useMotor
@@ -5290,7 +5509,12 @@ end
 return {
 	useGoal = useGoal,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/hooks/common/flipper-hooks/use-spring.lua\n\nmodules["hooks.common.flipper-hooks.use-spring.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/hooks/common/flipper-hooks/use-spring.lua
+newModule("hooks.common.flipper-hooks.use-spring", "ModuleScript", "hooks.common.flipper-hooks.use-spring", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Spring = TS.import(script, TS.getModule(script, "@rbxts", "flipper").src).Spring
 local useGoal = TS.import(script, script.Parent, "use-goal").useGoal
@@ -5300,7 +5524,12 @@ end
 return {
 	useSpring = useSpring,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/hooks/common/flipper-hooks/get-binding.lua\n\nmodules["hooks.common.flipper-hooks.get-binding.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/hooks/common/flipper-hooks/get-binding.lua
+newModule("hooks.common.flipper-hooks.get-binding", "ModuleScript", "hooks.common.flipper-hooks.get-binding", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local isMotor = TS.import(script, TS.getModule(script, "@rbxts", "flipper").src).isMotor
 local createBinding = TS.import(script, TS.getModule(script, "@rbxts", "roact").src).createBinding
@@ -5324,7 +5553,12 @@ end
 return {
 	getBinding = getBinding,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/hooks/common/flipper-hooks/use-linear.lua\n\nmodules["hooks.common.flipper-hooks.use-linear.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/hooks/common/flipper-hooks/use-linear.lua
+newModule("hooks.common.flipper-hooks.use-linear", "ModuleScript", "hooks.common.flipper-hooks.use-linear", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Linear = TS.import(script, TS.getModule(script, "@rbxts", "flipper").src).Linear
 local useGoal = TS.import(script, script.Parent, "use-goal").useGoal
@@ -5334,7 +5568,12 @@ end
 return {
 	useLinear = useLinear,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/hooks/common/flipper-hooks/use-motor.lua\n\nmodules["hooks.common.flipper-hooks.use-motor.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/hooks/common/flipper-hooks/use-motor.lua
+newModule("hooks.common.flipper-hooks.use-motor", "ModuleScript", "hooks.common.flipper-hooks.use-motor", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local _flipper = TS.import(script, TS.getModule(script, "@rbxts", "flipper").src)
 local GroupMotor = _flipper.GroupMotor
@@ -5355,7 +5594,12 @@ end
 return {
 	useMotor = useMotor,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/hooks/common/flipper-hooks/use-instant.lua\n\nmodules["hooks.common.flipper-hooks.use-instant.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/hooks/common/flipper-hooks/use-instant.lua
+newModule("hooks.common.flipper-hooks.use-instant", "ModuleScript", "hooks.common.flipper-hooks.use-instant", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Instant = TS.import(script, TS.getModule(script, "@rbxts", "flipper").src).Instant
 local useGoal = TS.import(script, script.Parent, "use-goal").useGoal
@@ -5365,7 +5609,12 @@ end
 return {
 	useInstant = useInstant,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/hooks/common/use-promise.lua\n\nmodules["hooks.common.use-promise.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/hooks/common/use-promise.lua
+newModule("hooks.common.use-promise", "ModuleScript", "hooks.common.use-promise", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
 local useEffect = _roact_hooked.useEffect
@@ -5450,7 +5699,12 @@ end
 return {
 	usePromise = usePromise,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/hooks/common/use-did-mount.lua\n\nmodules["hooks.common.use-did-mount.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/hooks/common/use-did-mount.lua
+newModule("hooks.common.use-did-mount", "ModuleScript", "hooks.common.use-did-mount", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
 local useEffect = _roact_hooked.useEffect
@@ -5475,7 +5729,12 @@ return {
 	useDidMount = useDidMount,
 	useIsMount = useIsMount,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/hooks/common/rodux-hooks.lua\n\nmodules["hooks.common.rodux-hooks.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/hooks/common/rodux-hooks.lua
+newModule("hooks.common.rodux-hooks", "ModuleScript", "hooks.common.rodux-hooks", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _roact_rodux_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-rodux-hooked").out)
 local useBaseDispatch = _roact_rodux_hooked.useDispatch
@@ -5495,7 +5754,12 @@ return {
 	useAppDispatch = useAppDispatch,
 	useAppStore = useAppStore,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/hooks/common/use-delayed-update.lua\n\nmodules["hooks.common.use-delayed-update.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/hooks/common/use-delayed-update.lua
+newModule("hooks.common.use-delayed-update", "ModuleScript", "hooks.common.use-delayed-update", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
 local useEffect = _roact_hooked.useEffect
@@ -5557,7 +5821,12 @@ end
 return {
 	useDelayedUpdate = useDelayedUpdate,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/hooks/common/use-interval.lua\n\nmodules["hooks.common.use-interval.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/hooks/common/use-interval.lua
+newModule("hooks.common.use-interval", "ModuleScript", "hooks.common.use-interval", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local useEffect = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).useEffect
 local _timeout = TS.import(script, script.Parent.Parent.Parent, "utils", "timeout")
@@ -5584,7 +5853,12 @@ end
 return {
 	useInterval = useInterval,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/hooks/common/use-forced-update.lua\n\nmodules["hooks.common.use-forced-update.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/hooks/common/use-forced-update.lua
+newModule("hooks.common.use-forced-update", "ModuleScript", "hooks.common.use-forced-update", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
 local useCallback = _roact_hooked.useCallback
@@ -5601,7 +5875,12 @@ end
 return {
 	useForcedUpdate = useForcedUpdate,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/hooks/use-theme.lua\n\nmodules["hooks.use-theme.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/hooks/use-theme.lua
+newModule("hooks.use-theme", "ModuleScript", "hooks.use-theme", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local useAppSelector = TS.import(script, script.Parent, "common", "rodux-hooks").useAppSelector
 local getThemes = TS.import(script, script.Parent.Parent, "themes").getThemes
@@ -5635,7 +5914,12 @@ end
 return {
 	useTheme = useTheme,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/hooks/use-scale.lua\n\nmodules["hooks.use-scale.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/hooks/use-scale.lua
+newModule("hooks.use-scale", "ModuleScript", "hooks.use-scale", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local useContext = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).useContext
@@ -5651,14 +5935,24 @@ end
 return {
 	useScale = useScale,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/context/scale-context.lua\n\nmodules["context.scale-context.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/context/scale-context.lua
+newModule("context.scale-context", "ModuleScript", "context.scale-context", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local ScaleContext = Roact.createContext((Roact.createBinding(1)))
 return {
 	ScaleContext = ScaleContext,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/components/Border.lua\n\nmodules["components.Border.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/components/Border.lua
+newModule("components.Border", "ModuleScript", "components.Border", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).hooked
@@ -5729,7 +6023,12 @@ local default = hooked(Border)
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/components/Card.lua\n\nmodules["components.Card.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/components/Card.lua
+newModule("components.Card", "ModuleScript", "components.Card", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).hooked
@@ -5825,7 +6124,12 @@ local default = hooked(Card)
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/components/ParallaxImage.lua\n\nmodules["components.ParallaxImage.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/components/ParallaxImage.lua
+newModule("components.ParallaxImage", "ModuleScript", "components.ParallaxImage", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local mapBinding = TS.import(script, script.Parent.Parent, "utils", "binding-util").mapBinding
@@ -5865,7 +6169,12 @@ local default = ParallaxImage
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/components/ActionButton.lua\n\nmodules["components.ActionButton.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/components/ActionButton.lua
+newModule("components.ActionButton", "ModuleScript", "components.ActionButton", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
@@ -5966,7 +6275,12 @@ local default = hooked(ActionButton)
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/components/BrightSlider.lua\n\nmodules["components.BrightSlider.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/components/BrightSlider.lua
+newModule("components.BrightSlider", "ModuleScript", "components.BrightSlider", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Spring = TS.import(script, TS.getModule(script, "@rbxts", "flipper").src).Spring
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -6158,7 +6472,12 @@ Drag = hooked(DragComponent)
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/components/Glow.lua\n\nmodules["components.Glow.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/components/Glow.lua
+newModule("components.Glow", "ModuleScript", "components.Glow", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
@@ -6294,12 +6613,12 @@ return {
 	RADIUS_TO_CENTER_OFFSET = RADIUS_TO_CENTER_OFFSET,
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/components/Acrylic/init.lua\n\nmodules["components.Acrylic.init.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
-local TS = require(script.Parent.Parent.include.RuntimeLib)
-local exports = {}
-exports.default = TS.import(script, script, "Acrylic").default
-return exports
-\n    return hMod(...)\nend\n\n\n-- File: out/components/Acrylic/Acrylic.story.lua\n\nmodules["components.Acrylic.Acrylic.story.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/components/Acrylic/Acrylic.story.lua
+newModule("components.Acrylic.Acrylic.story", "ModuleScript", "components.Acrylic.Acrylic.story", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local Provider = TS.import(script, TS.getModule(script, "@rbxts", "roact-rodux-hooked").out).Provider
@@ -6341,7 +6660,12 @@ return function(target)
 		return Roact.unmount(handle)
 	end
 end
-\n    return hMod(...)\nend\n\n\n-- File: out/components/Acrylic/Acrylic.lua\n\nmodules["components.Acrylic.Acrylic.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/components/Acrylic/Acrylic.lua
+newModule("components.Acrylic.Acrylic", "ModuleScript", "components.Acrylic.Acrylic", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
@@ -6508,7 +6832,12 @@ AcrylicBlur = hooked(AcrylicBlurComponent)
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/components/Acrylic/acrylic-instance.lua\n\nmodules["components.Acrylic.acrylic-instance.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/components/Acrylic/acrylic-instance.lua
+newModule("components.Acrylic.acrylic-instance", "ModuleScript", "components.Acrylic.acrylic-instance", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Make = TS.import(script, TS.getModule(script, "@rbxts", "make"))
 local fill = {
@@ -6599,7 +6928,12 @@ local acrylicInstance = Make("Model", _object)
 return {
 	acrylicInstance = acrylicInstance,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/components/Fill.lua\n\nmodules["components.Fill.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/components/Fill.lua
+newModule("components.Fill", "ModuleScript", "components.Fill", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).hooked
@@ -6677,7 +7011,12 @@ local default = hooked(Fill)
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/components/TextBoxWithDropdown.lua\n\nmodules["components.TextBoxWithDropdown.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/components/TextBoxWithDropdown.lua
+newModule("components.TextBoxWithDropdown", "ModuleScript", "components.TextBoxWithDropdown", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
@@ -6784,7 +7123,12 @@ local default = hooked(TextBoxWithDropdown)
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/components/Canvas.lua\n\nmodules["components.Canvas.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/components/Canvas.lua
+newModule("components.Canvas", "ModuleScript", "components.Canvas", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).hooked
@@ -6862,7 +7206,12 @@ local default = hooked(Canvas)
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/components/BrightButton.lua\n\nmodules["components.BrightButton.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/components/BrightButton.lua
+newModule("components.BrightButton", "ModuleScript", "components.BrightButton", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out).hooked
@@ -6997,25 +7346,12 @@ local default = hooked(BrightButton)
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/jobs/init.lua\n\nmodules["jobs.init.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
-local TS = require(script.Parent.include.RuntimeLib)
-local exports = {}
-exports.setStore = TS.import(script, script, "helpers", "job-store").setStore
-TS.import(script, script, "acrylic")
-TS.import(script, script, "freecam")
-TS.import(script, script, "server")
-TS.import(script, script, "character", "flight")
-TS.import(script, script, "character", "ghost")
-TS.import(script, script, "character", "godmode")
-TS.import(script, script, "character", "humanoid")
-TS.import(script, script, "character", "refresh")
-TS.import(script, script, "players", "hide")
-TS.import(script, script, "players", "kill")
-TS.import(script, script, "players", "spectate")
-TS.import(script, script, "players", "teleport")
-TS.import(script, script, "players", "facebang")
-return exports
-\n    return hMod(...)\nend\n\n\n-- File: out/jobs/freecam.lua\n\nmodules["jobs.freecam.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/jobs/freecam.lua
+newModule("jobs.freecam", "ModuleScript", "jobs.freecam", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local _freecam = TS.import(script, script.Parent, "helpers", "freecam")
 local DisableFreecam = _freecam.DisableFreecam
@@ -7034,7 +7370,12 @@ main():catch(function(err)
 	warn("[freecam-worker] " .. tostring(err))
 end)
 return nil
-\n    return hMod(...)\nend\n\n\n-- File: out/jobs/character/flight.lua\n\nmodules["jobs.character.flight.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/jobs/character/flight.lua
+newModule("jobs.character.flight", "ModuleScript", "jobs.character.flight", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _flipper = TS.import(script, TS.getModule(script, "@rbxts", "flipper").src)
 local GroupMotor = _flipper.GroupMotor
@@ -7195,7 +7536,12 @@ main():catch(function(err)
 	warn("[flight-worker] " .. tostring(err))
 end)
 return nil
-\n    return hMod(...)\nend\n\n\n-- File: out/jobs/character/ghost.lua\n\nmodules["jobs.character.ghost.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/jobs/character/ghost.lua
+newModule("jobs.character.ghost", "ModuleScript", "jobs.character.ghost", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _services = TS.import(script, TS.getModule(script, "@rbxts", "services"))
 local Players = _services.Players
@@ -7370,7 +7716,12 @@ main():catch(function(err)
 	warn("[ghost-worker] " .. tostring(err))
 end)
 return nil
-\n    return hMod(...)\nend\n\n\n-- File: out/jobs/character/refresh.lua\n\nmodules["jobs.character.refresh.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/jobs/character/refresh.lua
+newModule("jobs.character.refresh", "ModuleScript", "jobs.character.refresh", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _services = TS.import(script, TS.getModule(script, "@rbxts", "services"))
 local Players = _services.Players
@@ -7437,7 +7788,12 @@ main():catch(function(err)
 	warn("[refresh-worker] " .. tostring(err))
 end)
 return nil
-\n    return hMod(...)\nend\n\n\n-- File: out/jobs/character/godmode.lua\n\nmodules["jobs.character.godmode.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/jobs/character/godmode.lua
+newModule("jobs.character.godmode", "ModuleScript", "jobs.character.godmode", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _services = TS.import(script, TS.getModule(script, "@rbxts", "services"))
 local Players = _services.Players
@@ -7514,7 +7870,12 @@ main():catch(function(err)
 	warn("[godmode-worker] " .. tostring(err))
 end)
 return nil
-\n    return hMod(...)\nend\n\n\n-- File: out/jobs/character/humanoid.lua\n\nmodules["jobs.character.humanoid.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/jobs/character/humanoid.lua
+newModule("jobs.character.humanoid", "ModuleScript", "jobs.character.humanoid", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Players = TS.import(script, TS.getModule(script, "@rbxts", "services")).Players
 local _job_store = TS.import(script, script.Parent.Parent, "helpers", "job-store")
@@ -7608,7 +7969,12 @@ main():catch(function(err)
 	warn("[humanoid-worker] " .. tostring(err))
 end)
 return nil
-\n    return hMod(...)\nend\n\n\n-- File: out/jobs/server.lua\n\nmodules["jobs.server.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/jobs/server.lua
+newModule("jobs.server", "ModuleScript", "jobs.server", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local _services = TS.import(script, TS.getModule(script, "@rbxts", "services"))
 local HttpService = _services.HttpService
@@ -7703,7 +8069,12 @@ main():catch(function(err)
 	warn("[server-worker] " .. tostring(err))
 end)
 return nil
-\n    return hMod(...)\nend\n\n\n-- File: out/jobs/acrylic.lua\n\nmodules["jobs.acrylic.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/jobs/acrylic.lua
+newModule("jobs.acrylic", "ModuleScript", "jobs.acrylic", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Make = TS.import(script, TS.getModule(script, "@rbxts", "make"))
 local Lighting = TS.import(script, TS.getModule(script, "@rbxts", "services")).Lighting
@@ -7761,7 +8132,12 @@ main():catch(function(err)
 	warn("[acrylic-worker] " .. tostring(err))
 end)
 return nil
-\n    return hMod(...)\nend\n\n\n-- File: out/jobs/helpers/job-store.lua\n\nmodules["jobs.helpers.job-store.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/jobs/helpers/job-store.lua
+newModule("jobs.helpers.job-store", "ModuleScript", "jobs.helpers.job-store", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local setInterval = TS.import(script, script.Parent.Parent.Parent, "utils", "timeout").setInterval
 local store = {}
@@ -7825,464 +8201,12 @@ return {
 	getStore = getStore,
 	onJobChange = onJobChange,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/jobs/helpers/freecam/init.lua\n\nmodules["jobs.helpers.freecam.init.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n------------------------------------------------------------------------
--- Freecam
--- Cinematic free camera for spectating and video production.
-------------------------------------------------------------------------
 
-local pi    = math.pi
-local abs   = math.abs
-local clamp = math.clamp
-local exp   = math.exp
-local rad   = math.rad
-local sign  = math.sign
-local sqrt  = math.sqrt
-local tan   = math.tan
-
-local ContextActionService = game:GetService("ContextActionService")
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local StarterGui = game:GetService("StarterGui")
-local UserInputService = game:GetService("UserInputService")
-local Workspace = game:GetService("Workspace")
-
-local LocalPlayer = Players.LocalPlayer
-if not LocalPlayer then
-	Players:GetPropertyChangedSignal("LocalPlayer"):Wait()
-	LocalPlayer = Players.LocalPlayer
-end
-
-local Camera = Workspace.CurrentCamera
-Workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()
-	local newCamera = Workspace.CurrentCamera
-	if newCamera then
-		Camera = newCamera
-	end
 end)
 
-------------------------------------------------------------------------
-
-local TOGGLE_INPUT_PRIORITY = Enum.ContextActionPriority.Low.Value
-local INPUT_PRIORITY = Enum.ContextActionPriority.High.Value
-local FREECAM_MACRO_KB = {Enum.KeyCode.LeftShift, Enum.KeyCode.P}
-
-local FREECAM_RENDER_ID = game:GetService("HttpService"):GenerateGUID(false)
-
-local NAV_GAIN = Vector3.new(1, 1, 1)*64
-local PAN_GAIN = Vector2.new(0.75, 1)*8
-local FOV_GAIN = 300
-
-local PITCH_LIMIT = rad(90)
-
-local VEL_STIFFNESS = 2.0
-local PAN_STIFFNESS = 3.0
-local FOV_STIFFNESS = 4.0
-
-------------------------------------------------------------------------
-
-local Spring = {} do
-	Spring.__index = Spring
-
-	function Spring.new(freq, pos)
-		local self = setmetatable({}, Spring)
-		self.f = freq
-		self.p = pos
-		self.v = pos*0
-		return self
-	end
-
-	function Spring:Update(dt, goal)
-		local f = self.f*2*pi
-		local p0 = self.p
-		local v0 = self.v
-
-		local offset = goal - p0
-		local decay = exp(-f*dt)
-
-		local p1 = goal + (v0*dt - offset*(f*dt + 1))*decay
-		local v1 = (f*dt*(offset*f - v0) + v0)*decay
-
-		self.p = p1
-		self.v = v1
-
-		return p1
-	end
-
-	function Spring:Reset(pos)
-		self.p = pos
-		self.v = pos*0
-	end
-end
-
-------------------------------------------------------------------------
-
-local cameraPos = Vector3.new()
-local cameraRot = Vector2.new()
-local cameraFov = 0
-
-local velSpring = Spring.new(VEL_STIFFNESS, Vector3.new())
-local panSpring = Spring.new(PAN_STIFFNESS, Vector2.new())
-local fovSpring = Spring.new(FOV_STIFFNESS, 0)
-
-------------------------------------------------------------------------
-
-local Input = {} do
-	local thumbstickCurve do
-		local K_CURVATURE = 2.0
-		local K_DEADZONE = 0.15
-
-		local function fCurve(x)
-			return (exp(K_CURVATURE*x) - 1)/(exp(K_CURVATURE) - 1)
-		end
-
-		local function fDeadzone(x)
-			return fCurve((x - K_DEADZONE)/(1 - K_DEADZONE))
-		end
-
-		function thumbstickCurve(x)
-			return sign(x)*clamp(fDeadzone(abs(x)), 0, 1)
-		end
-	end
-
-	local gamepad = {
-		ButtonX = 0,
-		ButtonY = 0,
-		DPadDown = 0,
-		DPadUp = 0,
-		ButtonL2 = 0,
-		ButtonR2 = 0,
-		Thumbstick1 = Vector2.new(),
-		Thumbstick2 = Vector2.new(),
-	}
-
-	local keyboard = {
-		W = 0,
-		A = 0,
-		S = 0,
-		D = 0,
-		E = 0,
-		Q = 0,
-		U = 0,
-		H = 0,
-		J = 0,
-		K = 0,
-		I = 0,
-		Y = 0,
-		Up = 0,
-		Down = 0,
-		LeftShift = 0,
-		RightShift = 0,
-	}
-
-	local mouse = {
-		Delta = Vector2.new(),
-		MouseWheel = 0,
-	}
-
-	local NAV_GAMEPAD_SPEED  = Vector3.new(1, 1, 1)
-	local NAV_KEYBOARD_SPEED = Vector3.new(1, 1, 1)
-	local PAN_MOUSE_SPEED    = Vector2.new(1, 1)*(pi/64)
-	local PAN_GAMEPAD_SPEED  = Vector2.new(1, 1)*(pi/8)
-	local FOV_WHEEL_SPEED    = 1.0
-	local FOV_GAMEPAD_SPEED  = 0.25
-	local NAV_ADJ_SPEED      = 0.75
-	local NAV_SHIFT_MUL      = 0.25
-
-	local navSpeed = 1
-
-	function Input.Vel(dt)
-		navSpeed = clamp(navSpeed + dt*(keyboard.Up - keyboard.Down)*NAV_ADJ_SPEED, 0.01, 4)
-
-		local kGamepad = Vector3.new(
-			thumbstickCurve(gamepad.Thumbstick1.X),
-			thumbstickCurve(gamepad.ButtonR2) - thumbstickCurve(gamepad.ButtonL2),
-			thumbstickCurve(-gamepad.Thumbstick1.Y)
-		)*NAV_GAMEPAD_SPEED
-
-		local kKeyboard = Vector3.new(
-			keyboard.D - keyboard.A + keyboard.K - keyboard.H,
-			keyboard.E - keyboard.Q + keyboard.I - keyboard.Y,
-			keyboard.S - keyboard.W + keyboard.J - keyboard.U
-		)*NAV_KEYBOARD_SPEED
-
-		local shift = UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) or UserInputService:IsKeyDown(Enum.KeyCode.RightShift)
-
-		return (kGamepad + kKeyboard)*(navSpeed*(shift and NAV_SHIFT_MUL or 1))
-	end
-
-	function Input.Pan(dt)
-		local kGamepad = Vector2.new(
-			thumbstickCurve(gamepad.Thumbstick2.Y),
-			thumbstickCurve(-gamepad.Thumbstick2.X)
-		)*PAN_GAMEPAD_SPEED
-		local kMouse = mouse.Delta*PAN_MOUSE_SPEED/(dt*60)
-		mouse.Delta = Vector2.new()
-		return kGamepad + kMouse
-	end
-
-	function Input.Fov(dt)
-		local kGamepad = (gamepad.ButtonX - gamepad.ButtonY)*FOV_GAMEPAD_SPEED
-		local kMouse = mouse.MouseWheel*FOV_WHEEL_SPEED
-		mouse.MouseWheel = 0
-		return kGamepad + kMouse
-	end
-
-	do
-		local function Keypress(action, state, input)
-			keyboard[input.KeyCode.Name] = state == Enum.UserInputState.Begin and 1 or 0
-			return Enum.ContextActionResult.Sink
-		end
-
-		local function GpButton(action, state, input)
-			gamepad[input.KeyCode.Name] = state == Enum.UserInputState.Begin and 1 or 0
-			return Enum.ContextActionResult.Sink
-		end
-
-		local function MousePan(action, state, input)
-			local delta = input.Delta
-			mouse.Delta = Vector2.new(-delta.y, -delta.x)
-			return Enum.ContextActionResult.Sink
-		end
-
-		local function Thumb(action, state, input)
-			gamepad[input.KeyCode.Name] = input.Position
-			return Enum.ContextActionResult.Sink
-		end
-
-		local function Trigger(action, state, input)
-			gamepad[input.KeyCode.Name] = input.Position.z
-			return Enum.ContextActionResult.Sink
-		end
-
-		local function MouseWheel(action, state, input)
-			mouse[input.UserInputType.Name] = -input.Position.z
-			return Enum.ContextActionResult.Sink
-		end
-
-		local function Zero(t)
-			for k, v in pairs(t) do
-				t[k] = v*0
-			end
-		end
-
-		function Input.StartCapture()
-			ContextActionService:BindActionAtPriority(FREECAM_RENDER_ID .. "FreecamKeyboard", Keypress, false, INPUT_PRIORITY,
-				Enum.KeyCode.W, -- Enum.KeyCode.U,
-				Enum.KeyCode.A, -- Enum.KeyCode.H,
-				Enum.KeyCode.S, -- Enum.KeyCode.J,
-				Enum.KeyCode.D, -- Enum.KeyCode.K,
-				Enum.KeyCode.E, -- Enum.KeyCode.I,
-				Enum.KeyCode.Q, -- Enum.KeyCode.Y,
-				Enum.KeyCode.Up, Enum.KeyCode.Down
-			)
-			ContextActionService:BindActionAtPriority(FREECAM_RENDER_ID .. "FreecamMousePan",          MousePan,   false, INPUT_PRIORITY, Enum.UserInputType.MouseMovement)
-			ContextActionService:BindActionAtPriority(FREECAM_RENDER_ID .. "FreecamMouseWheel",        MouseWheel, false, INPUT_PRIORITY, Enum.UserInputType.MouseWheel)
-			ContextActionService:BindActionAtPriority(FREECAM_RENDER_ID .. "FreecamGamepadButton",     GpButton,   false, INPUT_PRIORITY, Enum.KeyCode.ButtonX, Enum.KeyCode.ButtonY)
-			ContextActionService:BindActionAtPriority(FREECAM_RENDER_ID .. "FreecamGamepadTrigger",    Trigger,    false, INPUT_PRIORITY, Enum.KeyCode.ButtonR2, Enum.KeyCode.ButtonL2)
-			ContextActionService:BindActionAtPriority(FREECAM_RENDER_ID .. "FreecamGamepadThumbstick", Thumb,      false, INPUT_PRIORITY, Enum.KeyCode.Thumbstick1, Enum.KeyCode.Thumbstick2)
-		end
-
-		function Input.StopCapture()
-			navSpeed = 1
-			Zero(gamepad)
-			Zero(keyboard)
-			Zero(mouse)
-			ContextActionService:UnbindAction(FREECAM_RENDER_ID .. "FreecamKeyboard")
-			ContextActionService:UnbindAction(FREECAM_RENDER_ID .. "FreecamMousePan")
-			ContextActionService:UnbindAction(FREECAM_RENDER_ID .. "FreecamMouseWheel")
-			ContextActionService:UnbindAction(FREECAM_RENDER_ID .. "FreecamGamepadButton")
-			ContextActionService:UnbindAction(FREECAM_RENDER_ID .. "FreecamGamepadTrigger")
-			ContextActionService:UnbindAction(FREECAM_RENDER_ID .. "FreecamGamepadThumbstick")
-		end
-	end
-end
-
-local function GetFocusDistance(cameraFrame)
-	local znear = 0.1
-	local viewport = Camera.ViewportSize
-	local projy = 2*tan(cameraFov/2)
-	local projx = viewport.x/viewport.y*projy
-	local fx = cameraFrame.rightVector
-	local fy = cameraFrame.upVector
-	local fz = cameraFrame.lookVector
-
-	local minVect = Vector3.new()
-	local minDist = 512
-
-	for x = 0, 1, 0.5 do
-		for y = 0, 1, 0.5 do
-			local cx = (x - 0.5)*projx
-			local cy = (y - 0.5)*projy
-			local offset = fx*cx - fy*cy + fz
-			local origin = cameraFrame.p + offset*znear
-			local _, hit = Workspace:FindPartOnRay(Ray.new(origin, offset.unit*minDist))
-			local dist = (hit - origin).magnitude
-			if minDist > dist then
-				minDist = dist
-				minVect = offset.unit
-			end
-		end
-	end
-
-	return fz:Dot(minVect)*minDist
-end
-
-------------------------------------------------------------------------
-
-local function StepFreecam(dt)
-	local vel = velSpring:Update(dt, Input.Vel(dt))
-	local pan = panSpring:Update(dt, Input.Pan(dt))
-	local fov = fovSpring:Update(dt, Input.Fov(dt))
-
-	local zoomFactor = sqrt(tan(rad(70/2))/tan(rad(cameraFov/2)))
-
-	cameraFov = clamp(cameraFov + fov*FOV_GAIN*(dt/zoomFactor), 1, 120)
-	cameraRot = cameraRot + pan*PAN_GAIN*(dt/zoomFactor)
-	cameraRot = Vector2.new(clamp(cameraRot.x, -PITCH_LIMIT, PITCH_LIMIT), cameraRot.y%(2*pi))
-
-	local cameraCFrame = CFrame.new(cameraPos)*CFrame.fromOrientation(cameraRot.x, cameraRot.y, 0)*CFrame.new(vel*NAV_GAIN*dt)
-	cameraPos = cameraCFrame.p
-
-	Camera.CFrame = cameraCFrame
-	Camera.Focus = cameraCFrame*CFrame.new(0, 0, -GetFocusDistance(cameraCFrame))
-	Camera.FieldOfView = cameraFov
-end
-
-------------------------------------------------------------------------
-
-local PlayerState = {} do
-	local mouseBehavior
-	local mouseIconEnabled
-	local cameraType
-	local cameraFocus
-	local cameraCFrame
-	local cameraFieldOfView
-	local screenGuis = {}
-	local coreGuis = {
-		Backpack = true,
-		Chat = true,
-		Health = true,
-		PlayerList = true,
-	}
-	local setCores = {
-		BadgesNotificationsActive = true,
-		PointsNotificationsActive = true,
-	}
-
-	-- Save state and set up for freecam
-	function PlayerState.Push()
-		-- for name in pairs(coreGuis) do
-		-- 	coreGuis[name] = StarterGui:GetCoreGuiEnabled(Enum.CoreGuiType[name])
-		-- 	StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType[name], false)
-		-- end
-		-- for name in pairs(setCores) do
-		-- 	setCores[name] = StarterGui:GetCore(name)
-		-- 	StarterGui:SetCore(name, false)
-		-- end
-		-- local playergui = LocalPlayer:FindFirstChildOfClass("PlayerGui")
-		-- if playergui then
-		-- 	for _, gui in pairs(playergui:GetChildren()) do
-		-- 		if gui:IsA("ScreenGui") and gui.Enabled then
-		-- 			screenGuis[#screenGuis + 1] = gui
-		-- 			gui.Enabled = false
-		-- 		end
-		-- 	end
-		-- end
-
-		cameraFieldOfView = Camera.FieldOfView
-		Camera.FieldOfView = 70
-
-		-- cameraType = Camera.CameraType
-		-- Camera.CameraType = Enum.CameraType.Custom
-
-		cameraCFrame = Camera.CFrame
-		cameraFocus = Camera.Focus
-
-		-- mouseIconEnabled = UserInputService.MouseIconEnabled
-		-- UserInputService.MouseIconEnabled = false
-
-		mouseBehavior = UserInputService.MouseBehavior
-		UserInputService.MouseBehavior = Enum.MouseBehavior.Default
-	end
-
-	-- Restore state
-	function PlayerState.Pop()
-		-- for name, isEnabled in pairs(coreGuis) do
-		-- 	StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType[name], isEnabled)
-		-- end
-		-- for name, isEnabled in pairs(setCores) do
-		-- 	StarterGui:SetCore(name, isEnabled)
-		-- end
-		-- for _, gui in pairs(screenGuis) do
-		-- 	if gui.Parent then
-		-- 		gui.Enabled = true
-		-- 	end
-		-- end
-
-		Camera.FieldOfView = cameraFieldOfView
-		cameraFieldOfView = nil
-
-		-- Camera.CameraType = cameraType
-		-- cameraType = nil
-
-		Camera.CFrame = cameraCFrame
-		cameraCFrame = nil
-
-		Camera.Focus = cameraFocus
-		cameraFocus = nil
-
-		-- UserInputService.MouseIconEnabled = mouseIconEnabled
-		-- mouseIconEnabled = nil
-
-		UserInputService.MouseBehavior = mouseBehavior
-		mouseBehavior = nil
-	end
-end
-
-local function StartFreecam()
-	local cameraCFrame = Camera.CFrame
-	cameraRot = Vector2.new(cameraCFrame:toEulerAnglesYXZ())
-	cameraPos = cameraCFrame.p
-	cameraFov = Camera.FieldOfView
-
-	velSpring:Reset(Vector3.new())
-	panSpring:Reset(Vector2.new())
-	fovSpring:Reset(0)
-
-	PlayerState.Push()
-	RunService:BindToRenderStep(FREECAM_RENDER_ID, Enum.RenderPriority.Camera.Value + 1, StepFreecam)
-	Input.StartCapture()
-end
-
-local function StopFreecam()
-	Input.StopCapture()
-	RunService:UnbindFromRenderStep(FREECAM_RENDER_ID)
-	PlayerState.Pop()
-end
-
-------------------------------------------------------------------------
-
-local enabled = false
-
-local function EnableFreecam()
-	if not enabled then
-		StartFreecam()
-		enabled = true
-	end
-end
-
-local function DisableFreecam()
-	if enabled then
-		StopFreecam()
-		enabled = false
-	end
-end
-
-return {
-	EnableFreecam = EnableFreecam,
-	DisableFreecam = DisableFreecam,
-}
-\n    return hMod(...)\nend\n\n\n-- File: out/jobs/helpers/get-selected-player.lua\n\nmodules["jobs.helpers.get-selected-player.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+-- File: out/jobs/helpers/get-selected-player.lua
+newModule("jobs.helpers.get-selected-player", "ModuleScript", "jobs.helpers.get-selected-player", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Players = TS.import(script, TS.getModule(script, "@rbxts", "services")).Players
 local getStore = TS.import(script, script.Parent, "job-store").getStore
@@ -8309,7 +8233,12 @@ end)
 return {
 	getSelectedPlayer = getSelectedPlayer,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/jobs/players/kill.lua\n\nmodules["jobs.players.kill.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/jobs/players/kill.lua
+newModule("jobs.players.kill", "ModuleScript", "jobs.players.kill", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _services = TS.import(script, TS.getModule(script, "@rbxts", "services"))
 local Players = _services.Players
@@ -8460,7 +8389,12 @@ main():catch(function(err)
 	warn("[kill-worker] " .. tostring(err))
 end)
 return nil
-\n    return hMod(...)\nend\n\n\n-- File: out/jobs/players/hide.lua\n\nmodules["jobs.players.hide.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/jobs/players/hide.lua
+newModule("jobs.players.hide", "ModuleScript", "jobs.players.hide", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Players = TS.import(script, TS.getModule(script, "@rbxts", "services")).Players
 local getSelectedPlayer = TS.import(script, script.Parent.Parent, "helpers", "get-selected-player").getSelectedPlayer
@@ -8537,7 +8471,12 @@ main():catch(function(err)
 	warn("[hide-worker] " .. tostring(err))
 end)
 return nil
-\n    return hMod(...)\nend\n\n\n-- File: out/jobs/players/teleport.lua\n\nmodules["jobs.players.teleport.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/jobs/players/teleport.lua
+newModule("jobs.players.teleport", "ModuleScript", "jobs.players.teleport", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Players = TS.import(script, TS.getModule(script, "@rbxts", "services")).Players
 local getSelectedPlayer = TS.import(script, script.Parent.Parent, "helpers", "get-selected-player").getSelectedPlayer
@@ -8590,7 +8529,12 @@ main():catch(function(err)
 	warn("[teleport-worker] " .. tostring(err))
 end)
 return nil
-\n    return hMod(...)\nend\n\n\n-- File: out/jobs/players/spectate.lua\n\nmodules["jobs.players.spectate.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/jobs/players/spectate.lua
+newModule("jobs.players.spectate", "ModuleScript", "jobs.players.spectate", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Workspace = TS.import(script, TS.getModule(script, "@rbxts", "services")).Workspace
 local getSelectedPlayer = TS.import(script, script.Parent.Parent, "helpers", "get-selected-player").getSelectedPlayer
@@ -8649,7 +8593,12 @@ main():catch(function(err)
 	warn("[spectate-worker] " .. tostring(err))
 end)
 return nil
-\n    return hMod(...)\nend\n\n\n-- File: out/jobs/players/facebang.lua\n\nmodules["jobs.players.facebang.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/jobs/players/facebang.lua
+newModule("jobs.players.facebang", "ModuleScript", "jobs.players.facebang", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _services = TS.import(script, TS.getModule(script, "@rbxts", "services"))
 local RunService = _services.RunService
@@ -8784,7 +8733,12 @@ onJobChange("facebang", function(job, state)
 	end)
 end)
 return nil
-\n    return hMod(...)\nend\n\n\n-- File: out/theme.lua\n\nmodules["theme.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/theme.lua
+newModule("theme", "ModuleScript", "theme", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local UI_COLORS = {
 	Accent = Color3.fromRGB(235, 76, 105),
 	AccentDark = Color3.fromRGB(150, 40, 60),
@@ -8814,7 +8768,12 @@ return {
 	UI_ANIMATION = UI_ANIMATION,
 	UI_LAYOUT = UI_LAYOUT,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/App.lua\n\nmodules["App.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/App.lua
+newModule("App", "ModuleScript", "App", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").out)
@@ -8900,7 +8859,12 @@ local default = App
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/main.client.lua\n\nmodules["main.client.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/main.client.lua
+newModule("main.client", "ModuleScript", "main.client", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.include.RuntimeLib)
 local Make = TS.import(script, TS.getModule(script, "@rbxts", "make"))
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -8964,57 +8928,12 @@ local main = TS.async(function()
 	end)
 end)
 main():catch(warn)
-\n    return hMod(...)\nend\n\n\n-- File: out/themes/init.lua\n\nmodules["themes.init.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
-local TS = require(script.Parent.include.RuntimeLib)
-local darkTheme = TS.import(script, script, "sorbet").darkTheme
-local frostedGlass = TS.import(script, script, "frosted-glass").frostedGlass
-local highContrast = TS.import(script, script, "high-contrast").highContrast
-local lightTheme = TS.import(script, script, "light-theme").lightTheme
-local obsidian = TS.import(script, script, "obsidian").obsidian
-local crimson = TS.import(script, script, "crimson").crimson
-local _exp = { crimson, darkTheme, lightTheme, frostedGlass, obsidian, highContrast }
-local _arg0 = function(t)
-	return t ~= nil
-end
--- ▼ ReadonlyArray.filter ▼
-local _newValue = {}
-local _length = 0
-for _k, _v in ipairs(_exp) do
-	if _arg0(_v, _k - 1, _exp) == true then
-		_length += 1
-		_newValue[_length] = _v
-	end
-end
--- ▲ ReadonlyArray.filter ▲
-local themeList = _newValue
-local themeMap = {}
-local _arg0_1 = function(theme)
-	local _name = theme.name
-	-- ▼ Map.set ▼
-	themeMap[_name] = theme
-	-- ▲ Map.set ▲
-end
--- ▼ ReadonlyArray.forEach ▼
-for _k, _v in ipairs(themeList) do
-	_arg0_1(_v, _k - 1, themeList)
-end
--- ▲ ReadonlyArray.forEach ▲
-local function getThemes()
-	return themeList
-end
-local function getThemeByName(name)
-	local _condition = themeMap[name]
-	if _condition == nil then
-		_condition = darkTheme
-	end
-	return _condition
-end
-return {
-	getThemes = getThemes,
-	getThemeByName = getThemeByName,
-	darkTheme = darkTheme,
-}
-\n    return hMod(...)\nend\n\n\n-- File: out/themes/obsidian.lua\n\nmodules["themes.obsidian.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/themes/obsidian.lua
+newModule("themes.obsidian", "ModuleScript", "themes.obsidian", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local darkTheme = TS.import(script, script.Parent, "sorbet").darkTheme
 local hex = TS.import(script, script.Parent.Parent, "utils", "color3").hex
@@ -9332,7 +9251,12 @@ local obsidian = _object
 return {
 	obsidian = obsidian,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/themes/frosted-glass.lua\n\nmodules["themes.frosted-glass.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/themes/frosted-glass.lua
+newModule("themes.frosted-glass", "ModuleScript", "themes.frosted-glass", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local darkTheme = TS.import(script, script.Parent, "sorbet").darkTheme
 local hex = TS.import(script, script.Parent.Parent, "utils", "color3").hex
@@ -9619,8 +9543,18 @@ local frostedGlass = _object
 return {
 	frostedGlass = frostedGlass,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/themes/theme.interface.lua\n\nmodules["themes.theme.interface.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
-\n    return hMod(...)\nend\n\n\n-- File: out/themes/light-theme.lua\n\nmodules["themes.light-theme.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/themes/theme.interface.lua
+newModule("themes.theme.interface", "ModuleScript", "themes.theme.interface", nil, function()
+    -- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/themes/light-theme.lua
+newModule("themes.light-theme", "ModuleScript", "themes.light-theme", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local darkTheme = TS.import(script, script.Parent, "sorbet").darkTheme
 local hex = TS.import(script, script.Parent.Parent, "utils", "color3").hex
@@ -9851,7 +9785,12 @@ local lightTheme = _object
 return {
 	lightTheme = lightTheme,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/themes/high-contrast.lua\n\nmodules["themes.high-contrast.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/themes/high-contrast.lua
+newModule("themes.high-contrast", "ModuleScript", "themes.high-contrast", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local darkTheme = TS.import(script, script.Parent, "sorbet").darkTheme
 local hex = TS.import(script, script.Parent.Parent, "utils", "color3").hex
@@ -10089,7 +10028,12 @@ local highContrast = _object
 return {
 	highContrast = highContrast,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/themes/crimson.lua\n\nmodules["themes.crimson.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/themes/crimson.lua
+newModule("themes.crimson", "ModuleScript", "themes.crimson", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local darkTheme = TS.import(script, script.Parent, "sorbet").darkTheme
 local hex = TS.import(script, script.Parent.Parent, "utils", "color3").hex
@@ -10361,7 +10305,12 @@ local crimson = _object
 return {
 	crimson = crimson,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/themes/sorbet.lua\n\nmodules["themes.sorbet.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/themes/sorbet.lua
+newModule("themes.sorbet", "ModuleScript", "themes.sorbet", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local hex = TS.import(script, script.Parent.Parent, "utils", "color3").hex
 local redAccent = hex("#C6428E")
@@ -10610,7 +10559,12 @@ local darkTheme = _object
 return {
 	darkTheme = darkTheme,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/utils/http.lua\n\nmodules["utils.http.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/utils/http.lua
+newModule("utils.http", "ModuleScript", "utils.http", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local HttpService = TS.import(script, TS.getModule(script, "@rbxts", "services")).HttpService
 local IS_DEV = TS.import(script, script.Parent.Parent, "constants").IS_DEV
@@ -10637,7 +10591,12 @@ return {
 	get = get,
 	post = post,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/utils/number-util.lua\n\nmodules["utils.number-util.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/utils/number-util.lua
+newModule("utils.number-util", "ModuleScript", "utils.number-util", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local function map(n, min0, max0, min1, max1)
 	return min1 + ((n - min0) * (max1 - min1)) / (max0 - min0)
 end
@@ -10648,7 +10607,12 @@ return {
 	map = map,
 	lerp = lerp,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/utils/array-util.lua\n\nmodules["utils.array-util.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/utils/array-util.lua
+newModule("utils.array-util", "ModuleScript", "utils.array-util", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local function arrayToMap(arr, mapper)
 	-- ▼ ReadonlyArray.map ▼
 	local _newValue = table.create(#arr)
@@ -10665,7 +10629,12 @@ end
 return {
 	arrayToMap = arrayToMap,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/utils/debug.lua\n\nmodules["utils.debug.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/utils/debug.lua
+newModule("utils.debug", "ModuleScript", "utils.debug", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Stats = TS.import(script, TS.getModule(script, "@rbxts", "services")).Stats
 local debugCounter = {}
@@ -10722,7 +10691,12 @@ return {
 	logPerformance = logPerformance,
 	logger = logger,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/utils/timeout.lua\n\nmodules["utils.timeout.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/utils/timeout.lua
+newModule("utils.timeout", "ModuleScript", "utils.timeout", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local RunService = TS.import(script, TS.getModule(script, "@rbxts", "services")).RunService
 local Timeout
@@ -10805,7 +10779,12 @@ return {
 	Timeout = Timeout,
 	Interval = Interval,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/utils/binding-util.lua\n\nmodules["utils.binding-util.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/utils/binding-util.lua
+newModule("utils.binding-util", "ModuleScript", "utils.binding-util", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local function isBinding(binding)
@@ -10822,7 +10801,12 @@ return {
 	mapBinding = mapBinding,
 	asBinding = asBinding,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/utils/udim2.lua\n\nmodules["utils.udim2.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/utils/udim2.lua
+newModule("utils.udim2", "ModuleScript", "utils.udim2", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local function px(x, y)
 	return UDim2.new(0, x, 0, y)
 end
@@ -10840,7 +10824,12 @@ return {
 	scale = scale,
 	applyUDim2 = applyUDim2,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/utils/color3.lua\n\nmodules["utils.color3.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/utils/color3.lua
+newModule("utils.color3", "ModuleScript", "utils.color3", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local function getLuminance(color)
 	if typeof(color) == "ColorSequence" then
 		color = color.Keypoints[1].Value
@@ -10896,7 +10885,12 @@ return {
 	hsv = hsv,
 	hsl = hsl,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/VerySimpleApp.lua\n\nmodules["VerySimpleApp.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/VerySimpleApp.lua
+newModule("VerySimpleApp", "ModuleScript", "VerySimpleApp", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local TS = require(script.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local function VerySimpleApp()
@@ -10925,7 +10919,12 @@ local default = VerySimpleApp
 return {
 	default = default,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/constants.lua\n\nmodules["constants.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n-- Compiled with roblox-ts v1.2.7
+
+end)
+
+-- File: out/constants.lua
+newModule("constants", "ModuleScript", "constants", nil, function()
+    -- Compiled with roblox-ts v1.2.7
 local IS_DEV = type(getgenv) == "nil"
 local _condition = VERSION
 if _condition == nil then
@@ -10936,7 +10935,12 @@ return {
 	IS_DEV = IS_DEV,
 	VERSION_TAG = VERSION_TAG,
 }
-\n    return hMod(...)\nend\n\n\n-- File: out/Core.lua\n\nmodules["Core.lua"] = function()\n\n    local hMod = hMod or function(x) return x end\n\n--[[
+
+end)
+
+-- File: out/Core.lua
+newModule("Core", "ModuleScript", "Core", nil, function()
+    --[[
     src/Core.lua
     Entry point for Roblox side.
 ]]
@@ -10999,9 +11003,9 @@ function Core.init()
 end
 
 return Core
-\n    return hMod(...)\nend\n\n\nreturn {
-    init = function()
-        return modules
-    end
-}
-\nlocal modules = require(script)\nhInit = modules.init\nhInit()\nHAVOC_STATUS()
+
+end)
+
+-- Hvcorca Bootstrap (Orca v1.1.1)
+local hInit, hMod, hInst, hEnv = require(script.Parent.runtime)()
+hInit()
