@@ -3,15 +3,15 @@
 	"globIgnorePaths": [
 		"**/package.json",
 		"**/tsconfig.json",
-		"**/*.spec.*",
-		"**/*.d.*"
+		"**/*.spec.*"
 	],
 	"tree": {
-		"$className": "ReplicatedStorage",
 		"$path": "out",
 		"include": {
-			"$className": "Folder",
-			"$path": "include"
+			"$path": "include",
+			"node_modules": {
+				"$path": "node_modules/@rbxts"
+			}
 		}
 	}
 }
