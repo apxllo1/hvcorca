@@ -1,47 +1,44 @@
 import { HttpService, Players } from "@rbxts/services";
-import { getStore } from "jobs/helpers/job-store";
-import { RootState } from "store/store";
-import { setInterval } from "utils/timeout";
+import { getStore } from "../jobs/helpers/job-store";
+import { RootState } from "./store";
+import { setInterval } from "../utils/timeout";
 
-if (makefolder && !isfolder("_orca")) {
+if (typeof makefolder === "function" && !isfolder("_orca")) {
 	makefolder("_orca");
 }
 
-function read(file: string) {
-	if (readfile) {
-		return isfile(file) ? readfile(file) : undefined;
-	} else {
-		print(`READ   ${file}`);
-		return;
+function read(file: string): string | undefined {
+	if (typeof readfile === "function" && isfile(file)) {
+		return readfile(file);
+	}
+	return undefined;
+}
+
+function write(file: string, content: string): void {
+	if (typeof writefile === "function") {
+		writefile(file, content);
 	}
 }
 
-function write(file: string, content: string) {
-	if (writefile) {
-		return writefile(file, content);
-	} else {
-		print(`WRITE  ${file} => \n${content}`);
-		return;
-	}
-}
-
-export function persistentState<T extends object>(name: string, selector: (state: RootState) => T, defaultValue: T): T {
+export function persistentState<T extends object>(
+	name: string,
+	selector: (state: RootState) => T,
+	defaultValue: T,
+): T {
 	try {
 		const serializedState = read(`_orca/${name}.json`);
 
 		if (serializedState === undefined) {
 			write(`_orca/${name}.json`, HttpService.JSONEncode(defaultValue));
+			autosave(name, selector);
 			return defaultValue;
 		}
+
 		const value = HttpService.JSONDecode(serializedState) as T;
-
-		autosave(name, selector).catch(() => {
-			warn("Autosave failed");
-		});
-
+		autosave(name, selector);
 		return value;
 	} catch (err) {
-		warn(`Failed to load ${name}.json: ${err}`);
+		warn(`[PersistentState] Load failed for ${name}: ${err}`);
 		return defaultValue;
 	}
 }
@@ -49,12 +46,16 @@ export function persistentState<T extends object>(name: string, selector: (state
 async function autosave(name: string, selector: (state: RootState) => object) {
 	const store = await getStore();
 
-	function save() {
-		const state = selector(store.getState());
-		write(`_orca/${name}.json`, HttpService.JSONEncode(state));
-	}
+	const save = () => {
+		try {
+			const state = selector(store.getState());
+			write(`_orca/${name}.json`, HttpService.JSONEncode(state));
+		} catch (err) {
+			warn(`[PersistentState] Autosave failed for ${name}: ${err}`);
+		}
+	};
 
-	setInterval(() => save, 60000);
+	setInterval(save, 60000);
 
 	Players.PlayerRemoving.Connect((player) => {
 		if (player === Players.LocalPlayer) {
