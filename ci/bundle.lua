@@ -23,28 +23,16 @@ local BUNDLE_TEMP = "ci/bundle.tmp"
 ---@param source string
 ---@return string
 local function transformInput(source)
-	-- Capture (var) (+-/*%^..)= (value)
-	-- Substitute %1 = %1 %2 %3
 	source = string.gsub(source, "([%w_]+)%s*([%+%-%*/%%^%.]%.?)=%s*", "%1 = %1 %2")
-
-	-- Capture whole word 'continue'
-	-- Substitute __CONTINUE__()
 	source = string.gsub(source, "(%s+)continue(%s+)", "%1__CONTINUE__()%2")
-
 	return source
 end
 
 ---@param source string
 ---@return string
 local function transformOutput(source)
-	-- Substitute ...: with (...):
-	-- For a luamin bug caused by calling varargs
 	source = string.gsub(source, "%.%.%.:", "(...):")
-
-	-- Capture __CONTINUE__()
-	-- Substitute continue
 	source = string.gsub(source, "__CONTINUE__%(%)", "continue;")
-
 	return source
 end
 
@@ -52,12 +40,9 @@ end
 ---@return string
 local function minify(source)
 	remodel.writeFile(BUNDLE_TEMP, transformInput(source))
-
 	os.execute("node ci/minify.js")
 	local output = remodel.readFile(BUNDLE_TEMP)
-
 	os.remove(BUNDLE_TEMP)
-
 	return transformOutput(output)
 end
 
