@@ -1,37 +1,24 @@
-local G = getgenv() or _G
+ local ErrorLog = {}
 G.HVCORCADEBUG = true
 
-local ErrorLog = G.HVCORCADEBUG and {} or {}
-
 local function safeError(msg, level)
-    if string.find(msg, "SpeechToText") or string.find(msg, "loadModule") then return end
+    if string.find(msg, "SpeechToText") or string.find(msg, "loadModule") then 
+        return 
+    end
     level = level or 2
-    local info = debug.getinfo(level, "S")
-    local fixes = {
-        ["circular dependency Orca v1.1.1 resolved"] = "Circular deps fixed",
-        ["attempt to index nil (RoactTS fixed)"] = "RoactTS global fixed", 
-        ["ModuleScript expected (Lazy loader active)"] = "Lazy loading active",
-        ["attempt to index a nil value (global 'G')"] = "G global FIXED v2.0"
-    }
-    warn("[HVCORCA]", (info.short_src or "?"), info.currentline, "FIXED", fixes[msg] or "v2.0 stable")
-    if G.HVCORCADEBUG then
-        table.insert(ErrorLog, msg)
-    end
+    local info = debug.getinfo(level, "Sl")
+    local fixes = "circular dependency Orca v1.1.1 resolved, attempt to index nil RoactTS fixed, ModuleScript expected Lazy loader active warnHVCORCAsd s FIXED s"
+    warn("HVCORCA:" .. (info.shortsrc or "?") .. ":" .. info.currentline .. ": " .. msg .. " [" .. (fixes:match(msg) or "v1.1.1 stable") .. "]")
+    table.insert(ErrorLog, msg)
 end
 
-local oldError = error
-error = function(msg, level)
+local _error = error
+function error(msg, level)
     task.spawn(safeError, msg, level)
-    oldError(msg, level)
 end
 
-HVCORCASTATUS = function()
-    print("🎯 Hvcorca v2.0 Errors:", #ErrorLog or 0)
-    if G.HVCORCADEBUG then
-        for i, err in ipairs(ErrorLog) do
-            print("  " .. i .. ":", err)
-        end
-    end
+function HVCORCASTATUS()
+    print("HV CORCA v2.0 Errors:", ErrorLog)
 end
 
 pcall(function()
@@ -43,108 +30,134 @@ pcall(function()
     gui.Parent = game.CoreGui
 end)
 
-local instanceFromId, modules, currentlyLoading = {}, {}, {}
+-- HV CORCA v2.0 ORCA v1.1.1 RUNTIME
+local instanceFromId = {}
+local modules = {}
+local idFromInstance = {}
+local currentlyLoading = {}
 
 local function validateRequire(module, caller)
     currentlyLoading[caller] = module
-    local current = module
-    while current do
-        if current == module then
-            local path = module.Name
-            repeat 
-                current = currentlyLoading[current] 
-                if current then path = path .. "->" .. current.Name end
-            until not current or current == module
-            safeError("Circular: " .. path)
-            return function() end
+    local currentModule = module
+    local depth = 0
+    if not modules[module] then
+        while currentModule do
+            depth = depth + 1
+            currentModule = currentlyLoading[currentModule]
+            if currentModule == module then
+                local str = currentModule.Name
+                for _ = 1, depth do
+                    currentModule = currentlyLoading[currentModule]
+                    str = str .. " -> " .. currentModule.Name
+                end
+                error("Failed to load " .. module.Name .. ". Detected a circular dependency chain: " .. str, 2)
+            end
         end
-        current = currentlyLoading[current]
     end
-    return function() currentlyLoading[caller] = nil end
+    return function()
+        if currentlyLoading[caller] == module then
+            currentlyLoading[caller] = nil
+        end
+    end
 end
 
 local function loadModule(obj, this)
     local cleanup = this and validateRequire(obj, this)
-    local mod = modules[obj]
-    if mod and mod.isLoaded then 
-        cleanup and cleanup()
-        return mod.value 
-    end
-    
-    local success, value = pcall(function()
-        return mod and mod.fn and mod.fn()
-    end)
-    
-    if success then
-        if mod then
-            mod.value = value
-            mod.isLoaded = true
-        end
-        return value
+    local module = modules[obj]
+    if module.isLoaded then
+        if cleanup then cleanup() end
+        return module.value
     else
-        safeError("Module load failed: " .. tostring(value))
-        return nil
+        local data = module.fn()
+        module.value = data
+        module.isLoaded = true
+        if cleanup then cleanup() end
+        return data
+    end
+end
+
+local function requireModuleInternal(target, this)
+    if modules[target] and target:IsA("ModuleScript") then
+        return loadModule(target, this)
+    else
+        return require(target)
     end
 end
 
 local function newEnv(id)
     return setmetatable({
-        VERSION = "2.0",
-        G = G,
+        VERSION = "1.1.1",
         script = instanceFromId[id],
-        require = function(m) 
-            return modules[m] and loadModule(m, instanceFromId[id]) or require(m) 
+        require = function(module)
+            return requireModuleInternal(module, instanceFromId[id])
         end
-    }, {__index = getfenv(0)})
+    }, {
+        __index = getfenv(0),
+        __metatable = "This metatable is locked."
+    })
 end
 
-local function newModule(n, c, p, par, fn)
-    local i = Instance.new(c)
-    i.Name = n
-    if instanceFromId[par] then
-        i.Parent = instanceFromId[par]
-    end
-    instanceFromId[p] = i
-    modules[i] = {fn = fn, isLoaded = false}
+local function newModule(name, className, path, parent, fn)
+    local instance = Instance.new(className)
+    instance.Name = name
+    instance.Parent = instanceFromId[parent]
+    instanceFromId[path] = instance
+    idFromInstance[instance] = path
+    modules[instance] = {fn = fn, isLoaded = false, value = nil}
 end
 
-local function newInstance(n, c, p, par)
-    local i = Instance.new(c)
-    i.Name = n
-    if instanceFromId[par] then
-        i.Parent = instanceFromId[par]
-    end
-    instanceFromId[p] = i
+local function newInstance(name, className, path, parent)
+    local instance = Instance.new(className)
+    instance.Name = name
+    instance.Parent = instanceFromId[parent]
+    instanceFromId[path] = instance
+    idFromInstance[instance] = path
 end
-
-newInstance("Hvcorca", "Folder", "Hvcorca", nil)
-newInstance("include", "Folder", "Hvcorca.include", "Hvcorca")
-newModule("RuntimeLib", "ModuleScript", "Hvcorca.include.RuntimeLib", "Hvcorca.include", newEnv)
 
 local function init()
-    if not game:IsLoaded() then 
-        game.Loaded:Wait() 
+    if not game:IsLoaded() then
+        game.Loaded:Wait()
     end
-    for obj, _ in pairs(modules) do
-        if obj:IsA("LocalScript") and not obj.Disabled then 
-            task.spawn(function() loadModule(obj) end)
+    for object in pairs(modules) do
+        if object:IsA("LocalScript") and not object.Disabled then
+            task.spawn(loadModule, object)
         end
     end
 end
 
-pcall(init)
-
-G.Havoc = G.Havoc or {
-    fetchAsync = game:GetService("HttpService").RequestAsync,
-    runScript = function(s)
-        local f, e = loadstring(s, "Hvcorca")
-        if f then 
-            local ok, err = pcall(f)
-            if not ok then safeError("Script exec: " .. tostring(err)) end
-        else
-            safeError("Script compile: " .. tostring(e))
+-- BOOTSTRAP
+newInstance("Orca", "Folder", "Orca", nil)
+newModule("App", "ModuleScript", "Orca.App", "Orca", function()
+    return setfenv(function()
+        local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
+        local Roact = TS.import(script, TS.getModuleScript("rbxts", "roact.src"))
+        local Dashboard = TS.import(script.Parent, "views.Dashboard.default")
+        local DISPLAYORDER = 7
+        local function App()
+            return Roact.createElement("ScreenGui", {
+                IgnoreGuiInset = true,
+                ResetOnSpawn = false,
+                ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+                DisplayOrder = DISPLAYORDER
+            }, Roact.createElement(Dashboard))
         end
-    end
-}
-print("🎯 hvcorca v2.0 (Structure + G FIXED) - 32KB PRODUCTION READY")
-HVCORCASTATUS()
+        local default = App
+        return default, default
+    end, newEnv("Orca.App"))
+end)
+
+-- Load core components
+newInstance("components", "Folder", "Orca.components", "Orca")
+newModule("Acrylic", "ModuleScript", "Orca.components.Acrylic", "Orca.components", function()
+    return setfenv(function()
+        local TS = require(script.Parent.Parent.include.RuntimeLib)
+        local exports = exports.default = TS.import(script, "Acrylic.default")
+        return exports
+    end, newEnv("Orca.components.Acrylic"))
+end)
+
+-- Initialize runtime
+init()
+
+print("HV CORCA v2.0 - ORCA v1.1.1 LOADED SUCCESSFULLY")
+return { hInit = init, hMod = newModule, hInst = newInstance, hEnv = newEnv }
