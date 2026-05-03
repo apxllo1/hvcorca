@@ -27,7 +27,7 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install Rojo
+      - name: Install Rojo/Aftman
         uses: ok-nick/setup-aftman@v0.4.2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -56,10 +56,33 @@ jobs:
           remodel run ci/bundle.lua ../Havoc.rbxm ../public/latest.lua release minify
           remodel run ci/bundle.lua ../Havoc.rbxm ../public/latest.debug.lua release-dbg debug
 
-      - name: Commit latest
+      - name: Commit latest builds
         uses: EndBug/add-and-commit@v9
         with:
           default_author: github_actions
-          add: "public"
-          message: "🔥 Auto-build Release from src push"
-          push: '--force'
+          add: |
+            public/latest.lua
+            public/latest.debug.lua
+          message: "🔥 Release v$(date +%Y%m%d-%H%M) - Auto-build from src"
+          push: '--force-with-lease'
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        with:
+          tag_name: latest
+          name: Latest Release - ${{ github.sha }}
+          body: |
+            **Auto-built** from [${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})
+            
+            - Minified: [latest.lua](https://github.com/${{ github.repository }}/raw/master/public/latest.lua)
+            - Debug: [latest.debug.lua](https://github.com/${{ github.repository }}/raw/master/public/latest.debug.lua)
+            - Model: [Havoc.rbxm](https://github.com/${{ github.repository }}/raw/master/Havoc.rbxm)
+          draft: false
+          prerelease: false
+          files: |
+            public/latest.lua
+            public/latest.debug.lua
+            Havoc.rbxm
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
