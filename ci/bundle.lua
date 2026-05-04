@@ -19,7 +19,6 @@ local ROJO_INPUT = "Havoc.rbxm"
 local RUNTIME_FILE = "ci/runtime.lua"
 local BUNDLE_TEMP = "ci/bundle.tmp"
 
----Convert some specific snippets to work in luamin.
 ---@param source string
 ---@return string
 local function transformInput(source)
