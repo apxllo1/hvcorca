@@ -72,7 +72,6 @@ local function loadModule(obj, caller)
 	local cleanup = caller and validateRequire(obj, caller)
 	local module = modules[obj]
 
-	-- Better nil check than tung (prevents crash if module missing)
 	if not module then
 		if cleanup then cleanup() end
 		warn("[Hvcorca] Module not found: " .. tostring(obj))
@@ -133,7 +132,6 @@ local function newModule(name, className, path, parentId, fn)
 	instanceFromId[path] = instance
 	idFromInstance[instance] = path
 
-	-- Store fn raw — setfenv wrapping is already done inside the bundle-generated fn
 	modules[instance] = {
 		fn = fn,
 		isLoaded = false,
