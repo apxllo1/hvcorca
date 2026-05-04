@@ -1,6 +1,6 @@
 import Make from "@rbxts/make";
 import Roact from "@rbxts/roact";
-import { StoreProvider } from "@rbxts/roact-rodux-hooked";
+import { Provider } from "@rbxts/roact-rodux-hooked";
 import { configureStore } from "store/store";
 import { setStore } from "jobs";
 import { toggleDashboard } from "store/actions/dashboard.action";
@@ -10,14 +10,15 @@ import App from "./App";
 
 async function main(): Promise<void> {
 	const g = (getgenv !== undefined ? getgenv() : _G) as Record<string, any>;
-
 	if (g[LOAD_GUARD] === true) return;
 
 	try {
 		const store = configureStore();
 		setStore(store);
 
-		const host = (IS_DEV ? Players.LocalPlayer.WaitForChild("PlayerGui") : game.GetService("CoreGui")) as Instance;
+		const host = (IS_DEV
+			? Players.LocalPlayer.WaitForChild("PlayerGui")
+			: game.GetService("CoreGui")) as Instance;
 
 		const container = Make("Folder", {
 			Name: "HavocMount",
@@ -25,9 +26,9 @@ async function main(): Promise<void> {
 		});
 
 		Roact.mount(
-			<StoreProvider store={store}>
+			<Provider store={store}>
 				<App />
-			</StoreProvider>,
+			</Provider>,
 			container,
 		);
 
@@ -40,14 +41,13 @@ async function main(): Promise<void> {
 
 		if (!app) throw "ScreenGui failed to render";
 
-		// Use typeIs/type to comply with roblox-ts requirements
 		if (syn !== undefined && typeIs(syn.protect_gui, "function")) {
 			syn.protect_gui(app as unknown as GuiObject);
 		}
 
 		app.Parent = game.GetService("CoreGui");
-
 		g[LOAD_GUARD] = true;
+
 		if (time() > 3) task.defer(() => store.dispatch(toggleDashboard()));
 		print("[Havoc] Success");
 	} catch (e: unknown) {
