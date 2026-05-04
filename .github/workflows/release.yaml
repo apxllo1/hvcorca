@@ -5,7 +5,6 @@ on:
     branches: [master]
     paths:
       - 'src/**'
-      - 'ci/**'
 jobs:
   bundle-release:
     runs-on: ubuntu-22.04
