@@ -47,8 +47,7 @@ jobs:
           add: |
             public/latest.lua
             public/latest.debug.lua
-            Havoc.rbxm
-          message: "🔥 Release build ${{ github.run_id }} - Auto-build from src"
+          message: "🔥 Release build ${{ github.run_id }} - Auto-build from src [skip ci]"
           push: '--force-with-lease'
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -63,6 +62,5 @@ jobs:
           files: |
             public/latest.lua
             public/latest.debug.lua
-            Havoc.rbxm
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
