@@ -65,11 +65,11 @@ function stripLuaComments(src) {
 
 function fixLuau(src) {
   return src
-    .replace(/([a-zA-Z0-9_.]+)\s*\+=/g,  "$1 = $1 +")
-    .replace(/([a-zA-Z0-9_.]+)\s*-=/g,   "$1 = $1 -")
-    .replace(/([a-zA-Z0-9_.]+)\s*\*=/g,  "$1 = $1 *")
-    .replace(/([a-zA-Z0-9_.]+)\s*\/=/g,  "$1 = $1 /")
-    .replace(/([a-zA-Z0-9_.]+)\s*\.\.=/g,"$1 = $1 ..");
+    .replace(/([a-zA-Z0-9_.]+)\s*\+=/g,   "$1 = $1 +")
+    .replace(/([a-zA-Z0-9_.]+)\s*-=/g,    "$1 = $1 -")
+    .replace(/([a-zA-Z0-9_.]+)\s*\*=/g,   "$1 = $1 *")
+    .replace(/([a-zA-Z0-9_.]+)\s*\/=/g,   "$1 = $1 /")
+    .replace(/([a-zA-Z0-9_.]+)\s*\.\.=/g, "$1 = $1 ..");
     // NOTE: do NOT replace 'continue' here — bundle.lua handles it via __CONTINUE__()
 }
 
