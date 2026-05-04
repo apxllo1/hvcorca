@@ -8,10 +8,9 @@
         "serve": "rojo serve place.project.json",
         "lint": "eslint src --ext .ts,.tsx",
         "fix": "eslint src --ext .ts,.tsx --fix",
-        "prebundle": "npm run compile && npm run build",
-        "bundle": "npm run prebundle && remodel run ci/bundle.lua Havoc.rbxm public/latest.lua",
-        "bundle:dbg": "npm run prebundle && remodel run ci/bundle.lua Havoc.rbxm public/latest.debug.lua debug",
-        "bundle:min": "npm run prebundle && remodel run ci/bundle.lua Havoc.rbxm public/latest.lua minify"
+        "bundle": "npm run compile && npm run build && echo 🔥 Release v$(date +%Y%m%d-%H%M) && remodel run ci/bundle.lua Havoc.rbxm public/latest.lua",
+        "bundle:dbg": "npm run compile && npm run build && remodel run ci/bundle.lua Havoc.rbxm public/latest.debug.lua debug",
+        "bundle:min": "npm run compile && npm run build && remodel run ci/bundle.lua Havoc.rbxm public/latest.lua minify"
     },
     "devDependencies": {
         "@rbxts/compiler-types": "^1.3.2-types.0",
