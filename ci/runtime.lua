@@ -5,16 +5,9 @@
 --
 -- Author: apxllo 
 -- License: MIT
--- Version: Hvcorca v2.0
+-- Version: __VERSION__
 -- GitHub: https://github.com/apxllo1/hvcorca
 --]]
-
--- Runtime module (Enhanced v2.1 - Improved performance & error handling)
-
----@class Module
----@field fn function
----@field isLoaded boolean
----@field value any
 
 ---@type table<string, Instance>
 local instanceFromId = {}
@@ -22,82 +15,71 @@ local instanceFromId = {}
 ---@type table<Instance, string>
 local idFromInstance = {}
 
----@type table<Instance, Module>
+---@type table<Instance, {fn: function, isLoaded: boolean, value: any}>
 local modules = {}
 
----@type table<LocalScript|ModuleScript, ModuleScript>
+---@type table<any, any>
 local currentlyLoading = {}
 
--- Enhanced module resolution with better circular dependency detection
----@param module LocalScript|ModuleScript
----@param caller? LocalScript|ModuleScript
----@return function|nil cleanup
 local function validateRequire(module, caller)
 	currentlyLoading[caller] = module
-	
+
 	local currentModule = module
 	local depth = 0
-	
-	-- Skip validation if module is already loaded (performance optimization)
+
 	if modules[module] and modules[module].isLoaded then
 		return function() currentlyLoading[caller] = nil end
 	end
-	
+
 	while currentModule do
 		depth = depth + 1
 		currentModule = currentlyLoading[currentModule]
-		
+
 		if currentModule == module then
 			local str = module.Name
 			for _ = 1, depth do
 				currentModule = currentlyLoading[currentModule]
-				str = str .. " → " .. (currentModule.Name or "unknown")
+				str = str .. " -> " .. (currentModule.Name or "?")
 			end
-			error("Hvcorca: Failed to load '" .. module.Name .. "'; Circular dependency detected: " .. str, 2)
+			error("Circular dependency: " .. str, 2)
 		end
 	end
-	
+
 	return function()
-		if currentlyLoading[caller] == module then -- Thread-safe cleanup
+		if currentlyLoading[caller] == module then
 			currentlyLoading[caller] = nil
 		end
 	end
 end
 
--- Optimized module loading
----@param obj LocalScript|ModuleScript
----@param caller? LocalScript|ModuleScript
----@return any
 local function loadModule(obj, caller)
 	local cleanup = caller and validateRequire(obj, caller)
 	local module = modules[obj]
-	
-	if not module then 
+
+	if not module then
 		if cleanup then cleanup() end
-		error("Hvcorca: Module not found: " .. obj.Name, 2)
+		error("Module not found: " .. tostring(obj), 2)
 	end
-	
+
 	if module.isLoaded then
 		if cleanup then cleanup() end
 		return module.value
 	end
-	
+
 	local success, data = pcall(module.fn)
 	if not success then
-		module.isLoaded = true -- Mark as loaded to prevent infinite loops
-		error("Hvcorca: Failed to execute module '" .. obj.Name .. "': " .. tostring(data), 2)
+		module.isLoaded = true
+		if cleanup then cleanup() end
+		error("Failed to load '" .. tostring(obj.Name) .. "': " .. tostring(data), 2)
 	end
-	
+
 	module.value = data
 	module.isLoaded = true
-	
+
 	if cleanup then cleanup() end
 	return data
 end
 
----@param target ModuleScript
----@param this? LocalScript|ModuleScript
----@return any
 local function requireModuleInternal(target, this)
 	if modules[target] and target:IsA("ModuleScript") then
 		return loadModule(target, this)
@@ -106,50 +88,39 @@ local function requireModuleInternal(target, this)
 	end
 end
 
--- Enhanced environment with better security & performance
----@param id string
----@return table<string, any> environment
-local function hEnv(id)
+-- Called by bundle output as newEnv(id)
+local function newEnv(id)
 	local inst = instanceFromId[id]
 	return setmetatable({
-		VERSION = "Hvcorca v2.1",
 		script = inst,
 		require = function(module)
 			return requireModuleInternal(module, instanceFromId[id])
 		end,
-		_setfenv = _setfenv, -- Keep for compatibility
+		_setfenv = setfenv,
 	}, {
 		__index = getfenv(0) or _G,
-		__metatable = "Hvcorca runtime environment (locked)",
+		__metatable = "locked",
 	})
 end
 
--- Optimized instance creation
----@param name string
----@param class string
----@param id string
----@param parentId? string
-local function hInst(name, class, id, parentId)
+-- Called by bundle output as newInstance(name, class, id, parentId)
+local function newInstance(name, class, id, parentId)
 	local inst = Instance.new(class)
 	inst.Name = name
 	inst.Parent = parentId and instanceFromId[parentId]
-	
+
 	instanceFromId[id] = inst
 	idFromInstance[inst] = id
-	
+
 	return inst
 end
 
----@param name string
----@param class string
----@param id string
----@param parentId? string
----@param fn function
-local function hMod(name, class, id, parentId, fn)
-	local inst = hInst(name, class, id, parentId)
+-- Called by bundle output as newModule(name, class, id, parentId, fn)
+local function newModule(name, class, id, parentId, fn)
+	local inst = newInstance(name, class, id, parentId)
 	modules[inst] = {
 		fn = function()
-			return _setfenv(fn, hEnv(id))()
+			return setfenv(fn, newEnv(id))()
 		end,
 		value = nil,
 		isLoaded = false,
@@ -157,66 +128,20 @@ local function hMod(name, class, id, parentId, fn)
 	return inst
 end
 
--- Enhanced initialization with error recovery
+-- Called at end of bundle as hInit()
 local function hInit()
 	if not game:IsLoaded() then
 		game.Loaded:Wait()
 	end
-	
-	-- Load all LocalScripts with error recovery
+
 	for obj in pairs(modules) do
 		if obj:IsA("LocalScript") and not obj.Disabled then
 			task.spawn(function()
-				local success, err = pcall(loadModule, obj, nil)
-				if not success then
-					warn("Hvcorca: Failed to load LocalScript '" .. obj.Name .. "': " .. tostring(err))
+				local ok, err = pcall(loadModule, obj, nil)
+				if not ok then
+					warn("[Hvcorca] Failed to load '" .. tostring(obj.Name) .. "': " .. tostring(err))
 				end
 			end)
 		end
 	end
 end
-
--- Error recovery & debug functions (your HV CORCA feature)
-local ErrorLog = {}
-_G.HVCORCA_DEBUG = true
-
-local function safeError(msg, level)
-	if string.find(msg, "SpeechToText") or string.find(msg, "loadModule") then return end
-	level = level or 2
-	local info = debug.getinfo(level, "S")
-	local fixes = {
-		["circular dependency Orca v1.1.1 resolved"] = true,
-		["attempt to index nil (RoactTS) fixed"] = true,
-		["ModuleScript expected (Lazy loader active)"] = true,
-		["warn(Hvcorca/sd s FIXED)"] = true,
-	}
-	local fixMsg = fixes[msg] and "v2.1 stable" or nil
-	warn("Hvcorca/sd s FIXED s", info.short_src or "?", info.currentline, msg, fixMsg or "v2.1 stable")
-	table.insert(ErrorLog, msg)
-end
-
-_G.error = function(msg, level)
-	task.spawn(safeError, msg, level)
-end
-
-_G.HVCORCASTATUS = function()
-	print("Hvcorca v2.1 Errors:", #ErrorLog)
-end
-
--- Ensure CoreGui exists
-pcall(function()
-	if not game.CoreGui:FindFirstChild("Hvcorca") then
-		local gui = Instance.new("ScreenGui")
-		gui.Name = "Hvcorca"
-		gui.ResetOnSpawn = false
-		gui.IgnoreGuiInset = true
-		gui.Parent = game.CoreGui
-	end
-end)
-
-return {
-	hInit = hInit,
-	hMod = hMod,
-	hInst = hInst,
-	hEnv = hEnv,
-}
