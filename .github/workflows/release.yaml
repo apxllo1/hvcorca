@@ -5,18 +5,15 @@ on:
     branches: [master]
     paths:
       - 'src/**'
+      - 'ci/**'
 jobs:
   bundle-release:
     runs-on: ubuntu-22.04
     permissions:
       contents: write
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - uses: actions/checkout@v4
         with:
-          repository: ${{ github.event.repository.full_name }}
-          ref: "master"
           fetch-depth: 0
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -26,45 +23,31 @@ jobs:
         uses: ok-nick/setup-aftman@v0.4.2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Install Remodel
-        run: |
-          curl -L --fail --retry 3 --retry-delay 2 \
-            https://github.com/rojo-rbx/remodel/releases/download/v0.11.0/remodel-0.11.0-linux-x86_64.zip \
-            -o remodel.zip
-          unzip remodel.zip
-          chmod +x remodel
-          sudo mv remodel /usr/local/bin/remodel
       - name: Install NPM dependencies
         run: npm install
-      - name: Compile roblox-ts
-        run: npm run compile
-      - name: Build model
-        run: npm run build
+      - name: Build
+        run: |
+          npm run compile
+          npm run build
       - name: Bundle modules
         run: |
-          remodel run ci/bundle.lua public/latest.lua v2.0 release minify
-          remodel run ci/bundle.lua public/latest.debug.lua v2.0 release-dbg debug
+          remodel run ci/bundle.lua Havoc.rbxm public/latest.lua minify
+          remodel run ci/bundle.lua Havoc.rbxm public/latest.debug.lua debug
       - name: Commit latest builds
         uses: EndBug/add-and-commit@v9
         with:
           default_author: github_actions
-          add: |
-            public/latest.lua
-            public/latest.debug.lua
-          message: "🔥 Release v$(date +%Y%m%d-%H%M) - Auto-build from src"
-          push: '--force-with-lease'
+          add: "public/latest.lua public/latest.debug.lua Havoc.rbxm"
+          message: "🔥 Release build ${{ github.run_id }} - Auto-build from src"
+          push: '--force'
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         with:
           tag_name: latest
-          name: Latest Release - ${{ github.sha }}
+          name: Latest Release
           body: |
-            **Auto-built** from [${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})
-
-            - Minified: [latest.lua](https://github.com/${{ github.repository }}/raw/master/public/latest.lua)
-            - Debug: [latest.debug.lua](https://github.com/${{ github.repository }}/raw/master/public/latest.debug.lua)
-            - Model: [Havoc.rbxm](https://github.com/${{ github.repository }}/raw/master/Havoc.rbxm)
+            **Auto-built** from commit ${{ github.sha }}
           draft: false
           prerelease: false
           files: |
