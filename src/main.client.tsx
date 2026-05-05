@@ -1,5 +1,6 @@
 import Make from "@rbxts/make";
 import Roact from "@rbxts/roact";
+import { withHookDetection } from "@rbxts/roact-hooked";
 import { StoreProvider } from "@rbxts/roact-rodux-hooked";
 import { Players } from "@rbxts/services";
 import { IS_DEV, LOAD_GUARD } from "constants";
@@ -7,6 +8,8 @@ import { setStore } from "jobs";
 import { toggleDashboard } from "store/actions/dashboard.action";
 import { configureStore } from "store/store";
 import App from "./App";
+
+withHookDetection(Roact);
 
 const store = configureStore();
 setStore(store);
