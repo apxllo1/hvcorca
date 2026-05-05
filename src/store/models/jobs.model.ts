@@ -27,7 +27,6 @@ export interface JobsState {
 	readonly hide: Job;
 	readonly kill: Job;
 	readonly spectate: Job;
-	readonly facebang: JobWithSliders;
 	readonly rejoinServer: Job;
 	readonly switchServer: Job;
 }

@@ -14,7 +14,6 @@ const initialState: JobsState = {
 	hide: { active: false },
 	kill: { active: false },
 	spectate: { active: false },
-	facebang: { active: false, sliders: { angle: 180, distance: 2.5 } },
 	rejoinServer: { active: false },
 	switchServer: { active: false },
 };

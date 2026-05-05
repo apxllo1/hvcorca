@@ -12,7 +12,7 @@ import { RootState } from "store/store"; // Import RootState to fix 'unknown' er
 import { px, scale } from "utils/udim2";
 import ShortcutItem, { ENTRY_HEIGHT, PADDING } from "./ShortcutItem";
 
-const ENTRY_COUNT = 7;
+const ENTRY_COUNT = 6;
 
 function Shortcuts() {
 	const store = useAppStore();
@@ -112,18 +112,6 @@ function Shortcuts() {
 						action="setJumpHeight"
 						description="Set jump height"
 						index={5}
-					/>
-					<ShortcutItem
-						onActivate={() => {
-							const state = store.getState() as RootState;
-							const job = state.jobs.facebang as Job;
-							dispatch(setJobActive("facebang", !job.active));
-						}}
-						onSelect={setSelectedItem}
-						selectedItem={selectedItem}
-						action="setFacebang"
-						description="Toggle Facebang"
-						index={6}
 					/>
 				</scrollingframe>
 			</Canvas>
