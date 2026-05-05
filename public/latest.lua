@@ -17207,7 +17207,7 @@ local function useSelector(selector, isEqual)
 			elseif shouldRender then
 				-- pcall will not block this rerender in the guard clauses,
 				-- so use the returned boolean value to decide
-				forceRender()
+				task.spawn(forceRender)
 			end
 		end
 
@@ -17262,26 +17262,28 @@ return shallowEqual
 newInstance("vendor", "Folder", "Havoc.include.node_modules.roact-rodux-hooked.src.vendor", "Havoc.include.node_modules.roact-rodux-hooked.src")
 newModule("Roact", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.src.vendor.Roact", "Havoc.include.node_modules.roact-rodux-hooked.src.vendor", function () return setfenv(function() local modules = script:FindFirstAncestor("node_modules")
 
-if modules:FindFirstChild("roact") then
-	return require(modules.roact.src)
-elseif modules:FindFirstChild("@rbxts") then
+if modules:FindFirstChild("@rbxts") then
 	return require(modules["@rbxts"].roact.src)
+elseif modules:FindFirstChild("roact") then
+	return require(modules.roact.src)
 elseif script.Parent.Parent.Parent:FindFirstChild("Roact") then
 	return require(script.Parent.Parent.Parent.Roact)
 else
 	error("Could not find Roact or @rbxts/roact in the parent hierarchy.")
-end end, newEnv("Havoc.include.node_modules.roact-rodux-hooked.src.vendor.Roact"))() end)
+end
+ end, newEnv("Havoc.include.node_modules.roact-rodux-hooked.src.vendor.Roact"))() end)
 newModule("RoactHooked", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.src.vendor.RoactHooked", "Havoc.include.node_modules.roact-rodux-hooked.src.vendor", function () return setfenv(function() local modules = script:FindFirstAncestor("node_modules")
 
-if modules:FindFirstChild("roact-hooked") then
-	return require(modules["roact-hooked"].src)
-elseif modules:FindFirstChild("@rbxts") then
+if modules:FindFirstChild("@rbxts") then
 	return require(modules["@rbxts"]["roact-hooked"].src)
+elseif modules:FindFirstChild("roact-hooked") then
+	return require(modules["roact-hooked"].src)
 elseif script.Parent.Parent.Parent:FindFirstChild("roact-hooked") then
 	return require(script.Parent.Parent.Parent["roact-hooked"])
 else
 	error("Could not find @rbxts/roact-hooked in the parent hierarchy.")
-end end, newEnv("Havoc.include.node_modules.roact-rodux-hooked.src.vendor.RoactHooked"))() end)
+end
+ end, newEnv("Havoc.include.node_modules.roact-rodux-hooked.src.vendor.RoactHooked"))() end)
 newInstance("rodux", "Folder", "Havoc.include.node_modules.rodux", "Havoc.include.node_modules")
 newModule("src", "ModuleScript", "Havoc.include.node_modules.rodux.src", "Havoc.include.node_modules.rodux", function () return setfenv(function() local Store = require(script.Store)
 local createReducer = require(script.createReducer)
