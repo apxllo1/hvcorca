@@ -1,6 +1,6 @@
 import Roact from "@rbxts/roact";
 import { useCallback, useState } from "@rbxts/roact-hooked"; // Removed 'hooked'
-import { useSelector, useDispatch } from "hooks/common/rodux-hooks";
+import { useAppSelector, useAppDispatch } from "hooks/common/rodux-hooks";
 import { setJobActive, setJobSlider } from "store/actions/jobs.action";
 import { JobWithSliders } from "store/models/jobs.model";
 import { RunService, UserInputService, Players } from "@rbxts/services";
@@ -88,8 +88,8 @@ function Slider({ label, displayValue, percent, onUpdate }: SliderProps) {
 }
 
 function FacebangModal({ isVisible, onClose }: FacebangProps) {
-	const job = useSelector((state) => state.jobs.facebang) as JobWithSliders | undefined;
-	const dispatch = useDispatch();
+	const job = useAppSelector((state) => state.jobs.facebang) as JobWithSliders | undefined;
+	const dispatch = useAppDispatch();
 	const sliders = job?.sliders as { angle: number; distance: number; speed: number } | undefined;
 	const [keybind, setKeybind] = useState("Z");
 	const [listeningForKey, setListeningForKey] = useState(false);
