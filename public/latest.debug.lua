@@ -360,50 +360,6 @@ return {\
 }\
 ", '@'.."Havoc.components.Acrylic.Acrylic")) setfenv(fn, newEnv("Havoc.components.Acrylic.Acrylic")) return fn() end)
 
-newModule("Acrylic.story", "ModuleScript", "Havoc.components.Acrylic.Acrylic.story", "Havoc.components.Acrylic", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
-local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
-local StoreProvider = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-rodux-hooked\").src).StoreProvider\
-local Acrylic = TS.import(script, script.Parent, \"Acrylic\").default\
-local DashboardPage = TS.import(script, script.Parent.Parent.Parent, \"store\", \"models\", \"dashboard.model\").DashboardPage\
-local configureStore = TS.import(script, script.Parent.Parent.Parent, \"store\", \"store\").configureStore\
-local hex = TS.import(script, script.Parent.Parent.Parent, \"utils\", \"color3\").hex\
-local _udim2 = TS.import(script, script.Parent.Parent.Parent, \"utils\", \"udim2\")\
-local px = _udim2.px\
-local scale = _udim2.scale\
-return function(target)\
-\9local handle = Roact.mount(Roact.createElement(StoreProvider, {\
-\9\9store = configureStore({\
-\9\9\9dashboard = {\
-\9\9\9\9isOpen = true,\
-\9\9\9\9page = DashboardPage.Apps,\
-\9\9\9\9hint = nil,\
-\9\9\9\9apps = {},\
-\9\9\9},\
-\9\9}),\
-\9}, {\
-\9\9Roact.createElement(\"Frame\", {\
-\9\9\9AnchorPoint = Vector2.new(0.5, 0.5),\
-\9\9\9Position = scale(0.3, 0.7),\
-\9\9\9Size = px(250, 350),\
-\9\9\9BackgroundColor3 = hex(\"#000000\"),\
-\9\9\9BackgroundTransparency = 0.5,\
-\9\9\9BorderSizePixel = 0,\
-\9\9}, {\
-\9\9\9Roact.createElement(\"UICorner\", {\
-\9\9\9\9CornerRadius = UDim.new(0, 64),\
-\9\9\9}),\
-\9\9\9Roact.createElement(Acrylic, {\
-\9\9\9\9radius = 52,\
-\9\9\9}),\
-\9\9}),\
-\9}), target, \"Acrylic\")\
-\9return function()\
-\9\9return Roact.unmount(handle)\
-\9end\
-end\
-", '@'.."Havoc.components.Acrylic.Acrylic.story")) setfenv(fn, newEnv("Havoc.components.Acrylic.Acrylic.story")) return fn() end)
-
 newModule("acrylic-instance", "ModuleScript", "Havoc.components.Acrylic.acrylic-instance", "Havoc.components.Acrylic", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
 local Make = TS.import(script, TS.getModule(script, \"@rbxts\", \"make\"))\
@@ -1355,111 +1311,6 @@ return {\
 \9default = default,\
 }\
 ", '@'.."Havoc.components.ParallaxImage")) setfenv(fn, newEnv("Havoc.components.ParallaxImage")) return fn() end)
-
-newModule("TextBoxWithDropdown", "ModuleScript", "Havoc.components.TextBoxWithDropdown", "Havoc.components", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
-local TS = require(script.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
-local useState = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-hooked\").src).useState\
-local px = TS.import(script, script.Parent.Parent, \"utils\", \"udim2\").px\
-local function TextBoxWithDropdown(_param)\
-\9local text = _param.text\
-\9local setText = _param.setText\
-\9local options = _param.options\
-\9local onSelected = _param.onSelected\
-\9local focused, setFocused = useState(false)\
-\9local dropdownVisible = focused and (if options then #options else 0) > 0\
-\9local handleTextChange = function(rbx)\
-\9\9setText(rbx.Text)\
-\9end\
-\9local handleSelect = function(option)\
-\9\9setText(option.label)\
-\9\9onSelected(option)\
-\9end\
-\9local _condition = dropdownVisible\
-\9if _condition then\
-\9\9local _arg0 = function(opt, i)\
-\9\9\9return Roact.createFragment({\
-\9\9\9\9[\"Option\" .. tostring(i)] = Roact.createElement(\"TextButton\", {\
-\9\9\9\9\9Text = opt.label,\
-\9\9\9\9\9Size = px(300, 30),\
-\9\9\9\9\9BackgroundColor3 = Color3.new(0.15, 0.15, 0.15),\
-\9\9\9\9\9TextColor3 = Color3.new(1, 1, 1),\
-\9\9\9\9\9Font = Enum.Font.Gotham,\
-\9\9\9\9\9TextSize = 14,\
-\9\9\9\9\9AutoButtonColor = false,\
-\9\9\9\9\9[Roact.Event.Activated] = function()\
-\9\9\9\9\9\9handleSelect(opt)\
-\9\9\9\9\9end,\
-\9\9\9\9}),\
-\9\9\9})\
-\9\9end\
-\9\9--▼ ReadonlyArray.map ▼\
-\9\9local _newValue = table.create(#options)\
-\9\9for _k, _v in ipairs(options) do\
-\9\9\9_newValue[_k] = _arg0(_v, _k - 1, options)\
-\9\9end\
-\9\9--▲ ReadonlyArray.map ▲\
-\9\9local _attributes = {\
-\9\9\9Size = px(300, 120),\
-\9\9\9BackgroundColor3 = Color3.new(0.1, 0.1, 0.1),\
-\9\9\9Position = px(0, 30),\
-\9\9\9ScrollBarThickness = 2,\
-\9\9\9AutomaticCanvasSize = Enum.AutomaticSize.Y,\
-\9\9}\
-\9\9local _children = {\
-\9\9\9Roact.createElement(\"UIListLayout\", {\
-\9\9\9\9Padding = UDim.new(0, 2),\
-\9\9\9\9SortOrder = Enum.SortOrder.LayoutOrder,\
-\9\9\9}),\
-\9\9}\
-\9\9local _length = #_children\
-\9\9for _k, _v in ipairs(_newValue) do\
-\9\9\9_children[_length + _k] = _v\
-\9\9end\
-\9\9_condition = (Roact.createFragment({\
-\9\9\9Dropdown = Roact.createElement(\"ScrollingFrame\", _attributes, _children),\
-\9\9}))\
-\9end\
-\9local _attributes = {\
-\9\9Size = px(300, 60),\
-\9\9BackgroundTransparency = 1,\
-\9}\
-\9local _children = {\
-\9\9TextInput = Roact.createElement(\"TextBox\", {\
-\9\9\9Text = text,\
-\9\9\9BackgroundColor3 = Color3.new(0.2, 0.2, 0.2),\
-\9\9\9TextColor3 = Color3.new(1, 1, 1),\
-\9\9\9Font = Enum.Font.Gotham,\
-\9\9\9TextSize = 14,\
-\9\9\9Position = px(0, 0),\
-\9\9\9Size = px(300, 30),\
-\9\9\9[Roact.Change.Text] = handleTextChange,\
-\9\9\9[Roact.Event.Focused] = function()\
-\9\9\9\9return setFocused(true)\
-\9\9\9end,\
-\9\9\9[Roact.Event.FocusLost] = function()\
-\9\9\9\9return setFocused(false)\
-\9\9\9end,\
-\9\9}, {\
-\9\9\9Roact.createElement(\"UIPadding\", {\
-\9\9\9\9PaddingLeft = UDim.new(0, 8),\
-\9\9\9\9PaddingRight = UDim.new(0, 8),\
-\9\9\9}),\
-\9\9}),\
-\9}\
-\9local _length = #_children\
-\9if _condition then\
-\9\9_children[_length + 1] = _condition\
-\9end\
-\9return Roact.createFragment({\
-\9\9TextBoxWithDropdown = Roact.createElement(\"Frame\", _attributes, _children),\
-\9})\
-end\
-local default = TextBoxWithDropdown\
-return {\
-\9default = default,\
-}\
-", '@'.."Havoc.components.TextBoxWithDropdown")) setfenv(fn, newEnv("Havoc.components.TextBoxWithDropdown")) return fn() end)
 
 newModule("constants", "ModuleScript", "Havoc.constants", "Havoc", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
 local IS_DEV = getgenv == nil\
@@ -6705,32 +6556,6 @@ end\
 return Dashboard\
 ", '@'.."Havoc.views.Dashboard.Dashboard")) setfenv(fn, newEnv("Havoc.views.Dashboard.Dashboard")) return fn() end)
 
-newModule("Dashboard.story", "ModuleScript", "Havoc.views.Dashboard.Dashboard.story", "Havoc.views.Dashboard", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
-local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
-local StoreProvider = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-rodux-hooked\").src).StoreProvider\
-local DashboardPage = TS.import(script, script.Parent.Parent.Parent, \"store\", \"models\", \"dashboard.model\").DashboardPage\
-local configureStore = TS.import(script, script.Parent.Parent.Parent, \"store\", \"store\").configureStore\
-local Dashboard = TS.import(script, script.Parent, \"Dashboard\")\
-return function(target)\
-\9local handle = Roact.mount(Roact.createElement(StoreProvider, {\
-\9\9store = configureStore({\
-\9\9\9dashboard = {\
-\9\9\9\9isOpen = true,\
-\9\9\9\9page = DashboardPage.Home,\
-\9\9\9\9hint = nil,\
-\9\9\9\9apps = {},\
-\9\9\9},\
-\9\9}),\
-\9}, {\
-\9\9Roact.createElement(Dashboard),\
-\9}), target, \"Dashboard\")\
-\9return function()\
-\9\9return Roact.unmount(handle)\
-\9end\
-end\
-", '@'.."Havoc.views.Dashboard.Dashboard.story")) setfenv(fn, newEnv("Havoc.views.Dashboard.Dashboard.story")) return fn() end)
-
 newModule("Hint", "ModuleScript", "Havoc.views.Hint", "Havoc.views", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
 local TS = require(script.Parent.Parent.include.RuntimeLib)\
 local exports = {}\
@@ -6946,32 +6771,6 @@ return {\
 \9default = default,\
 }\
 ", '@'.."Havoc.views.Navbar.Navbar")) setfenv(fn, newEnv("Havoc.views.Navbar.Navbar")) return fn() end)
-
-newModule("Navbar.story", "ModuleScript", "Havoc.views.Navbar.Navbar.story", "Havoc.views.Navbar", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
-local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
-local StoreProvider = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-rodux-hooked\").src).StoreProvider\
-local DashboardPage = TS.import(script, script.Parent.Parent.Parent, \"store\", \"models\", \"dashboard.model\").DashboardPage\
-local configureStore = TS.import(script, script.Parent.Parent.Parent, \"store\", \"store\").configureStore\
-local Navbar = TS.import(script, script.Parent, \"Navbar\").default\
-return function(target)\
-\9local handle = Roact.mount(Roact.createElement(StoreProvider, {\
-\9\9store = configureStore({\
-\9\9\9dashboard = {\
-\9\9\9\9isOpen = true,\
-\9\9\9\9page = DashboardPage.Home,\
-\9\9\9\9hint = nil,\
-\9\9\9\9apps = {},\
-\9\9\9},\
-\9\9}),\
-\9}, {\
-\9\9Roact.createElement(Navbar),\
-\9}), target, \"Navbar\")\
-\9return function()\
-\9\9return Roact.unmount(handle)\
-\9end\
-end\
-", '@'.."Havoc.views.Navbar.Navbar.story")) setfenv(fn, newEnv("Havoc.views.Navbar.Navbar.story")) return fn() end)
 
 newModule("NavbarTab", "ModuleScript", "Havoc.views.Navbar.NavbarTab", "Havoc.views.Navbar", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
@@ -9005,78 +8804,299 @@ local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)\
 local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
 local _roact_hooked = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-hooked\").src)\
 local useCallback = _roact_hooked.useCallback\
+local useEffect = _roact_hooked.useEffect\
 local useState = _roact_hooked.useState\
-local TextBoxWithDropdown = TS.import(script, script.Parent.Parent.Parent.Parent, \"components\", \"TextBoxWithDropdown\").default\
-local px = TS.import(script, script.Parent.Parent.Parent.Parent, \"utils\", \"udim2\").px\
+local HttpService = TS.import(script, TS.getModule(script, \"@rbxts\", \"services\")).HttpService\
+local http = TS.import(script, script.Parent.Parent.Parent.Parent, \"utils\", \"http\")\
+local INDEX_GIST_ID = \"REPLACE_WITH_YOUR_GIST_ID\"\
+local GIST_API_URL = function(id)\
+\9return \"https://api.github.com/gists/\" .. id\
+end\
+local GREEN = Color3.fromRGB(80, 220, 140)\
+local BG_INPUT = Color3.fromRGB(20, 20, 20)\
+local BG_ITEM = Color3.fromRGB(25, 25, 25)\
+local BG_ITEM_HOVER = Color3.fromRGB(35, 35, 35)\
+local TEXT_PRIMARY = Color3.fromRGB(255, 255, 255)\
+local TEXT_SECONDARY = Color3.fromRGB(160, 160, 160)\
+local TEXT_DIM = Color3.fromRGB(100, 100, 100)\
+local CommandItem\
 local function GistLoader()\
-\9local theme = {\
-\9\9button = {\
-\9\9\9background = Color3.new(0.15, 0.15, 0.15),\
-\9\9\9foreground = Color3.new(1, 1, 1),\
-\9\9},\
-\9}\
-\9local gistUrl, setGistUrl = useState(\"\")\
-\9local gistList, setGistList = useState({})\
-\9local selectedGist, setSelectedGist = useState(nil)\
-\9local fetchGists = useCallback(function(query)\
-\9\9local queryLen = #query\
-\9\9if queryLen > 0 then\
-\9\9\9local fakeGists = { {\
-\9\9\9\9id = \"123\",\
-\9\9\9\9url = \"https://api.github.com/gists/123\",\
-\9\9\9\9description = \"Misc utilities\",\
-\9\9\9\9label = \"Misc utilities\",\
-\9\9\9\9value = \"https://api.github.com/gists/123\",\
-\9\9\9}, {\
-\9\9\9\9id = \"456\",\
-\9\9\9\9url = \"https://api.github.com/gists/456\",\
-\9\9\9\9description = \"UI tweaks\",\
-\9\9\9\9label = \"UI tweaks\",\
-\9\9\9\9value = \"https://api.github.com/gists/456\",\
-\9\9\9} }\
-\9\9\9setGistList(fakeGists)\
-\9\9else\
-\9\9\9setGistList({})\
-\9\9end\
+\9local commands, setCommands = useState({})\
+\9local filtered, setFiltered = useState({})\
+\9local searchText, setSearchText = useState(\"\")\
+\9local selected, setSelected = useState(nil)\
+\9local status, setStatus = useState(\"Loading commands...\")\
+\9local isRunning, setIsRunning = useState(false)\
+\9useEffect(function()\
+\9\9task.spawn(function()\
+\9\9\9TS.try(function()\
+\9\9\9\9local response = http.get(GIST_API_URL(INDEX_GIST_ID))\
+\9\9\9\9local _arg0 = function(body)\
+\9\9\9\9\9local gistData = HttpService:JSONDecode(body)\
+\9\9\9\9\9local content = \"\"\
+\9\9\9\9\9for _, file in pairs(gistData.files) do\
+\9\9\9\9\9\9content = file.content\
+\9\9\9\9\9\9break\
+\9\9\9\9\9end\
+\9\9\9\9\9if content == \"\" then\
+\9\9\9\9\9\9setStatus(\"Index gist is empty\")\
+\9\9\9\9\9\9return nil\
+\9\9\9\9\9end\
+\9\9\9\9\9local entries = HttpService:JSONDecode(content)\
+\9\9\9\9\9setCommands(entries)\
+\9\9\9\9\9setFiltered(entries)\
+\9\9\9\9\9setStatus(tostring(#entries) .. \" commands loaded\")\
+\9\9\9\9end\
+\9\9\9\9response:andThen(_arg0):catch(function(err)\
+\9\9\9\9\9setStatus(\"Failed to load: \" .. tostring(err))\
+\9\9\9\9end)\
+\9\9\9end, function(err)\
+\9\9\9\9setStatus(\"Failed to load: \" .. tostring(err))\
+\9\9\9end)\
+\9\9end)\
 \9end, {})\
-\9local updateGistList = useCallback(function(text)\
-\9\9setGistUrl(text)\
-\9\9fetchGists(text)\
-\9end, { fetchGists })\
-\9local runGist = useCallback(function()\
-\9\9if not selectedGist then\
+\9local handleSearch = useCallback(function(rbx)\
+\9\9local query = string.lower(rbx.Text)\
+\9\9setSearchText(rbx.Text)\
+\9\9if query == \"\" then\
+\9\9\9setFiltered(commands)\
+\9\9else\
+\9\9\9local _arg0 = function(cmd)\
+\9\9\9\9return (string.find(string.lower(cmd.name), query)) ~= nil or (string.find(string.lower(cmd.description), query)) ~= nil\
+\9\9\9end\
+\9\9\9--▼ ReadonlyArray.filter ▼\
+\9\9\9local _newValue = {}\
+\9\9\9local _length = 0\
+\9\9\9for _k, _v in ipairs(commands) do\
+\9\9\9\9if _arg0(_v, _k - 1, commands) == true then\
+\9\9\9\9\9_length += 1\
+\9\9\9\9\9_newValue[_length] = _v\
+\9\9\9\9end\
+\9\9\9end\
+\9\9\9--▲ ReadonlyArray.filter ▲\
+\9\9\9setFiltered(_newValue)\
+\9\9end\
+\9end, { commands })\
+\9local handleRun = useCallback(function()\
+\9\9if not selected or isRunning then\
 \9\9\9return nil\
 \9\9end\
-\9\9print(\"Would run:\", selectedGist.url)\
-\9end, { selectedGist })\
-\9local onSelected = useCallback(function(gist)\
-\9\9setSelectedGist(gist)\
-\9end, {})\
-\9return Roact.createFragment({\
-\9\9GistLoader = Roact.createElement(\"Frame\", {\
-\9\9\9Size = px(400, 300),\
-\9\9\9BackgroundTransparency = 1,\
+\9\9setIsRunning(true)\
+\9\9setStatus(\"Running \" .. (selected.name .. \"...\"))\
+\9\9task.spawn(function()\
+\9\9\9TS.try(function()\
+\9\9\9\9local content = http.get(GIST_API_URL(selected.gistId))\
+\9\9\9\9local _arg0 = function(body)\
+\9\9\9\9\9local gistData = HttpService:JSONDecode(body)\
+\9\9\9\9\9local luaCode = \"\"\
+\9\9\9\9\9for _, file in pairs(gistData.files) do\
+\9\9\9\9\9\9luaCode = file.content\
+\9\9\9\9\9\9break\
+\9\9\9\9\9end\
+\9\9\9\9\9if luaCode == \"\" then\
+\9\9\9\9\9\9setStatus(\"Gist file is empty\")\
+\9\9\9\9\9\9setIsRunning(false)\
+\9\9\9\9\9\9return nil\
+\9\9\9\9\9end\
+\9\9\9\9\9local _binding = loadstring(luaCode, \"@\" .. selected.name)\
+\9\9\9\9\9local fn = _binding[1]\
+\9\9\9\9\9local err = _binding[2]\
+\9\9\9\9\9local _arg1 = \"loadstring failed: \" .. err\
+\9\9\9\9\9assert(fn, _arg1)\
+\9\9\9\9\9task.defer(fn)\
+\9\9\9\9\9setStatus(\"Ran \" .. selected.name)\
+\9\9\9\9\9setIsRunning(false)\
+\9\9\9\9end\
+\9\9\9\9content:andThen(_arg0):catch(function(err)\
+\9\9\9\9\9setStatus(\"Error: \" .. tostring(err))\
+\9\9\9\9\9setIsRunning(false)\
+\9\9\9\9end)\
+\9\9\9end, function(err)\
+\9\9\9\9setStatus(\"Error: \" .. tostring(err))\
+\9\9\9\9setIsRunning(false)\
+\9\9\9end)\
+\9\9end)\
+\9end, { selected, isRunning })\
+\9local _attributes = {\
+\9\9Size = UDim2.new(1, 0, 0, 400),\
+\9\9BackgroundTransparency = 1,\
+\9}\
+\9local _children = {\
+\9\9Roact.createElement(\"UIListLayout\", {\
+\9\9\9Padding = UDim.new(0, 8),\
+\9\9\9SortOrder = Enum.SortOrder.LayoutOrder,\
+\9\9}),\
+\9\9SearchBar = Roact.createElement(\"Frame\", {\
+\9\9\9Size = UDim2.new(1, 0, 0, 36),\
+\9\9\9BackgroundColor3 = BG_INPUT,\
+\9\9\9LayoutOrder = 0,\
 \9\9}, {\
-\9\9\9RunButton = Roact.createElement(\"TextButton\", {\
-\9\9\9\9Text = \"Run Gist\",\
-\9\9\9\9Size = px(100, 40),\
-\9\9\9\9BackgroundColor3 = theme.button.background,\
-\9\9\9\9TextColor3 = theme.button.foreground,\
-\9\9\9\9Font = Enum.Font.GothamBold,\
-\9\9\9\9AutoButtonColor = false,\
-\9\9\9\9[Roact.Event.Activated] = runGist,\
-\9\9\9}, {\
-\9\9\9\9Roact.createElement(\"UICorner\", {\
-\9\9\9\9\9CornerRadius = UDim.new(0, 8),\
-\9\9\9\9}),\
+\9\9\9Roact.createElement(\"UICorner\", {\
+\9\9\9\9CornerRadius = UDim.new(0, 8),\
 \9\9\9}),\
-\9\9\9Roact.createElement(TextBoxWithDropdown, {\
-\9\9\9\9text = gistUrl,\
-\9\9\9\9setText = updateGistList,\
-\9\9\9\9options = gistList,\
-\9\9\9\9onSelected = onSelected,\
+\9\9\9Roact.createElement(\"UIStroke\", {\
+\9\9\9\9Color = Color3.fromRGB(40, 40, 40),\
+\9\9\9\9Thickness = 1,\
+\9\9\9}),\
+\9\9\9Input = Roact.createElement(\"TextBox\", {\
+\9\9\9\9Text = searchText,\
+\9\9\9\9PlaceholderText = \"Search commands...\",\
+\9\9\9\9PlaceholderColor3 = TEXT_DIM,\
+\9\9\9\9Size = UDim2.new(1, -16, 1, 0),\
+\9\9\9\9Position = UDim2.new(0, 8, 0, 0),\
+\9\9\9\9BackgroundTransparency = 1,\
+\9\9\9\9TextColor3 = TEXT_PRIMARY,\
+\9\9\9\9Font = Enum.Font.Gotham,\
+\9\9\9\9TextSize = 14,\
+\9\9\9\9TextXAlignment = Enum.TextXAlignment.Left,\
+\9\9\9\9ClearTextOnFocus = false,\
+\9\9\9\9[Roact.Change.Text] = handleSearch,\
 \9\9\9}),\
 \9\9}),\
+\9}\
+\9local _length = #_children\
+\9local _arg0 = function(cmd, i)\
+\9\9return Roact.createFragment({\
+\9\9\9[\"cmd-\" .. tostring(i)] = Roact.createElement(CommandItem, {\
+\9\9\9\9entry = cmd,\
+\9\9\9\9isSelected = selected ~= nil and selected.gistId == cmd.gistId,\
+\9\9\9\9layoutOrder = i,\
+\9\9\9\9onSelect = function()\
+\9\9\9\9\9return setSelected(cmd)\
+\9\9\9\9end,\
+\9\9\9}),\
+\9\9})\
+\9end\
+\9--▼ ReadonlyArray.map ▼\
+\9local _newValue = table.create(#filtered)\
+\9for _k, _v in ipairs(filtered) do\
+\9\9_newValue[_k] = _arg0(_v, _k - 1, filtered)\
+\9end\
+\9--▲ ReadonlyArray.map ▲\
+\9local _attributes_1 = {\
+\9\9Size = UDim2.new(1, 0, 0, 260),\
+\9\9BackgroundTransparency = 1,\
+\9\9ScrollBarThickness = 2,\
+\9\9ScrollBarImageColor3 = TEXT_DIM,\
+\9\9AutomaticCanvasSize = Enum.AutomaticSize.Y,\
+\9\9CanvasSize = UDim2.new(0, 0, 0, 0),\
+\9\9LayoutOrder = 1,\
+\9}\
+\9local _children_1 = {\
+\9\9Roact.createElement(\"UIListLayout\", {\
+\9\9\9Padding = UDim.new(0, 4),\
+\9\9\9SortOrder = Enum.SortOrder.LayoutOrder,\
+\9\9}),\
+\9}\
+\9local _length_1 = #_children_1\
+\9for _k, _v in ipairs(_newValue) do\
+\9\9_children_1[_length_1 + _k] = _v\
+\9end\
+\9_length_1 = #_children_1\
+\9local _child = #filtered == 0 and (Roact.createFragment({\
+\9\9NoResults = Roact.createElement(\"TextLabel\", {\
+\9\9\9Text = if #commands == 0 then status else \"No matching commands\",\
+\9\9\9Size = UDim2.new(1, 0, 0, 40),\
+\9\9\9BackgroundTransparency = 1,\
+\9\9\9TextColor3 = TEXT_DIM,\
+\9\9\9Font = Enum.Font.Gotham,\
+\9\9\9TextSize = 13,\
+\9\9}),\
+\9}))\
+\9if _child then\
+\9\9_children_1[_length_1 + 1] = _child\
+\9end\
+\9_children.CommandList = Roact.createElement(\"ScrollingFrame\", _attributes_1, _children_1)\
+\9_children.Footer = Roact.createElement(\"Frame\", {\
+\9\9Size = UDim2.new(1, 0, 0, 44),\
+\9\9BackgroundTransparency = 1,\
+\9\9LayoutOrder = 2,\
+\9}, {\
+\9\9RunButton = Roact.createElement(\"TextButton\", {\
+\9\9\9Text = if isRunning then \"Running...\" elseif selected then \"Run: \" .. selected.name else \"Select a command\",\
+\9\9\9Size = UDim2.new(1, 0, 0, 40),\
+\9\9\9BackgroundColor3 = if selected and not isRunning then GREEN else Color3.fromRGB(40, 40, 40),\
+\9\9\9TextColor3 = if selected and not isRunning then Color3.fromRGB(10, 10, 10) else TEXT_DIM,\
+\9\9\9Font = Enum.Font.GothamBold,\
+\9\9\9TextSize = 14,\
+\9\9\9AutoButtonColor = false,\
+\9\9\9[Roact.Event.Activated] = handleRun,\
+\9\9}, {\
+\9\9\9Roact.createElement(\"UICorner\", {\
+\9\9\9\9CornerRadius = UDim.new(0, 8),\
+\9\9\9}),\
+\9\9}),\
+\9})\
+\9_children.Status = Roact.createElement(\"TextLabel\", {\
+\9\9Text = status,\
+\9\9Size = UDim2.new(1, 0, 0, 16),\
+\9\9BackgroundTransparency = 1,\
+\9\9TextColor3 = TEXT_DIM,\
+\9\9Font = Enum.Font.Gotham,\
+\9\9TextSize = 11,\
+\9\9TextXAlignment = Enum.TextXAlignment.Left,\
+\9\9LayoutOrder = 3,\
+\9})\
+\9return Roact.createFragment({\
+\9\9GistLoader = Roact.createElement(\"Frame\", _attributes, _children),\
+\9})\
+end\
+function CommandItem(_param)\
+\9local entry = _param.entry\
+\9local isSelected = _param.isSelected\
+\9local layoutOrder = _param.layoutOrder\
+\9local onSelect = _param.onSelect\
+\9local hovered, setHovered = useState(false)\
+\9local _attributes = {\
+\9\9Text = \"\",\
+\9\9Size = UDim2.new(1, 0, 0, 50),\
+\9\9BackgroundColor3 = if isSelected then Color3.fromRGB(30, 50, 35) elseif hovered then BG_ITEM_HOVER else BG_ITEM,\
+\9\9AutoButtonColor = false,\
+\9\9LayoutOrder = layoutOrder,\
+\9\9[Roact.Event.Activated] = onSelect,\
+\9\9[Roact.Event.MouseEnter] = function()\
+\9\9\9return setHovered(true)\
+\9\9end,\
+\9\9[Roact.Event.MouseLeave] = function()\
+\9\9\9return setHovered(false)\
+\9\9end,\
+\9}\
+\9local _children = {\
+\9\9Roact.createElement(\"UICorner\", {\
+\9\9\9CornerRadius = UDim.new(0, 8),\
+\9\9}),\
+\9}\
+\9local _length = #_children\
+\9local _child = isSelected and Roact.createElement(\"UIStroke\", {\
+\9\9Color = GREEN,\
+\9\9Thickness = 1,\
+\9})\
+\9if _child then\
+\9\9_children[_length + 1] = _child\
+\9end\
+\9_length = #_children\
+\9_children.Name = Roact.createElement(\"TextLabel\", {\
+\9\9Text = entry.name,\
+\9\9Size = UDim2.new(1, -16, 0, 22),\
+\9\9Position = UDim2.new(0, 12, 0, 6),\
+\9\9BackgroundTransparency = 1,\
+\9\9TextColor3 = TEXT_PRIMARY,\
+\9\9Font = Enum.Font.GothamBold,\
+\9\9TextSize = 14,\
+\9\9TextXAlignment = Enum.TextXAlignment.Left,\
+\9})\
+\9_children.Description = Roact.createElement(\"TextLabel\", {\
+\9\9Text = entry.description,\
+\9\9Size = UDim2.new(1, -16, 0, 16),\
+\9\9Position = UDim2.new(0, 12, 0, 28),\
+\9\9BackgroundTransparency = 1,\
+\9\9TextColor3 = TEXT_SECONDARY,\
+\9\9Font = Enum.Font.Gotham,\
+\9\9TextSize = 11,\
+\9\9TextXAlignment = Enum.TextXAlignment.Left,\
+\9})\
+\9return Roact.createFragment({\
+\9\9[entry.gistId] = Roact.createElement(\"TextButton\", _attributes, _children),\
 \9})\
 end\
 local default = GistLoader\
