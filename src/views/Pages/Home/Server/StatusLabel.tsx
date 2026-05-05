@@ -1,5 +1,5 @@
 import Roact from "@rbxts/roact";
-import { useMemo, useState } from "@rbxts/roact-hooked"; // Removed 'hooked'
+import { useMemo, useState } from "@rbxts/roact-hooked";
 import { TextService } from "@rbxts/services";
 import { useDelayedUpdate } from "hooks/common/use-delayed-update";
 import { useInterval } from "hooks/common/use-interval";
@@ -58,4 +58,4 @@ function StatusLabel({ offset, index, units, getValue }: Props) {
 	);
 }
 
-export default StatusLabel; // Exported directly
+export default StatusLabel;

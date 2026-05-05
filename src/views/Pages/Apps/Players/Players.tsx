@@ -1,5 +1,4 @@
 import Roact from "@rbxts/roact";
-// Removed import { hooked } from "@rbxts/roact-hooked";
 import Card from "components/Card";
 import { useTheme } from "hooks/use-theme";
 import { DashboardPage } from "store/models/dashboard.model";
@@ -22,4 +21,4 @@ function Players() {
 	);
 }
 
-export default Players; // Exported directly
+export default Players;

@@ -1,5 +1,5 @@
 import Roact from "@rbxts/roact";
-import { useEffect, useState } from "@rbxts/roact-hooked"; // Removed 'hooked'
+import { useEffect, useState } from "@rbxts/roact-hooked";
 import { useAppSelector } from "hooks/common/rodux-hooks";
 import { useDelayedUpdate } from "hooks/common/use-delayed-update";
 import { useSpring } from "hooks/common/use-spring";
@@ -39,4 +39,4 @@ function Hint() {
 	);
 }
 
-export default Hint; // Exported directly
+export default Hint;

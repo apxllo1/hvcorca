@@ -1,5 +1,5 @@
 import Roact from "@rbxts/roact";
-import { useMemo } from "@rbxts/roact-hooked"; // Removed 'hooked'
+import { useMemo } from "@rbxts/roact-hooked";
 import Canvas from "components/Canvas";
 import Card from "components/Card";
 import { useTheme } from "hooks/use-theme";
@@ -49,4 +49,4 @@ function Themes() {
 	);
 }
 
-export default Themes; // Exported directly
+export default Themes;

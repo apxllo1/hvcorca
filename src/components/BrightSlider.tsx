@@ -133,5 +133,5 @@ function DragComponent({
 	);
 }
 
-const Drag = DragComponent; // Removed hooked
-export default BrightSlider; // Removed hooked
+const Drag = DragComponent;
+export default BrightSlider;

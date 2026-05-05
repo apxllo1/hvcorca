@@ -64,4 +64,4 @@ function Card({ index, page, theme, size, position, [Roact.Children]: children }
 	);
 }
 
-export default Card; // Exported directly without 'hooked' wrapper
+export default Card;

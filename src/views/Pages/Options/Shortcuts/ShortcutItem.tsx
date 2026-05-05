@@ -1,5 +1,5 @@
 import Roact from "@rbxts/roact";
-import { useEffect, useState } from "@rbxts/roact-hooked"; // Removed 'pure'
+import { useEffect, useState } from "@rbxts/roact-hooked";
 import { UserInputService } from "@rbxts/services";
 import Border from "components/Border";
 import Canvas from "components/Canvas";
@@ -219,4 +219,4 @@ function ShortcutItem({ onActivate, onSelect, selectedItem, action, description,
 	);
 }
 
-export default ShortcutItem; // Exported directly
+export default ShortcutItem;

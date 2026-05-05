@@ -1,5 +1,5 @@
 import Roact from "@rbxts/roact";
-import { useEffect, useMemo, useState } from "@rbxts/roact-hooked"; // Removed 'hooked'
+import { useEffect, useMemo, useState } from "@rbxts/roact-hooked";
 import { TextService } from "@rbxts/services";
 import Acrylic from "components/Acrylic";
 import Border from "components/Border";
@@ -85,4 +85,4 @@ function Clock() {
 	);
 }
 
-export default Clock; // Exported directly
+export default Clock;

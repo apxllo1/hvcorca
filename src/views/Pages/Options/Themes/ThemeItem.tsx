@@ -1,5 +1,5 @@
 import Roact from "@rbxts/roact";
-import { useState } from "@rbxts/roact-hooked"; // Removed 'hooked'
+import { useState } from "@rbxts/roact-hooked";
 import Border from "components/Border";
 import Canvas from "components/Canvas";
 import Fill from "components/Fill";
@@ -129,7 +129,7 @@ function ThemeItem({ theme, index }: Props) {
 	);
 }
 
-export default ThemeItem; // Exported directly
+export default ThemeItem;
 
 interface ThemePreviewProps {
 	color: Roact.Binding<Color3>;

@@ -1,5 +1,5 @@
 import Roact from "@rbxts/roact";
-import { useCallback, useState } from "@rbxts/roact-hooked"; // Removed 'hooked'
+import { useCallback, useState } from "@rbxts/roact-hooked";
 import Card from "components/Card";
 import { useTheme } from "hooks/use-theme";
 import { DashboardPage } from "store/models/dashboard.model";
@@ -87,4 +87,4 @@ function MiscPage() {
 	);
 }
 
-export default MiscPage; // Exported directly
+export default MiscPage;

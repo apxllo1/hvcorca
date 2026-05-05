@@ -1,5 +1,4 @@
 import Roact from "@rbxts/roact";
-// Removed: import { hooked } from "@rbxts/roact-hooked";
 import Border from "components/Border";
 import Canvas from "components/Canvas";
 import Fill from "components/Fill";
@@ -71,4 +70,4 @@ function BrightButton({
 	);
 }
 
-export default BrightButton; // Exported directly
+export default BrightButton;

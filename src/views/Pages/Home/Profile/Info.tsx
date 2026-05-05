@@ -1,5 +1,4 @@
 import Roact from "@rbxts/roact";
-// Removed: import { hooked } from "@rbxts/roact-hooked";
 import { Players } from "@rbxts/services";
 import Canvas from "components/Canvas";
 import { useDelayedUpdate } from "hooks/common/use-delayed-update";
@@ -76,4 +75,4 @@ function Info() {
 	);
 }
 
-export default Info; // Exported directly
+export default Info;
