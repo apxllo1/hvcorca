@@ -1,6 +1,6 @@
 import Make from "@rbxts/make";
 import Roact from "@rbxts/roact";
-import { Provider } from "@rbxts/roact-rodux-hooked";
+import { StoreProvider } from "@rbxts/roact-rodux-hooked";
 import { configureStore } from "store/store";
 import { setStore } from "jobs";
 import { toggleDashboard } from "store/actions/dashboard.action";
@@ -16,7 +16,9 @@ async function main(): Promise<void> {
 		const store = configureStore();
 		setStore(store);
 
-		const host = (IS_DEV ? Players.LocalPlayer.WaitForChild("PlayerGui") : game.GetService("CoreGui")) as Instance;
+		const host = (IS_DEV
+			? Players.LocalPlayer.WaitForChild("PlayerGui")
+			: game.GetService("CoreGui")) as Instance;
 
 		const container = Make("Folder", {
 			Name: "HavocMount",
@@ -24,9 +26,9 @@ async function main(): Promise<void> {
 		});
 
 		Roact.mount(
-			<Provider store={store}>
+			<StoreProvider store={store}>
 				<App />
-			</Provider>,
+			</StoreProvider>,
 			container,
 		);
 
