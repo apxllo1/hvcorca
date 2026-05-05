@@ -1,25 +1,32 @@
-import { JobsState, InferJobValue } from "store/models/jobs.model";
+import Rodux from "@rbxts/rodux";
+import { InferJobValue, JobsState } from "store/models/jobs.model";
 
 export type JobsAction =
-	| { type: "jobs/setJobActive"; jobName: keyof JobsState; active: boolean }
-	| { type: "jobs/setJobValue"; jobName: keyof JobsState; value: unknown }
-	| { type: "jobs/setJobSlider"; jobName: keyof JobsState; slider: string; value: number };
+	| Rodux.InferActionFromCreator<typeof setJobActive>
+	| Rodux.InferActionFromCreator<typeof setJobValue>
+	| Rodux.InferActionFromCreator<typeof setJobSlider>;
 
-export const setJobActive = (jobName: keyof JobsState, active: boolean): JobsAction => ({
-	type: "jobs/setJobActive",
-	jobName,
-	active,
-});
+export const setJobActive = Rodux.makeActionCreator(
+	"jobs/setJobActive",
+	(jobName: keyof JobsState, active: boolean) => ({
+		jobName,
+		active,
+	}),
+);
 
-export const setJobValue = (jobName: keyof JobsState, value: unknown): JobsAction => ({
-	type: "jobs/setJobValue",
-	jobName,
-	value,
-});
+export const setJobValue = Rodux.makeActionCreator(
+	"jobs/setJobValue",
+	<K extends keyof JobsState>(jobName: K, value: InferJobValue<JobsState[K]>) => ({
+		jobName,
+		value,
+	}),
+);
 
-export const setJobSlider = (jobName: keyof JobsState, slider: string, value: number): JobsAction => ({
-	type: "jobs/setJobSlider",
-	jobName,
-	slider,
-	value,
-});
+export const setJobSlider = Rodux.makeActionCreator(
+	"jobs/setJobSlider",
+	(jobName: keyof JobsState, slider: string, value: number) => ({
+		jobName,
+		slider,
+		value,
+	}),
+);

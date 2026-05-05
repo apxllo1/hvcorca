@@ -1,5 +1,5 @@
 import Rodux from "@rbxts/rodux";
-import { JobsAction } from "../actions/jobs.action";
+import { JobsAction } from "store/actions/jobs.action";
 import { JobsState, JobWithSliders } from "../models/jobs.model";
 
 const initialState: JobsState = {
@@ -21,21 +21,19 @@ const initialState: JobsState = {
 
 export const jobsReducer = Rodux.createReducer<JobsState, JobsAction>(initialState, {
 	"jobs/setJobActive": (state, action) => {
-		if (!(action.jobName in state)) return state;
 		return {
 			...state,
 			[action.jobName]: {
-				...(state[action.jobName] as object),
+				...state[action.jobName],
 				active: action.active,
 			},
 		};
 	},
 	"jobs/setJobValue": (state, action) => {
-		if (!(action.jobName in state)) return state;
 		return {
 			...state,
 			[action.jobName]: {
-				...(state[action.jobName] as object),
+				...state[action.jobName],
 				value: action.value,
 			},
 		};

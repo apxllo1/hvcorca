@@ -37,33 +37,16 @@ export async function onJobChange<K extends keyof JobsState>(
 
 	return store.changed.connect((newState) => {
 		const job = newState.jobs[jobName];
-
-		// FIX: Use double-casting (as unknown as Record) to satisfy strict overlap checks
-		if (job !== undefined && lastJob !== undefined) {
-			const currentJobObj = job as unknown as Record<string, unknown>;
-			const lastJobObj = lastJob as unknown as Record<string, unknown>;
-
-			if (!shallowEqual(currentJobObj, lastJobObj)) {
-				lastJob = job;
-				task.defer(callback, job, newState);
-			}
+		if (!shallowEqual(job, lastJob)) {
+			lastJob = job;
+			task.defer(callback, job, newState);
 		}
 	});
 }
 
-/**
- * Performs a shallow comparison between two objects.
- */
-function shallowEqual(a: Record<string, unknown>, b: Record<string, unknown>) {
-	if (a === b) return true;
-
-	for (const [key, value] of pairs(a)) {
-		if (value !== b[key as string]) {
-			return false;
-		}
-	}
-	for (const [key, value] of pairs(b)) {
-		if (value !== a[key as string]) {
+function shallowEqual(a: object, b: object) {
+	for (const [key] of pairs(a)) {
+		if (a[key as never] !== b[key as never]) {
 			return false;
 		}
 	}

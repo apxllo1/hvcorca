@@ -11,18 +11,14 @@ import Misc from "./Misc/Misc";
 
 function Pages() {
 	const currentPage = useCurrentPage();
-
-	// This helps prevent lag when switching to the heavy Scripts list
 	const isScriptsVisible = useDelayedUpdate(currentPage === DashboardPage.Scripts, 2000, (isVisible) => isVisible);
 
 	return (
 		<>
-			{currentPage === DashboardPage.Home && <Home Key="home" />}
-			{currentPage === DashboardPage.Apps && <Apps Key="apps" />}
+			<Home Key="home" />
+			<Apps Key="apps" />
 			{isScriptsVisible && <Scripts Key="scripts" />}
-			{currentPage === DashboardPage.Options && <Options Key="options" />}
-
-			{/* Added the Misc Page routing here */}
+			<Options Key="options" />
 			{currentPage === DashboardPage.Misc && <Misc Key="misc" />}
 		</>
 	);
