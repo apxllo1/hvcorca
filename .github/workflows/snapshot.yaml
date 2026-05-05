@@ -49,8 +49,8 @@ jobs:
           npm run build
       - name: Bundle modules
         run: |
-          remodel run ci/bundle.lua Havoc.rbxm public/latest.lua ${{ steps.date.outputs.date }} minify
-          remodel run ci/bundle.lua Havoc.rbxm public/latest.debug.lua ${{ steps.date.outputs.date }}-dbg debug
+          remodel run ci/bundle.lua public/latest.lua ${{ steps.date.outputs.date }} minify
+          remodel run ci/bundle.lua public/latest.debug.lua ${{ steps.date.outputs.date }}-dbg debug
       - name: Commit and Force Sync
         run: |
           git config user.name "github-actions[bot]"

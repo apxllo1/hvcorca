@@ -6,7 +6,7 @@ import { BASE_PADDING, BASE_WINDOW_HEIGHT } from "views/Pages/Scripts/constants"
 import Content from "views/Pages/Scripts/Content";
 import ScriptCard from "views/Pages/Scripts/ScriptCard";
 
-declare function loadstring(chunk: string, chunkname?: string): [(...args: any[]) => any, string];
+declare function loadstring(chunk: string, chunkname?: string): [(...args: unknown[]) => unknown, string];
 
 async function runScriptFromUrl(url: string, src: string): Promise<string> {
 	try {
