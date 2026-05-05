@@ -1,5 +1,4 @@
 import Roact from "@rbxts/roact";
-// Removed: import { hooked } from "@rbxts/roact-hooked";
 import Acrylic from "components/Acrylic";
 import Border from "components/Border";
 import Canvas from "components/Canvas";
@@ -84,7 +83,7 @@ function Navbar() {
 	);
 }
 
-export default Navbar; // Exported directly
+export default Navbar;
 
 function Underglow(props: {
 	sequenceColor: Roact.Binding<Color3>;

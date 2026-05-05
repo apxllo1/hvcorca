@@ -1,5 +1,4 @@
 import Roact from "@rbxts/roact";
-// Removed: import { hooked } from "@rbxts/roact-hooked";
 import Canvas from "components/Canvas";
 import Card from "components/Card";
 import { useTheme } from "hooks/use-theme";
@@ -52,4 +51,4 @@ function Config() {
 	);
 }
 
-export default Config; // Exported directly
+export default Config;

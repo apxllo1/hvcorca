@@ -1,5 +1,4 @@
 import Roact from "@rbxts/roact";
-// Removed: import { hooked } from "@rbxts/roact-hooked";
 import { Players } from "@rbxts/services";
 import Border from "components/Border";
 import Canvas from "components/Canvas";

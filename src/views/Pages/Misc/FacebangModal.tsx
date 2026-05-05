@@ -1,5 +1,5 @@
 import Roact from "@rbxts/roact";
-import { useCallback, useState } from "@rbxts/roact-hooked"; // Removed 'hooked'
+import { useCallback, useState } from "@rbxts/roact-hooked";
 import { useAppSelector, useAppDispatch } from "hooks/common/rodux-hooks";
 import { setJobActive, setJobSlider } from "store/actions/jobs.action";
 import { JobWithSliders } from "store/models/jobs.model";
@@ -281,4 +281,4 @@ function FacebangModal({ isVisible, onClose }: FacebangProps) {
 	);
 }
 
-export default FacebangModal; // Exported directly
+export default FacebangModal;

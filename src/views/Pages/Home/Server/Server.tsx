@@ -1,5 +1,4 @@
 import Roact from "@rbxts/roact";
-// Removed: import { hooked } from "@rbxts/roact-hooked";
 import { Players } from "@rbxts/services";
 import Card from "components/Card";
 import { IS_DEV } from "constants";
@@ -83,4 +82,4 @@ function Server() {
 	);
 }
 
-export default Server; // Exported directly
+export default Server;

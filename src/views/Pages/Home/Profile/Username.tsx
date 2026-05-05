@@ -1,5 +1,4 @@
 import Roact from "@rbxts/roact";
-// Removed: import { hooked } from "@rbxts/roact-hooked";
 import { Players } from "@rbxts/services";
 import Canvas from "components/Canvas";
 import { useTheme } from "hooks/use-theme";
@@ -34,4 +33,4 @@ function Username() {
 	);
 }
 
-export default Username; // Exported directly
+export default Username;

@@ -1,5 +1,4 @@
 import Roact from "@rbxts/roact";
-// Removed: import { hooked } from "@rbxts/roact-hooked";
 import ActionButton from "components/ActionButton";
 import Canvas from "components/Canvas";
 import { useTheme } from "hooks/use-theme";

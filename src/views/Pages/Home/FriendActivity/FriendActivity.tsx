@@ -1,5 +1,5 @@
 import Roact from "@rbxts/roact";
-import { useEffect, useReducer, useState } from "@rbxts/roact-hooked"; // Removed 'hooked'
+import { useEffect, useReducer, useState } from "@rbxts/roact-hooked";
 import Canvas from "components/Canvas";
 import Card from "components/Card";
 import { useInterval } from "hooks/common/use-interval";
@@ -65,4 +65,4 @@ function FriendActivity() {
 	);
 }
 
-export default FriendActivity; // Exported directly
+export default FriendActivity;

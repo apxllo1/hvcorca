@@ -1,5 +1,5 @@
 import Roact from "@rbxts/roact";
-import { useBinding, useState } from "@rbxts/roact-hooked"; // Removed 'hooked'
+import { useBinding, useState } from "@rbxts/roact-hooked";
 import BrightButton from "components/BrightButton";
 import BrightSlider from "components/BrightSlider";
 import Canvas from "components/Canvas";

@@ -1,5 +1,5 @@
 import Roact from "@rbxts/roact";
-import { useState } from "@rbxts/roact-hooked"; // Removed 'hooked'
+import { useState } from "@rbxts/roact-hooked";
 import { useAppDispatch } from "hooks/common/rodux-hooks";
 import { useSpring } from "hooks/common/use-spring";
 import { useIsPageOpen } from "hooks/use-current-page";
@@ -53,4 +53,4 @@ function NavbarTab({ page }: Props) {
 	);
 }
 
-export default NavbarTab; // Exported directly
+export default NavbarTab;

@@ -1,5 +1,5 @@
 import Roact from "@rbxts/roact";
-import { useEffect } from "@rbxts/roact-hooked"; // Removed 'hooked'
+import { useEffect } from "@rbxts/roact-hooked";
 import Border from "components/Border";
 import Canvas from "components/Canvas";
 import Fill from "components/Fill";

@@ -1,5 +1,5 @@
 import Roact from "@rbxts/roact";
-import { useState } from "@rbxts/roact-hooked"; // Removed 'pure'
+import { useState } from "@rbxts/roact-hooked";
 import Border from "components/Border";
 import Canvas from "components/Canvas";
 import Fill from "components/Fill";
@@ -116,4 +116,4 @@ function ConfigItem({ action, description, hint, index }: Props) {
 	);
 }
 
-export default ConfigItem; // Exported directly
+export default ConfigItem;
