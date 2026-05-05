@@ -5,7 +5,7 @@
 --
 -- Author: apxllo
 -- License: MIT
--- Version: "20260505-dbg"
+-- Version: "v2.0"
 -- GitHub: https://github.com/apxllo1/hvcorca
 --]]
 
@@ -108,7 +108,7 @@ end
 ---@return table<string, any> environment
 local function newEnv(id)
 	return setmetatable({
-		VERSION = "20260505-dbg",
+		VERSION = "v2.0",
 		script = instanceFromId[id],
 		require = function(module)
 			return requireModuleInternal(module, instanceFromId[id])
@@ -2054,7 +2054,6 @@ TS.import(script, script, \"players\", \"hide\")\
 TS.import(script, script, \"players\", \"kill\")\
 TS.import(script, script, \"players\", \"spectate\")\
 TS.import(script, script, \"players\", \"teleport\")\
-TS.import(script, script, \"players\", \"facebang\")\
 return exports\
 ", '@'.."Havoc.jobs")) setfenv(fn, newEnv("Havoc.jobs")) return fn() end)
 
@@ -3263,143 +3262,6 @@ return {\
 
 newInstance("players", "Folder", "Havoc.jobs.players", "Havoc.jobs")
 
-newModule("facebang", "ModuleScript", "Havoc.jobs.players.facebang", "Havoc.jobs.players", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
-local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
-local _services = TS.import(script, TS.getModule(script, \"@rbxts\", \"services\"))\
-local RunService = _services.RunService\
-local Players = _services.Players\
-local Workspace = _services.Workspace\
-local onJobChange = TS.import(script, script.Parent.Parent, \"helpers\", \"job-store\").onJobChange\
-local HEIGHT_OFFSET = 0.8\
-local DEPTH_OFFSET = -0.7\
-local DEFAULT_GRAVITY = 192.2\
-local isRunning = false\
-local CF_IDENTITY = CFrame.new()\
-local CF_HEIGHT = CFrame.new(0, HEIGHT_OFFSET, DEPTH_OFFSET)\
-local setPhysicsEnabled = function(char, enabled)\
-\9local hum = char:FindFirstChildOfClass(\"Humanoid\")\
-\9if hum then\
-\9\9hum.PlatformStand = not enabled\
-\9\9hum.AutoRotate = enabled\
-\9end\
-\9Workspace.Gravity = if enabled then DEFAULT_GRAVITY else 0\
-end\
-local ease = function(t)\
-\9return -(math.cos(math.pi * t) - 1) / 2\
-end\
-local speedToDuration = function(speed)\
-\9local clamped = math.clamp(speed, 0.1, 10)\
-\9return 0.5 / clamped\
-end\
-onJobChange(\"facebang\", function(job, state)\
-\9local sliderJob = job\
-\9local _result = sliderJob\
-\9if _result ~= nil then\
-\9\9_result = _result.sliders\
-\9end\
-\9local sliders = _result\
-\9local localPlayer = Players.LocalPlayer\
-\9local localChar = localPlayer.Character\
-\9local _result_1 = sliderJob\
-\9if _result_1 ~= nil then\
-\9\9_result_1 = _result_1.active\
-\9end\
-\9local _condition = not _result_1\
-\9if not _condition then\
-\9\9_condition = not localChar\
-\9end\
-\9if _condition then\
-\9\9isRunning = false\
-\9\9if localChar then\
-\9\9\9setPhysicsEnabled(localChar, true)\
-\9\9end\
-\9\9return nil\
-\9end\
-\9if isRunning then\
-\9\9return nil\
-\9end\
-\9local targetName = state.dashboard.apps.playerSelected\
-\9local targetPlayer = if targetName ~= nil then (Players:FindFirstChild(targetName)) else nil\
-\9if not targetPlayer or targetPlayer == localPlayer then\
-\9\9return nil\
-\9end\
-\9isRunning = true\
-\9task.spawn(function()\
-\9\9local localRoot = localChar:WaitForChild(\"HumanoidRootPart\")\
-\9\9while isRunning do\
-\9\9\9local targetChar = targetPlayer.Character\
-\9\9\9local _result_2 = targetChar\
-\9\9\9if _result_2 ~= nil then\
-\9\9\9\9_result_2 = _result_2:FindFirstChild(\"Head\")\
-\9\9\9end\
-\9\9\9local targetHead = _result_2\
-\9\9\9if not targetHead then\
-\9\9\9\9task.wait(0.1)\
-\9\9\9\9continue\
-\9\9\9end\
-\9\9\9setPhysicsEnabled(localChar, false)\
-\9\9\9local currentJob = (state.jobs).facebang\
-\9\9\9local _result_3 = currentJob\
-\9\9\9if _result_3 ~= nil then\
-\9\9\9\9_result_3 = _result_3.sliders\
-\9\9\9end\
-\9\9\9local currentSliders = _result_3\
-\9\9\9local _result_4 = currentSliders\
-\9\9\9if _result_4 ~= nil then\
-\9\9\9\9_result_4 = _result_4.distance\
-\9\9\9end\
-\9\9\9local _condition_1 = _result_4\
-\9\9\9if _condition_1 == nil then\
-\9\9\9\9_condition_1 = 1.9\
-\9\9\9end\
-\9\9\9local dist = _condition_1\
-\9\9\9local _result_5 = currentSliders\
-\9\9\9if _result_5 ~= nil then\
-\9\9\9\9_result_5 = _result_5.speed\
-\9\9\9end\
-\9\9\9local _condition_2 = _result_5\
-\9\9\9if _condition_2 == nil then\
-\9\9\9\9_condition_2 = 5\
-\9\9\9end\
-\9\9\9local speed = _condition_2\
-\9\9\9local _fn = math\
-\9\9\9local _result_6 = currentSliders\
-\9\9\9if _result_6 ~= nil then\
-\9\9\9\9_result_6 = _result_6.angle\
-\9\9\9end\
-\9\9\9local _condition_3 = _result_6\
-\9\9\9if _condition_3 == nil then\
-\9\9\9\9_condition_3 = 180\
-\9\9\9end\
-\9\9\9local angle = _fn.rad(_condition_3)\
-\9\9\9local duration = speedToDuration(speed)\
-\9\9\9local angleRotation = CFrame.Angles(0, angle, 0)\
-\9\9\9local relativeBase = CF_HEIGHT * angleRotation\
-\9\9\9local _cFrame = CFrame.new(0, 0, -dist)\
-\9\9\9local relativePeak = relativeBase * _cFrame\
-\9\9\9local startTime = tick()\
-\9\9\9while isRunning and tick() - startTime < duration do\
-\9\9\9\9local elapsed = tick() - startTime\
-\9\9\9\9local rawAlpha = elapsed / duration\
-\9\9\9\9local pingPongAlpha = 1 - math.abs(1 - rawAlpha * 2)\
-\9\9\9\9local smoothAlpha = ease(math.clamp(pingPongAlpha, 0, 1))\
-\9\9\9\9if targetHead.Parent and localRoot.Parent then\
-\9\9\9\9\9local targetCF = targetHead.CFrame\
-\9\9\9\9\9local _arg0 = relativeBase:Lerp(relativePeak, smoothAlpha)\
-\9\9\9\9\9localRoot.CFrame = targetCF * _arg0\
-\9\9\9\9end\
-\9\9\9\9RunService.RenderStepped:Wait()\
-\9\9\9end\
-\9\9end\
-\9\9isRunning = false\
-\9\9if localPlayer.Character then\
-\9\9\9setPhysicsEnabled(localPlayer.Character, true)\
-\9\9end\
-\9end)\
-end)\
-return nil\
-", '@'.."Havoc.jobs.players.facebang")) setfenv(fn, newEnv("Havoc.jobs.players.facebang")) return fn() end)
-
 newModule("hide", "ModuleScript", "Havoc.jobs.players.hide", "Havoc.jobs.players", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
 local Players = TS.import(script, TS.getModule(script, \"@rbxts\", \"services\")).Players\
@@ -4228,13 +4090,6 @@ local initialState = {\
 \9},\
 \9spectate = {\
 \9\9active = false,\
-\9},\
-\9facebang = {\
-\9\9active = false,\
-\9\9sliders = {\
-\9\9\9angle = 180,\
-\9\9\9distance = 2.5,\
-\9\9},\
 \9},\
 \9rejoinServer = {\
 \9\9active = false,\
@@ -8492,313 +8347,6 @@ exports.default = TS.import(script, script, \"Misc\").default\
 return exports\
 ", '@'.."Havoc.views.Pages.Misc")) setfenv(fn, newEnv("Havoc.views.Pages.Misc")) return fn() end)
 
-newModule("FacebangModal", "ModuleScript", "Havoc.views.Pages.Misc.FacebangModal", "Havoc.views.Pages.Misc", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
-local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
-local _roact_hooked = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-hooked\").src)\
-local useCallback = _roact_hooked.useCallback\
-local useState = _roact_hooked.useState\
-local _rodux_hooks = TS.import(script, script.Parent.Parent.Parent.Parent, \"hooks\", \"common\", \"rodux-hooks\")\
-local useAppSelector = _rodux_hooks.useAppSelector\
-local useAppDispatch = _rodux_hooks.useAppDispatch\
-local _jobs_action = TS.import(script, script.Parent.Parent.Parent.Parent, \"store\", \"actions\", \"jobs.action\")\
-local setJobActive = _jobs_action.setJobActive\
-local setJobSlider = _jobs_action.setJobSlider\
-local _services = TS.import(script, TS.getModule(script, \"@rbxts\", \"services\"))\
-local RunService = _services.RunService\
-local UserInputService = _services.UserInputService\
-local Players = _services.Players\
-local GREEN = Color3.fromRGB(80, 220, 140)\
-local BG_DARK = Color3.fromRGB(10, 10, 10)\
-local BG_ROW = Color3.fromRGB(20, 20, 20)\
-local BG_TRACK = Color3.fromRGB(15, 15, 15)\
-local function Slider(_param)\
-\9local label = _param.label\
-\9local displayValue = _param.displayValue\
-\9local percent = _param.percent\
-\9local onUpdate = _param.onUpdate\
-\9return Roact.createFragment({\
-\9\9[label] = Roact.createElement(\"Frame\", {\
-\9\9\9Size = UDim2.new(1, 0, 0, 70),\
-\9\9\9BackgroundTransparency = 1,\
-\9\9}, {\
-\9\9\9Label = Roact.createElement(\"TextLabel\", {\
-\9\9\9\9Text = label,\
-\9\9\9\9Size = UDim2.new(0.5, 0, 0, 20),\
-\9\9\9\9BackgroundTransparency = 1,\
-\9\9\9\9TextColor3 = Color3.fromRGB(200, 200, 200),\
-\9\9\9\9Font = Enum.Font.GothamBold,\
-\9\9\9\9TextSize = 13,\
-\9\9\9\9TextXAlignment = Enum.TextXAlignment.Left,\
-\9\9\9}),\
-\9\9\9Value = Roact.createElement(\"TextLabel\", {\
-\9\9\9\9Text = displayValue,\
-\9\9\9\9Size = UDim2.new(0.5, 0, 0, 20),\
-\9\9\9\9Position = UDim2.new(0.5, 0, 0, 0),\
-\9\9\9\9BackgroundTransparency = 1,\
-\9\9\9\9TextColor3 = Color3.fromRGB(160, 160, 160),\
-\9\9\9\9Font = Enum.Font.Gotham,\
-\9\9\9\9TextSize = 12,\
-\9\9\9\9TextXAlignment = Enum.TextXAlignment.Right,\
-\9\9\9}),\
-\9\9\9Track = Roact.createElement(\"TextButton\", {\
-\9\9\9\9Text = \"\",\
-\9\9\9\9Size = UDim2.new(1, 0, 0, 36),\
-\9\9\9\9Position = UDim2.new(0, 0, 0, 26),\
-\9\9\9\9BackgroundColor3 = BG_TRACK,\
-\9\9\9\9AutoButtonColor = false,\
-\9\9\9\9[Roact.Event.MouseButton1Down] = function(rbx)\
-\9\9\9\9\9local mouse = Players.LocalPlayer:GetMouse()\
-\9\9\9\9\9local moveConn = RunService.RenderStepped:Connect(function()\
-\9\9\9\9\9\9local relX = mouse.X - rbx.AbsolutePosition.X\
-\9\9\9\9\9\9onUpdate(math.clamp(relX / rbx.AbsoluteSize.X, 0, 1))\
-\9\9\9\9\9end)\
-\9\9\9\9\9local upConn\
-\9\9\9\9\9upConn = UserInputService.InputEnded:Connect(function(inp)\
-\9\9\9\9\9\9if inp.UserInputType == Enum.UserInputType.MouseButton1 then\
-\9\9\9\9\9\9\9moveConn:Disconnect()\
-\9\9\9\9\9\9\9upConn:Disconnect()\
-\9\9\9\9\9\9end\
-\9\9\9\9\9end)\
-\9\9\9\9end,\
-\9\9\9}, {\
-\9\9\9\9Roact.createElement(\"UICorner\", {\
-\9\9\9\9\9CornerRadius = UDim.new(0, 8),\
-\9\9\9\9}),\
-\9\9\9\9Fill = Roact.createElement(\"Frame\", {\
-\9\9\9\9\9Size = UDim2.new(percent, 0, 1, 0),\
-\9\9\9\9\9BackgroundColor3 = GREEN,\
-\9\9\9\9\9BorderSizePixel = 0,\
-\9\9\9\9}, {\
-\9\9\9\9\9Roact.createElement(\"UICorner\", {\
-\9\9\9\9\9\9CornerRadius = UDim.new(0, 8),\
-\9\9\9\9\9}),\
-\9\9\9\9\9Thumb = Roact.createElement(\"Frame\", {\
-\9\9\9\9\9\9Size = UDim2.new(0, 4, 0, 18),\
-\9\9\9\9\9\9Position = UDim2.new(1, -2, 0.5, -9),\
-\9\9\9\9\9\9BackgroundColor3 = Color3.fromRGB(255, 255, 255),\
-\9\9\9\9\9\9BorderSizePixel = 0,\
-\9\9\9\9\9}, {\
-\9\9\9\9\9\9Roact.createElement(\"UICorner\", {\
-\9\9\9\9\9\9\9CornerRadius = UDim.new(1, 0),\
-\9\9\9\9\9\9}),\
-\9\9\9\9\9}),\
-\9\9\9\9}),\
-\9\9\9}),\
-\9\9}),\
-\9})\
-end\
-local function FacebangModal(_param)\
-\9local isVisible = _param.isVisible\
-\9local onClose = _param.onClose\
-\9local job = useAppSelector(function(state)\
-\9\9return state.jobs.facebang\
-\9end)\
-\9local dispatch = useAppDispatch()\
-\9local _result = job\
-\9if _result ~= nil then\
-\9\9_result = _result.sliders\
-\9end\
-\9local sliders = _result\
-\9local keybind, setKeybind = useState(\"Z\")\
-\9local listeningForKey, setListeningForKey = useState(false)\
-\9local handleToggleActive = useCallback(function()\
-\9\9if job then\
-\9\9\9dispatch(setJobActive(\"facebang\", not job.active))\
-\9\9end\
-\9end, { job })\
-\9local handleSpeedUpdate = useCallback(function(p)\
-\9\9return dispatch(setJobSlider(\"facebang\", \"speed\", p * 10))\
-\9end, {})\
-\9local handleDistanceUpdate = useCallback(function(p)\
-\9\9return dispatch(setJobSlider(\"facebang\", \"distance\", p * 15))\
-\9end, {})\
-\9if not isVisible or (not job or not sliders) then\
-\9\9return Roact.createFragment()\
-\9end\
-\9local _attributes = {\
-\9\9Size = UDim2.new(0, 380, 0, 480),\
-\9\9Position = UDim2.new(0.5, -190, 0.5, -240),\
-\9\9BackgroundColor3 = BG_DARK,\
-\9\9BorderSizePixel = 0,\
-\9\9Active = true,\
-\9\9ZIndex = 11,\
-\9\9[Roact.Event.InputBegan] = function(_, input)\
-\9\9\9if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then\
-\9\9\9end\
-\9\9end,\
-\9}\
-\9local _children = {\
-\9\9Roact.createElement(\"UICorner\", {\
-\9\9\9CornerRadius = UDim.new(0, 14),\
-\9\9}),\
-\9\9Roact.createElement(\"UIStroke\", {\
-\9\9\9Color = Color3.fromRGB(30, 30, 30),\
-\9\9\9Thickness = 1,\
-\9\9}),\
-\9\9Header = Roact.createElement(\"Frame\", {\
-\9\9\9Size = UDim2.new(1, -40, 0, 55),\
-\9\9\9Position = UDim2.new(0, 20, 0, 15),\
-\9\9\9BackgroundTransparency = 1,\
-\9\9}, {\
-\9\9\9Title = Roact.createElement(\"TextLabel\", {\
-\9\9\9\9Text = \"Facebang\",\
-\9\9\9\9Size = UDim2.new(0, 140, 0, 30),\
-\9\9\9\9BackgroundTransparency = 1,\
-\9\9\9\9TextColor3 = Color3.fromRGB(255, 255, 255),\
-\9\9\9\9Font = Enum.Font.GothamBold,\
-\9\9\9\9TextSize = 22,\
-\9\9\9\9TextXAlignment = Enum.TextXAlignment.Left,\
-\9\9\9}),\
-\9\9\9Subtitle = Roact.createElement(\"TextLabel\", {\
-\9\9\9\9Text = if job.active then \"Running\" else \"Press keybind to start\",\
-\9\9\9\9Size = UDim2.new(1, -150, 0, 30),\
-\9\9\9\9Position = UDim2.new(0, 150, 0, 0),\
-\9\9\9\9BackgroundTransparency = 1,\
-\9\9\9\9TextColor3 = Color3.fromRGB(130, 130, 130),\
-\9\9\9\9Font = Enum.Font.Gotham,\
-\9\9\9\9TextSize = 13,\
-\9\9\9\9TextXAlignment = Enum.TextXAlignment.Right,\
-\9\9\9}),\
-\9\9\9FooterNote = Roact.createElement(\"TextLabel\", {\
-\9\9\9\9Text = \"Keybind activates on nearest player\",\
-\9\9\9\9Size = UDim2.new(1, 0, 0, 18),\
-\9\9\9\9Position = UDim2.new(0, 0, 0, 32),\
-\9\9\9\9BackgroundTransparency = 1,\
-\9\9\9\9TextColor3 = Color3.fromRGB(90, 90, 90),\
-\9\9\9\9Font = Enum.Font.Gotham,\
-\9\9\9\9TextSize = 11,\
-\9\9\9\9TextXAlignment = Enum.TextXAlignment.Left,\
-\9\9\9}),\
-\9\9}),\
-\9\9Divider = Roact.createElement(\"Frame\", {\
-\9\9\9Size = UDim2.new(1, -40, 0, 1),\
-\9\9\9Position = UDim2.new(0, 20, 0, 78),\
-\9\9\9BackgroundColor3 = Color3.fromRGB(30, 30, 30),\
-\9\9\9BorderSizePixel = 0,\
-\9\9}),\
-\9\9StartButton = Roact.createElement(\"TextButton\", {\
-\9\9\9Text = if job.active then \"STOP\" else \"START\",\
-\9\9\9Size = UDim2.new(1, -40, 0, 52),\
-\9\9\9Position = UDim2.new(0, 20, 0, 92),\
-\9\9\9BackgroundColor3 = GREEN,\
-\9\9\9Font = Enum.Font.GothamBold,\
-\9\9\9TextColor3 = Color3.fromRGB(10, 10, 10),\
-\9\9\9TextSize = 16,\
-\9\9\9AutoButtonColor = false,\
-\9\9\9[Roact.Event.MouseButton1Click] = handleToggleActive,\
-\9\9}, {\
-\9\9\9Roact.createElement(\"UICorner\", {\
-\9\9\9\9CornerRadius = UDim.new(0, 10),\
-\9\9\9}),\
-\9\9}),\
-\9\9Divider2 = Roact.createElement(\"Frame\", {\
-\9\9\9Size = UDim2.new(1, -40, 0, 1),\
-\9\9\9Position = UDim2.new(0, 20, 0, 158),\
-\9\9\9BackgroundColor3 = Color3.fromRGB(30, 30, 30),\
-\9\9\9BorderSizePixel = 0,\
-\9\9}),\
-\9\9KeybindRow = Roact.createElement(\"Frame\", {\
-\9\9\9Size = UDim2.new(1, -40, 0, 44),\
-\9\9\9Position = UDim2.new(0, 20, 0, 170),\
-\9\9\9BackgroundTransparency = 1,\
-\9\9}, {\
-\9\9\9KeybindLabel = Roact.createElement(\"TextLabel\", {\
-\9\9\9\9Text = \"Keybind\",\
-\9\9\9\9Size = UDim2.new(0.5, 0, 1, 0),\
-\9\9\9\9BackgroundTransparency = 1,\
-\9\9\9\9TextColor3 = Color3.fromRGB(200, 200, 200),\
-\9\9\9\9Font = Enum.Font.GothamBold,\
-\9\9\9\9TextSize = 13,\
-\9\9\9\9TextXAlignment = Enum.TextXAlignment.Left,\
-\9\9\9}),\
-\9\9\9KeybindBox = Roact.createElement(\"TextButton\", {\
-\9\9\9\9Text = if listeningForKey then \"...\" else keybind,\
-\9\9\9\9Size = UDim2.new(0, 90, 0, 34),\
-\9\9\9\9Position = UDim2.new(1, -90, 0.5, -17),\
-\9\9\9\9BackgroundColor3 = BG_ROW,\
-\9\9\9\9TextColor3 = Color3.fromRGB(220, 220, 220),\
-\9\9\9\9Font = Enum.Font.GothamBold,\
-\9\9\9\9TextSize = 14,\
-\9\9\9\9AutoButtonColor = false,\
-\9\9\9\9[Roact.Event.MouseButton1Click] = function()\
-\9\9\9\9\9setListeningForKey(true)\
-\9\9\9\9\9local conn\
-\9\9\9\9\9conn = UserInputService.InputBegan:Connect(function(inp, gp)\
-\9\9\9\9\9\9if not gp and inp.UserInputType == Enum.UserInputType.Keyboard then\
-\9\9\9\9\9\9\9setKeybind(inp.KeyCode.Name or \"Z\")\
-\9\9\9\9\9\9\9setListeningForKey(false)\
-\9\9\9\9\9\9\9conn:Disconnect()\
-\9\9\9\9\9\9end\
-\9\9\9\9\9end)\
-\9\9\9\9end,\
-\9\9\9}, {\
-\9\9\9\9Roact.createElement(\"UICorner\", {\
-\9\9\9\9\9CornerRadius = UDim.new(0, 8),\
-\9\9\9\9}),\
-\9\9\9\9Roact.createElement(\"UIStroke\", {\
-\9\9\9\9\9Color = Color3.fromRGB(40, 40, 40),\
-\9\9\9\9\9Thickness = 1,\
-\9\9\9\9}),\
-\9\9\9}),\
-\9\9}),\
-\9}\
-\9local _length = #_children\
-\9local _attributes_1 = {\
-\9\9Size = UDim2.new(1, -40, 0, 160),\
-\9\9Position = UDim2.new(0, 20, 0, 225),\
-\9\9BackgroundTransparency = 1,\
-\9}\
-\9local _children_1 = {\
-\9\9Roact.createElement(\"UIListLayout\", {\
-\9\9\9Padding = UDim.new(0, 6),\
-\9\9\9SortOrder = Enum.SortOrder.LayoutOrder,\
-\9\9}),\
-\9}\
-\9local _length_1 = #_children_1\
-\9local _attributes_2 = {\
-\9\9label = \"Speed\",\
-\9}\
-\9local _fn = math\
-\9local _condition = sliders.speed\
-\9if _condition == nil then\
-\9\9_condition = 5\
-\9end\
-\9_attributes_2.displayValue = tostring(_fn.round(_condition * 10) / 10) .. \"x\"\
-\9local _condition_1 = sliders.speed\
-\9if _condition_1 == nil then\
-\9\9_condition_1 = 5\
-\9end\
-\9_attributes_2.percent = _condition_1 / 10\
-\9_attributes_2.onUpdate = handleSpeedUpdate\
-\9_children_1.SpeedSlider = Roact.createElement(Slider, _attributes_2)\
-\9_children_1.DistanceSlider = Roact.createElement(Slider, {\
-\9\9label = \"Distance\",\
-\9\9displayValue = tostring(math.round(sliders.distance * 10) / 10) .. \" studs\",\
-\9\9percent = sliders.distance / 15,\
-\9\9onUpdate = handleDistanceUpdate,\
-\9})\
-\9_children.Sliders = Roact.createElement(\"Frame\", _attributes_1, _children_1)\
-\9_children.FooterBottom = Roact.createElement(\"TextLabel\", {\
-\9\9Text = \"Keybind activates on nearest player\",\
-\9\9Size = UDim2.new(1, -40, 0, 20),\
-\9\9Position = UDim2.new(0, 20, 1, -30),\
-\9\9BackgroundTransparency = 1,\
-\9\9TextColor3 = Color3.fromRGB(80, 80, 80),\
-\9\9Font = Enum.Font.Gotham,\
-\9\9TextSize = 11,\
-\9\9TextXAlignment = Enum.TextXAlignment.Left,\
-\9})\
-\9return Roact.createFragment({\
-\9\9FacebangModal = Roact.createElement(\"Frame\", _attributes, _children),\
-\9})\
-end\
-local default = FacebangModal\
-return {\
-\9default = default,\
-}\
-", '@'.."Havoc.views.Pages.Misc.FacebangModal")) setfenv(fn, newEnv("Havoc.views.Pages.Misc.FacebangModal")) return fn() end)
-
 newModule("GistLoader", "ModuleScript", "Havoc.views.Pages.Misc.GistLoader", "Havoc.views.Pages.Misc", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)\
 local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
@@ -9108,33 +8656,20 @@ return {\
 newModule("Misc", "ModuleScript", "Havoc.views.Pages.Misc.Misc", "Havoc.views.Pages.Misc", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)\
 local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
-local _roact_hooked = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-hooked\").src)\
-local useCallback = _roact_hooked.useCallback\
-local useState = _roact_hooked.useState\
 local Card = TS.import(script, script.Parent.Parent.Parent.Parent, \"components\", \"Card\").default\
 local useTheme = TS.import(script, script.Parent.Parent.Parent.Parent, \"hooks\", \"use-theme\").useTheme\
 local DashboardPage = TS.import(script, script.Parent.Parent.Parent.Parent, \"store\", \"models\", \"dashboard.model\").DashboardPage\
 local px = TS.import(script, script.Parent.Parent.Parent.Parent, \"utils\", \"udim2\").px\
-local FacebangModal = TS.import(script, script.Parent, \"FacebangModal\").default\
 local GistLoader = TS.import(script, script.Parent, \"GistLoader\").default\
 local function MiscPage()\
 \9local theme = useTheme(\"apps\").players\
-\9local modalVisible, setModalVisible = useState(false)\
-\9local isHovered, setHovered = useState(false)\
-\9local openModal = useCallback(function()\
-\9\9return setModalVisible(true)\
-\9end, {})\
-\9local closeModal = useCallback(function()\
-\9\9return setModalVisible(false)\
-\9end, {})\
-\9local _attributes = {\
+\9return Roact.createElement(Card, {\
 \9\9index = 2,\
 \9\9page = DashboardPage.Apps,\
 \9\9theme = theme,\
 \9\9size = px(326, 648),\
 \9\9position = UDim2.new(0, 0, 1, 0),\
-\9}\
-\9local _children = {\
+\9}, {\
 \9\9Roact.createElement(\"UIPadding\", {\
 \9\9\9PaddingTop = UDim.new(0, 20),\
 \9\9\9PaddingLeft = UDim.new(0, 20),\
@@ -9153,57 +8688,9 @@ local function MiscPage()\
 \9\9\9\9SortOrder = Enum.SortOrder.LayoutOrder,\
 \9\9\9\9HorizontalAlignment = Enum.HorizontalAlignment.Center,\
 \9\9\9}),\
-\9\9\9FacebangButton = Roact.createElement(\"TextButton\", {\
-\9\9\9\9Text = \"Facebang Settings\",\
-\9\9\9\9Size = UDim2.new(1, 0, 0, 55),\
-\9\9\9\9BackgroundColor3 = if isHovered then theme.button.background:Lerp(Color3.new(1, 1, 1), 0.05) else theme.button.background,\
-\9\9\9\9TextColor3 = theme.button.foreground,\
-\9\9\9\9Font = Enum.Font.GothamBold,\
-\9\9\9\9TextSize = 16,\
-\9\9\9\9AutoButtonColor = false,\
-\9\9\9\9ZIndex = 1,\
-\9\9\9\9[Roact.Event.Activated] = openModal,\
-\9\9\9\9[Roact.Event.MouseEnter] = function()\
-\9\9\9\9\9return setHovered(true)\
-\9\9\9\9end,\
-\9\9\9\9[Roact.Event.MouseLeave] = function()\
-\9\9\9\9\9return setHovered(false)\
-\9\9\9\9end,\
-\9\9\9}, {\
-\9\9\9\9Roact.createElement(\"UICorner\", {\
-\9\9\9\9\9CornerRadius = UDim.new(0, 10),\
-\9\9\9\9}),\
-\9\9\9\9Roact.createElement(\"UIStroke\", {\
-\9\9\9\9\9Thickness = 2,\
-\9\9\9\9\9Color = theme.button.background:Lerp(Color3.new(1, 1, 1), 0.15),\
-\9\9\9\9\9Transparency = if isHovered then 0.2 else 0.6,\
-\9\9\9\9}),\
-\9\9\9}),\
 \9\9\9Roact.createElement(GistLoader),\
 \9\9}),\
-\9}\
-\9local _length = #_children\
-\9local _child = modalVisible and (Roact.createFragment({\
-\9\9ModalOverlay = Roact.createElement(\"TextButton\", {\
-\9\9\9Text = \"\",\
-\9\9\9Size = UDim2.new(1, 40, 1, 40),\
-\9\9\9Position = UDim2.new(0, -20, 0, -20),\
-\9\9\9BackgroundColor3 = Color3.new(0, 0, 0),\
-\9\9\9BackgroundTransparency = 0.4,\
-\9\9\9AutoButtonColor = false,\
-\9\9\9ZIndex = 10,\
-\9\9\9[Roact.Event.Activated] = closeModal,\
-\9\9}, {\
-\9\9\9Roact.createElement(FacebangModal, {\
-\9\9\9\9isVisible = modalVisible,\
-\9\9\9\9onClose = closeModal,\
-\9\9\9}),\
-\9\9}),\
-\9}))\
-\9if _child then\
-\9\9_children[_length + 1] = _child\
-\9end\
-\9return Roact.createElement(Card, _attributes, _children)\
+\9})\
 end\
 local default = MiscPage\
 return {\
@@ -9669,7 +9156,7 @@ local _ShortcutItem = TS.import(script, script.Parent, \"ShortcutItem\")\
 local ShortcutItem = _ShortcutItem.default\
 local ENTRY_HEIGHT = _ShortcutItem.ENTRY_HEIGHT\
 local PADDING = _ShortcutItem.PADDING\
-local ENTRY_COUNT = 7\
+local ENTRY_COUNT = 6\
 local function Shortcuts()\
 \9local store = useAppStore()\
 \9local dispatch = useAppDispatch()\
@@ -9780,18 +9267,6 @@ local function Shortcuts()\
 \9\9\9\9\9action = \"setJumpHeight\",\
 \9\9\9\9\9description = \"Set jump height\",\
 \9\9\9\9\9index = 5,\
-\9\9\9\9}),\
-\9\9\9\9Roact.createElement(ShortcutItem, {\
-\9\9\9\9\9onActivate = function()\
-\9\9\9\9\9\9local state = store:getState()\
-\9\9\9\9\9\9local job = state.jobs.facebang\
-\9\9\9\9\9\9dispatch(setJobActive(\"facebang\", not job.active))\
-\9\9\9\9\9end,\
-\9\9\9\9\9onSelect = setSelectedItem,\
-\9\9\9\9\9selectedItem = selectedItem,\
-\9\9\9\9\9action = \"setFacebang\",\
-\9\9\9\9\9description = \"Toggle Facebang\",\
-\9\9\9\9\9index = 6,\
 \9\9\9\9}),\
 \9\9\9}),\
 \9\9}),\
