@@ -4,6 +4,7 @@ import { Reducer, useEffect, useReducer } from "@rbxts/roact-hooked";
 
 type PromiseState = "pending" | "rejected" | "resolved";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface State<T = any> {
 	result?: T;
 	err?: unknown;

@@ -25,10 +25,7 @@
 		"prettier/prettier": "warn",
 		"roblox-ts/no-namespace-merging": "off",
 
-		// Turn off explicit-any ESLint warnings
-		"@typescript-eslint/no-explicit-any": "off",
-
-		// Turn off roblox-ts truthiness warnings (0, NaN, "" are falsy)
-		"roblox-ts/lua-truthiness": "off"
+		"@typescript-eslint/no-explicit-any": "warn",
+		"roblox-ts/lua-truthiness": "warn"
 	}
 }
