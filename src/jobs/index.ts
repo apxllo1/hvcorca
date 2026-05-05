@@ -14,4 +14,3 @@ import "./players/hide";
 import "./players/kill";
 import "./players/spectate";
 import "./players/teleport";
-import "./players/facebang";
