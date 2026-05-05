@@ -145,4 +145,4 @@ function ScriptCard({
 	);
 }
 
-export default ScriptCard; // Exporting the component directly
+export default ScriptCard;

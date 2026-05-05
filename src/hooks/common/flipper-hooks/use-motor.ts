@@ -1,5 +1,5 @@
 import { GroupMotor, SingleMotor } from "@rbxts/flipper";
-import { useMutable } from "@rbxts/roact-hooked"; // Import directly from package root
+import { useMutable } from "@rbxts/roact-hooked";
 
 // Overload bc it messes up implementation
 function createMotor<T extends number | Array<number> | Record<string, number>>(

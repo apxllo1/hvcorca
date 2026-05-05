@@ -39,4 +39,4 @@ function Avatar() {
 	);
 }
 
-export default Avatar; // Export directly
+export default Avatar;
