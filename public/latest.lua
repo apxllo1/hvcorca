@@ -3923,6 +3923,7 @@ newModule("main", "LocalScript", "Havoc.main", "Havoc", function () return setfe
 local TS = require(script.Parent.include.RuntimeLib)
 local Make = TS.import(script, TS.getModule(script, "@rbxts", "make"))
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
+local withHookDetection = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").src).withHookDetection
 local StoreProvider = TS.import(script, TS.getModule(script, "@rbxts", "roact-rodux-hooked").src).StoreProvider
 local Players = TS.import(script, TS.getModule(script, "@rbxts", "services")).Players
 local _constants = TS.import(script, script.Parent, "constants")
@@ -3932,6 +3933,7 @@ local setStore = TS.import(script, script.Parent, "jobs").setStore
 local toggleDashboard = TS.import(script, script.Parent, "store", "actions", "dashboard.action").toggleDashboard
 local configureStore = TS.import(script, script.Parent, "store", "store").configureStore
 local App = TS.import(script, script.Parent, "App").default
+withHookDetection(Roact)
 local store = configureStore()
 setStore(store)
 local mount = TS.async(function()
