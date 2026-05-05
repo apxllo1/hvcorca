@@ -14,9 +14,6 @@ interface GameServersResponse {
 	data: Array<GameServer>;
 }
 
-/**
- * Hop to a new public server with available player slots.
- */
 async function onServerHop(): Promise<void> {
 	queueExecution();
 
@@ -37,9 +34,6 @@ async function onServerHop(): Promise<void> {
 	}
 }
 
-/**
- * Rejoin the current game (either via public join or direct instance).
- */
 async function onRejoin(): Promise<void> {
 	queueExecution();
 
@@ -50,29 +44,13 @@ async function onRejoin(): Promise<void> {
 	}
 }
 
-/**
- * Safely queue the executor script for the next teleport.
- * Commented out because rbxtsc can't see `syn.queue_on_teleport`.
- */
 function queueExecution(): void {
-	const isRelease = true; // hard‑coded; no VERSION
+	const code =
+		'loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/apxllo1/hvcorca/master/public/latest.lua"))()';
 
-	const code = isRelease
-		? 'loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/richie0866/orca/master/public/latest.lua"))()'
-		: 'loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/richie0866/orca/master/public/snapshot.lua"))()';
-
-	// Commented out executor‑specific code so rbxtsc is happy.
-	// (syn?.queue_on_teleport ?? queue_on_teleport)?.(code);
-
-	// Just a dummy call so TS doesn’t complain.
-	pcall(() => {
-		// No real call here.
-	});
+	(syn?.queue_on_teleport ?? queue_on_teleport)?.(code);
 }
 
-/**
- * Main worker logic that listens to jobs.
- */
 async function main(): Promise<void> {
 	const store = await getStore();
 

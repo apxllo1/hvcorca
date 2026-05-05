@@ -8,7 +8,7 @@ import { toggleDashboard } from "store/actions/dashboard.action";
 import { setJobActive } from "store/actions/jobs.action";
 import { DashboardPage } from "store/models/dashboard.model";
 import { Job } from "store/models/jobs.model";
-import { RootState } from "store/store"; // Import RootState to fix 'unknown' errors
+import { RootState } from "store/store";
 import { px, scale } from "utils/udim2";
 import ShortcutItem, { ENTRY_HEIGHT, PADDING } from "./ShortcutItem";
 

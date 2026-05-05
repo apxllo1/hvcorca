@@ -12,7 +12,6 @@ interface Props {
 	page: DashboardPage;
 }
 
-// With 5 tabs on a 500px navbar, each tab is exactly 100px wide
 const TAB_SIZE = px(100, 56);
 
 function NavbarTab({ page }: Props) {
@@ -28,7 +27,6 @@ function NavbarTab({ page }: Props) {
 			AutoButtonColor={false}
 			Active={!isActive}
 			Size={TAB_SIZE}
-			// MATH FIX: Dividing by 4 handles the 0, 0.25, 0.5, 0.75, 1.0 spacing for 5 buttons
 			Position={scale(PAGE_TO_INDEX[page] / 4, 0)}
 			BackgroundTransparency={1}
 			Event={{

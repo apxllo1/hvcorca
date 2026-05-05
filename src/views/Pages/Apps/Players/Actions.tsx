@@ -50,4 +50,4 @@ function Actions() {
 	);
 }
 
-export default Actions; // Export as a standard component
+export default Actions;

@@ -20,7 +20,6 @@ function Navbar() {
 	const page = useCurrentPage();
 	const isOpen = useAppSelector((state) => state.dashboard.isOpen);
 
-	// Normalizing for 5 tabs: (Index / (Total - 1)) -> Index / 4
 	const alpha = useSpring(PAGE_TO_INDEX[page] / 4, { frequency: 3.9, dampingRatio: 0.76 });
 
 	return (
@@ -71,7 +70,6 @@ function Navbar() {
 
 			{theme.outlined && <Border Key="border" color={theme.foreground} radius={8} transparency={0.8} />}
 
-			{/* Render all 5 tabs defined in DashboardPage */}
 			<NavbarTab page={DashboardPage.Home} />
 			<NavbarTab page={DashboardPage.Apps} />
 			<NavbarTab page={DashboardPage.Scripts} />

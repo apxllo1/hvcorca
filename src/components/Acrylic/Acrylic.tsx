@@ -27,7 +27,7 @@ function Acrylic({ radius, distance }: Props) {
 	return <>{isAcrylicBlurEnabled && <AcrylicBlur radius={radius} distance={distance} />}</>;
 }
 
-export default Acrylic; // Export directly
+export default Acrylic;
 
 function AcrylicBlur({ radius = 0, distance = 0.001 }: Props) {
 	const frameInfo = useMutable({
