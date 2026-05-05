@@ -3587,9 +3587,19 @@ local onRejoin = TS.async(function()
 	end
 end)
 function queueExecution()
-	local isRelease = true
-	local code = if isRelease then 'loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/richie0866/orca/master/public/latest.lua"))()' else 'loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/richie0866/orca/master/public/snapshot.lua"))()'
-	pcall(function() end)
+	local code = 'loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/apxllo1/hvcorca/master/public/latest.lua"))()'
+	local _result = syn
+	if _result ~= nil then
+		_result = _result.queue_on_teleport
+	end
+	local _condition = _result
+	if _condition == nil then
+		_condition = queue_on_teleport
+	end
+	local _result_1 = _condition
+	if _result_1 ~= nil then
+		_result_1(code)
+	end
 end
 local main = TS.async(function()
 	local store = TS.await(getStore())
