@@ -1,124 +1,111 @@
-local PARAMS = {...}
+local PARAMS={...}
 
 local function getFlag(flag)
-	for _, v in ipairs(PARAMS) do
-		if v == flag then
-			return true
-		end
+	for _,v in ipairs(PARAMS)do
+		if v==flag then return true end
 	end
 	return false
 end
 
-local OUTPUT_PATH = assert(PARAMS[1], "No output path specified")
-local VERSION = assert(PARAMS[2], "No version specified")
-local DEBUG_MODE = getFlag("debug")
-local VERBOSE = getFlag("verbose")
-local MINIFY = getFlag("minify")
+local OUTPUT_PATH=assert(PARAMS[1],"No output path specified")
+local VERSION=assert(PARAMS[2],"No version specified")
+local DEBUG_MODE=getFlag("debug")
+local VERBOSE=getFlag("verbose")
+local MINIFY=getFlag("minify")
 
-local ROJO_INPUT = assert(PARAMS[3], "No model input specified")
-local RUNTIME_FILE = "ci/runtime.lua"
-local BUNDLE_TEMP = "ci/bundle.tmp"
+local ROJO_INPUT=assert(PARAMS[3],"No model input specified")
+local RUNTIME_FILE="ci/runtime.lua"
+local BUNDLE_TEMP="ci/bundle.tmp"
 
 local function transformInput(source)
-	source = string.gsub(source, "([%w_]+)%s*([%+%-%*/%%^%.]%.?)=%s*", "%1 = %1 %2")
-	source = string.gsub(source, "(%s+)continue(%s+)", "%1__CONTINUE__()%2")
+	source=string.gsub(source,"([%w_]+)%s*([%+%-%*/%%^%.]%.?)=%s*","%1 = %1 %2")
+	source=string.gsub(source,"(%s+)continue(%s+)","%1__CONTINUE__()%2")
 	return source
 end
 
 local function transformOutput(source)
-	source = string.gsub(source, "%.%.%.:", "(...):")
-	source = string.gsub(source, "__CONTINUE__%(%)", "continue;")
+	source=string.gsub(source,"%.%.%.:","(...):")
+	source=string.gsub(source,"__CONTINUE__%(%)","continue;")
 	return source
 end
 
 local function minify(source)
-	remodel.writeFile(BUNDLE_TEMP, transformInput(source))
+	remodel.writeFile(BUNDLE_TEMP,transformInput(source))
 	os.execute("node ci/minify.js")
-	local output = remodel.readFile(BUNDLE_TEMP)
+	local output=remodel.readFile(BUNDLE_TEMP)
 	os.remove(BUNDLE_TEMP)
 	return transformOutput(output)
 end
 
-local function writeModule(object, output)
-	local id = object:GetFullName()
-	local source = remodel.getRawProperty(object, "Source")
-
-	local path = string.format("%q", id)
-	local parent = object.Parent and string.format("%q", object.Parent:GetFullName()) or "nil"
-	local name = string.format("%q", object.Name)
-	local className = string.format("%q", object.ClassName)
-
+local function writeModule(object,output)
+	local id=object:GetFullName()
+	local source=remodel.getRawProperty(object,"Source")
+	local path=string.format("%q",id)
+	local parent=object.Parent and string.format("%q",object.Parent:GetFullName())or"nil"
+	local name=string.format("%q",object.Name)
+	local className=string.format("%q",object.ClassName)
 	if DEBUG_MODE then
-		local def = table.concat({
-			"newModule(" .. name .. ", " .. className .. ", " .. path .. ", " .. parent .. ", function ()",
-			"local fn = assert(loadstring(" .. string.format("%q", source) .. ", '@'.." .. path .. "))",
-			"setfenv(fn, newEnv(" .. path .. "))",
+		local def=table.concat({
+			"newModule("..name..", "..className..", "..path..", "..parent..", function ()",
+			"local fn = assert(loadstring("..string.format("%q",source)..", '@'.."..path.."))",
+			"setfenv(fn, newEnv("..path.."))",
 			"return fn()",
 			"end)",
-		}, " ")
-		table.insert(output, def)
+		}," ")
+		table.insert(output,def)
 	else
-		local def = table.concat({
-			"newModule(" .. name .. ", " .. className .. ", " .. path .. ", " .. parent .. ", function ()",
+		local def=table.concat({
+			"newModule("..name..", "..className..", "..path..", "..parent..", function ()",
 			"return setfenv(function()",
 			source,
-			"end, newEnv(" .. path .. "))()",
+			"end, newEnv("..path.."))()",
 			"end)",
-		}, " ")
-		table.insert(output, def)
+		}," ")
+		table.insert(output,def)
 	end
 end
 
-local function writeInstance(object, output)
-	local id = object:GetFullName()
-
-	local path = string.format("%q", id)
-	local parent = object.Parent and string.format("%q", object.Parent:GetFullName()) or "nil"
-	local name = string.format("%q", object.Name)
-	local className = string.format("%q", object.ClassName)
-
-	local def = table.concat({
-		"newInstance(" .. name .. ", " .. className .. ", " .. path .. ", " .. parent .. ")",
-	}, "\\n")
-	table.insert(output, def)
+local function writeInstance(object,output)
+	local id=object:GetFullName()
+	local path=string.format("%q",id)
+	local parent=object.Parent and string.format("%q",object.Parent:GetFullName())or"nil"
+	local name=string.format("%q",object.Name)
+	local className=string.format("%q",object.ClassName)
+	local def=table.concat({
+		"newInstance("..name..", "..className..", "..path..", "..parent..")",
+	},"\n")
+	table.insert(output,def)
 end
 
-local function writeInstanceTree(object, output)
-	if object.ClassName == "LocalScript" or object.ClassName == "ModuleScript" then
-		writeModule(object, output)
+local function writeInstanceTree(object,output)
+	if object.ClassName=="LocalScript"or object.ClassName=="ModuleScript"then
+		writeModule(object,output)
 	else
-		writeInstance(object, output)
+		writeInstance(object,output)
 	end
-
-	for _, child in ipairs(object:GetChildren()) do
-		writeInstanceTree(child, output)
+	for _,child in ipairs(object:GetChildren())do
+		writeInstanceTree(child,output)
 	end
 end
 
 local function main()
-	local output = {}
-	local model = remodel.readModelFile(ROJO_INPUT)[1]
-
-	writeInstanceTree(model, output)
-
+	local output={}
+	local model=remodel.readModelFile(ROJO_INPUT)[1]
+	writeInstanceTree(model,output)
 	if MINIFY then
-		output = { minify(table.concat(output, "\\n")) }
+		output={minify(table.concat(output,"\n"))}
 	end
-
-	local runtime = string.gsub(remodel.readFile(RUNTIME_FILE), "__VERSION__", string.format("%q", VERSION))
-	table.insert(output, 1, runtime)
-	table.insert(output, "hInit()")
-
+	local runtime=string.gsub(remodel.readFile(RUNTIME_FILE),"__VERSION__",string.format("%q",VERSION))
+	table.insert(output,1,runtime)
+	table.insert(output,"hInit()")
 	if VERBOSE then
-		table.insert(output, 2, "local START_TIME = os.clock()")
-		table.insert(output, "print(\"[CI " .. VERSION .. "] Orca run in \" .. (os.clock() - START_TIME) * 1000 .. \" ms\")")
+		table.insert(output,2,"local START_TIME = os.clock()")
+		table.insert(output,"print(\"[CI "..VERSION.."] Orca run in \" .. (os.clock() - START_TIME) * 1000 .. \" ms\")")
 	end
-
-	local dir = string.match(OUTPUT_PATH, "^(.*)[/\\\\]") or "."
+	local dir=string.match(OUTPUT_PATH,"^(.*)[/\\\\]")or"."
 	remodel.createDirAll(dir)
-	remodel.writeFile(OUTPUT_PATH, table.concat(output, "\\n\\n"))
-
-	print("[CI " .. VERSION .. "] Bundle written to " .. OUTPUT_PATH)
+	remodel.writeFile(OUTPUT_PATH,table.concat(output,"\n\n"))
+	print("[CI "..VERSION.."] Bundle written to "..OUTPUT_PATH)
 end
 
 main()
