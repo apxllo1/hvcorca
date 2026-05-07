@@ -15,7 +15,7 @@ local DEBUG_MODE = getFlag("debug")
 local VERBOSE = getFlag("verbose")
 local MINIFY = getFlag("minify")
 
-local ROJO_INPUT = "Havoc.rbxm"
+local ROJO_INPUT = assert(PARAMS[3], "No model input specified")  -- ← ONLY CHANGE
 local RUNTIME_FILE = "ci/runtime.lua"
 local BUNDLE_TEMP = "ci/bundle.tmp"
 
@@ -89,7 +89,7 @@ local function writeInstance(object, output)
 
 	local def = table.concat({
 		"newInstance(" .. name .. ", " .. className .. ", " .. path .. ", " .. parent .. ")",
-	}, "\n")
+	}, "\\n")
 	table.insert(output, def)
 end
 
@@ -116,7 +116,7 @@ local function main()
 
 	-- Minify current output
 	if MINIFY then
-		output = { minify(table.concat(output, "\n")) }
+		output = { minify(table.concat(output, "\\n")) }
 	end
 
 	-- Core runtime
@@ -126,13 +126,13 @@ local function main()
 
 	if VERBOSE then
 		table.insert(output, 2, "local START_TIME = os.clock()")
-		table.insert(output, "print(\"[CI " .. VERSION .. "] Orca run in \" .. (os.clock() - START_TIME) * 1000 .. \" ms\")")
+		table.insert(output, "print(\\"[CI " .. VERSION .. "] Orca run in \\" .. (os.clock() - START_TIME) * 1000 .. \\" ms\\")")
 	end
 
 	-- Write to file
-	local dir = string.match(OUTPUT_PATH, "^(.*)[/\\]") or "."
+	local dir = string.match(OUTPUT_PATH, "^(.*)[/\\\\]") or "."
 	remodel.createDirAll(dir)
-	remodel.writeFile(OUTPUT_PATH, table.concat(output, "\n\n"))
+	remodel.writeFile(OUTPUT_PATH, table.concat(output, "\\n\\n"))
 
 	print("[CI " .. VERSION .. "] Bundle written to " .. OUTPUT_PATH)
 end
