@@ -1,90 +1,76 @@
 local PARAMS={...}
 
-local function getFlag(flag)
+local function getFlag(f)
 	for _,v in ipairs(PARAMS)do
-		if v==flag then return true end
+		if v==f then return true end
 	end
 	return false
 end
 
-local OUTPUT_PATH=assert(PARAMS[1],"No output path specified")
-local VERSION=assert(PARAMS[2],"No version specified")
+local OUTPUT_PATH=assert(PARAMS[1])
+local VERSION=assert(PARAMS[2])
 local DEBUG_MODE=getFlag("debug")
 local VERBOSE=getFlag("verbose")
 local MINIFY=getFlag("minify")
 
-local ROJO_INPUT=assert(PARAMS[3],"No model input specified")
+local ROJO_INPUT=assert(PARAMS[3])
 local RUNTIME_FILE="ci/runtime.lua"
 local BUNDLE_TEMP="ci/bundle.tmp"
 
-local function transformInput(source)
-	source=string.gsub(source,"([%w_]+)%s*([%+%-%*/%%^%.]%.?)=%s*","%1 = %1 %2")
-	source=string.gsub(source,"(%s+)continue(%s+)","%1__CONTINUE__()%2")
-	return source
+local function transformInput(s)
+	s=string.gsub(s,"([%w_]+)%s*([%+%-%*/%%^%.]%.?)=%s*","%1 = %1 %2")
+	s=string.gsub(s,"(%s+)continue(%s+)","%1__CONTINUE__()%2")
+	return s
 end
 
-local function transformOutput(source)
-	source=string.gsub(source,"%.%.%.:","(...):")
-	source=string.gsub(source,"__CONTINUE__%(%)","continue;")
-	return source
+local function transformOutput(s)
+	s=string.gsub(s,"%.%.%.:","(...):")
+	s=string.gsub(s,"__CONTINUE__%(%)","continue;")
+	return s
 end
 
-local function minify(source)
-	remodel.writeFile(BUNDLE_TEMP,transformInput(source))
+local function minify(s)
+	remodel.writeFile(BUNDLE_TEMP,transformInput(s))
 	os.execute("node ci/minify.js")
-	local output=remodel.readFile(BUNDLE_TEMP)
+	local o=remodel.readFile(BUNDLE_TEMP)
 	os.remove(BUNDLE_TEMP)
-	return transformOutput(output)
+	return transformOutput(o)
 end
 
-local function writeModule(object,output)
-	local id=object:GetFullName()
-	local source=remodel.getRawProperty(object,"Source")
+local function writeModule(o,output)
+	local id=o:GetFullName()
+	local source=remodel.getRawProperty(o,"Source")
 	local path=string.format("%q",id)
-	local parent=object.Parent and string.format("%q",object.Parent:GetFullName())or"nil"
-	local name=string.format("%q",object.Name)
-	local className=string.format("%q",object.ClassName)
+	local parent=o.Parent and string.format("%q",o.Parent:GetFullName())or"nil"
+	local name=string.format("%q",o.Name)
+	local className=string.format("%q",o.ClassName)
 	if DEBUG_MODE then
-		local def=table.concat({
-			"newModule("..name..", "..className..", "..path..", "..parent..", function ()",
-			"local fn = assert(loadstring("..string.format("%q",source)..", '@'.."..path.."))",
-			"setfenv(fn, newEnv("..path.."))",
-			"return fn()",
-			"end)",
-		}," ")
+		local def=table.concat({"newModule("..name..", "..className..", "..path..", "..parent..", function ()","local fn = assert(loadstring("..string.format("%q",source)..", '@'.."..path.."))","setfenv(fn, newEnv("..path.."))","return fn()","end)",}," ")
 		table.insert(output,def)
 	else
-		local def=table.concat({
-			"newModule("..name..", "..className..", "..path..", "..parent..", function ()",
-			"return setfenv(function()",
-			source,
-			"end, newEnv("..path.."))()",
-			"end)",
-		}," ")
+		local def=table.concat({"newModule("..name..", "..className..", "..path..", "..parent..", function ()","return setfenv(function()",source,"end, newEnv("..path.."))()","end)",}," ")
 		table.insert(output,def)
 	end
 end
 
-local function writeInstance(object,output)
-	local id=object:GetFullName()
+local function writeInstance(o,output)
+	local id=o:GetFullName()
 	local path=string.format("%q",id)
-	local parent=object.Parent and string.format("%q",object.Parent:GetFullName())or"nil"
-	local name=string.format("%q",object.Name)
-	local className=string.format("%q",object.ClassName)
-	local def=table.concat({
-		"newInstance("..name..", "..className..", "..path..", "..parent..")",
-	},"\n")
+	local parent=o.Parent and string.format("%q",o.Parent:GetFullName())or"nil"
+	local name=string.format("%q",o.Name)
+	local className=string.format("%q",o.ClassName)
+	local def=table.concat({"newInstance("..name..", "..className..", "..path..", "..parent..")"},"\n")
 	table.insert(output,def)
 end
 
-local function writeInstanceTree(object,output)
-	if object.ClassName=="LocalScript"or object.ClassName=="ModuleScript"then
-		writeModule(object,output)
+local function writeInstanceTree(o,output)
+	if o.ClassName=="LocalScript"or o.ClassName=="ModuleScript"then
+		writeModule(o,output)
 	else
-		writeInstance(object,output)
+		writeInstance(o,output)
 	end
-	for _,child in ipairs(object:GetChildren())do
-		writeInstanceTree(child,output)
+	for _,c in ipairs(o:GetChildren())do
+		writeInstanceTree(c,output)
 	end
 end
 
