@@ -19,11 +19,51 @@ local ROJO_INPUT = "Havoc.rbxm"
 local RUNTIME_FILE = "ci/runtime.lua"
 local BUNDLE_TEMP = "ci/bundle.tmp"
 
+---Transform Luau inline if-then-else expressions into Lua-compatible IIFEs.
+---roblox-ts v1.3.x emits these; luamin's parser does not support them.
+---Handles both simple and elseif chains, line by line.
+---@param source string
+---@return string
+local function transformInlineIfs(source)
+	local lines = {}
+	for line in (source .. "\n"):gmatch("([^\n]*)\n") do
+		-- Keep transforming until no more inline ifs remain on this line.
+		-- We do multiple passes to catch chained occurrences.
+		local changed = true
+		while changed do
+			changed = false
+			-- Match inline if preceded by = ( or , (expression context, not statement)
+			-- Captures up to the next unquoted , ) ] or end-of-line as the else-value.
+			local new = line:gsub(
+				"([=(,%(][ \t]*)if[ \t]+(.-)[ \t]+then[ \t]+(.-)[ \t]+else[ \t]+([^,%)%]\n]+)",
+				function(pre, cond, tval, eval)
+					-- Strip trailing whitespace from eval
+					eval = eval:match("^(.-)%s*$")
+					-- Recursively insert returns into elseif chains within tval/eval
+					-- (roblox-ts does not currently nest elseifs deeply, but be safe)
+					local body = "if " .. cond .. " then return " .. tval .. " else return " .. eval .. " end"
+					changed = true
+					return pre .. "(function() " .. body .. " end)()"
+				end
+			)
+			if new ~= line then
+				line = new
+			end
+		end
+		table.insert(lines, line)
+	end
+	return table.concat(lines, "\n")
+end
+
 ---Convert some specific snippets to work in luamin.
 ---@param source string
 ---@return string
 local function transformInput(source)
+	-- Luau inline if-then-else → Lua IIFEs (must run before luamin sees the source)
+	source = transformInlineIfs(source)
+	-- Compound assignment operators
 	source = string.gsub(source, "([%w_]+)%s*([%+%-%*/%%^%.]%.?)=%s*", "%1 = %1 %2")
+	-- continue keyword
 	source = string.gsub(source, "(%s+)continue(%s+)", "%1__CONTINUE__()%2")
 	return source
 end
@@ -40,7 +80,12 @@ end
 ---@return string
 local function minify(source)
 	remodel.writeFile(BUNDLE_TEMP, transformInput(source))
-	os.execute("node ci/minify.js")
+	local ok = os.execute("node ci/minify.js")
+	if not ok then
+		warn("[Hvcorca " .. VERSION .. "] Minify step failed — falling back to unminified output")
+		os.remove(BUNDLE_TEMP)
+		return source
+	end
 	local output = remodel.readFile(BUNDLE_TEMP)
 	os.remove(BUNDLE_TEMP)
 	return transformOutput(output)
@@ -127,7 +172,7 @@ local function main()
 
 	if VERBOSE then
 		table.insert(output, 2, "local START_TIME = os.clock()")
-		table.insert(output, "print(\"[CI " .. VERSION .. "] Orca run in \" .. (os.clock() - START_TIME) * 1000 .. \" ms\")")
+		table.insert(output, "print(\"[Hvcorca " .. VERSION .. "] Loaded in \" .. (os.clock() - START_TIME) * 1000 .. \" ms\")")
 	end
 
 	-- Write to file
@@ -135,7 +180,7 @@ local function main()
 	remodel.createDirAll(dir)
 	remodel.writeFile(OUTPUT_PATH, table.concat(output, "\n\n"))
 
-	print("[CI " .. VERSION .. "] Bundle written to " .. OUTPUT_PATH)
+	print("[Hvcorca " .. VERSION .. "] Bundle written to " .. OUTPUT_PATH)
 end
 
 main()
