@@ -36,10 +36,10 @@ jobs:
         run: |
           npm run compile
           npm run build
-      - name: Bundle modules
+      - name: Bundle modules  # ← CRITICAL FIX HERE
         run: |
-          remodel run ci/bundle.lua public/latest.lua v2.0 minify
-          remodel run ci/bundle.lua public/latest.debug.lua v2.0 debug
+          remodel run ci/bundle.lua public/latest.lua v2.0 Havoc.rbxm minify
+          remodel run ci/bundle.lua public/latest.debug.lua v2.0 Havoc.rbxm debug
       - name: Commit latest builds
         uses: EndBug/add-and-commit@v9
         with:
