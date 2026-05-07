@@ -15,28 +15,22 @@ local DEBUG_MODE = getFlag("debug")
 local VERBOSE = getFlag("verbose")
 local MINIFY = getFlag("minify")
 
-local ROJO_INPUT = assert(PARAMS[3], "No model input specified")  -- ← ONLY CHANGE
+local ROJO_INPUT = assert(PARAMS[3], "No model input specified")
 local RUNTIME_FILE = "ci/runtime.lua"
 local BUNDLE_TEMP = "ci/bundle.tmp"
 
----@param source string
----@return string
 local function transformInput(source)
 	source = string.gsub(source, "([%w_]+)%s*([%+%-%*/%%^%.]%.?)=%s*", "%1 = %1 %2")
 	source = string.gsub(source, "(%s+)continue(%s+)", "%1__CONTINUE__()%2")
 	return source
 end
 
----@param source string
----@return string
 local function transformOutput(source)
 	source = string.gsub(source, "%.%.%.:", "(...):")
 	source = string.gsub(source, "__CONTINUE__%(%)", "continue;")
 	return source
 end
 
----@param source string
----@return string
 local function minify(source)
 	remodel.writeFile(BUNDLE_TEMP, transformInput(source))
 	os.execute("node ci/minify.js")
@@ -45,8 +39,6 @@ local function minify(source)
 	return transformOutput(output)
 end
 
----@param object LocalScript | ModuleScript
----@param output table<number, string>
 local function writeModule(object, output)
 	local id = object:GetFullName()
 	local source = remodel.getRawProperty(object, "Source")
@@ -77,8 +69,6 @@ local function writeModule(object, output)
 	end
 end
 
----@param object Instance
----@param output table<number, string>
 local function writeInstance(object, output)
 	local id = object:GetFullName()
 
@@ -93,8 +83,6 @@ local function writeInstance(object, output)
 	table.insert(output, def)
 end
 
----@param object LocalScript | ModuleScript
----@param output table<number, string>
 local function writeInstanceTree(object, output)
 	if object.ClassName == "LocalScript" or object.ClassName == "ModuleScript" then
 		writeModule(object, output)
@@ -111,25 +99,21 @@ local function main()
 	local output = {}
 	local model = remodel.readModelFile(ROJO_INPUT)[1]
 
-	-- Add instances
 	writeInstanceTree(model, output)
 
-	-- Minify current output
 	if MINIFY then
 		output = { minify(table.concat(output, "\\n")) }
 	end
 
-	-- Core runtime
 	local runtime = string.gsub(remodel.readFile(RUNTIME_FILE), "__VERSION__", string.format("%q", VERSION))
 	table.insert(output, 1, runtime)
 	table.insert(output, "hInit()")
 
 	if VERBOSE then
 		table.insert(output, 2, "local START_TIME = os.clock()")
-		table.insert(output, "print(\\"[CI " .. VERSION .. "] Orca run in \\" .. (os.clock() - START_TIME) * 1000 .. \\" ms\\")")
+		table.insert(output, "print(\"[CI " .. VERSION .. "] Orca run in \" .. (os.clock() - START_TIME) * 1000 .. \" ms\")")
 	end
 
-	-- Write to file
 	local dir = string.match(OUTPUT_PATH, "^(.*)[/\\\\]") or "."
 	remodel.createDirAll(dir)
 	remodel.writeFile(OUTPUT_PATH, table.concat(output, "\\n\\n"))
