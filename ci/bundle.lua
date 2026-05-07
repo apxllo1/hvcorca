@@ -41,6 +41,8 @@ local function transformInlineIfs(source)
 					eval = eval:match("^(.-)%s*$")
 					-- Recursively insert returns into elseif chains within tval/eval
 					-- (roblox-ts does not currently nest elseifs deeply, but be safe)
+					-- Insert 'return' into any elseif branches inside tval
+					tval = tval:gsub("elseif%s+(.-)%s+then%s+", "elseif %1 then return ")
 					local body = "if " .. cond .. " then return " .. tval .. " else return " .. eval .. " end"
 					changed = true
 					return pre .. "(function() " .. body .. " end)()"
@@ -82,7 +84,7 @@ local function minify(source)
 	remodel.writeFile(BUNDLE_TEMP, transformInput(source))
 	local ok = os.execute("node ci/minify.js")
 	if not ok then
-		warn("[Hvcorca " .. VERSION .. "] Minify step failed — falling back to unminified output")
+		print("[Hvcorca " .. VERSION .. "] Minify step failed — falling back to unminified output")
 		os.remove(BUNDLE_TEMP)
 		return source
 	end
