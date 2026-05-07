@@ -78,9 +78,6 @@ local function main()
 	local output={}
 	local model=remodel.readModelFile(ROJO_INPUT)[1]
 	writeInstanceTree(model,output)
-	if MINIFY then
-		output={minify(table.concat(output,"\n"))}
-	end
 	local runtime=string.gsub(remodel.readFile(RUNTIME_FILE),"__VERSION__",string.format("%q",VERSION))
 	table.insert(output,1,runtime)
 	table.insert(output,"hInit()")
