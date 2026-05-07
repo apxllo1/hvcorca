@@ -5,7 +5,7 @@
 --
 -- Author: apxllo
 -- License: MIT
--- Version: "20260507-dbg"
+-- Version: "v2.0"
 -- GitHub: https://github.com/apxllo1/hvcorca
 --]]
 
@@ -108,7 +108,7 @@ end
 ---@return table<string, any> environment
 local function newEnv(id)
 	return setmetatable({
-		VERSION = "20260507-dbg",
+		VERSION = "v2.0",
 		script = instanceFromId[id],
 		require = function(module)
 			return requireModuleInternal(module, instanceFromId[id])

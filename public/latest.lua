@@ -5,7 +5,7 @@
 --
 -- Author: apxllo
 -- License: MIT
--- Version: "20260507"
+-- Version: "v2.0"
 -- GitHub: https://github.com/apxllo1/hvcorca
 --]]
 
@@ -108,7 +108,7 @@ end
 ---@return table<string, any> environment
 local function newEnv(id)
 	return setmetatable({
-		VERSION = "20260507",
+		VERSION = "v2.0",
 		script = instanceFromId[id],
 		require = function(module)
 			return requireModuleInternal(module, instanceFromId[id])
@@ -1477,7 +1477,7 @@ local function useDelayedUpdate(value, delay, isImmediate)
 			return nil
 		end
 		local _original = nextId
-		nextId = nextId +1
+		nextId += 1
 		local id = _original
 		local update = {
 			timeout = setTimeout(function()
@@ -1857,7 +1857,7 @@ local function useFriendsPlaying(deps)
 		local _length = 0
 		for _k, _v in ipairs(_friendsPlaying) do
 			if _arg0(_v, _k - 1, _friendsPlaying) == true then
-				_length = _length +1
+				_length += 1
 				_newValue[_length] = _v
 			end
 		end
@@ -3305,7 +3305,7 @@ local attachToVictim = TS.async(function(victim)
 	local _array_1 = playerCharacter:GetChildren()
 	local _Length = #_array_1
 	table.move(_array_1, 1, _Length, _length + 1, _array)
-	_length = _length +_Length
+	_length += _Length
 	local _array_2 = backpack:GetChildren()
 	table.move(_array_2, 1, #_array_2, _length + 1, _array)
 	local _arg0 = function(obj)
@@ -3338,7 +3338,7 @@ local attachToVictim = TS.async(function(victim)
 		local _shouldIncrement = false
 		while true do
 			if _shouldIncrement then
-				count = count +1
+				count += 1
 			else
 				_shouldIncrement = true
 			end
@@ -3565,7 +3565,7 @@ local onServerHop = TS.async(function()
 	local _length = 0
 	for _k, _v in ipairs(_data) do
 		if _arg0(_v, _k - 1, _data) == true then
-			_length = _length +1
+			_length += 1
 			_newValue[_length] = _v
 		end
 	end
@@ -4230,7 +4230,7 @@ local _newValue = {}
 local _length = 0
 for _k, _v in ipairs(_exp) do
 	if _arg0(_v, _k - 1, _exp) == true then
-		_length = _length +1
+		_length += 1
 		_newValue[_length] = _v
 	end
 end
@@ -6066,11 +6066,11 @@ do
 			local clock = 0
 			local hb
 			hb = RunService.Heartbeat:Connect(function(step)
-				clock = clock +step
+				clock += step
 				if not self.running then
 					hb:Disconnect()
 				elseif clock >= milliseconds / 1000 then
-					clock = clock -milliseconds / 1000
+					clock -= milliseconds / 1000
 					callback(unpack(args))
 				end
 			end)
@@ -6849,7 +6849,7 @@ local function Selection()
 		local _length = 0
 		for _k, _v in ipairs(players) do
 			if _arg0_1(_v, _k - 1, players) == true then
-				_length = _length +1
+				_length += 1
 				_newValue[_length] = _v
 			end
 		end
@@ -7546,7 +7546,7 @@ local function Info()
 	local _length = 0
 	for _k, _v in ipairs(friends) do
 		if _arg0(_v, _k - 1, friends) == true then
-			_length = _length +1
+			_length += 1
 			_newValue[_length] = _v
 		end
 	end
@@ -8296,7 +8296,7 @@ local function GistLoader()
 			local _length = 0
 			for _k, _v in ipairs(commands) do
 				if _arg0(_v, _k - 1, commands) == true then
-					_length = _length +1
+					_length += 1
 					_newValue[_length] = _v
 				end
 			end
@@ -10302,7 +10302,7 @@ end
 	* You can set the cancellation hook at any time before resolving.
 	* When a promise is cancelled, calls to `resolve` or `reject` will be ignored, regardless of if you set a cancellation hook or not.
 
-	@param executor (resolve: ((...): any) -> (), reject: ((...): any) -> (), onCancel: (abortHandler?: () -> ()) -> boolean) -> ()
+	@param executor (resolve: (...: any) -> (), reject: (...: any) -> (), onCancel: (abortHandler?: () -> ()) -> boolean) -> ()
 	@return Promise
 ]=]
 function Promise.new(executor)
@@ -10328,7 +10328,7 @@ end
 	end
 	```
 
-	@param executor (resolve: ((...): any) -> (), reject: ((...): any) -> (), onCancel: (abortHandler?: () -> ()) -> boolean) -> ()
+	@param executor (resolve: (...: any) -> (), reject: (...: any) -> (), onCancel: (abortHandler?: () -> ()) -> boolean) -> ()
 	@return Promise
 ]=]
 function Promise.defer(executor)
@@ -10429,7 +10429,7 @@ end
 		end)
 	```
 
-	@param callback ((...): T...) -> ...any
+	@param callback (...: T...) -> ...any
 	@param ... T... -- Additional arguments passed to `callback`
 	@return Promise
 ]=]
@@ -10814,7 +10814,7 @@ end
 
 	If the array of values contains a Promise, when we get to that point in the list, we wait for the Promise to resolve before calling the predicate with the value.
 
-	If a Promise in the array of values is already Rejected when `Promise.each` is called, `Promise.each` rejects with that value immediately (the predicate callback will never be called even once). If a Promise in the list is already Cancelled when `Promise.each` is called, `Promise.each` rejects with `Promise.Error(Promise.Error.Kind.AlreadyCancelled`). If a Promise in the array of values is Started at first, but later rejects, `Promise.each` will reject with that value and iteration will not continue; once iteration encounters that value.
+	If a Promise in the array of values is already Rejected when `Promise.each` is called, `Promise.each` rejects with that value immediately (the predicate callback will never be called even once). If a Promise in the list is already Cancelled when `Promise.each` is called, `Promise.each` rejects with `Promise.Error(Promise.Error.Kind.AlreadyCancelled`). If a Promise in the array of values is Started at first, but later rejects, `Promise.each` will reject with that value and iteration will not continue once iteration encounters that value.
 
 	Returns a Promise containing an array of the returned/resolved values from the predicate for each item in the array of values.
 
@@ -10973,8 +10973,8 @@ end
 	end)
 	```
 
-	@param callback ((...): any) -> ...any
-	@return ((...): any) -> Promise
+	@param callback (...: any) -> ...any
+	@return (...: any) -> Promise
 ]=]
 function Promise.promisify(callback)
 	return function(...)
@@ -11218,8 +11218,8 @@ end
 
 	Return a Promise from the success or failure handler and it will be chained onto.
 
-	@param successHandler ((...): any) -> ...any
-	@param failureHandler? ((...): any) -> ...any
+	@param successHandler (...: any) -> ...any
+	@param failureHandler? (...: any) -> ...any
 	@return Promise<...any>
 ]=]
 function Promise.prototype:andThen(successHandler, failureHandler)
@@ -11239,7 +11239,7 @@ end
 	:::
 
 
-	@param failureHandler ((...): any) -> ...any
+	@param failureHandler (...: any) -> ...any
 	@return Promise<...any>
 ]=]
 function Promise.prototype:catch(failureHandler)
@@ -11260,7 +11260,7 @@ end
 
 	If you return a Promise from the tap handler callback, its value will be discarded but `tap` will still wait until it resolves before passing the original value through.
 
-	@param tapHandler ((...): any) -> ...any
+	@param tapHandler (...: any) -> ...any
 	@return Promise<...any>
 ]=]
 function Promise.prototype:tap(tapHandler)
@@ -11294,7 +11294,7 @@ end
 		end)
 	```
 
-	@param callback ((...): any) -> any
+	@param callback (...: any) -> any
 	@param ...? any -- Additional arguments which will be passed to `callback`
 	@return Promise
 ]=]
@@ -11462,7 +11462,7 @@ end
 
 	Attaches a `finally` handler to this Promise that calls the given callback with the predefined arguments.
 
-	@param callback ((...): any) -> any
+	@param callback (...: any) -> any
 	@param ...? any -- Additional arguments which will be passed to `callback`
 	@return Promise
 ]=]
@@ -11525,7 +11525,7 @@ end
 
 	Attaches a `done` handler to this Promise that calls the given callback with the predefined arguments.
 
-	@param callback ((...): any) -> any
+	@param callback (...: any) -> any
 	@param ...? any -- Additional arguments which will be passed to `callback`
 	@return Promise
 ]=]
@@ -11878,7 +11878,7 @@ end
 	```
 
 	@since 3.0.0
-	@param callback ((...): P) -> Promise<T>
+	@param callback (...: P) -> Promise<T>
 	@param times number
 	@param ...? P
 ]=]
@@ -11904,7 +11904,7 @@ end
 	If the amount of retries is exceeded, the function will return the latest rejected Promise.
 
 	@since v3.2.0
-	@param callback ((...): P) -> Promise<T>
+	@param callback (...: P) -> Promise<T>
 	@param times number
 	@param seconds number
 	@param ...? P
@@ -11948,7 +11948,7 @@ end
 
 	@since 3.0.0
 	@param event Event -- Any object with a `Connect` method. This includes all Roblox events.
-	@param predicate? ((...): P) -> boolean -- A function which determines if the Promise should resolve with the given value, or wait for the next event to check again.
+	@param predicate? (...: P) -> boolean -- A function which determines if the Promise should resolve with the given value, or wait for the next event to check again.
 	@return Promise<P>
 ]=]
 function Promise.fromEvent(event, predicate)
@@ -12000,7 +12000,7 @@ end
 	The callback is called with the actual promise that rejected, followed by the rejection values.
 
 	@since v3.2.0
-	@param callback (promise: Promise, (...): any) -- A callback that runs when an unhandled rejection happens.
+	@param callback (promise: Promise, ...: any) -- A callback that runs when an unhandled rejection happens.
 	@return () -> () -- Function that unregisters the `callback` when called
 ]=]
 function Promise.onUnhandledRejection(callback)
@@ -16122,7 +16122,7 @@ local function createHook()
 end
 
 local function createWorkInProgressHook()
-	hookCount = hookCount +1
+	hookCount += 1
 
 	if not workInProgressHook then
 		-- This is the first hook in the list
@@ -16169,7 +16169,7 @@ local function commitHookEffectListUpdate(componentIdentity)
 		if effect.prevDeps and areHookInputsEqual(effect.deps, effect.prevDeps) then
 			-- Nothing changed
 			effect = effect.next
-			continue;
+			continue
 		end
 
 		-- Clear
@@ -16650,7 +16650,7 @@ local function useSelector(selector, isEqual)
 
 	if not success then
 		if latestSubscriptionCallbackError.current then
-			err = err ..(
+			err ..= (
 				"\nThe error may be correlated with this previous error:\n" ..
 				latestSubscriptionCallbackError.current ..
 				"\n\n"
