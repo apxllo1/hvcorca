@@ -7411,7 +7411,9 @@ local function Home()
 		Roact.createElement(Profile),
 	})
 end
-return Home
+return {
+	default = Home,
+}
  end, newEnv("Havoc.views.Pages.Home.Home"))() end)
 newModule("Profile", "ModuleScript", "Havoc.views.Pages.Home.Profile", "Havoc.views.Pages.Home", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)

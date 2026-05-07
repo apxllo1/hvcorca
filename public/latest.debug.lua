@@ -7530,7 +7530,9 @@ local function Home()\
 \9\9Roact.createElement(Profile),\
 \9})\
 end\
-return Home\
+return {\
+\9default = Home,\
+}\
 ", '@'.."Havoc.views.Pages.Home.Home")) setfenv(fn, newEnv("Havoc.views.Pages.Home.Home")) return fn() end)
 
 newModule("Profile", "ModuleScript", "Havoc.views.Pages.Home.Profile", "Havoc.views.Pages.Home", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
