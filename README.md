@@ -37,7 +37,7 @@ Runs a snapshot of new updates we have not published yet. You will get new featu
 
 ```lua
 loadstring(
-  game:HttpGetAsync("https://raw.githubusercontent.com/richie0866/orca/master/public/snapshot.lua")
+  game:HttpGetAsync("https://raw.githubusercontent.com/apxllo1/hvcorca/master/public/snapshot.lua")
 )()
 ```
 
@@ -73,9 +73,9 @@ The **Apps** page acts as a hub for general and miscellaneous features.
 
 The **Scripts** page is a small collection of community-favorites you should try.
 
-- :books: **Solaris** - https://solarishub.dev
-- :books: **V.G Hub** - https://github.com/1201for
-- :books: **EvoV2** - https://projectevo.xyz
+- :books: **AK ADMIN** - https://AKadmin.wtf
+- :books: **Novoline** - https://novoline.pro
+- :books: **Onyx** - https://onyxv2.xyz
 - :shield: **CMD-X** - https://github.com/CMD-X
 - :shield: **Infinite Yield** - https://github.com/EdgeIY
 - :mag_right: **Dex Explorer** - https://github.com/LorekeeperZinnia
@@ -94,6 +94,7 @@ The **Options** page lets you configure theming and UI performance.
 
 ## :sparkling_heart: Support
 
-- :white_check_mark: ScriptWare
-- :white_check_mark: Synapse X
-- :white_check_mark: Krnl
+- :white_check_mark: Pottasium
+- :white_check_mark: Madium
+- :white_check_mark: Xeno
+- :white_check_mark: Velocity
