@@ -7,9 +7,8 @@ import Profile from "./Profile";
 import Server from "./Server";
 import Title from "./Title";
 
-function Home() {
+export default function Home() {
 	const scaleFactor = useScale();
-
 	return (
 		<Canvas position={scale(0, 1)} anchor={new Vector2(0, 1)}>
 			<uiscale Scale={scaleFactor} />
@@ -20,5 +19,3 @@ function Home() {
 		</Canvas>
 	);
 }
-
-export = Home;
