@@ -5,7 +5,7 @@
 --
 -- Author: apxllo
 -- License: MIT
--- Version: "20260507"
+-- Version: "v2.0"
 -- GitHub: https://github.com/apxllo1/hvcorca
 --]]
 
@@ -108,7 +108,7 @@ end
 ---@return table<string, any> environment
 local function newEnv(id)
 	return setmetatable({
-		VERSION = "20260507",
+		VERSION = "v2.0",
 		script = instanceFromId[id],
 		require = function(module)
 			return requireModuleInternal(module, instanceFromId[id])
@@ -165,10 +165,7 @@ local function hInit()
 		end
 	end
 end
-
-
-newInstance("Havoc", "Folder", "Havoc", nil)
-newModule("App", "ModuleScript", "Havoc.App", "Havoc", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+\n\nnewInstance("Havoc", "Folder", "Havoc", nil)\nnewModule("App", "ModuleScript", "Havoc.App", "Havoc", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local Dashboard = TS.import(script, script.Parent, "views", "Dashboard").default
@@ -187,15 +184,12 @@ local default = App
 return {
 	default = default,
 }
- end, newEnv("Havoc.App"))() end)
-newInstance("components", "Folder", "Havoc.components", "Havoc")
-newModule("Acrylic", "ModuleScript", "Havoc.components.Acrylic", "Havoc.components", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.App"))() end)\nnewInstance("components", "Folder", "Havoc.components", "Havoc")\nnewModule("Acrylic", "ModuleScript", "Havoc.components.Acrylic", "Havoc.components", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Acrylic").default
 return exports
- end, newEnv("Havoc.components.Acrylic"))() end)
-newModule("Acrylic", "ModuleScript", "Havoc.components.Acrylic.Acrylic", "Havoc.components.Acrylic", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.components.Acrylic"))() end)\nnewModule("Acrylic", "ModuleScript", "Havoc.components.Acrylic.Acrylic", "Havoc.components.Acrylic", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").src)
@@ -354,8 +348,7 @@ end
 return {
 	default = default,
 }
- end, newEnv("Havoc.components.Acrylic.Acrylic"))() end)
-newModule("acrylic-instance", "ModuleScript", "Havoc.components.Acrylic.acrylic-instance", "Havoc.components.Acrylic", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.components.Acrylic.Acrylic"))() end)\nnewModule("acrylic-instance", "ModuleScript", "Havoc.components.Acrylic.acrylic-instance", "Havoc.components.Acrylic", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Make = TS.import(script, TS.getModule(script, "@rbxts", "make"))
 local fill = {
@@ -446,8 +439,7 @@ local acrylicInstance = Make("Model", _object)
 return {
 	acrylicInstance = acrylicInstance,
 }
- end, newEnv("Havoc.components.Acrylic.acrylic-instance"))() end)
-newModule("ActionButton", "ModuleScript", "Havoc.components.ActionButton", "Havoc.components", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.components.Acrylic.acrylic-instance"))() end)\nnewModule("ActionButton", "ModuleScript", "Havoc.components.ActionButton", "Havoc.components", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local useState = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").src).useState
@@ -524,8 +516,7 @@ local default = ActionButton
 return {
 	default = default,
 }
- end, newEnv("Havoc.components.ActionButton"))() end)
-newModule("Border", "ModuleScript", "Havoc.components.Border", "Havoc.components", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.components.ActionButton"))() end)\nnewModule("Border", "ModuleScript", "Havoc.components.Border", "Havoc.components", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local _binding_util = TS.import(script, script.Parent.Parent, "utils", "binding-util")
@@ -595,8 +586,7 @@ local default = Border
 return {
 	default = default,
 }
- end, newEnv("Havoc.components.Border"))() end)
-newModule("BrightButton", "ModuleScript", "Havoc.components.BrightButton", "Havoc.components", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.components.Border"))() end)\nnewModule("BrightButton", "ModuleScript", "Havoc.components.BrightButton", "Havoc.components", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local Border = TS.import(script, script.Parent, "Border").default
@@ -724,8 +714,7 @@ local default = BrightButton
 return {
 	default = default,
 }
- end, newEnv("Havoc.components.BrightButton"))() end)
-newModule("BrightSlider", "ModuleScript", "Havoc.components.BrightSlider", "Havoc.components", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.components.BrightButton"))() end)\nnewModule("BrightSlider", "ModuleScript", "Havoc.components.BrightSlider", "Havoc.components", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Spring = TS.import(script, TS.getModule(script, "@rbxts", "flipper").src).Spring
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -909,8 +898,7 @@ local default = BrightSlider
 return {
 	default = default,
 }
- end, newEnv("Havoc.components.BrightSlider"))() end)
-newModule("Canvas", "ModuleScript", "Havoc.components.Canvas", "Havoc.components", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.components.BrightSlider"))() end)\nnewModule("Canvas", "ModuleScript", "Havoc.components.Canvas", "Havoc.components", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local mapBinding = TS.import(script, script.Parent.Parent, "utils", "binding-util").mapBinding
@@ -978,8 +966,7 @@ local function Canvas(_param)
 	return Roact.createElement("Frame", _attributes, _children)
 end
 return Canvas
- end, newEnv("Havoc.components.Canvas"))() end)
-newModule("Card", "ModuleScript", "Havoc.components.Card", "Havoc.components", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.components.Canvas"))() end)\nnewModule("Card", "ModuleScript", "Havoc.components.Card", "Havoc.components", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local Acrylic = TS.import(script, script.Parent, "Acrylic").default
@@ -1062,8 +1049,7 @@ local default = Card
 return {
 	default = default,
 }
- end, newEnv("Havoc.components.Card"))() end)
-newModule("Fill", "ModuleScript", "Havoc.components.Fill", "Havoc.components", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.components.Card"))() end)\nnewModule("Fill", "ModuleScript", "Havoc.components.Fill", "Havoc.components", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local mapBinding = TS.import(script, script.Parent.Parent, "utils", "binding-util").mapBinding
@@ -1128,8 +1114,7 @@ local default = Fill
 return {
 	default = default,
 }
- end, newEnv("Havoc.components.Fill"))() end)
-newModule("Glow", "ModuleScript", "Havoc.components.Glow", "Havoc.components", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.components.Fill"))() end)\nnewModule("Glow", "ModuleScript", "Havoc.components.Glow", "Havoc.components", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local useBinding = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").src).useBinding
@@ -1255,8 +1240,7 @@ return {
 	RADIUS_TO_CENTER_OFFSET = RADIUS_TO_CENTER_OFFSET,
 	default = default,
 }
- end, newEnv("Havoc.components.Glow"))() end)
-newModule("ParallaxImage", "ModuleScript", "Havoc.components.ParallaxImage", "Havoc.components", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.components.Glow"))() end)\nnewModule("ParallaxImage", "ModuleScript", "Havoc.components.ParallaxImage", "Havoc.components", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local mapBinding = TS.import(script, script.Parent.Parent, "utils", "binding-util").mapBinding
@@ -1296,8 +1280,7 @@ local default = ParallaxImage
 return {
 	default = default,
 }
- end, newEnv("Havoc.components.ParallaxImage"))() end)
-newModule("constants", "ModuleScript", "Havoc.constants", "Havoc", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.components.ParallaxImage"))() end)\nnewModule("constants", "ModuleScript", "Havoc.constants", "Havoc", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local IS_DEV = getgenv == nil
 local LOAD_GUARD = "_HAVOC_IS_LOADED"
 local _condition = VERSION
@@ -1310,19 +1293,14 @@ return {
 	LOAD_GUARD = LOAD_GUARD,
 	VERSION_TAG = VERSION_TAG,
 }
- end, newEnv("Havoc.constants"))() end)
-newInstance("context", "Folder", "Havoc.context", "Havoc")
-newModule("scale-context", "ModuleScript", "Havoc.context.scale-context", "Havoc.context", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.constants"))() end)\nnewInstance("context", "Folder", "Havoc.context", "Havoc")\nnewModule("scale-context", "ModuleScript", "Havoc.context.scale-context", "Havoc.context", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local ScaleContext = Roact.createContext((Roact.createBinding(1)))
 return {
 	ScaleContext = ScaleContext,
 }
- end, newEnv("Havoc.context.scale-context"))() end)
-newInstance("hooks", "Folder", "Havoc.hooks", "Havoc")
-newInstance("common", "Folder", "Havoc.hooks.common", "Havoc.hooks")
-newModule("flipper-hooks", "ModuleScript", "Havoc.hooks.common.flipper-hooks", "Havoc.hooks.common", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.context.scale-context"))() end)\nnewInstance("hooks", "Folder", "Havoc.hooks", "Havoc")\nnewInstance("common", "Folder", "Havoc.hooks.common", "Havoc.hooks")\nnewModule("flipper-hooks", "ModuleScript", "Havoc.hooks.common.flipper-hooks", "Havoc.hooks.common", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.getBinding = TS.import(script, script, "get-binding").getBinding
@@ -1332,8 +1310,7 @@ exports.useLinear = TS.import(script, script, "use-linear").useLinear
 exports.useMotor = TS.import(script, script, "use-motor").useMotor
 exports.useSpring = TS.import(script, script, "use-spring").useSpring
 return exports
- end, newEnv("Havoc.hooks.common.flipper-hooks"))() end)
-newModule("get-binding", "ModuleScript", "Havoc.hooks.common.flipper-hooks.get-binding", "Havoc.hooks.common.flipper-hooks", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.hooks.common.flipper-hooks"))() end)\nnewModule("get-binding", "ModuleScript", "Havoc.hooks.common.flipper-hooks.get-binding", "Havoc.hooks.common.flipper-hooks", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local isMotor = TS.import(script, TS.getModule(script, "@rbxts", "flipper").src).isMotor
 local createBinding = TS.import(script, TS.getModule(script, "@rbxts", "roact").src).createBinding
@@ -1357,8 +1334,7 @@ end
 return {
 	getBinding = getBinding,
 }
- end, newEnv("Havoc.hooks.common.flipper-hooks.get-binding"))() end)
-newModule("use-goal", "ModuleScript", "Havoc.hooks.common.flipper-hooks.use-goal", "Havoc.hooks.common.flipper-hooks", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.hooks.common.flipper-hooks.get-binding"))() end)\nnewModule("use-goal", "ModuleScript", "Havoc.hooks.common.flipper-hooks.use-goal", "Havoc.hooks.common.flipper-hooks", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local getBinding = TS.import(script, script.Parent, "get-binding").getBinding
 local useMotor = TS.import(script, script.Parent, "use-motor").useMotor
@@ -1370,8 +1346,7 @@ end
 return {
 	useGoal = useGoal,
 }
- end, newEnv("Havoc.hooks.common.flipper-hooks.use-goal"))() end)
-newModule("use-instant", "ModuleScript", "Havoc.hooks.common.flipper-hooks.use-instant", "Havoc.hooks.common.flipper-hooks", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.hooks.common.flipper-hooks.use-goal"))() end)\nnewModule("use-instant", "ModuleScript", "Havoc.hooks.common.flipper-hooks.use-instant", "Havoc.hooks.common.flipper-hooks", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Instant = TS.import(script, TS.getModule(script, "@rbxts", "flipper").src).Instant
 local useGoal = TS.import(script, script.Parent, "use-goal").useGoal
@@ -1381,8 +1356,7 @@ end
 return {
 	useInstant = useInstant,
 }
- end, newEnv("Havoc.hooks.common.flipper-hooks.use-instant"))() end)
-newModule("use-linear", "ModuleScript", "Havoc.hooks.common.flipper-hooks.use-linear", "Havoc.hooks.common.flipper-hooks", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.hooks.common.flipper-hooks.use-instant"))() end)\nnewModule("use-linear", "ModuleScript", "Havoc.hooks.common.flipper-hooks.use-linear", "Havoc.hooks.common.flipper-hooks", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Linear = TS.import(script, TS.getModule(script, "@rbxts", "flipper").src).Linear
 local useGoal = TS.import(script, script.Parent, "use-goal").useGoal
@@ -1392,8 +1366,7 @@ end
 return {
 	useLinear = useLinear,
 }
- end, newEnv("Havoc.hooks.common.flipper-hooks.use-linear"))() end)
-newModule("use-motor", "ModuleScript", "Havoc.hooks.common.flipper-hooks.use-motor", "Havoc.hooks.common.flipper-hooks", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.hooks.common.flipper-hooks.use-linear"))() end)\nnewModule("use-motor", "ModuleScript", "Havoc.hooks.common.flipper-hooks.use-motor", "Havoc.hooks.common.flipper-hooks", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local _flipper = TS.import(script, TS.getModule(script, "@rbxts", "flipper").src)
 local GroupMotor = _flipper.GroupMotor
@@ -1414,8 +1387,7 @@ end
 return {
 	useMotor = useMotor,
 }
- end, newEnv("Havoc.hooks.common.flipper-hooks.use-motor"))() end)
-newModule("use-spring", "ModuleScript", "Havoc.hooks.common.flipper-hooks.use-spring", "Havoc.hooks.common.flipper-hooks", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.hooks.common.flipper-hooks.use-motor"))() end)\nnewModule("use-spring", "ModuleScript", "Havoc.hooks.common.flipper-hooks.use-spring", "Havoc.hooks.common.flipper-hooks", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Spring = TS.import(script, TS.getModule(script, "@rbxts", "flipper").src).Spring
 local useGoal = TS.import(script, script.Parent, "use-goal").useGoal
@@ -1425,8 +1397,7 @@ end
 return {
 	useSpring = useSpring,
 }
- end, newEnv("Havoc.hooks.common.flipper-hooks.use-spring"))() end)
-newModule("rodux-hooks", "ModuleScript", "Havoc.hooks.common.rodux-hooks", "Havoc.hooks.common", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.hooks.common.flipper-hooks.use-spring"))() end)\nnewModule("rodux-hooks", "ModuleScript", "Havoc.hooks.common.rodux-hooks", "Havoc.hooks.common", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _roact_rodux_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-rodux-hooked").src)
 local useDispatch = _roact_rodux_hooked.useDispatch
@@ -1444,8 +1415,7 @@ return {
 	useAppDispatch = useAppDispatch,
 	useAppStore = useAppStore,
 }
- end, newEnv("Havoc.hooks.common.rodux-hooks"))() end)
-newModule("use-delayed-update", "ModuleScript", "Havoc.hooks.common.use-delayed-update", "Havoc.hooks.common", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.hooks.common.rodux-hooks"))() end)\nnewModule("use-delayed-update", "ModuleScript", "Havoc.hooks.common.use-delayed-update", "Havoc.hooks.common", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").src)
 local useEffect = _roact_hooked.useEffect
@@ -1499,8 +1469,7 @@ end
 return {
 	useDelayedUpdate = useDelayedUpdate,
 }
- end, newEnv("Havoc.hooks.common.use-delayed-update"))() end)
-newModule("use-did-mount", "ModuleScript", "Havoc.hooks.common.use-did-mount", "Havoc.hooks.common", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.hooks.common.use-delayed-update"))() end)\nnewModule("use-did-mount", "ModuleScript", "Havoc.hooks.common.use-did-mount", "Havoc.hooks.common", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").src)
 local useEffect = _roact_hooked.useEffect
@@ -1525,8 +1494,7 @@ return {
 	useDidMount = useDidMount,
 	useIsMount = useIsMount,
 }
- end, newEnv("Havoc.hooks.common.use-did-mount"))() end)
-newModule("use-forced-update", "ModuleScript", "Havoc.hooks.common.use-forced-update", "Havoc.hooks.common", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.hooks.common.use-did-mount"))() end)\nnewModule("use-forced-update", "ModuleScript", "Havoc.hooks.common.use-forced-update", "Havoc.hooks.common", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").src)
 local useCallback = _roact_hooked.useCallback
@@ -1542,8 +1510,7 @@ end
 return {
 	useForcedUpdate = useForcedUpdate,
 }
- end, newEnv("Havoc.hooks.common.use-forced-update"))() end)
-newModule("use-interval", "ModuleScript", "Havoc.hooks.common.use-interval", "Havoc.hooks.common", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.hooks.common.use-forced-update"))() end)\nnewModule("use-interval", "ModuleScript", "Havoc.hooks.common.use-interval", "Havoc.hooks.common", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local useEffect = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").src).useEffect
 local _timeout = TS.import(script, script.Parent.Parent.Parent, "utils", "timeout")
@@ -1570,8 +1537,7 @@ end
 return {
 	useInterval = useInterval,
 }
- end, newEnv("Havoc.hooks.common.use-interval"))() end)
-newModule("use-mouse-location", "ModuleScript", "Havoc.hooks.common.use-mouse-location", "Havoc.hooks.common", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.hooks.common.use-interval"))() end)\nnewModule("use-mouse-location", "ModuleScript", "Havoc.hooks.common.use-mouse-location", "Havoc.hooks.common", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").src)
 local useBinding = _roact_hooked.useBinding
@@ -1598,8 +1564,7 @@ end
 return {
 	useMouseLocation = useMouseLocation,
 }
- end, newEnv("Havoc.hooks.common.use-mouse-location"))() end)
-newModule("use-promise", "ModuleScript", "Havoc.hooks.common.use-promise", "Havoc.hooks.common", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.hooks.common.use-mouse-location"))() end)\nnewModule("use-promise", "ModuleScript", "Havoc.hooks.common.use-promise", "Havoc.hooks.common", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").src)
 local useEffect = _roact_hooked.useEffect
@@ -1682,8 +1647,7 @@ end
 return {
 	usePromise = usePromise,
 }
- end, newEnv("Havoc.hooks.common.use-promise"))() end)
-newModule("use-set-state", "ModuleScript", "Havoc.hooks.common.use-set-state", "Havoc.hooks.common", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.hooks.common.use-promise"))() end)\nnewModule("use-set-state", "ModuleScript", "Havoc.hooks.common.use-set-state", "Havoc.hooks.common", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local useState = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").src).useState
 local function useSetState(initialState)
@@ -1707,8 +1671,7 @@ end
 return {
 	default = useSetState,
 }
- end, newEnv("Havoc.hooks.common.use-set-state"))() end)
-newModule("use-spring", "ModuleScript", "Havoc.hooks.common.use-spring", "Havoc.hooks.common", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.hooks.common.use-set-state"))() end)\nnewModule("use-spring", "ModuleScript", "Havoc.hooks.common.use-spring", "Havoc.hooks.common", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Spring = TS.import(script, TS.getModule(script, "@rbxts", "flipper").src).Spring
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -1770,8 +1733,7 @@ end
 return {
 	useSpring = useSpring,
 }
- end, newEnv("Havoc.hooks.common.use-spring"))() end)
-newModule("use-viewport-size", "ModuleScript", "Havoc.hooks.common.use-viewport-size", "Havoc.hooks.common", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.hooks.common.use-spring"))() end)\nnewModule("use-viewport-size", "ModuleScript", "Havoc.hooks.common.use-viewport-size", "Havoc.hooks.common", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").src)
 local useBinding = _roact_hooked.useBinding
@@ -1813,8 +1775,7 @@ end
 return {
 	useViewportSize = useViewportSize,
 }
- end, newEnv("Havoc.hooks.common.use-viewport-size"))() end)
-newModule("use-current-page", "ModuleScript", "Havoc.hooks.use-current-page", "Havoc.hooks", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.hooks.common.use-viewport-size"))() end)\nnewModule("use-current-page", "ModuleScript", "Havoc.hooks.use-current-page", "Havoc.hooks", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local useAppSelector = TS.import(script, script.Parent, "common", "rodux-hooks").useAppSelector
 local function useCurrentPage()
@@ -1831,8 +1792,7 @@ return {
 	useCurrentPage = useCurrentPage,
 	useIsPageOpen = useIsPageOpen,
 }
- end, newEnv("Havoc.hooks.use-current-page"))() end)
-newModule("use-friends", "ModuleScript", "Havoc.hooks.use-friends", "Havoc.hooks", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.hooks.use-current-page"))() end)\nnewModule("use-friends", "ModuleScript", "Havoc.hooks.use-friends", "Havoc.hooks", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local useMemo = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").src).useMemo
 local Players = TS.import(script, TS.getModule(script, "@rbxts", "services")).Players
@@ -1915,8 +1875,7 @@ return {
 	useFriendsPlaying = useFriendsPlaying,
 	useFriendActivity = useFriendActivity,
 }
- end, newEnv("Havoc.hooks.use-friends"))() end)
-newModule("use-parallax-offset", "ModuleScript", "Havoc.hooks.use-parallax-offset", "Havoc.hooks", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.hooks.use-friends"))() end)\nnewModule("use-parallax-offset", "ModuleScript", "Havoc.hooks.use-parallax-offset", "Havoc.hooks", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Spring = TS.import(script, TS.getModule(script, "@rbxts", "flipper").src).Spring
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -1951,8 +1910,7 @@ end
 return {
 	useParallaxOffset = useParallaxOffset,
 }
- end, newEnv("Havoc.hooks.use-parallax-offset"))() end)
-newModule("use-scale", "ModuleScript", "Havoc.hooks.use-scale", "Havoc.hooks", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.hooks.use-parallax-offset"))() end)\nnewModule("use-scale", "ModuleScript", "Havoc.hooks.use-scale", "Havoc.hooks", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local useContext = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").src).useContext
@@ -1964,8 +1922,7 @@ end
 return {
 	useScale = useScale,
 }
- end, newEnv("Havoc.hooks.use-scale"))() end)
-newModule("use-theme", "ModuleScript", "Havoc.hooks.use-theme", "Havoc.hooks", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.hooks.use-scale"))() end)\nnewModule("use-theme", "ModuleScript", "Havoc.hooks.use-theme", "Havoc.hooks", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local useAppSelector = TS.import(script, script.Parent, "common", "rodux-hooks").useAppSelector
 local getThemes = TS.import(script, script.Parent.Parent, "themes").getThemes
@@ -1995,8 +1952,7 @@ end
 return {
 	useTheme = useTheme,
 }
- end, newEnv("Havoc.hooks.use-theme"))() end)
-newModule("jobs", "ModuleScript", "Havoc.jobs", "Havoc", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.hooks.use-theme"))() end)\nnewModule("jobs", "ModuleScript", "Havoc.jobs", "Havoc", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.include.RuntimeLib)
 local exports = {}
 exports.setStore = TS.import(script, script, "helpers", "job-store").setStore
@@ -2013,8 +1969,7 @@ TS.import(script, script, "players", "kill")
 TS.import(script, script, "players", "spectate")
 TS.import(script, script, "players", "teleport")
 return exports
- end, newEnv("Havoc.jobs"))() end)
-newModule("acrylic", "ModuleScript", "Havoc.jobs.acrylic", "Havoc.jobs", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.jobs"))() end)\nnewModule("acrylic", "ModuleScript", "Havoc.jobs.acrylic", "Havoc.jobs", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Make = TS.import(script, TS.getModule(script, "@rbxts", "make"))
 local Lighting = TS.import(script, TS.getModule(script, "@rbxts", "services")).Lighting
@@ -2070,9 +2025,7 @@ main():catch(function(err)
 	warn("[acrylic-worker] " .. tostring(err))
 end)
 return nil
- end, newEnv("Havoc.jobs.acrylic"))() end)
-newInstance("character", "Folder", "Havoc.jobs.character", "Havoc.jobs")
-newModule("flight", "ModuleScript", "Havoc.jobs.character.flight", "Havoc.jobs.character", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.jobs.acrylic"))() end)\nnewInstance("character", "Folder", "Havoc.jobs.character", "Havoc.jobs")\nnewModule("flight", "ModuleScript", "Havoc.jobs.character.flight", "Havoc.jobs.character", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _flipper = TS.import(script, TS.getModule(script, "@rbxts", "flipper").src)
 local GroupMotor = _flipper.GroupMotor
@@ -2233,8 +2186,7 @@ main():catch(function(err)
 	warn("[flight-worker] " .. tostring(err))
 end)
 return nil
- end, newEnv("Havoc.jobs.character.flight"))() end)
-newModule("ghost", "ModuleScript", "Havoc.jobs.character.ghost", "Havoc.jobs.character", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.jobs.character.flight"))() end)\nnewModule("ghost", "ModuleScript", "Havoc.jobs.character.ghost", "Havoc.jobs.character", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _services = TS.import(script, TS.getModule(script, "@rbxts", "services"))
 local Players = _services.Players
@@ -2403,8 +2355,7 @@ main():catch(function(err)
 	warn("[ghost-worker] " .. tostring(err))
 end)
 return nil
- end, newEnv("Havoc.jobs.character.ghost"))() end)
-newModule("godmode", "ModuleScript", "Havoc.jobs.character.godmode", "Havoc.jobs.character", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.jobs.character.ghost"))() end)\nnewModule("godmode", "ModuleScript", "Havoc.jobs.character.godmode", "Havoc.jobs.character", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _services = TS.import(script, TS.getModule(script, "@rbxts", "services"))
 local Players = _services.Players
@@ -2481,8 +2432,7 @@ main():catch(function(err)
 	warn("[godmode-worker] " .. tostring(err))
 end)
 return nil
- end, newEnv("Havoc.jobs.character.godmode"))() end)
-newModule("humanoid", "ModuleScript", "Havoc.jobs.character.humanoid", "Havoc.jobs.character", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.jobs.character.godmode"))() end)\nnewModule("humanoid", "ModuleScript", "Havoc.jobs.character.humanoid", "Havoc.jobs.character", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Players = TS.import(script, TS.getModule(script, "@rbxts", "services")).Players
 local _job_store = TS.import(script, script.Parent.Parent, "helpers", "job-store")
@@ -2576,8 +2526,7 @@ main():catch(function(err)
 	warn("[humanoid-worker] " .. tostring(err))
 end)
 return nil
- end, newEnv("Havoc.jobs.character.humanoid"))() end)
-newModule("refresh", "ModuleScript", "Havoc.jobs.character.refresh", "Havoc.jobs.character", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.jobs.character.humanoid"))() end)\nnewModule("refresh", "ModuleScript", "Havoc.jobs.character.refresh", "Havoc.jobs.character", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _services = TS.import(script, TS.getModule(script, "@rbxts", "services"))
 local Players = _services.Players
@@ -2644,8 +2593,7 @@ main():catch(function(err)
 	warn("[refresh-worker] " .. tostring(err))
 end)
 return nil
- end, newEnv("Havoc.jobs.character.refresh"))() end)
-newModule("freecam", "ModuleScript", "Havoc.jobs.freecam", "Havoc.jobs", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.jobs.character.refresh"))() end)\nnewModule("freecam", "ModuleScript", "Havoc.jobs.freecam", "Havoc.jobs", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local _freecam = TS.import(script, script.Parent, "helpers", "freecam")
 local DisableFreecam = _freecam.DisableFreecam
@@ -2664,9 +2612,7 @@ main():catch(function(err)
 	warn("[freecam-worker] " .. tostring(err))
 end)
 return nil
- end, newEnv("Havoc.jobs.freecam"))() end)
-newInstance("helpers", "Folder", "Havoc.jobs.helpers", "Havoc.jobs")
-newModule("freecam", "ModuleScript", "Havoc.jobs.helpers.freecam", "Havoc.jobs.helpers", function () return setfenv(function() ------------------------------------------------------------------------
+ end, newEnv("Havoc.jobs.freecam"))() end)\nnewInstance("helpers", "Folder", "Havoc.jobs.helpers", "Havoc.jobs")\nnewModule("freecam", "ModuleScript", "Havoc.jobs.helpers.freecam", "Havoc.jobs.helpers", function () return setfenv(function() ------------------------------------------------------------------------
 -- Freecam
 -- Cinematic free camera for spectating and video production.
 ------------------------------------------------------------------------
@@ -3123,8 +3069,7 @@ return {
 	EnableFreecam = EnableFreecam,
 	DisableFreecam = DisableFreecam,
 }
- end, newEnv("Havoc.jobs.helpers.freecam"))() end)
-newModule("get-selected-player", "ModuleScript", "Havoc.jobs.helpers.get-selected-player", "Havoc.jobs.helpers", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.jobs.helpers.freecam"))() end)\nnewModule("get-selected-player", "ModuleScript", "Havoc.jobs.helpers.get-selected-player", "Havoc.jobs.helpers", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Players = TS.import(script, TS.getModule(script, "@rbxts", "services")).Players
 local getStore = TS.import(script, script.Parent, "job-store").getStore
@@ -3151,8 +3096,7 @@ end)
 return {
 	getSelectedPlayer = getSelectedPlayer,
 }
- end, newEnv("Havoc.jobs.helpers.get-selected-player"))() end)
-newModule("job-store", "ModuleScript", "Havoc.jobs.helpers.job-store", "Havoc.jobs.helpers", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.jobs.helpers.get-selected-player"))() end)\nnewModule("job-store", "ModuleScript", "Havoc.jobs.helpers.job-store", "Havoc.jobs.helpers", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local setInterval = TS.import(script, script.Parent.Parent.Parent, "utils", "timeout").setInterval
 local store = {}
@@ -3204,9 +3148,7 @@ return {
 	getStore = getStore,
 	onJobChange = onJobChange,
 }
- end, newEnv("Havoc.jobs.helpers.job-store"))() end)
-newInstance("players", "Folder", "Havoc.jobs.players", "Havoc.jobs")
-newModule("hide", "ModuleScript", "Havoc.jobs.players.hide", "Havoc.jobs.players", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.jobs.helpers.job-store"))() end)\nnewInstance("players", "Folder", "Havoc.jobs.players", "Havoc.jobs")\nnewModule("hide", "ModuleScript", "Havoc.jobs.players.hide", "Havoc.jobs.players", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Players = TS.import(script, TS.getModule(script, "@rbxts", "services")).Players
 local getSelectedPlayer = TS.import(script, script.Parent.Parent, "helpers", "get-selected-player").getSelectedPlayer
@@ -3272,8 +3214,7 @@ main():catch(function(err)
 	warn("[hide-worker] " .. tostring(err))
 end)
 return nil
- end, newEnv("Havoc.jobs.players.hide"))() end)
-newModule("kill", "ModuleScript", "Havoc.jobs.players.kill", "Havoc.jobs.players", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.jobs.players.hide"))() end)\nnewModule("kill", "ModuleScript", "Havoc.jobs.players.kill", "Havoc.jobs.players", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local _services = TS.import(script, TS.getModule(script, "@rbxts", "services"))
 local Players = _services.Players
@@ -3424,8 +3365,7 @@ main():catch(function(err)
 	warn("[kill-worker] " .. tostring(err))
 end)
 return nil
- end, newEnv("Havoc.jobs.players.kill"))() end)
-newModule("spectate", "ModuleScript", "Havoc.jobs.players.spectate", "Havoc.jobs.players", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.jobs.players.kill"))() end)\nnewModule("spectate", "ModuleScript", "Havoc.jobs.players.spectate", "Havoc.jobs.players", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Workspace = TS.import(script, TS.getModule(script, "@rbxts", "services")).Workspace
 local getSelectedPlayer = TS.import(script, script.Parent.Parent, "helpers", "get-selected-player").getSelectedPlayer
@@ -3484,8 +3424,7 @@ main():catch(function(err)
 	warn("[spectate-worker] " .. tostring(err))
 end)
 return nil
- end, newEnv("Havoc.jobs.players.spectate"))() end)
-newModule("teleport", "ModuleScript", "Havoc.jobs.players.teleport", "Havoc.jobs.players", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.jobs.players.spectate"))() end)\nnewModule("teleport", "ModuleScript", "Havoc.jobs.players.teleport", "Havoc.jobs.players", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Players = TS.import(script, TS.getModule(script, "@rbxts", "services")).Players
 local getSelectedPlayer = TS.import(script, script.Parent.Parent, "helpers", "get-selected-player").getSelectedPlayer
@@ -3538,8 +3477,7 @@ main():catch(function(err)
 	warn("[teleport-worker] " .. tostring(err))
 end)
 return nil
- end, newEnv("Havoc.jobs.players.teleport"))() end)
-newModule("server", "ModuleScript", "Havoc.jobs.server", "Havoc.jobs", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.jobs.players.teleport"))() end)\nnewModule("server", "ModuleScript", "Havoc.jobs.server", "Havoc.jobs", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local _services = TS.import(script, TS.getModule(script, "@rbxts", "services"))
 local HttpService = _services.HttpService
@@ -3644,8 +3582,7 @@ main():catch(function(err)
 	warn("[server-worker] " .. tostring(err))
 end)
 return nil
- end, newEnv("Havoc.jobs.server"))() end)
-newModule("main", "LocalScript", "Havoc.main", "Havoc", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.jobs.server"))() end)\nnewModule("main", "LocalScript", "Havoc.main", "Havoc", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.include.RuntimeLib)
 local Make = TS.import(script, TS.getModule(script, "@rbxts", "make"))
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
@@ -3704,10 +3641,7 @@ end)
 main():catch(function(err)
 	warn("[Havoc] Failed to load: " .. tostring(err))
 end)
- end, newEnv("Havoc.main"))() end)
-newInstance("store", "Folder", "Havoc.store", "Havoc")
-newInstance("actions", "Folder", "Havoc.store.actions", "Havoc.store")
-newModule("dashboard.action", "ModuleScript", "Havoc.store.actions.dashboard.action", "Havoc.store.actions", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.main"))() end)\nnewInstance("store", "Folder", "Havoc.store", "Havoc")\nnewInstance("actions", "Folder", "Havoc.store.actions", "Havoc.store")\nnewModule("dashboard.action", "ModuleScript", "Havoc.store.actions.dashboard.action", "Havoc.store.actions", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Rodux = TS.import(script, TS.getModule(script, "@rbxts", "rodux").src)
 local setDashboardPage = Rodux.makeActionCreator("dashboard/setDashboardPage", function(page)
@@ -3742,8 +3676,7 @@ return {
 	playerSelected = playerSelected,
 	playerDeselected = playerDeselected,
 }
- end, newEnv("Havoc.store.actions.dashboard.action"))() end)
-newModule("jobs.action", "ModuleScript", "Havoc.store.actions.jobs.action", "Havoc.store.actions", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.store.actions.dashboard.action"))() end)\nnewModule("jobs.action", "ModuleScript", "Havoc.store.actions.jobs.action", "Havoc.store.actions", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Rodux = TS.import(script, TS.getModule(script, "@rbxts", "rodux").src)
 local setJobActive = Rodux.makeActionCreator("jobs/setJobActive", function(jobName, active)
@@ -3770,8 +3703,7 @@ return {
 	setJobValue = setJobValue,
 	setJobSlider = setJobSlider,
 }
- end, newEnv("Havoc.store.actions.jobs.action"))() end)
-newModule("options.action", "ModuleScript", "Havoc.store.actions.options.action", "Havoc.store.actions", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.store.actions.jobs.action"))() end)\nnewModule("options.action", "ModuleScript", "Havoc.store.actions.options.action", "Havoc.store.actions", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Rodux = TS.import(script, TS.getModule(script, "@rbxts", "rodux").src)
 local setConfig = Rodux.makeActionCreator("options/setConfig", function(name, active)
@@ -3802,9 +3734,7 @@ return {
 	removeShortcut = removeShortcut,
 	setTheme = setTheme,
 }
- end, newEnv("Havoc.store.actions.options.action"))() end)
-newInstance("models", "Folder", "Havoc.store.models", "Havoc.store")
-newModule("dashboard.model", "ModuleScript", "Havoc.store.models.dashboard.model", "Havoc.store.models", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.store.actions.options.action"))() end)\nnewInstance("models", "Folder", "Havoc.store.models", "Havoc.store")\nnewModule("dashboard.model", "ModuleScript", "Havoc.store.models.dashboard.model", "Havoc.store.models", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local DashboardPage
 do
 	local _inverse = {}
@@ -3841,12 +3771,9 @@ return {
 	PAGE_TO_INDEX = PAGE_TO_INDEX,
 	PAGE_TO_ICON = PAGE_TO_ICON,
 }
- end, newEnv("Havoc.store.models.dashboard.model"))() end)
-newModule("jobs.model", "ModuleScript", "Havoc.store.models.jobs.model", "Havoc.store.models", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
- end, newEnv("Havoc.store.models.jobs.model"))() end)
-newModule("options.model", "ModuleScript", "Havoc.store.models.options.model", "Havoc.store.models", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
- end, newEnv("Havoc.store.models.options.model"))() end)
-newModule("persistent-state", "ModuleScript", "Havoc.store.persistent-state", "Havoc.store", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.store.models.dashboard.model"))() end)\nnewModule("jobs.model", "ModuleScript", "Havoc.store.models.jobs.model", "Havoc.store.models", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.store.models.jobs.model"))() end)\nnewModule("options.model", "ModuleScript", "Havoc.store.models.options.model", "Havoc.store.models", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.store.models.options.model"))() end)\nnewModule("persistent-state", "ModuleScript", "Havoc.store.persistent-state", "Havoc.store", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local _services = TS.import(script, TS.getModule(script, "@rbxts", "services"))
 local HttpService = _services.HttpService
@@ -3907,9 +3834,7 @@ end)
 return {
 	persistentState = persistentState,
 }
- end, newEnv("Havoc.store.persistent-state"))() end)
-newInstance("reducers", "Folder", "Havoc.store.reducers", "Havoc.store")
-newModule("dashboard.reducer", "ModuleScript", "Havoc.store.reducers.dashboard.reducer", "Havoc.store.reducers", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.store.persistent-state"))() end)\nnewInstance("reducers", "Folder", "Havoc.store.reducers", "Havoc.store")\nnewModule("dashboard.reducer", "ModuleScript", "Havoc.store.reducers.dashboard.reducer", "Havoc.store.reducers", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Rodux = TS.import(script, TS.getModule(script, "@rbxts", "rodux").src)
 local DashboardPage = TS.import(script, script.Parent.Parent, "models", "dashboard.model").DashboardPage
@@ -3986,8 +3911,7 @@ local dashboardReducer = Rodux.createReducer(initialState, {
 return {
 	dashboardReducer = dashboardReducer,
 }
- end, newEnv("Havoc.store.reducers.dashboard.reducer"))() end)
-newModule("jobs.reducer", "ModuleScript", "Havoc.store.reducers.jobs.reducer", "Havoc.store.reducers", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.store.reducers.dashboard.reducer"))() end)\nnewModule("jobs.reducer", "ModuleScript", "Havoc.store.reducers.jobs.reducer", "Havoc.store.reducers", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Rodux = TS.import(script, TS.getModule(script, "@rbxts", "rodux").src)
 local initialState = {
@@ -4092,8 +4016,7 @@ local jobsReducer = Rodux.createReducer(initialState, {
 return {
 	jobsReducer = jobsReducer,
 }
- end, newEnv("Havoc.store.reducers.jobs.reducer"))() end)
-newModule("options.reducer", "ModuleScript", "Havoc.store.reducers.options.reducer", "Havoc.store.reducers", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.store.reducers.jobs.reducer"))() end)\nnewModule("options.reducer", "ModuleScript", "Havoc.store.reducers.options.reducer", "Havoc.store.reducers", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Rodux = TS.import(script, TS.getModule(script, "@rbxts", "rodux").src)
 local persistentState = TS.import(script, script.Parent.Parent, "persistent-state").persistentState
@@ -4163,8 +4086,7 @@ local optionsReducer = Rodux.createReducer(initialState, {
 return {
 	optionsReducer = optionsReducer,
 }
- end, newEnv("Havoc.store.reducers.options.reducer"))() end)
-newModule("store", "ModuleScript", "Havoc.store.store", "Havoc.store", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.store.reducers.options.reducer"))() end)\nnewModule("store", "ModuleScript", "Havoc.store.store", "Havoc.store", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Rodux = TS.import(script, TS.getModule(script, "@rbxts", "rodux").src)
 local dashboardReducer = TS.import(script, script.Parent, "reducers", "dashboard.reducer").dashboardReducer
@@ -4181,8 +4103,7 @@ end
 return {
 	configureStore = configureStore,
 }
- end, newEnv("Havoc.store.store"))() end)
-newModule("theme", "ModuleScript", "Havoc.theme", "Havoc", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.store.store"))() end)\nnewModule("theme", "ModuleScript", "Havoc.theme", "Havoc", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local UI_COLORS = {
 	Accent = Color3.fromRGB(235, 76, 105),
 	AccentDark = Color3.fromRGB(150, 40, 60),
@@ -4212,8 +4133,7 @@ return {
 	UI_ANIMATION = UI_ANIMATION,
 	UI_LAYOUT = UI_LAYOUT,
 }
- end, newEnv("Havoc.theme"))() end)
-newModule("themes", "ModuleScript", "Havoc.themes", "Havoc", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.theme"))() end)\nnewModule("themes", "ModuleScript", "Havoc.themes", "Havoc", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.include.RuntimeLib)
 local darkTheme = TS.import(script, script, "sorbet").darkTheme
 local frostedGlass = TS.import(script, script, "frosted-glass").frostedGlass
@@ -4255,8 +4175,7 @@ return {
 	getThemeByName = getThemeByName,
 	darkTheme = darkTheme,
 }
- end, newEnv("Havoc.themes"))() end)
-newModule("crimson", "ModuleScript", "Havoc.themes.crimson", "Havoc.themes", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.themes"))() end)\nnewModule("crimson", "ModuleScript", "Havoc.themes.crimson", "Havoc.themes", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local darkTheme = TS.import(script, script.Parent, "sorbet").darkTheme
 local hex = TS.import(script, script.Parent.Parent, "utils", "color3").hex
@@ -4528,8 +4447,7 @@ local crimson = _object
 return {
 	crimson = crimson,
 }
- end, newEnv("Havoc.themes.crimson"))() end)
-newModule("frosted-glass", "ModuleScript", "Havoc.themes.frosted-glass", "Havoc.themes", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.themes.crimson"))() end)\nnewModule("frosted-glass", "ModuleScript", "Havoc.themes.frosted-glass", "Havoc.themes", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local darkTheme = TS.import(script, script.Parent, "sorbet").darkTheme
 local hex = TS.import(script, script.Parent.Parent, "utils", "color3").hex
@@ -4816,8 +4734,7 @@ local frostedGlass = _object
 return {
 	frostedGlass = frostedGlass,
 }
- end, newEnv("Havoc.themes.frosted-glass"))() end)
-newModule("high-contrast", "ModuleScript", "Havoc.themes.high-contrast", "Havoc.themes", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.themes.frosted-glass"))() end)\nnewModule("high-contrast", "ModuleScript", "Havoc.themes.high-contrast", "Havoc.themes", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local darkTheme = TS.import(script, script.Parent, "sorbet").darkTheme
 local hex = TS.import(script, script.Parent.Parent, "utils", "color3").hex
@@ -5055,8 +4972,7 @@ local highContrast = _object
 return {
 	highContrast = highContrast,
 }
- end, newEnv("Havoc.themes.high-contrast"))() end)
-newModule("light-theme", "ModuleScript", "Havoc.themes.light-theme", "Havoc.themes", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.themes.high-contrast"))() end)\nnewModule("light-theme", "ModuleScript", "Havoc.themes.light-theme", "Havoc.themes", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local darkTheme = TS.import(script, script.Parent, "sorbet").darkTheme
 local hex = TS.import(script, script.Parent.Parent, "utils", "color3").hex
@@ -5287,8 +5203,7 @@ local lightTheme = _object
 return {
 	lightTheme = lightTheme,
 }
- end, newEnv("Havoc.themes.light-theme"))() end)
-newModule("obsidian", "ModuleScript", "Havoc.themes.obsidian", "Havoc.themes", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.themes.light-theme"))() end)\nnewModule("obsidian", "ModuleScript", "Havoc.themes.obsidian", "Havoc.themes", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local darkTheme = TS.import(script, script.Parent, "sorbet").darkTheme
 local hex = TS.import(script, script.Parent.Parent, "utils", "color3").hex
@@ -5606,8 +5521,7 @@ local obsidian = _object
 return {
 	obsidian = obsidian,
 }
- end, newEnv("Havoc.themes.obsidian"))() end)
-newModule("sorbet", "ModuleScript", "Havoc.themes.sorbet", "Havoc.themes", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.themes.obsidian"))() end)\nnewModule("sorbet", "ModuleScript", "Havoc.themes.sorbet", "Havoc.themes", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local hex = TS.import(script, script.Parent.Parent, "utils", "color3").hex
 local redAccent = hex("#C6428E")
@@ -5856,11 +5770,8 @@ local darkTheme = _object
 return {
 	darkTheme = darkTheme,
 }
- end, newEnv("Havoc.themes.sorbet"))() end)
-newModule("theme.interface", "ModuleScript", "Havoc.themes.theme.interface", "Havoc.themes", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
- end, newEnv("Havoc.themes.theme.interface"))() end)
-newInstance("utils", "Folder", "Havoc.utils", "Havoc")
-newModule("array-util", "ModuleScript", "Havoc.utils.array-util", "Havoc.utils", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.themes.sorbet"))() end)\nnewModule("theme.interface", "ModuleScript", "Havoc.themes.theme.interface", "Havoc.themes", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.themes.theme.interface"))() end)\nnewInstance("utils", "Folder", "Havoc.utils", "Havoc")\nnewModule("array-util", "ModuleScript", "Havoc.utils.array-util", "Havoc.utils", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local function arrayToMap(arr, mapper)
 	--▼ ReadonlyArray.map ▼
 	local _newValue = table.create(#arr)
@@ -5877,8 +5788,7 @@ end
 return {
 	arrayToMap = arrayToMap,
 }
- end, newEnv("Havoc.utils.array-util"))() end)
-newModule("binding-util", "ModuleScript", "Havoc.utils.binding-util", "Havoc.utils", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.utils.array-util"))() end)\nnewModule("binding-util", "ModuleScript", "Havoc.utils.binding-util", "Havoc.utils", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local function isBinding(binding)
@@ -5895,8 +5805,7 @@ return {
 	mapBinding = mapBinding,
 	asBinding = asBinding,
 }
- end, newEnv("Havoc.utils.binding-util"))() end)
-newModule("color3", "ModuleScript", "Havoc.utils.color3", "Havoc.utils", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.utils.binding-util"))() end)\nnewModule("color3", "ModuleScript", "Havoc.utils.color3", "Havoc.utils", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local function getLuminance(color)
 	if typeof(color) == "ColorSequence" then
 		color = color.Keypoints[1].Value
@@ -5944,8 +5853,7 @@ return {
 	hsv = hsv,
 	hsl = hsl,
 }
- end, newEnv("Havoc.utils.color3"))() end)
-newModule("debug", "ModuleScript", "Havoc.utils.debug", "Havoc.utils", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.utils.color3"))() end)\nnewModule("debug", "ModuleScript", "Havoc.utils.debug", "Havoc.utils", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local clock = os.clock()
 local clockName = "clock"
 local debugCounter = {}
@@ -5971,8 +5879,7 @@ return {
 	startTimer = startTimer,
 	endTimer = endTimer,
 }
- end, newEnv("Havoc.utils.debug"))() end)
-newModule("http", "ModuleScript", "Havoc.utils.http", "Havoc.utils", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.utils.debug"))() end)\nnewModule("http", "ModuleScript", "Havoc.utils.http", "Havoc.utils", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local HttpService = TS.import(script, TS.getModule(script, "@rbxts", "services")).HttpService
 local IS_DEV = TS.import(script, script.Parent.Parent, "constants").IS_DEV
@@ -5999,8 +5906,7 @@ return {
 	get = get,
 	post = post,
 }
- end, newEnv("Havoc.utils.http"))() end)
-newModule("number-util", "ModuleScript", "Havoc.utils.number-util", "Havoc.utils", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.utils.http"))() end)\nnewModule("number-util", "ModuleScript", "Havoc.utils.number-util", "Havoc.utils", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local function map(n, min0, max0, min1, max1)
 	return min1 + ((n - min0) * (max1 - min1)) / (max0 - min0)
 end
@@ -6011,8 +5917,7 @@ return {
 	map = map,
 	lerp = lerp,
 }
- end, newEnv("Havoc.utils.number-util"))() end)
-newModule("timeout", "ModuleScript", "Havoc.utils.timeout", "Havoc.utils", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.utils.number-util"))() end)\nnewModule("timeout", "ModuleScript", "Havoc.utils.timeout", "Havoc.utils", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local RunService = TS.import(script, TS.getModule(script, "@rbxts", "services")).RunService
 local Timeout
@@ -6095,8 +6000,7 @@ return {
 	Timeout = Timeout,
 	Interval = Interval,
 }
- end, newEnv("Havoc.utils.timeout"))() end)
-newModule("udim2", "ModuleScript", "Havoc.utils.udim2", "Havoc.utils", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.utils.timeout"))() end)\nnewModule("udim2", "ModuleScript", "Havoc.utils.udim2", "Havoc.utils", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local function px(x, y)
 	return UDim2.new(0, x, 0, y)
 end
@@ -6114,15 +6018,12 @@ return {
 	scale = scale,
 	applyUDim2 = applyUDim2,
 }
- end, newEnv("Havoc.utils.udim2"))() end)
-newInstance("views", "Folder", "Havoc.views", "Havoc")
-newModule("Clock", "ModuleScript", "Havoc.views.Clock", "Havoc.views", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.utils.udim2"))() end)\nnewInstance("views", "Folder", "Havoc.views", "Havoc")\nnewModule("Clock", "ModuleScript", "Havoc.views.Clock", "Havoc.views", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Clock").default
 return exports
- end, newEnv("Havoc.views.Clock"))() end)
-newModule("Clock", "ModuleScript", "Havoc.views.Clock.Clock", "Havoc.views.Clock", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Clock"))() end)\nnewModule("Clock", "ModuleScript", "Havoc.views.Clock.Clock", "Havoc.views.Clock", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").src)
@@ -6225,14 +6126,12 @@ local default = Clock
 return {
 	default = default,
 }
- end, newEnv("Havoc.views.Clock.Clock"))() end)
-newModule("Dashboard", "ModuleScript", "Havoc.views.Dashboard", "Havoc.views", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Clock.Clock"))() end)\nnewModule("Dashboard", "ModuleScript", "Havoc.views.Dashboard", "Havoc.views", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Dashboard").default
 return exports
- end, newEnv("Havoc.views.Dashboard"))() end)
-newModule("Dashboard", "ModuleScript", "Havoc.views.Dashboard.Dashboard", "Havoc.views.Dashboard", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Dashboard"))() end)\nnewModule("Dashboard", "ModuleScript", "Havoc.views.Dashboard.Dashboard", "Havoc.views.Dashboard", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local useMemo = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").src).useMemo
@@ -6320,14 +6219,12 @@ local function Dashboard()
 	})
 end
 return Dashboard
- end, newEnv("Havoc.views.Dashboard.Dashboard"))() end)
-newModule("Hint", "ModuleScript", "Havoc.views.Hint", "Havoc.views", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Dashboard.Dashboard"))() end)\nnewModule("Hint", "ModuleScript", "Havoc.views.Hint", "Havoc.views", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Hint").default
 return exports
- end, newEnv("Havoc.views.Hint"))() end)
-newModule("Hint", "ModuleScript", "Havoc.views.Hint.Hint", "Havoc.views.Hint", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Hint"))() end)\nnewModule("Hint", "ModuleScript", "Havoc.views.Hint.Hint", "Havoc.views.Hint", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").src)
@@ -6381,14 +6278,12 @@ local default = Hint
 return {
 	default = default,
 }
- end, newEnv("Havoc.views.Hint.Hint"))() end)
-newModule("Navbar", "ModuleScript", "Havoc.views.Navbar", "Havoc.views", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Hint.Hint"))() end)\nnewModule("Navbar", "ModuleScript", "Havoc.views.Navbar", "Havoc.views", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Navbar").default
 return exports
- end, newEnv("Havoc.views.Navbar"))() end)
-newModule("Navbar", "ModuleScript", "Havoc.views.Navbar.Navbar", "Havoc.views.Navbar", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Navbar"))() end)\nnewModule("Navbar", "ModuleScript", "Havoc.views.Navbar.Navbar", "Havoc.views.Navbar", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local Acrylic = TS.import(script, script.Parent.Parent.Parent, "components", "Acrylic").default
@@ -6532,8 +6427,7 @@ end
 return {
 	default = default,
 }
- end, newEnv("Havoc.views.Navbar.Navbar"))() end)
-newModule("NavbarTab", "ModuleScript", "Havoc.views.Navbar.NavbarTab", "Havoc.views.Navbar", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Navbar.Navbar"))() end)\nnewModule("NavbarTab", "ModuleScript", "Havoc.views.Navbar.NavbarTab", "Havoc.views.Navbar", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local useState = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").src).useState
@@ -6592,20 +6486,17 @@ local default = NavbarTab
 return {
 	default = default,
 }
- end, newEnv("Havoc.views.Navbar.NavbarTab"))() end)
-newModule("Pages", "ModuleScript", "Havoc.views.Pages", "Havoc.views", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Navbar.NavbarTab"))() end)\nnewModule("Pages", "ModuleScript", "Havoc.views.Pages", "Havoc.views", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Pages").default
 return exports
- end, newEnv("Havoc.views.Pages"))() end)
-newModule("Apps", "ModuleScript", "Havoc.views.Pages.Apps", "Havoc.views.Pages", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages"))() end)\nnewModule("Apps", "ModuleScript", "Havoc.views.Pages.Apps", "Havoc.views.Pages", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Apps").default
 return exports
- end, newEnv("Havoc.views.Pages.Apps"))() end)
-newModule("Apps", "ModuleScript", "Havoc.views.Pages.Apps.Apps", "Havoc.views.Pages.Apps", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages.Apps"))() end)\nnewModule("Apps", "ModuleScript", "Havoc.views.Pages.Apps.Apps", "Havoc.views.Pages.Apps", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local Canvas = TS.import(script, script.Parent.Parent.Parent.Parent, "components", "Canvas")
@@ -6628,14 +6519,12 @@ local default = Apps
 return {
 	default = default,
 }
- end, newEnv("Havoc.views.Pages.Apps.Apps"))() end)
-newModule("Players", "ModuleScript", "Havoc.views.Pages.Apps.Players", "Havoc.views.Pages.Apps", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages.Apps.Apps"))() end)\nnewModule("Players", "ModuleScript", "Havoc.views.Pages.Apps.Players", "Havoc.views.Pages.Apps", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Players").default
 return exports
- end, newEnv("Havoc.views.Pages.Apps.Players"))() end)
-newModule("Actions", "ModuleScript", "Havoc.views.Pages.Apps.Players.Actions", "Havoc.views.Pages.Apps.Players", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages.Apps.Players"))() end)\nnewModule("Actions", "ModuleScript", "Havoc.views.Pages.Apps.Players.Actions", "Havoc.views.Pages.Apps.Players", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local ActionButton = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, "components", "ActionButton").default
@@ -6686,8 +6575,7 @@ local default = Actions
 return {
 	default = default,
 }
- end, newEnv("Havoc.views.Pages.Apps.Players.Actions"))() end)
-newModule("Avatar", "ModuleScript", "Havoc.views.Pages.Apps.Players.Avatar", "Havoc.views.Pages.Apps.Players", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages.Apps.Players.Actions"))() end)\nnewModule("Avatar", "ModuleScript", "Havoc.views.Pages.Apps.Players.Avatar", "Havoc.views.Pages.Apps.Players", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local Players = TS.import(script, TS.getModule(script, "@rbxts", "services")).Players
@@ -6733,8 +6621,7 @@ local default = Avatar
 return {
 	default = default,
 }
- end, newEnv("Havoc.views.Pages.Apps.Players.Avatar"))() end)
-newModule("Players", "ModuleScript", "Havoc.views.Pages.Apps.Players.Players", "Havoc.views.Pages.Apps.Players", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages.Apps.Players.Avatar"))() end)\nnewModule("Players", "ModuleScript", "Havoc.views.Pages.Apps.Players.Players", "Havoc.views.Pages.Apps.Players", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local Card = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, "components", "Card").default
@@ -6764,8 +6651,7 @@ local default = Players
 return {
 	default = default,
 }
- end, newEnv("Havoc.views.Pages.Apps.Players.Players"))() end)
-newModule("Selection", "ModuleScript", "Havoc.views.Pages.Apps.Players.Selection", "Havoc.views.Pages.Apps.Players", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages.Apps.Players.Players"))() end)\nnewModule("Selection", "ModuleScript", "Havoc.views.Pages.Apps.Players.Selection", "Havoc.views.Pages.Apps.Players", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").src)
@@ -7043,8 +6929,7 @@ end
 return {
 	default = default,
 }
- end, newEnv("Havoc.views.Pages.Apps.Players.Selection"))() end)
-newModule("Username", "ModuleScript", "Havoc.views.Pages.Apps.Players.Username", "Havoc.views.Pages.Apps.Players", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages.Apps.Players.Selection"))() end)\nnewModule("Username", "ModuleScript", "Havoc.views.Pages.Apps.Players.Username", "Havoc.views.Pages.Apps.Players", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local Players = TS.import(script, TS.getModule(script, "@rbxts", "services")).Players
@@ -7091,20 +6976,17 @@ local default = Username
 return {
 	default = default,
 }
- end, newEnv("Havoc.views.Pages.Apps.Players.Username"))() end)
-newModule("Home", "ModuleScript", "Havoc.views.Pages.Home", "Havoc.views.Pages", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages.Apps.Players.Username"))() end)\nnewModule("Home", "ModuleScript", "Havoc.views.Pages.Home", "Havoc.views.Pages", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Home").default
 return exports
- end, newEnv("Havoc.views.Pages.Home"))() end)
-newModule("FriendActivity", "ModuleScript", "Havoc.views.Pages.Home.FriendActivity", "Havoc.views.Pages.Home", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages.Home"))() end)\nnewModule("FriendActivity", "ModuleScript", "Havoc.views.Pages.Home.FriendActivity", "Havoc.views.Pages.Home", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "FriendActivity").default
 return exports
- end, newEnv("Havoc.views.Pages.Home.FriendActivity"))() end)
-newModule("FriendActivity", "ModuleScript", "Havoc.views.Pages.Home.FriendActivity.FriendActivity", "Havoc.views.Pages.Home.FriendActivity", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages.Home.FriendActivity"))() end)\nnewModule("FriendActivity", "ModuleScript", "Havoc.views.Pages.Home.FriendActivity.FriendActivity", "Havoc.views.Pages.Home.FriendActivity", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").src)
@@ -7200,8 +7082,7 @@ local default = FriendActivity
 return {
 	default = default,
 }
- end, newEnv("Havoc.views.Pages.Home.FriendActivity.FriendActivity"))() end)
-newModule("FriendItem", "ModuleScript", "Havoc.views.Pages.Home.FriendActivity.FriendItem", "Havoc.views.Pages.Home.FriendActivity", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages.Home.FriendActivity.FriendActivity"))() end)\nnewModule("FriendItem", "ModuleScript", "Havoc.views.Pages.Home.FriendActivity.FriendItem", "Havoc.views.Pages.Home.FriendActivity", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local useState = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").src).useState
@@ -7303,8 +7184,7 @@ local default = FriendItem
 return {
 	default = default,
 }
- end, newEnv("Havoc.views.Pages.Home.FriendActivity.FriendItem"))() end)
-newModule("GameItem", "ModuleScript", "Havoc.views.Pages.Home.FriendActivity.GameItem", "Havoc.views.Pages.Home.FriendActivity", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages.Home.FriendActivity.FriendItem"))() end)\nnewModule("GameItem", "ModuleScript", "Havoc.views.Pages.Home.FriendActivity.GameItem", "Havoc.views.Pages.Home.FriendActivity", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local useMemo = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").src).useMemo
@@ -7385,8 +7265,7 @@ return {
 	GAME_PADDING = GAME_PADDING,
 	default = default,
 }
- end, newEnv("Havoc.views.Pages.Home.FriendActivity.GameItem"))() end)
-newModule("Home", "ModuleScript", "Havoc.views.Pages.Home.Home", "Havoc.views.Pages.Home", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages.Home.FriendActivity.GameItem"))() end)\nnewModule("Home", "ModuleScript", "Havoc.views.Pages.Home.Home", "Havoc.views.Pages.Home", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local Canvas = TS.import(script, script.Parent.Parent.Parent.Parent, "components", "Canvas")
@@ -7412,14 +7291,12 @@ local function Home()
 	})
 end
 return Home
- end, newEnv("Havoc.views.Pages.Home.Home"))() end)
-newModule("Profile", "ModuleScript", "Havoc.views.Pages.Home.Profile", "Havoc.views.Pages.Home", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages.Home.Home"))() end)\nnewModule("Profile", "ModuleScript", "Havoc.views.Pages.Home.Profile", "Havoc.views.Pages.Home", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Profile").default
 return exports
- end, newEnv("Havoc.views.Pages.Home.Profile"))() end)
-newModule("Actions", "ModuleScript", "Havoc.views.Pages.Home.Profile.Actions", "Havoc.views.Pages.Home.Profile", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages.Home.Profile"))() end)\nnewModule("Actions", "ModuleScript", "Havoc.views.Pages.Home.Profile.Actions", "Havoc.views.Pages.Home.Profile", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local ActionButton = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, "components", "ActionButton").default
@@ -7469,8 +7346,7 @@ local default = Actions
 return {
 	default = default,
 }
- end, newEnv("Havoc.views.Pages.Home.Profile.Actions"))() end)
-newModule("Avatar", "ModuleScript", "Havoc.views.Pages.Home.Profile.Avatar", "Havoc.views.Pages.Home.Profile", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages.Home.Profile.Actions"))() end)\nnewModule("Avatar", "ModuleScript", "Havoc.views.Pages.Home.Profile.Avatar", "Havoc.views.Pages.Home.Profile", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local Players = TS.import(script, TS.getModule(script, "@rbxts", "services")).Players
@@ -7513,8 +7389,7 @@ local default = Avatar
 return {
 	default = default,
 }
- end, newEnv("Havoc.views.Pages.Home.Profile.Avatar"))() end)
-newModule("Info", "ModuleScript", "Havoc.views.Pages.Home.Profile.Info", "Havoc.views.Pages.Home.Profile", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages.Home.Profile.Avatar"))() end)\nnewModule("Info", "ModuleScript", "Havoc.views.Pages.Home.Profile.Info", "Havoc.views.Pages.Home.Profile", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local Players = TS.import(script, TS.getModule(script, "@rbxts", "services")).Players
@@ -7628,8 +7503,7 @@ local default = Info
 return {
 	default = default,
 }
- end, newEnv("Havoc.views.Pages.Home.Profile.Info"))() end)
-newModule("Profile", "ModuleScript", "Havoc.views.Pages.Home.Profile.Profile", "Havoc.views.Pages.Home.Profile", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages.Home.Profile.Info"))() end)\nnewModule("Profile", "ModuleScript", "Havoc.views.Pages.Home.Profile.Profile", "Havoc.views.Pages.Home.Profile", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local Canvas = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, "components", "Canvas")
@@ -7669,8 +7543,7 @@ local default = Profile
 return {
 	default = default,
 }
- end, newEnv("Havoc.views.Pages.Home.Profile.Profile"))() end)
-newModule("Sliders", "ModuleScript", "Havoc.views.Pages.Home.Profile.Sliders", "Havoc.views.Pages.Home.Profile", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages.Home.Profile.Profile"))() end)\nnewModule("Sliders", "ModuleScript", "Havoc.views.Pages.Home.Profile.Sliders", "Havoc.views.Pages.Home.Profile", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").src)
@@ -7814,8 +7687,7 @@ end
 return {
 	default = default,
 }
- end, newEnv("Havoc.views.Pages.Home.Profile.Sliders"))() end)
-newModule("Username", "ModuleScript", "Havoc.views.Pages.Home.Profile.Username", "Havoc.views.Pages.Home.Profile", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages.Home.Profile.Sliders"))() end)\nnewModule("Username", "ModuleScript", "Havoc.views.Pages.Home.Profile.Username", "Havoc.views.Pages.Home.Profile", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local Players = TS.import(script, TS.getModule(script, "@rbxts", "services")).Players
@@ -7858,14 +7730,12 @@ local default = Username
 return {
 	default = default,
 }
- end, newEnv("Havoc.views.Pages.Home.Profile.Username"))() end)
-newModule("Server", "ModuleScript", "Havoc.views.Pages.Home.Server", "Havoc.views.Pages.Home", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages.Home.Profile.Username"))() end)\nnewModule("Server", "ModuleScript", "Havoc.views.Pages.Home.Server", "Havoc.views.Pages.Home", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Server").default
 return exports
- end, newEnv("Havoc.views.Pages.Home.Server"))() end)
-newModule("Server", "ModuleScript", "Havoc.views.Pages.Home.Server.Server", "Havoc.views.Pages.Home.Server", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages.Home.Server"))() end)\nnewModule("Server", "ModuleScript", "Havoc.views.Pages.Home.Server.Server", "Havoc.views.Pages.Home.Server", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local Players = TS.import(script, TS.getModule(script, "@rbxts", "services")).Players
@@ -7944,8 +7814,7 @@ local default = Server
 return {
 	default = default,
 }
- end, newEnv("Havoc.views.Pages.Home.Server.Server"))() end)
-newModule("ServerAction", "ModuleScript", "Havoc.views.Pages.Home.Server.ServerAction", "Havoc.views.Pages.Home.Server", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages.Home.Server.Server"))() end)\nnewModule("ServerAction", "ModuleScript", "Havoc.views.Pages.Home.Server.ServerAction", "Havoc.views.Pages.Home.Server", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local useState = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").src).useState
@@ -8020,8 +7889,7 @@ local default = ServerAction
 return {
 	default = default,
 }
- end, newEnv("Havoc.views.Pages.Home.Server.ServerAction"))() end)
-newModule("StatusLabel", "ModuleScript", "Havoc.views.Pages.Home.Server.StatusLabel", "Havoc.views.Pages.Home.Server", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages.Home.Server.ServerAction"))() end)\nnewModule("StatusLabel", "ModuleScript", "Havoc.views.Pages.Home.Server.StatusLabel", "Havoc.views.Pages.Home.Server", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").src)
@@ -8083,8 +7951,7 @@ local default = StatusLabel
 return {
 	default = default,
 }
- end, newEnv("Havoc.views.Pages.Home.Server.StatusLabel"))() end)
-newModule("Title", "ModuleScript", "Havoc.views.Pages.Home.Title", "Havoc.views.Pages.Home", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages.Home.Server.StatusLabel"))() end)\nnewModule("Title", "ModuleScript", "Havoc.views.Pages.Home.Title", "Havoc.views.Pages.Home", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local Canvas = TS.import(script, script.Parent.Parent.Parent.Parent, "components", "Canvas")
@@ -8217,14 +8084,12 @@ function Label(props)
 	return Roact.createElement("TextLabel", _attributes)
 end
 return exports
- end, newEnv("Havoc.views.Pages.Home.Title"))() end)
-newModule("Misc", "ModuleScript", "Havoc.views.Pages.Misc", "Havoc.views.Pages", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages.Home.Title"))() end)\nnewModule("Misc", "ModuleScript", "Havoc.views.Pages.Misc", "Havoc.views.Pages", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Misc").default
 return exports
- end, newEnv("Havoc.views.Pages.Misc"))() end)
-newModule("GistLoader", "ModuleScript", "Havoc.views.Pages.Misc.GistLoader", "Havoc.views.Pages.Misc", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages.Misc"))() end)\nnewModule("GistLoader", "ModuleScript", "Havoc.views.Pages.Misc.GistLoader", "Havoc.views.Pages.Misc", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").src)
@@ -8528,8 +8393,7 @@ local default = GistLoader
 return {
 	default = default,
 }
- end, newEnv("Havoc.views.Pages.Misc.GistLoader"))() end)
-newModule("Misc", "ModuleScript", "Havoc.views.Pages.Misc.Misc", "Havoc.views.Pages.Misc", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages.Misc.GistLoader"))() end)\nnewModule("Misc", "ModuleScript", "Havoc.views.Pages.Misc.Misc", "Havoc.views.Pages.Misc", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local Card = TS.import(script, script.Parent.Parent.Parent.Parent, "components", "Card").default
@@ -8572,20 +8436,17 @@ local default = MiscPage
 return {
 	default = default,
 }
- end, newEnv("Havoc.views.Pages.Misc.Misc"))() end)
-newModule("Options", "ModuleScript", "Havoc.views.Pages.Options", "Havoc.views.Pages", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages.Misc.Misc"))() end)\nnewModule("Options", "ModuleScript", "Havoc.views.Pages.Options", "Havoc.views.Pages", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Options").default
 return exports
- end, newEnv("Havoc.views.Pages.Options"))() end)
-newModule("Config", "ModuleScript", "Havoc.views.Pages.Options.Config", "Havoc.views.Pages.Options", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages.Options"))() end)\nnewModule("Config", "ModuleScript", "Havoc.views.Pages.Options.Config", "Havoc.views.Pages.Options", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Config").default
 return exports
- end, newEnv("Havoc.views.Pages.Options.Config"))() end)
-newModule("Config", "ModuleScript", "Havoc.views.Pages.Options.Config.Config", "Havoc.views.Pages.Options.Config", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages.Options.Config"))() end)\nnewModule("Config", "ModuleScript", "Havoc.views.Pages.Options.Config.Config", "Havoc.views.Pages.Options.Config", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local Canvas = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, "components", "Canvas")
@@ -8652,8 +8513,7 @@ local default = Config
 return {
 	default = default,
 }
- end, newEnv("Havoc.views.Pages.Options.Config.Config"))() end)
-newModule("ConfigItem", "ModuleScript", "Havoc.views.Pages.Options.Config.ConfigItem", "Havoc.views.Pages.Options.Config", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages.Options.Config.Config"))() end)\nnewModule("ConfigItem", "ModuleScript", "Havoc.views.Pages.Options.Config.ConfigItem", "Havoc.views.Pages.Options.Config", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local useState = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").src).useState
@@ -8762,8 +8622,7 @@ return {
 	ENTRY_TEXT_PADDING = ENTRY_TEXT_PADDING,
 	default = default,
 }
- end, newEnv("Havoc.views.Pages.Options.Config.ConfigItem"))() end)
-newModule("Options", "ModuleScript", "Havoc.views.Pages.Options.Options", "Havoc.views.Pages.Options", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages.Options.Config.ConfigItem"))() end)\nnewModule("Options", "ModuleScript", "Havoc.views.Pages.Options.Options", "Havoc.views.Pages.Options", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local Canvas = TS.import(script, script.Parent.Parent.Parent.Parent, "components", "Canvas")
@@ -8790,14 +8649,12 @@ local default = Options
 return {
 	default = default,
 }
- end, newEnv("Havoc.views.Pages.Options.Options"))() end)
-newModule("Shortcuts", "ModuleScript", "Havoc.views.Pages.Options.Shortcuts", "Havoc.views.Pages.Options", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages.Options.Options"))() end)\nnewModule("Shortcuts", "ModuleScript", "Havoc.views.Pages.Options.Shortcuts", "Havoc.views.Pages.Options", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Shortcuts").default
 return exports
- end, newEnv("Havoc.views.Pages.Options.Shortcuts"))() end)
-newModule("ShortcutItem", "ModuleScript", "Havoc.views.Pages.Options.Shortcuts.ShortcutItem", "Havoc.views.Pages.Options.Shortcuts", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages.Options.Shortcuts"))() end)\nnewModule("ShortcutItem", "ModuleScript", "Havoc.views.Pages.Options.Shortcuts.ShortcutItem", "Havoc.views.Pages.Options.Shortcuts", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local _roact_hooked = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").src)
@@ -9003,8 +8860,7 @@ return {
 	ENTRY_TEXT_PADDING = ENTRY_TEXT_PADDING,
 	default = default,
 }
- end, newEnv("Havoc.views.Pages.Options.Shortcuts.ShortcutItem"))() end)
-newModule("Shortcuts", "ModuleScript", "Havoc.views.Pages.Options.Shortcuts.Shortcuts", "Havoc.views.Pages.Options.Shortcuts", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages.Options.Shortcuts.ShortcutItem"))() end)\nnewModule("Shortcuts", "ModuleScript", "Havoc.views.Pages.Options.Shortcuts.Shortcuts", "Havoc.views.Pages.Options.Shortcuts", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local useState = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").src).useState
@@ -9144,14 +9000,12 @@ local default = Shortcuts
 return {
 	default = default,
 }
- end, newEnv("Havoc.views.Pages.Options.Shortcuts.Shortcuts"))() end)
-newModule("Themes", "ModuleScript", "Havoc.views.Pages.Options.Themes", "Havoc.views.Pages.Options", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages.Options.Shortcuts.Shortcuts"))() end)\nnewModule("Themes", "ModuleScript", "Havoc.views.Pages.Options.Themes", "Havoc.views.Pages.Options", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Themes").default
 return exports
- end, newEnv("Havoc.views.Pages.Options.Themes"))() end)
-newModule("ThemeItem", "ModuleScript", "Havoc.views.Pages.Options.Themes.ThemeItem", "Havoc.views.Pages.Options.Themes", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages.Options.Themes"))() end)\nnewModule("ThemeItem", "ModuleScript", "Havoc.views.Pages.Options.Themes.ThemeItem", "Havoc.views.Pages.Options.Themes", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local useState = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").src).useState
@@ -9345,8 +9199,7 @@ return {
 	ENTRY_TEXT_PADDING = ENTRY_TEXT_PADDING,
 	default = default,
 }
- end, newEnv("Havoc.views.Pages.Options.Themes.ThemeItem"))() end)
-newModule("Themes", "ModuleScript", "Havoc.views.Pages.Options.Themes.Themes", "Havoc.views.Pages.Options.Themes", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages.Options.Themes.ThemeItem"))() end)\nnewModule("Themes", "ModuleScript", "Havoc.views.Pages.Options.Themes.Themes", "Havoc.views.Pages.Options.Themes", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local useMemo = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").src).useMemo
@@ -9425,8 +9278,7 @@ local default = Themes
 return {
 	default = default,
 }
- end, newEnv("Havoc.views.Pages.Options.Themes.Themes"))() end)
-newModule("Pages", "ModuleScript", "Havoc.views.Pages.Pages", "Havoc.views.Pages", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages.Options.Themes.Themes"))() end)\nnewModule("Pages", "ModuleScript", "Havoc.views.Pages.Pages", "Havoc.views.Pages", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local useDelayedUpdate = TS.import(script, script.Parent.Parent.Parent, "hooks", "common", "use-delayed-update").useDelayedUpdate
@@ -9470,14 +9322,12 @@ local function Pages()
 	return Roact.createFragment(_children)
 end
 return Pages
- end, newEnv("Havoc.views.Pages.Pages"))() end)
-newModule("Scripts", "ModuleScript", "Havoc.views.Pages.Scripts", "Havoc.views.Pages", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages.Pages"))() end)\nnewModule("Scripts", "ModuleScript", "Havoc.views.Pages.Scripts", "Havoc.views.Pages", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)
 local exports = {}
 exports.default = TS.import(script, script, "Scripts").default
 return exports
- end, newEnv("Havoc.views.Pages.Scripts"))() end)
-newModule("Content", "ModuleScript", "Havoc.views.Pages.Scripts.Content", "Havoc.views.Pages.Scripts", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages.Scripts"))() end)\nnewModule("Content", "ModuleScript", "Havoc.views.Pages.Scripts.Content", "Havoc.views.Pages.Scripts", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local Canvas = TS.import(script, script.Parent.Parent.Parent.Parent, "components", "Canvas")
@@ -9603,8 +9453,7 @@ local default = Content
 return {
 	default = default,
 }
- end, newEnv("Havoc.views.Pages.Scripts.Content"))() end)
-newModule("ScriptCard", "ModuleScript", "Havoc.views.Pages.Scripts.ScriptCard", "Havoc.views.Pages.Scripts", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages.Scripts.Content"))() end)\nnewModule("ScriptCard", "ModuleScript", "Havoc.views.Pages.Scripts.ScriptCard", "Havoc.views.Pages.Scripts", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local useEffect = TS.import(script, TS.getModule(script, "@rbxts", "roact-hooked").src).useEffect
@@ -9777,8 +9626,7 @@ local default = ScriptCard
 return {
 	default = default,
 }
- end, newEnv("Havoc.views.Pages.Scripts.ScriptCard"))() end)
-newModule("Scripts", "ModuleScript", "Havoc.views.Pages.Scripts.Scripts", "Havoc.views.Pages.Scripts", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages.Scripts.ScriptCard"))() end)\nnewModule("Scripts", "ModuleScript", "Havoc.views.Pages.Scripts.Scripts", "Havoc.views.Pages.Scripts", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)
 local Roact = TS.import(script, TS.getModule(script, "@rbxts", "roact").src)
 local Canvas = TS.import(script, script.Parent.Parent.Parent.Parent, "components", "Canvas")
@@ -9954,8 +9802,7 @@ local default = Scripts
 return {
 	default = default,
 }
- end, newEnv("Havoc.views.Pages.Scripts.Scripts"))() end)
-newModule("constants", "ModuleScript", "Havoc.views.Pages.Scripts.constants", "Havoc.views.Pages.Scripts", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
+ end, newEnv("Havoc.views.Pages.Scripts.Scripts"))() end)\nnewModule("constants", "ModuleScript", "Havoc.views.Pages.Scripts.constants", "Havoc.views.Pages.Scripts", function () return setfenv(function() --Compiled with roblox-ts v1.3.3
 local BASE_WINDOW_HEIGHT = 880
 local BASE_WINDOW_WIDTH = 1824
 local BASE_PADDING = 48
@@ -9964,9 +9811,7 @@ return {
 	BASE_WINDOW_WIDTH = BASE_WINDOW_WIDTH,
 	BASE_PADDING = BASE_PADDING,
 }
- end, newEnv("Havoc.views.Pages.Scripts.constants"))() end)
-newInstance("include", "Folder", "Havoc.include", "Havoc")
-newModule("Promise", "ModuleScript", "Havoc.include.Promise", "Havoc.include", function () return setfenv(function() --[[
+ end, newEnv("Havoc.views.Pages.Scripts.constants"))() end)\nnewInstance("include", "Folder", "Havoc.include", "Havoc")\nnewModule("Promise", "ModuleScript", "Havoc.include.Promise", "Havoc.include", function () return setfenv(function() --[[
 	An implementation of Promises similar to Promise/A+.
 ]]
 
@@ -12014,8 +11859,7 @@ function Promise.onUnhandledRejection(callback)
 end
 
 return Promise
- end, newEnv("Havoc.include.Promise"))() end)
-newModule("RuntimeLib", "ModuleScript", "Havoc.include.RuntimeLib", "Havoc.include", function () return setfenv(function() local Promise = require(script.Parent.Promise)
+ end, newEnv("Havoc.include.Promise"))() end)\nnewModule("RuntimeLib", "ModuleScript", "Havoc.include.RuntimeLib", "Havoc.include", function () return setfenv(function() local Promise = require(script.Parent.Promise)
 
 local RunService = game:GetService("RunService")
 local ReplicatedFirst = game:GetService("ReplicatedFirst")
@@ -12244,14 +12088,7 @@ function TS.generator(callback)
 end
 
 return TS
- end, newEnv("Havoc.include.RuntimeLib"))() end)
-newInstance("node_modules", "Folder", "Havoc.include.node_modules", "Havoc.include")
-newInstance("compiler-types", "Folder", "Havoc.include.node_modules.compiler-types", "Havoc.include.node_modules")
-newInstance("types", "Folder", "Havoc.include.node_modules.compiler-types.types", "Havoc.include.node_modules.compiler-types")
-newInstance("exploit-types", "Folder", "Havoc.include.node_modules.exploit-types", "Havoc.include.node_modules")
-newInstance("types", "Folder", "Havoc.include.node_modules.exploit-types.types", "Havoc.include.node_modules.exploit-types")
-newInstance("flipper", "Folder", "Havoc.include.node_modules.flipper", "Havoc.include.node_modules")
-newModule("src", "ModuleScript", "Havoc.include.node_modules.flipper.src", "Havoc.include.node_modules.flipper", function () return setfenv(function() local Flipper = {
+ end, newEnv("Havoc.include.RuntimeLib"))() end)\nnewInstance("node_modules", "Folder", "Havoc.include.node_modules", "Havoc.include")\nnewInstance("compiler-types", "Folder", "Havoc.include.node_modules.compiler-types", "Havoc.include.node_modules")\nnewInstance("types", "Folder", "Havoc.include.node_modules.compiler-types.types", "Havoc.include.node_modules.compiler-types")\nnewInstance("exploit-types", "Folder", "Havoc.include.node_modules.exploit-types", "Havoc.include.node_modules")\nnewInstance("types", "Folder", "Havoc.include.node_modules.exploit-types.types", "Havoc.include.node_modules.exploit-types")\nnewInstance("flipper", "Folder", "Havoc.include.node_modules.flipper", "Havoc.include.node_modules")\nnewModule("src", "ModuleScript", "Havoc.include.node_modules.flipper.src", "Havoc.include.node_modules.flipper", function () return setfenv(function() local Flipper = {
 	SingleMotor = require(script.SingleMotor),
 	GroupMotor = require(script.GroupMotor),
 
@@ -12262,8 +12099,7 @@ newModule("src", "ModuleScript", "Havoc.include.node_modules.flipper.src", "Havo
 	isMotor = require(script.isMotor),
 }
 
-return Flipper end, newEnv("Havoc.include.node_modules.flipper.src"))() end)
-newModule("BaseMotor", "ModuleScript", "Havoc.include.node_modules.flipper.src.BaseMotor", "Havoc.include.node_modules.flipper.src", function () return setfenv(function() local RunService = game:GetService("RunService")
+return Flipper end, newEnv("Havoc.include.node_modules.flipper.src"))() end)\nnewModule("BaseMotor", "ModuleScript", "Havoc.include.node_modules.flipper.src.BaseMotor", "Havoc.include.node_modules.flipper.src", function () return setfenv(function() local RunService = game:GetService("RunService")
 
 local Signal = require(script.Parent.Signal)
 
@@ -12318,8 +12154,7 @@ function BaseMotor:__tostring()
 end
 
 return BaseMotor
- end, newEnv("Havoc.include.node_modules.flipper.src.BaseMotor"))() end)
-newModule("GroupMotor", "ModuleScript", "Havoc.include.node_modules.flipper.src.GroupMotor", "Havoc.include.node_modules.flipper.src", function () return setfenv(function() local BaseMotor = require(script.Parent.BaseMotor)
+ end, newEnv("Havoc.include.node_modules.flipper.src.BaseMotor"))() end)\nnewModule("GroupMotor", "ModuleScript", "Havoc.include.node_modules.flipper.src.GroupMotor", "Havoc.include.node_modules.flipper.src", function () return setfenv(function() local BaseMotor = require(script.Parent.BaseMotor)
 local SingleMotor = require(script.Parent.SingleMotor)
 
 local isMotor = require(script.Parent.isMotor)
@@ -12426,8 +12261,7 @@ function GroupMotor:__tostring()
 end
 
 return GroupMotor
- end, newEnv("Havoc.include.node_modules.flipper.src.GroupMotor"))() end)
-newModule("Instant", "ModuleScript", "Havoc.include.node_modules.flipper.src.Instant", "Havoc.include.node_modules.flipper.src", function () return setfenv(function() local Instant = {}
+ end, newEnv("Havoc.include.node_modules.flipper.src.GroupMotor"))() end)\nnewModule("Instant", "ModuleScript", "Havoc.include.node_modules.flipper.src.Instant", "Havoc.include.node_modules.flipper.src", function () return setfenv(function() local Instant = {}
 Instant.__index = Instant
 
 function Instant.new(targetValue)
@@ -12443,8 +12277,7 @@ function Instant:step()
 	}
 end
 
-return Instant end, newEnv("Havoc.include.node_modules.flipper.src.Instant"))() end)
-newModule("Linear", "ModuleScript", "Havoc.include.node_modules.flipper.src.Linear", "Havoc.include.node_modules.flipper.src", function () return setfenv(function() local Linear = {}
+return Instant end, newEnv("Havoc.include.node_modules.flipper.src.Instant"))() end)\nnewModule("Linear", "ModuleScript", "Havoc.include.node_modules.flipper.src.Linear", "Havoc.include.node_modules.flipper.src", function () return setfenv(function() local Linear = {}
 Linear.__index = Linear
 
 function Linear.new(targetValue, options)
@@ -12479,8 +12312,7 @@ function Linear:step(state, dt)
 	}
 end
 
-return Linear end, newEnv("Havoc.include.node_modules.flipper.src.Linear"))() end)
-newModule("Signal", "ModuleScript", "Havoc.include.node_modules.flipper.src.Signal", "Havoc.include.node_modules.flipper.src", function () return setfenv(function() local Connection = {}
+return Linear end, newEnv("Havoc.include.node_modules.flipper.src.Linear"))() end)\nnewModule("Signal", "ModuleScript", "Havoc.include.node_modules.flipper.src.Signal", "Havoc.include.node_modules.flipper.src", function () return setfenv(function() local Connection = {}
 Connection.__index = Connection
 
 function Connection.new(signal, handler)
@@ -12537,8 +12369,7 @@ function Signal:wait()
 	return coroutine.yield()
 end
 
-return Signal end, newEnv("Havoc.include.node_modules.flipper.src.Signal"))() end)
-newModule("SingleMotor", "ModuleScript", "Havoc.include.node_modules.flipper.src.SingleMotor", "Havoc.include.node_modules.flipper.src", function () return setfenv(function() local BaseMotor = require(script.Parent.BaseMotor)
+return Signal end, newEnv("Havoc.include.node_modules.flipper.src.Signal"))() end)\nnewModule("SingleMotor", "ModuleScript", "Havoc.include.node_modules.flipper.src.SingleMotor", "Havoc.include.node_modules.flipper.src", function () return setfenv(function() local BaseMotor = require(script.Parent.BaseMotor)
 
 local SingleMotor = setmetatable({}, BaseMotor)
 SingleMotor.__index = SingleMotor
@@ -12605,8 +12436,7 @@ function SingleMotor:__tostring()
 end
 
 return SingleMotor
- end, newEnv("Havoc.include.node_modules.flipper.src.SingleMotor"))() end)
-newModule("Spring", "ModuleScript", "Havoc.include.node_modules.flipper.src.Spring", "Havoc.include.node_modules.flipper.src", function () return setfenv(function() local VELOCITY_THRESHOLD = 0.001
+ end, newEnv("Havoc.include.node_modules.flipper.src.SingleMotor"))() end)\nnewModule("Spring", "ModuleScript", "Havoc.include.node_modules.flipper.src.Spring", "Havoc.include.node_modules.flipper.src", function () return setfenv(function() local VELOCITY_THRESHOLD = 0.001
 local POSITION_THRESHOLD = 0.001
 
 local EPS = 0.0001
@@ -12713,8 +12543,7 @@ function Spring:step(state, dt)
 	}
 end
 
-return Spring end, newEnv("Havoc.include.node_modules.flipper.src.Spring"))() end)
-newModule("isMotor", "ModuleScript", "Havoc.include.node_modules.flipper.src.isMotor", "Havoc.include.node_modules.flipper.src", function () return setfenv(function() local function isMotor(value)
+return Spring end, newEnv("Havoc.include.node_modules.flipper.src.Spring"))() end)\nnewModule("isMotor", "ModuleScript", "Havoc.include.node_modules.flipper.src.isMotor", "Havoc.include.node_modules.flipper.src", function () return setfenv(function() local function isMotor(value)
 	local motorType = tostring(value):match("^Motor%((.+)%)$")
 
 	if motorType then
@@ -12724,9 +12553,7 @@ newModule("isMotor", "ModuleScript", "Havoc.include.node_modules.flipper.src.isM
 	end
 end
 
-return isMotor end, newEnv("Havoc.include.node_modules.flipper.src.isMotor"))() end)
-newInstance("typings", "Folder", "Havoc.include.node_modules.flipper.typings", "Havoc.include.node_modules.flipper")
-newModule("make", "ModuleScript", "Havoc.include.node_modules.make", "Havoc.include.node_modules", function () return setfenv(function() -- Compiled with roblox-ts v1.2.3
+return isMotor end, newEnv("Havoc.include.node_modules.flipper.src.isMotor"))() end)\nnewInstance("typings", "Folder", "Havoc.include.node_modules.flipper.typings", "Havoc.include.node_modules.flipper")\nnewModule("make", "ModuleScript", "Havoc.include.node_modules.make", "Havoc.include.node_modules", function () return setfenv(function() -- Compiled with roblox-ts v1.2.3
 --[[
 	*
 	* Returns a table wherein an object's writable properties can be specified,
@@ -12768,13 +12595,7 @@ local function Make(className, settings)
 	return instance
 end
 return Make
- end, newEnv("Havoc.include.node_modules.make"))() end)
-newInstance("node_modules", "Folder", "Havoc.include.node_modules.make.node_modules", "Havoc.include.node_modules.make")
-newInstance("@rbxts", "Folder", "Havoc.include.node_modules.make.node_modules.@rbxts", "Havoc.include.node_modules.make.node_modules")
-newInstance("compiler-types", "Folder", "Havoc.include.node_modules.make.node_modules.@rbxts.compiler-types", "Havoc.include.node_modules.make.node_modules.@rbxts")
-newInstance("types", "Folder", "Havoc.include.node_modules.make.node_modules.@rbxts.compiler-types.types", "Havoc.include.node_modules.make.node_modules.@rbxts.compiler-types")
-newInstance("roact", "Folder", "Havoc.include.node_modules.roact", "Havoc.include.node_modules")
-newModule("src", "ModuleScript", "Havoc.include.node_modules.roact.src", "Havoc.include.node_modules.roact", function () return setfenv(function() --[[
+ end, newEnv("Havoc.include.node_modules.make"))() end)\nnewInstance("node_modules", "Folder", "Havoc.include.node_modules.make.node_modules", "Havoc.include.node_modules.make")\nnewInstance("@rbxts", "Folder", "Havoc.include.node_modules.make.node_modules.@rbxts", "Havoc.include.node_modules.make.node_modules")\nnewInstance("compiler-types", "Folder", "Havoc.include.node_modules.make.node_modules.@rbxts.compiler-types", "Havoc.include.node_modules.make.node_modules.@rbxts")\nnewInstance("types", "Folder", "Havoc.include.node_modules.make.node_modules.@rbxts.compiler-types.types", "Havoc.include.node_modules.make.node_modules.@rbxts.compiler-types")\nnewInstance("roact", "Folder", "Havoc.include.node_modules.roact", "Havoc.include.node_modules")\nnewModule("src", "ModuleScript", "Havoc.include.node_modules.roact.src", "Havoc.include.node_modules.roact", function () return setfenv(function() --[[
 	Packages up the internals of Roact and exposes a public API for it.
 ]]
 
@@ -12822,8 +12643,7 @@ local Roact = strict {
 	},
 }
 
-return Roact end, newEnv("Havoc.include.node_modules.roact.src"))() end)
-newModule("Binding", "ModuleScript", "Havoc.include.node_modules.roact.src.Binding", "Havoc.include.node_modules.roact.src", function () return setfenv(function() local createSignal = require(script.Parent.createSignal)
+return Roact end, newEnv("Havoc.include.node_modules.roact.src"))() end)\nnewModule("Binding", "ModuleScript", "Havoc.include.node_modules.roact.src.Binding", "Havoc.include.node_modules.roact.src", function () return setfenv(function() local createSignal = require(script.Parent.createSignal)
 local Symbol = require(script.Parent.Symbol)
 local Type = require(script.Parent.Type)
 
@@ -12979,8 +12799,7 @@ function BindingInternalApi.join(upstreamBindings)
 	}, BindingPublicMeta)
 end
 
-return BindingInternalApi end, newEnv("Havoc.include.node_modules.roact.src.Binding"))() end)
-newModule("Component", "ModuleScript", "Havoc.include.node_modules.roact.src.Component", "Havoc.include.node_modules.roact.src", function () return setfenv(function() local assign = require(script.Parent.assign)
+return BindingInternalApi end, newEnv("Havoc.include.node_modules.roact.src.Binding"))() end)\nnewModule("Component", "ModuleScript", "Havoc.include.node_modules.roact.src.Component", "Havoc.include.node_modules.roact.src", function () return setfenv(function() local assign = require(script.Parent.assign)
 local ComponentLifecyclePhase = require(script.Parent.ComponentLifecyclePhase)
 local Type = require(script.Parent.Type)
 local Symbol = require(script.Parent.Symbol)
@@ -13500,8 +13319,7 @@ function Component:__resolveUpdate(incomingProps, incomingState)
 	return true
 end
 
-return Component end, newEnv("Havoc.include.node_modules.roact.src.Component"))() end)
-newModule("ComponentLifecyclePhase", "ModuleScript", "Havoc.include.node_modules.roact.src.ComponentLifecyclePhase", "Havoc.include.node_modules.roact.src", function () return setfenv(function() local Symbol = require(script.Parent.Symbol)
+return Component end, newEnv("Havoc.include.node_modules.roact.src.Component"))() end)\nnewModule("ComponentLifecyclePhase", "ModuleScript", "Havoc.include.node_modules.roact.src.ComponentLifecyclePhase", "Havoc.include.node_modules.roact.src", function () return setfenv(function() local Symbol = require(script.Parent.Symbol)
 local strict = require(script.Parent.strict)
 
 local ComponentLifecyclePhase = strict({
@@ -13519,8 +13337,7 @@ local ComponentLifecyclePhase = strict({
 	Idle = Symbol.named("idle"),
 }, "ComponentLifecyclePhase")
 
-return ComponentLifecyclePhase end, newEnv("Havoc.include.node_modules.roact.src.ComponentLifecyclePhase"))() end)
-newModule("Config", "ModuleScript", "Havoc.include.node_modules.roact.src.Config", "Havoc.include.node_modules.roact.src", function () return setfenv(function() --[[
+return ComponentLifecyclePhase end, newEnv("Havoc.include.node_modules.roact.src.ComponentLifecyclePhase"))() end)\nnewModule("Config", "ModuleScript", "Havoc.include.node_modules.roact.src.Config", "Havoc.include.node_modules.roact.src", function () return setfenv(function() --[[
 	Exposes an interface to set global configuration values for Roact.
 
 	Configuration can only occur once, and should only be done by an application
@@ -13646,8 +13463,7 @@ function Config:scoped(configValues, callback)
 	assert(success, result)
 end
 
-return Config end, newEnv("Havoc.include.node_modules.roact.src.Config"))() end)
-newModule("ElementKind", "ModuleScript", "Havoc.include.node_modules.roact.src.ElementKind", "Havoc.include.node_modules.roact.src", function () return setfenv(function() --[[
+return Config end, newEnv("Havoc.include.node_modules.roact.src.Config"))() end)\nnewModule("ElementKind", "ModuleScript", "Havoc.include.node_modules.roact.src.ElementKind", "Havoc.include.node_modules.roact.src", function () return setfenv(function() --[[
 	Contains markers for annotating the type of an element.
 
 	Use `ElementKind` as a key, and values from it as the value.
@@ -13697,8 +13513,7 @@ getmetatable(ElementKind).__index = ElementKindInternal
 
 strict(ElementKindInternal, "ElementKind")
 
-return ElementKind end, newEnv("Havoc.include.node_modules.roact.src.ElementKind"))() end)
-newModule("ElementUtils", "ModuleScript", "Havoc.include.node_modules.roact.src.ElementUtils", "Havoc.include.node_modules.roact.src", function () return setfenv(function() local Type = require(script.Parent.Type)
+return ElementKind end, newEnv("Havoc.include.node_modules.roact.src.ElementKind"))() end)\nnewModule("ElementUtils", "ModuleScript", "Havoc.include.node_modules.roact.src.ElementUtils", "Havoc.include.node_modules.roact.src", function () return setfenv(function() local Type = require(script.Parent.Type)
 local Symbol = require(script.Parent.Symbol)
 
 local function noop()
@@ -13796,15 +13611,13 @@ function ElementUtils.getElementByKey(elements, hostKey)
 	error("Invalid elements")
 end
 
-return ElementUtils end, newEnv("Havoc.include.node_modules.roact.src.ElementUtils"))() end)
-newModule("GlobalConfig", "ModuleScript", "Havoc.include.node_modules.roact.src.GlobalConfig", "Havoc.include.node_modules.roact.src", function () return setfenv(function() --[[
+return ElementUtils end, newEnv("Havoc.include.node_modules.roact.src.ElementUtils"))() end)\nnewModule("GlobalConfig", "ModuleScript", "Havoc.include.node_modules.roact.src.GlobalConfig", "Havoc.include.node_modules.roact.src", function () return setfenv(function() --[[
 	Exposes a single instance of a configuration as Roact's GlobalConfig.
 ]]
 
 local Config = require(script.Parent.Config)
 
-return Config.new() end, newEnv("Havoc.include.node_modules.roact.src.GlobalConfig"))() end)
-newModule("Logging", "ModuleScript", "Havoc.include.node_modules.roact.src.Logging", "Havoc.include.node_modules.roact.src", function () return setfenv(function() --[[
+return Config.new() end, newEnv("Havoc.include.node_modules.roact.src.GlobalConfig"))() end)\nnewModule("Logging", "ModuleScript", "Havoc.include.node_modules.roact.src.Logging", "Havoc.include.node_modules.roact.src", function () return setfenv(function() --[[
 	Centralized place to handle logging. Lets us:
 	- Unit test log output via `Logging.capture`
 	- Disable verbose log messages when not debugging Roact
@@ -13962,15 +13775,13 @@ function Logging.warnOnce(messageTemplate, ...)
 	Logging.warn(messageTemplate, ...)
 end
 
-return Logging end, newEnv("Havoc.include.node_modules.roact.src.Logging"))() end)
-newModule("None", "ModuleScript", "Havoc.include.node_modules.roact.src.None", "Havoc.include.node_modules.roact.src", function () return setfenv(function() local Symbol = require(script.Parent.Symbol)
+return Logging end, newEnv("Havoc.include.node_modules.roact.src.Logging"))() end)\nnewModule("None", "ModuleScript", "Havoc.include.node_modules.roact.src.None", "Havoc.include.node_modules.roact.src", function () return setfenv(function() local Symbol = require(script.Parent.Symbol)
 
 -- Marker used to specify that the value is nothing, because nil cannot be
 -- stored in tables.
 local None = Symbol.named("None")
 
-return None end, newEnv("Havoc.include.node_modules.roact.src.None"))() end)
-newModule("NoopRenderer", "ModuleScript", "Havoc.include.node_modules.roact.src.NoopRenderer", "Havoc.include.node_modules.roact.src", function () return setfenv(function() --[[
+return None end, newEnv("Havoc.include.node_modules.roact.src.None"))() end)\nnewModule("NoopRenderer", "ModuleScript", "Havoc.include.node_modules.roact.src.NoopRenderer", "Havoc.include.node_modules.roact.src", function () return setfenv(function() --[[
 	Reference renderer intended for use in tests as well as for documenting the
 	minimum required interface for a Roact renderer.
 ]]
@@ -13993,14 +13804,11 @@ function NoopRenderer.updateHostNode(reconciler, node, newElement)
 	return node
 end
 
-return NoopRenderer end, newEnv("Havoc.include.node_modules.roact.src.NoopRenderer"))() end)
-newModule("Portal", "ModuleScript", "Havoc.include.node_modules.roact.src.Portal", "Havoc.include.node_modules.roact.src", function () return setfenv(function() local Symbol = require(script.Parent.Symbol)
+return NoopRenderer end, newEnv("Havoc.include.node_modules.roact.src.NoopRenderer"))() end)\nnewModule("Portal", "ModuleScript", "Havoc.include.node_modules.roact.src.Portal", "Havoc.include.node_modules.roact.src", function () return setfenv(function() local Symbol = require(script.Parent.Symbol)
 
 local Portal = Symbol.named("Portal")
 
-return Portal end, newEnv("Havoc.include.node_modules.roact.src.Portal"))() end)
-newInstance("PropMarkers", "Folder", "Havoc.include.node_modules.roact.src.PropMarkers", "Havoc.include.node_modules.roact.src")
-newModule("Change", "ModuleScript", "Havoc.include.node_modules.roact.src.PropMarkers.Change", "Havoc.include.node_modules.roact.src.PropMarkers", function () return setfenv(function() --[[
+return Portal end, newEnv("Havoc.include.node_modules.roact.src.Portal"))() end)\nnewInstance("PropMarkers", "Folder", "Havoc.include.node_modules.roact.src.PropMarkers", "Havoc.include.node_modules.roact.src")\nnewModule("Change", "ModuleScript", "Havoc.include.node_modules.roact.src.PropMarkers.Change", "Havoc.include.node_modules.roact.src.PropMarkers", function () return setfenv(function() --[[
 	Change is used to generate special prop keys that can be used to connect to
 	GetPropertyChangedSignal.
 
@@ -14038,13 +13846,11 @@ setmetatable(Change, {
 })
 
 return Change
- end, newEnv("Havoc.include.node_modules.roact.src.PropMarkers.Change"))() end)
-newModule("Children", "ModuleScript", "Havoc.include.node_modules.roact.src.PropMarkers.Children", "Havoc.include.node_modules.roact.src.PropMarkers", function () return setfenv(function() local Symbol = require(script.Parent.Parent.Symbol)
+ end, newEnv("Havoc.include.node_modules.roact.src.PropMarkers.Change"))() end)\nnewModule("Children", "ModuleScript", "Havoc.include.node_modules.roact.src.PropMarkers.Children", "Havoc.include.node_modules.roact.src.PropMarkers", function () return setfenv(function() local Symbol = require(script.Parent.Parent.Symbol)
 
 local Children = Symbol.named("Children")
 
-return Children end, newEnv("Havoc.include.node_modules.roact.src.PropMarkers.Children"))() end)
-newModule("Event", "ModuleScript", "Havoc.include.node_modules.roact.src.PropMarkers.Event", "Havoc.include.node_modules.roact.src.PropMarkers", function () return setfenv(function() --[[
+return Children end, newEnv("Havoc.include.node_modules.roact.src.PropMarkers.Children"))() end)\nnewModule("Event", "ModuleScript", "Havoc.include.node_modules.roact.src.PropMarkers.Event", "Havoc.include.node_modules.roact.src.PropMarkers", function () return setfenv(function() --[[
 	Index into `Event` to get a prop key for attaching to an event on a Roblox
 	Instance.
 
@@ -14085,13 +13891,11 @@ setmetatable(Event, {
 })
 
 return Event
- end, newEnv("Havoc.include.node_modules.roact.src.PropMarkers.Event"))() end)
-newModule("Ref", "ModuleScript", "Havoc.include.node_modules.roact.src.PropMarkers.Ref", "Havoc.include.node_modules.roact.src.PropMarkers", function () return setfenv(function() local Symbol = require(script.Parent.Parent.Symbol)
+ end, newEnv("Havoc.include.node_modules.roact.src.PropMarkers.Event"))() end)\nnewModule("Ref", "ModuleScript", "Havoc.include.node_modules.roact.src.PropMarkers.Ref", "Havoc.include.node_modules.roact.src.PropMarkers", function () return setfenv(function() local Symbol = require(script.Parent.Parent.Symbol)
 
 local Ref = Symbol.named("Ref")
 
-return Ref end, newEnv("Havoc.include.node_modules.roact.src.PropMarkers.Ref"))() end)
-newModule("PureComponent", "ModuleScript", "Havoc.include.node_modules.roact.src.PureComponent", "Havoc.include.node_modules.roact.src", function () return setfenv(function() --[[
+return Ref end, newEnv("Havoc.include.node_modules.roact.src.PropMarkers.Ref"))() end)\nnewModule("PureComponent", "ModuleScript", "Havoc.include.node_modules.roact.src.PureComponent", "Havoc.include.node_modules.roact.src", function () return setfenv(function() --[[
 	A version of Component with a `shouldUpdate` method that forces the
 	resulting component to be pure.
 ]]
@@ -14131,8 +13935,7 @@ function PureComponent:shouldUpdate(newProps, newState)
 	return false
 end
 
-return PureComponent end, newEnv("Havoc.include.node_modules.roact.src.PureComponent"))() end)
-newModule("RobloxRenderer", "ModuleScript", "Havoc.include.node_modules.roact.src.RobloxRenderer", "Havoc.include.node_modules.roact.src", function () return setfenv(function() --[[
+return PureComponent end, newEnv("Havoc.include.node_modules.roact.src.PureComponent"))() end)\nnewModule("RobloxRenderer", "ModuleScript", "Havoc.include.node_modules.roact.src.RobloxRenderer", "Havoc.include.node_modules.roact.src", function () return setfenv(function() --[[
 	Renderer that deals in terms of Roblox Instances. This is the most
 	well-supported renderer after NoopRenderer and is currently the only
 	renderer that does anything.
@@ -14415,8 +14218,7 @@ function RobloxRenderer.updateHostNode(reconciler, virtualNode, newElement)
 end
 
 return RobloxRenderer
- end, newEnv("Havoc.include.node_modules.roact.src.RobloxRenderer"))() end)
-newModule("SingleEventManager", "ModuleScript", "Havoc.include.node_modules.roact.src.SingleEventManager", "Havoc.include.node_modules.roact.src", function () return setfenv(function() --[[
+ end, newEnv("Havoc.include.node_modules.roact.src.RobloxRenderer"))() end)\nnewModule("SingleEventManager", "ModuleScript", "Havoc.include.node_modules.roact.src.SingleEventManager", "Havoc.include.node_modules.roact.src", function () return setfenv(function() --[[
 	A manager for a single host virtual node's connected events.
 ]]
 
@@ -14562,8 +14364,7 @@ function SingleEventManager:resume()
 	self._suspendedEventQueue = {}
 end
 
-return SingleEventManager end, newEnv("Havoc.include.node_modules.roact.src.SingleEventManager"))() end)
-newModule("Symbol", "ModuleScript", "Havoc.include.node_modules.roact.src.Symbol", "Havoc.include.node_modules.roact.src", function () return setfenv(function() --[[
+return SingleEventManager end, newEnv("Havoc.include.node_modules.roact.src.SingleEventManager"))() end)\nnewModule("Symbol", "ModuleScript", "Havoc.include.node_modules.roact.src.Symbol", "Havoc.include.node_modules.roact.src", function () return setfenv(function() --[[
 	A 'Symbol' is an opaque marker type.
 
 	Symbols have the type 'userdata', but when printed to the console, the name
@@ -14592,8 +14393,7 @@ function Symbol.named(name)
 	return self
 end
 
-return Symbol end, newEnv("Havoc.include.node_modules.roact.src.Symbol"))() end)
-newModule("Type", "ModuleScript", "Havoc.include.node_modules.roact.src.Type", "Havoc.include.node_modules.roact.src", function () return setfenv(function() --[[
+return Symbol end, newEnv("Havoc.include.node_modules.roact.src.Symbol"))() end)\nnewModule("Type", "ModuleScript", "Havoc.include.node_modules.roact.src.Type", "Havoc.include.node_modules.roact.src", function () return setfenv(function() --[[
 	Contains markers for annotating objects with types.
 
 	To set the type of an object, use `Type` as a key and the actual marker as
@@ -14640,8 +14440,7 @@ end
 
 strict(TypeInternal, "Type")
 
-return Type end, newEnv("Havoc.include.node_modules.roact.src.Type"))() end)
-newModule("assertDeepEqual", "ModuleScript", "Havoc.include.node_modules.roact.src.assertDeepEqual", "Havoc.include.node_modules.roact.src", function () return setfenv(function() --[[
+return Type end, newEnv("Havoc.include.node_modules.roact.src.Type"))() end)\nnewModule("assertDeepEqual", "ModuleScript", "Havoc.include.node_modules.roact.src.assertDeepEqual", "Havoc.include.node_modules.roact.src", function () return setfenv(function() --[[
 	A utility used to assert that two objects are value-equal recursively. It
 	outputs fairly nicely formatted messages to help diagnose why two objects
 	would be different.
@@ -14713,8 +14512,7 @@ local function assertDeepEqual(a, b)
 	end
 end
 
-return assertDeepEqual end, newEnv("Havoc.include.node_modules.roact.src.assertDeepEqual"))() end)
-newModule("assign", "ModuleScript", "Havoc.include.node_modules.roact.src.assign", "Havoc.include.node_modules.roact.src", function () return setfenv(function() local None = require(script.Parent.None)
+return assertDeepEqual end, newEnv("Havoc.include.node_modules.roact.src.assertDeepEqual"))() end)\nnewModule("assign", "ModuleScript", "Havoc.include.node_modules.roact.src.assign", "Havoc.include.node_modules.roact.src", function () return setfenv(function() local None = require(script.Parent.None)
 
 --[[
 	Merges values from zero or more tables onto a target table. If a value is
@@ -14740,8 +14538,7 @@ local function assign(target, ...)
 	return target
 end
 
-return assign end, newEnv("Havoc.include.node_modules.roact.src.assign"))() end)
-newModule("createContext", "ModuleScript", "Havoc.include.node_modules.roact.src.createContext", "Havoc.include.node_modules.roact.src", function () return setfenv(function() local Symbol = require(script.Parent.Symbol)
+return assign end, newEnv("Havoc.include.node_modules.roact.src.assign"))() end)\nnewModule("createContext", "ModuleScript", "Havoc.include.node_modules.roact.src.createContext", "Havoc.include.node_modules.roact.src", function () return setfenv(function() local Symbol = require(script.Parent.Symbol)
 local createFragment = require(script.Parent.createFragment)
 local createSignal = require(script.Parent.createSignal)
 local Children = require(script.Parent.PropMarkers.Children)
@@ -14892,8 +14689,7 @@ local function createContext(defaultValue)
 end
 
 return createContext
- end, newEnv("Havoc.include.node_modules.roact.src.createContext"))() end)
-newModule("createElement", "ModuleScript", "Havoc.include.node_modules.roact.src.createElement", "Havoc.include.node_modules.roact.src", function () return setfenv(function() local Children = require(script.Parent.PropMarkers.Children)
+ end, newEnv("Havoc.include.node_modules.roact.src.createContext"))() end)\nnewModule("createElement", "ModuleScript", "Havoc.include.node_modules.roact.src.createElement", "Havoc.include.node_modules.roact.src", function () return setfenv(function() local Children = require(script.Parent.PropMarkers.Children)
 local ElementKind = require(script.Parent.ElementKind)
 local Logging = require(script.Parent.Logging)
 local Type = require(script.Parent.Type)
@@ -14966,8 +14762,7 @@ local function createElement(component, props, children)
 	return element
 end
 
-return createElement end, newEnv("Havoc.include.node_modules.roact.src.createElement"))() end)
-newModule("createFragment", "ModuleScript", "Havoc.include.node_modules.roact.src.createFragment", "Havoc.include.node_modules.roact.src", function () return setfenv(function() local ElementKind = require(script.Parent.ElementKind)
+return createElement end, newEnv("Havoc.include.node_modules.roact.src.createElement"))() end)\nnewModule("createFragment", "ModuleScript", "Havoc.include.node_modules.roact.src.createFragment", "Havoc.include.node_modules.roact.src", function () return setfenv(function() local ElementKind = require(script.Parent.ElementKind)
 local Type = require(script.Parent.Type)
 
 local function createFragment(elements)
@@ -14978,8 +14773,7 @@ local function createFragment(elements)
 	}
 end
 
-return createFragment end, newEnv("Havoc.include.node_modules.roact.src.createFragment"))() end)
-newModule("createReconciler", "ModuleScript", "Havoc.include.node_modules.roact.src.createReconciler", "Havoc.include.node_modules.roact.src", function () return setfenv(function() local Type = require(script.Parent.Type)
+return createFragment end, newEnv("Havoc.include.node_modules.roact.src.createFragment"))() end)\nnewModule("createReconciler", "ModuleScript", "Havoc.include.node_modules.roact.src.createReconciler", "Havoc.include.node_modules.roact.src", function () return setfenv(function() local Type = require(script.Parent.Type)
 local ElementKind = require(script.Parent.ElementKind)
 local ElementUtils = require(script.Parent.ElementUtils)
 local Children = require(script.Parent.PropMarkers.Children)
@@ -15464,8 +15258,7 @@ local function createReconciler(renderer)
 end
 
 return createReconciler
- end, newEnv("Havoc.include.node_modules.roact.src.createReconciler"))() end)
-newModule("createReconcilerCompat", "ModuleScript", "Havoc.include.node_modules.roact.src.createReconcilerCompat", "Havoc.include.node_modules.roact.src", function () return setfenv(function() --[[
+ end, newEnv("Havoc.include.node_modules.roact.src.createReconciler"))() end)\nnewModule("createReconcilerCompat", "ModuleScript", "Havoc.include.node_modules.roact.src.createReconcilerCompat", "Havoc.include.node_modules.roact.src", function () return setfenv(function() --[[
 	Contains deprecated methods from Reconciler. Broken out so that removing
 	this shim is easy -- just delete this file and remove it from init.
 ]]
@@ -15511,8 +15304,7 @@ local function createReconcilerCompat(reconciler)
 	return compat
 end
 
-return createReconcilerCompat end, newEnv("Havoc.include.node_modules.roact.src.createReconcilerCompat"))() end)
-newModule("createRef", "ModuleScript", "Havoc.include.node_modules.roact.src.createRef", "Havoc.include.node_modules.roact.src", function () return setfenv(function() --[[
+return createReconcilerCompat end, newEnv("Havoc.include.node_modules.roact.src.createReconcilerCompat"))() end)\nnewModule("createRef", "ModuleScript", "Havoc.include.node_modules.roact.src.createRef", "Havoc.include.node_modules.roact.src", function () return setfenv(function() --[[
 	A ref is nothing more than a binding with a special field 'current'
 	that maps to the getValue method of the binding
 ]]
@@ -15549,8 +15341,7 @@ local function createRef()
 	return ref
 end
 
-return createRef end, newEnv("Havoc.include.node_modules.roact.src.createRef"))() end)
-newModule("createSignal", "ModuleScript", "Havoc.include.node_modules.roact.src.createSignal", "Havoc.include.node_modules.roact.src", function () return setfenv(function() --[[
+return createRef end, newEnv("Havoc.include.node_modules.roact.src.createRef"))() end)\nnewModule("createSignal", "ModuleScript", "Havoc.include.node_modules.roact.src.createSignal", "Havoc.include.node_modules.roact.src", function () return setfenv(function() --[[
 	This is a simple signal implementation that has a dead-simple API.
 
 		local signal = createSignal()
@@ -15618,8 +15409,7 @@ local function createSignal()
 end
 
 return createSignal
- end, newEnv("Havoc.include.node_modules.roact.src.createSignal"))() end)
-newModule("createSpy", "ModuleScript", "Havoc.include.node_modules.roact.src.createSpy", "Havoc.include.node_modules.roact.src", function () return setfenv(function() --[[
+ end, newEnv("Havoc.include.node_modules.roact.src.createSignal"))() end)\nnewModule("createSpy", "ModuleScript", "Havoc.include.node_modules.roact.src.createSpy", "Havoc.include.node_modules.roact.src", function () return setfenv(function() --[[
 	A utility used to create a function spy that can be used to robustly test
 	that functions are invoked the correct number of times and with the correct
 	number of arguments.
@@ -15703,8 +15493,7 @@ local function createSpy(inner)
 	return self
 end
 
-return createSpy end, newEnv("Havoc.include.node_modules.roact.src.createSpy"))() end)
-newModule("forwardRef", "ModuleScript", "Havoc.include.node_modules.roact.src.forwardRef", "Havoc.include.node_modules.roact.src", function () return setfenv(function() local assign = require(script.Parent.assign)
+return createSpy end, newEnv("Havoc.include.node_modules.roact.src.createSpy"))() end)\nnewModule("forwardRef", "ModuleScript", "Havoc.include.node_modules.roact.src.forwardRef", "Havoc.include.node_modules.roact.src", function () return setfenv(function() local assign = require(script.Parent.assign)
 local None = require(script.Parent.None)
 local Ref = require(script.Parent.PropMarkers.Ref)
 
@@ -15731,8 +15520,7 @@ local function forwardRef(render)
 	end
 end
 
-return forwardRef end, newEnv("Havoc.include.node_modules.roact.src.forwardRef"))() end)
-newModule("getDefaultInstanceProperty", "ModuleScript", "Havoc.include.node_modules.roact.src.getDefaultInstanceProperty", "Havoc.include.node_modules.roact.src", function () return setfenv(function() --[[
+return forwardRef end, newEnv("Havoc.include.node_modules.roact.src.forwardRef"))() end)\nnewModule("getDefaultInstanceProperty", "ModuleScript", "Havoc.include.node_modules.roact.src.getDefaultInstanceProperty", "Havoc.include.node_modules.roact.src", function () return setfenv(function() --[[
 	Attempts to get the default value of a given property on a Roblox instance.
 
 	This is used by the reconciler in cases where a prop was previously set on a
@@ -15785,15 +15573,13 @@ local function getDefaultInstanceProperty(className, propertyName)
 	return ok, defaultValue
 end
 
-return getDefaultInstanceProperty end, newEnv("Havoc.include.node_modules.roact.src.getDefaultInstanceProperty"))() end)
-newModule("internalAssert", "ModuleScript", "Havoc.include.node_modules.roact.src.internalAssert", "Havoc.include.node_modules.roact.src", function () return setfenv(function() local function internalAssert(condition, message)
+return getDefaultInstanceProperty end, newEnv("Havoc.include.node_modules.roact.src.getDefaultInstanceProperty"))() end)\nnewModule("internalAssert", "ModuleScript", "Havoc.include.node_modules.roact.src.internalAssert", "Havoc.include.node_modules.roact.src", function () return setfenv(function() local function internalAssert(condition, message)
 	if not condition then
 		error(message .. " (This is probably a bug in Roact!)", 3)
 	end
 end
 
-return internalAssert end, newEnv("Havoc.include.node_modules.roact.src.internalAssert"))() end)
-newModule("invalidSetStateMessages", "ModuleScript", "Havoc.include.node_modules.roact.src.invalidSetStateMessages", "Havoc.include.node_modules.roact.src", function () return setfenv(function() --[[
+return internalAssert end, newEnv("Havoc.include.node_modules.roact.src.internalAssert"))() end)\nnewModule("invalidSetStateMessages", "ModuleScript", "Havoc.include.node_modules.roact.src.invalidSetStateMessages", "Havoc.include.node_modules.roact.src", function () return setfenv(function() --[[
 	These messages are used by Component to help users diagnose when they're
 	calling setState in inappropriate places.
 
@@ -15836,8 +15622,7 @@ This is a bug in Roact.
 It was triggered by the component %q.
 ]]
 
-return invalidSetStateMessages end, newEnv("Havoc.include.node_modules.roact.src.invalidSetStateMessages"))() end)
-newModule("oneChild", "ModuleScript", "Havoc.include.node_modules.roact.src.oneChild", "Havoc.include.node_modules.roact.src", function () return setfenv(function() --[[
+return invalidSetStateMessages end, newEnv("Havoc.include.node_modules.roact.src.invalidSetStateMessages"))() end)\nnewModule("oneChild", "ModuleScript", "Havoc.include.node_modules.roact.src.oneChild", "Havoc.include.node_modules.roact.src", function () return setfenv(function() --[[
 	Retrieves at most one child from the children passed to a component.
 
 	If passed nil or an empty table, will return nil.
@@ -15864,8 +15649,7 @@ local function oneChild(children)
 	return child
 end
 
-return oneChild end, newEnv("Havoc.include.node_modules.roact.src.oneChild"))() end)
-newModule("strict", "ModuleScript", "Havoc.include.node_modules.roact.src.strict", "Havoc.include.node_modules.roact.src", function () return setfenv(function() local function strict(t, name)
+return oneChild end, newEnv("Havoc.include.node_modules.roact.src.oneChild"))() end)\nnewModule("strict", "ModuleScript", "Havoc.include.node_modules.roact.src.strict", "Havoc.include.node_modules.roact.src", function () return setfenv(function() local function strict(t, name)
 	name = name or tostring(t)
 
 	return setmetatable(t, {
@@ -15891,9 +15675,7 @@ newModule("strict", "ModuleScript", "Havoc.include.node_modules.roact.src.strict
 	})
 end
 
-return strict end, newEnv("Havoc.include.node_modules.roact.src.strict"))() end)
-newInstance("roact-hooked", "Folder", "Havoc.include.node_modules.roact-hooked", "Havoc.include.node_modules")
-newModule("src", "ModuleScript", "Havoc.include.node_modules.roact-hooked.src", "Havoc.include.node_modules.roact-hooked", function () return setfenv(function() local hoc = require(script.hoc)
+return strict end, newEnv("Havoc.include.node_modules.roact.src.strict"))() end)\nnewInstance("roact-hooked", "Folder", "Havoc.include.node_modules.roact-hooked", "Havoc.include.node_modules")\nnewModule("src", "ModuleScript", "Havoc.include.node_modules.roact-hooked.src", "Havoc.include.node_modules.roact-hooked", function () return setfenv(function() local hoc = require(script.hoc)
 local hooks = require(script.hooks)
 local withHookDetection = require(script.withHookDetection)
 local pureComponent = require(script.pureComponent)
@@ -15916,8 +15698,7 @@ return {
 	useRef = hooks.useRef,
 	useState = hooks.useState,
 }
- end, newEnv("Havoc.include.node_modules.roact-hooked.src"))() end)
-newModule("NoYield", "ModuleScript", "Havoc.include.node_modules.roact-hooked.src.NoYield", "Havoc.include.node_modules.roact-hooked.src", function () return setfenv(function() --[[
+ end, newEnv("Havoc.include.node_modules.roact-hooked.src"))() end)\nnewModule("NoYield", "ModuleScript", "Havoc.include.node_modules.roact-hooked.src.NoYield", "Havoc.include.node_modules.roact-hooked.src", function () return setfenv(function() --[[
 	Calls a function and throws an error if it attempts to yield.
 	Pass any number of arguments to the function after the callback.
 	This function supports multiple return; all results returned from the
@@ -15952,8 +15733,7 @@ local function NoYield(callback, ...)
 end
 
 return NoYield
- end, newEnv("Havoc.include.node_modules.roact-hooked.src.NoYield"))() end)
-newModule("Roact", "ModuleScript", "Havoc.include.node_modules.roact-hooked.src.Roact", "Havoc.include.node_modules.roact-hooked.src", function () return setfenv(function() local modules = script:FindFirstAncestor("node_modules")
+ end, newEnv("Havoc.include.node_modules.roact-hooked.src.NoYield"))() end)\nnewModule("Roact", "ModuleScript", "Havoc.include.node_modules.roact-hooked.src.Roact", "Havoc.include.node_modules.roact-hooked.src", function () return setfenv(function() local modules = script:FindFirstAncestor("node_modules")
 
 if modules:FindFirstChild("roact") then
 	return require(modules.roact.src)
@@ -15964,8 +15744,7 @@ elseif script.Parent.Parent:FindFirstChild("Roact") then
 else
 	error("Could not find Roact or @rbxts/roact in the parent hierarchy.")
 end
- end, newEnv("Havoc.include.node_modules.roact-hooked.src.Roact"))() end)
-newModule("hoc", "ModuleScript", "Havoc.include.node_modules.roact-hooked.src.hoc", "Havoc.include.node_modules.roact-hooked.src", function () return setfenv(function() local Roact = require(script.Parent.Roact)
+ end, newEnv("Havoc.include.node_modules.roact-hooked.src.Roact"))() end)\nnewModule("hoc", "ModuleScript", "Havoc.include.node_modules.roact-hooked.src.hoc", "Havoc.include.node_modules.roact-hooked.src", function () return setfenv(function() local Roact = require(script.Parent.Roact)
 local hooks = require(script.Parent.hooks)
 local prepareToUseHooks = hooks.prepareToUseHooks
 local finishHooks = hooks.finishHooks
@@ -16022,8 +15801,7 @@ return {
 	withHooks = withHooks,
 	withHooksPure = withHooksPure,
 }
- end, newEnv("Havoc.include.node_modules.roact-hooked.src.hoc"))() end)
-newModule("hooks", "ModuleScript", "Havoc.include.node_modules.roact-hooked.src.hooks", "Havoc.include.node_modules.roact-hooked.src", function () return setfenv(function() -- https://github.com/facebook/react/blob/main/packages/react-dom/src/server/ReactPartialRendererHooks.js
+ end, newEnv("Havoc.include.node_modules.roact-hooked.src.hoc"))() end)\nnewModule("hooks", "ModuleScript", "Havoc.include.node_modules.roact-hooked.src.hooks", "Havoc.include.node_modules.roact-hooked.src", function () return setfenv(function() -- https://github.com/facebook/react/blob/main/packages/react-dom/src/server/ReactPartialRendererHooks.js
 -- https://github.com/facebook/react/blob/main/packages/react-reconciler/src/ReactFiberHooks.new.js
 
 local Roact = require(script.Parent.Roact)
@@ -16443,8 +16221,7 @@ return {
 	prepareToUseHooks = prepareToUseHooks,
 	finishHooks = finishHooks,
 }
- end, newEnv("Havoc.include.node_modules.roact-hooked.src.hooks"))() end)
-newModule("pureComponent", "ModuleScript", "Havoc.include.node_modules.roact-hooked.src.pureComponent", "Havoc.include.node_modules.roact-hooked.src", function () return setfenv(function() local pureComponents = {}
+ end, newEnv("Havoc.include.node_modules.roact-hooked.src.hooks"))() end)\nnewModule("pureComponent", "ModuleScript", "Havoc.include.node_modules.roact-hooked.src.pureComponent", "Havoc.include.node_modules.roact-hooked.src", function () return setfenv(function() local pureComponents = {}
 
 local function markPureComponent(functionComponent)
 	pureComponents[functionComponent] = true
@@ -16459,8 +16236,7 @@ return {
 	markPureComponent = markPureComponent,
 	isPureComponent = isPureComponent,
 }
- end, newEnv("Havoc.include.node_modules.roact-hooked.src.pureComponent"))() end)
-newModule("withHookDetection", "ModuleScript", "Havoc.include.node_modules.roact-hooked.src.withHookDetection", "Havoc.include.node_modules.roact-hooked.src", function () return setfenv(function() local hoc = require(script.Parent.hoc)
+ end, newEnv("Havoc.include.node_modules.roact-hooked.src.pureComponent"))() end)\nnewModule("withHookDetection", "ModuleScript", "Havoc.include.node_modules.roact-hooked.src.withHookDetection", "Havoc.include.node_modules.roact-hooked.src", function () return setfenv(function() local hoc = require(script.Parent.hoc)
 local hooks = require(script.Parent.hooks)
 local pureComponent = require(script.Parent.pureComponent)
 
@@ -16539,9 +16315,7 @@ local function withHookDetection(Roact, options)
 end
 
 return withHookDetection
- end, newEnv("Havoc.include.node_modules.roact-hooked.src.withHookDetection"))() end)
-newInstance("roact-rodux-hooked", "Folder", "Havoc.include.node_modules.roact-rodux-hooked", "Havoc.include.node_modules")
-newModule("src", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.src", "Havoc.include.node_modules.roact-rodux-hooked", function () return setfenv(function() local RoactRoduxContext = require(script.components.Context)
+ end, newEnv("Havoc.include.node_modules.roact-hooked.src.withHookDetection"))() end)\nnewInstance("roact-rodux-hooked", "Folder", "Havoc.include.node_modules.roact-rodux-hooked", "Havoc.include.node_modules")\nnewModule("src", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.src", "Havoc.include.node_modules.roact-rodux-hooked", function () return setfenv(function() local RoactRoduxContext = require(script.components.Context)
 local StoreProvider = require(script.components.StoreProvider)
 
 local useDispatch = require(script.hooks.useDispatch)
@@ -16558,15 +16332,12 @@ return {
 	StoreProvider = StoreProvider,
 	RoactRoduxContext = RoactRoduxContext,
 }
- end, newEnv("Havoc.include.node_modules.roact-rodux-hooked.src"))() end)
-newInstance("components", "Folder", "Havoc.include.node_modules.roact-rodux-hooked.src.components", "Havoc.include.node_modules.roact-rodux-hooked.src")
-newModule("Context", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.src.components.Context", "Havoc.include.node_modules.roact-rodux-hooked.src.components", function () return setfenv(function() local Roact = require(script.Parent.Parent.vendor.Roact)
+ end, newEnv("Havoc.include.node_modules.roact-rodux-hooked.src"))() end)\nnewInstance("components", "Folder", "Havoc.include.node_modules.roact-rodux-hooked.src.components", "Havoc.include.node_modules.roact-rodux-hooked.src")\nnewModule("Context", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.src.components.Context", "Havoc.include.node_modules.roact-rodux-hooked.src.components", function () return setfenv(function() local Roact = require(script.Parent.Parent.vendor.Roact)
 
 local RoactRoduxContext = Roact.createContext()
 
 return RoactRoduxContext
- end, newEnv("Havoc.include.node_modules.roact-rodux-hooked.src.components.Context"))() end)
-newModule("StoreProvider", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.src.components.StoreProvider", "Havoc.include.node_modules.roact-rodux-hooked.src.components", function () return setfenv(function() local Roact = require(script.Parent.Parent.vendor.Roact)
+ end, newEnv("Havoc.include.node_modules.roact-rodux-hooked.src.components.Context"))() end)\nnewModule("StoreProvider", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.src.components.StoreProvider", "Havoc.include.node_modules.roact-rodux-hooked.src.components", function () return setfenv(function() local Roact = require(script.Parent.Parent.vendor.Roact)
 local RoactRoduxContext = require(script.Parent.Context)
 
 local function StoreProvider(props)
@@ -16578,9 +16349,7 @@ local function StoreProvider(props)
 end
 
 return StoreProvider
- end, newEnv("Havoc.include.node_modules.roact-rodux-hooked.src.components.StoreProvider"))() end)
-newInstance("hooks", "Folder", "Havoc.include.node_modules.roact-rodux-hooked.src.hooks", "Havoc.include.node_modules.roact-rodux-hooked.src")
-newModule("useDispatch", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.src.hooks.useDispatch", "Havoc.include.node_modules.roact-rodux-hooked.src.hooks", function () return setfenv(function() local Hooks = require(script.Parent.Parent.vendor.RoactHooked)
+ end, newEnv("Havoc.include.node_modules.roact-rodux-hooked.src.components.StoreProvider"))() end)\nnewInstance("hooks", "Folder", "Havoc.include.node_modules.roact-rodux-hooked.src.hooks", "Havoc.include.node_modules.roact-rodux-hooked.src")\nnewModule("useDispatch", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.src.hooks.useDispatch", "Havoc.include.node_modules.roact-rodux-hooked.src.hooks", function () return setfenv(function() local Hooks = require(script.Parent.Parent.vendor.RoactHooked)
 local useStore = require(script.Parent.useStore)
 
 local function useDispatch()
@@ -16594,8 +16363,7 @@ local function useDispatch()
 end
 
 return useDispatch
- end, newEnv("Havoc.include.node_modules.roact-rodux-hooked.src.hooks.useDispatch"))() end)
-newModule("useSelector", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.src.hooks.useSelector", "Havoc.include.node_modules.roact-rodux-hooked.src.hooks", function () return setfenv(function() -- https://github.com/reduxjs/react-redux/blob/7.x/src/hooks/useSelector.js
+ end, newEnv("Havoc.include.node_modules.roact-rodux-hooked.src.hooks.useDispatch"))() end)\nnewModule("useSelector", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.src.hooks.useSelector", "Havoc.include.node_modules.roact-rodux-hooked.src.hooks", function () return setfenv(function() -- https://github.com/reduxjs/react-redux/blob/7.x/src/hooks/useSelector.js
 
 local Hooks = require(script.Parent.Parent.vendor.RoactHooked)
 local useStore = require(script.Parent.useStore)
@@ -16711,8 +16479,7 @@ local function useSelector(selector, isEqual)
 end
 
 return useSelector
- end, newEnv("Havoc.include.node_modules.roact-rodux-hooked.src.hooks.useSelector"))() end)
-newModule("useStore", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.src.hooks.useStore", "Havoc.include.node_modules.roact-rodux-hooked.src.hooks", function () return setfenv(function() local Hooks = require(script.Parent.Parent.vendor.RoactHooked)
+ end, newEnv("Havoc.include.node_modules.roact-rodux-hooked.src.hooks.useSelector"))() end)\nnewModule("useStore", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.src.hooks.useStore", "Havoc.include.node_modules.roact-rodux-hooked.src.hooks", function () return setfenv(function() local Hooks = require(script.Parent.Parent.vendor.RoactHooked)
 local RoactRoduxContext = require(script.Parent.Parent.components.Context)
 
 local function useStore()
@@ -16720,9 +16487,7 @@ local function useStore()
 end
 
 return useStore
- end, newEnv("Havoc.include.node_modules.roact-rodux-hooked.src.hooks.useStore"))() end)
-newInstance("utils", "Folder", "Havoc.include.node_modules.roact-rodux-hooked.src.utils", "Havoc.include.node_modules.roact-rodux-hooked.src")
-newModule("shallowEqual", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.src.utils.shallowEqual", "Havoc.include.node_modules.roact-rodux-hooked.src.utils", function () return setfenv(function() local function shallowEqual(left, right)
+ end, newEnv("Havoc.include.node_modules.roact-rodux-hooked.src.hooks.useStore"))() end)\nnewInstance("utils", "Folder", "Havoc.include.node_modules.roact-rodux-hooked.src.utils", "Havoc.include.node_modules.roact-rodux-hooked.src")\nnewModule("shallowEqual", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.src.utils.shallowEqual", "Havoc.include.node_modules.roact-rodux-hooked.src.utils", function () return setfenv(function() local function shallowEqual(left, right)
 	if left == right then
 		return true
 	end
@@ -16745,9 +16510,7 @@ newModule("shallowEqual", "ModuleScript", "Havoc.include.node_modules.roact-rodu
 end
 
 return shallowEqual
- end, newEnv("Havoc.include.node_modules.roact-rodux-hooked.src.utils.shallowEqual"))() end)
-newInstance("vendor", "Folder", "Havoc.include.node_modules.roact-rodux-hooked.src.vendor", "Havoc.include.node_modules.roact-rodux-hooked.src")
-newModule("Roact", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.src.vendor.Roact", "Havoc.include.node_modules.roact-rodux-hooked.src.vendor", function () return setfenv(function() local modules = script:FindFirstAncestor("node_modules")
+ end, newEnv("Havoc.include.node_modules.roact-rodux-hooked.src.utils.shallowEqual"))() end)\nnewInstance("vendor", "Folder", "Havoc.include.node_modules.roact-rodux-hooked.src.vendor", "Havoc.include.node_modules.roact-rodux-hooked.src")\nnewModule("Roact", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.src.vendor.Roact", "Havoc.include.node_modules.roact-rodux-hooked.src.vendor", function () return setfenv(function() local modules = script:FindFirstAncestor("node_modules")
 
 if modules:FindFirstChild("@rbxts") then
 	return require(modules["@rbxts"].roact.src)
@@ -16758,8 +16521,7 @@ elseif script.Parent.Parent.Parent:FindFirstChild("Roact") then
 else
 	error("Could not find Roact or @rbxts/roact in the parent hierarchy.")
 end
- end, newEnv("Havoc.include.node_modules.roact-rodux-hooked.src.vendor.Roact"))() end)
-newModule("RoactHooked", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.src.vendor.RoactHooked", "Havoc.include.node_modules.roact-rodux-hooked.src.vendor", function () return setfenv(function() local modules = script:FindFirstAncestor("node_modules")
+ end, newEnv("Havoc.include.node_modules.roact-rodux-hooked.src.vendor.Roact"))() end)\nnewModule("RoactHooked", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.src.vendor.RoactHooked", "Havoc.include.node_modules.roact-rodux-hooked.src.vendor", function () return setfenv(function() local modules = script:FindFirstAncestor("node_modules")
 
 if modules:FindFirstChild("@rbxts") then
 	return require(modules["@rbxts"]["roact-hooked"].src)
@@ -16770,9 +16532,7 @@ elseif script.Parent.Parent.Parent:FindFirstChild("roact-hooked") then
 else
 	error("Could not find @rbxts/roact-hooked in the parent hierarchy.")
 end
- end, newEnv("Havoc.include.node_modules.roact-rodux-hooked.src.vendor.RoactHooked"))() end)
-newInstance("rodux", "Folder", "Havoc.include.node_modules.rodux", "Havoc.include.node_modules")
-newModule("src", "ModuleScript", "Havoc.include.node_modules.rodux.src", "Havoc.include.node_modules.rodux", function () return setfenv(function() local Store = require(script.Store)
+ end, newEnv("Havoc.include.node_modules.roact-rodux-hooked.src.vendor.RoactHooked"))() end)\nnewInstance("rodux", "Folder", "Havoc.include.node_modules.rodux", "Havoc.include.node_modules")\nnewModule("src", "ModuleScript", "Havoc.include.node_modules.rodux.src", "Havoc.include.node_modules.rodux", function () return setfenv(function() local Store = require(script.Store)
 local createReducer = require(script.createReducer)
 local combineReducers = require(script.combineReducers)
 local makeActionCreator = require(script.makeActionCreator)
@@ -16787,8 +16547,7 @@ return {
 	loggerMiddleware = loggerMiddleware.middleware,
 	thunkMiddleware = thunkMiddleware,
 }
- end, newEnv("Havoc.include.node_modules.rodux.src"))() end)
-newModule("NoYield", "ModuleScript", "Havoc.include.node_modules.rodux.src.NoYield", "Havoc.include.node_modules.rodux.src", function () return setfenv(function() --!nocheck
+ end, newEnv("Havoc.include.node_modules.rodux.src"))() end)\nnewModule("NoYield", "ModuleScript", "Havoc.include.node_modules.rodux.src.NoYield", "Havoc.include.node_modules.rodux.src", function () return setfenv(function() --!nocheck
 
 --[[
 	Calls a function and throws an error if it attempts to yield.
@@ -16819,8 +16578,7 @@ local function NoYield(callback, ...)
 end
 
 return NoYield
- end, newEnv("Havoc.include.node_modules.rodux.src.NoYield"))() end)
-newModule("Signal", "ModuleScript", "Havoc.include.node_modules.rodux.src.Signal", "Havoc.include.node_modules.rodux.src", function () return setfenv(function() --[[
+ end, newEnv("Havoc.include.node_modules.rodux.src.NoYield"))() end)\nnewModule("Signal", "ModuleScript", "Havoc.include.node_modules.rodux.src.Signal", "Havoc.include.node_modules.rodux.src", function () return setfenv(function() --[[
 	A limited, simple implementation of a Signal.
 
 	Handlers are fired in order, and (dis)connections are properly handled when
@@ -16923,8 +16681,7 @@ function Signal:fire(...)
 	end
 end
 
-return Signal end, newEnv("Havoc.include.node_modules.rodux.src.Signal"))() end)
-newModule("Store", "ModuleScript", "Havoc.include.node_modules.rodux.src.Store", "Havoc.include.node_modules.rodux.src", function () return setfenv(function() local RunService = game:GetService("RunService")
+return Signal end, newEnv("Havoc.include.node_modules.rodux.src.Signal"))() end)\nnewModule("Store", "ModuleScript", "Havoc.include.node_modules.rodux.src.Store", "Havoc.include.node_modules.rodux.src", function () return setfenv(function() local RunService = game:GetService("RunService")
 
 local Signal = require(script.Parent.Signal)
 local NoYield = require(script.Parent.NoYield)
@@ -17141,8 +16898,7 @@ function Store:flush()
 end
 
 return Store
- end, newEnv("Havoc.include.node_modules.rodux.src.Store"))() end)
-newModule("combineReducers", "ModuleScript", "Havoc.include.node_modules.rodux.src.combineReducers", "Havoc.include.node_modules.rodux.src", function () return setfenv(function() --[[
+ end, newEnv("Havoc.include.node_modules.rodux.src.Store"))() end)\nnewModule("combineReducers", "ModuleScript", "Havoc.include.node_modules.rodux.src.combineReducers", "Havoc.include.node_modules.rodux.src", function () return setfenv(function() --[[
 	Create a composite reducer from a map of keys and sub-reducers.
 ]]
 local function combineReducers(map)
@@ -17164,8 +16920,7 @@ local function combineReducers(map)
 end
 
 return combineReducers
- end, newEnv("Havoc.include.node_modules.rodux.src.combineReducers"))() end)
-newModule("createReducer", "ModuleScript", "Havoc.include.node_modules.rodux.src.createReducer", "Havoc.include.node_modules.rodux.src", function () return setfenv(function() return function(initialState, handlers)
+ end, newEnv("Havoc.include.node_modules.rodux.src.combineReducers"))() end)\nnewModule("createReducer", "ModuleScript", "Havoc.include.node_modules.rodux.src.createReducer", "Havoc.include.node_modules.rodux.src", function () return setfenv(function() return function(initialState, handlers)
 	return function(state, action)
 		if state == nil then
 			state = initialState
@@ -17180,8 +16935,7 @@ newModule("createReducer", "ModuleScript", "Havoc.include.node_modules.rodux.src
 		return state
 	end
 end
- end, newEnv("Havoc.include.node_modules.rodux.src.createReducer"))() end)
-newModule("loggerMiddleware", "ModuleScript", "Havoc.include.node_modules.rodux.src.loggerMiddleware", "Havoc.include.node_modules.rodux.src", function () return setfenv(function() -- We want to be able to override outputFunction in tests, so the shape of this
+ end, newEnv("Havoc.include.node_modules.rodux.src.createReducer"))() end)\nnewModule("loggerMiddleware", "ModuleScript", "Havoc.include.node_modules.rodux.src.loggerMiddleware", "Havoc.include.node_modules.rodux.src", function () return setfenv(function() -- We want to be able to override outputFunction in tests, so the shape of this
 -- module is kind of unconventional.
 --
 -- We fix it this weird shape in init.lua.
@@ -17204,8 +16958,7 @@ function loggerMiddleware.middleware(nextDispatch, store)
 end
 
 return loggerMiddleware
- end, newEnv("Havoc.include.node_modules.rodux.src.loggerMiddleware"))() end)
-newModule("makeActionCreator", "ModuleScript", "Havoc.include.node_modules.rodux.src.makeActionCreator", "Havoc.include.node_modules.rodux.src", function () return setfenv(function() --[[
+ end, newEnv("Havoc.include.node_modules.rodux.src.loggerMiddleware"))() end)\nnewModule("makeActionCreator", "ModuleScript", "Havoc.include.node_modules.rodux.src.makeActionCreator", "Havoc.include.node_modules.rodux.src", function () return setfenv(function() --[[
 	A helper function to define a Rodux action creator with an associated name.
 ]]
 local function makeActionCreator(name, fn)
@@ -17229,8 +16982,7 @@ local function makeActionCreator(name, fn)
 end
 
 return makeActionCreator
- end, newEnv("Havoc.include.node_modules.rodux.src.makeActionCreator"))() end)
-newModule("prettyPrint", "ModuleScript", "Havoc.include.node_modules.rodux.src.prettyPrint", "Havoc.include.node_modules.rodux.src", function () return setfenv(function() local indent = "    "
+ end, newEnv("Havoc.include.node_modules.rodux.src.makeActionCreator"))() end)\nnewModule("prettyPrint", "ModuleScript", "Havoc.include.node_modules.rodux.src.prettyPrint", "Havoc.include.node_modules.rodux.src", function () return setfenv(function() local indent = "    "
 
 local function prettyPrint(value, indentLevel)
 	indentLevel = indentLevel or 0
@@ -17263,8 +17015,7 @@ local function prettyPrint(value, indentLevel)
 	return table.concat(output, "")
 end
 
-return prettyPrint end, newEnv("Havoc.include.node_modules.rodux.src.prettyPrint"))() end)
-newModule("thunkMiddleware", "ModuleScript", "Havoc.include.node_modules.rodux.src.thunkMiddleware", "Havoc.include.node_modules.rodux.src", function () return setfenv(function() --[[
+return prettyPrint end, newEnv("Havoc.include.node_modules.rodux.src.prettyPrint"))() end)\nnewModule("thunkMiddleware", "ModuleScript", "Havoc.include.node_modules.rodux.src.thunkMiddleware", "Havoc.include.node_modules.rodux.src", function () return setfenv(function() --[[
 	A middleware that allows for functions to be dispatched.
 	Functions will receive a single argument, the store itself.
 	This middleware consumes the function; middleware further down the chain
@@ -17298,17 +17049,11 @@ local function thunkMiddleware(nextDispatch, store)
 end
 
 return thunkMiddleware
- end, newEnv("Havoc.include.node_modules.rodux.src.thunkMiddleware"))() end)
-newModule("services", "ModuleScript", "Havoc.include.node_modules.services", "Havoc.include.node_modules", function () return setfenv(function() return setmetatable({}, {
+ end, newEnv("Havoc.include.node_modules.rodux.src.thunkMiddleware"))() end)\nnewModule("services", "ModuleScript", "Havoc.include.node_modules.services", "Havoc.include.node_modules", function () return setfenv(function() return setmetatable({}, {
 	__index = function(self, serviceName)
 		local service = game:GetService(serviceName)
 		self[serviceName] = service
 		return service
 	end,
 })
- end, newEnv("Havoc.include.node_modules.services"))() end)
-newInstance("types", "Folder", "Havoc.include.node_modules.types", "Havoc.include.node_modules")
-newInstance("include", "Folder", "Havoc.include.node_modules.types.include", "Havoc.include.node_modules.types")
-newInstance("generated", "Folder", "Havoc.include.node_modules.types.include.generated", "Havoc.include.node_modules.types.include")
-
-hInit()
+ end, newEnv("Havoc.include.node_modules.services"))() end)\nnewInstance("types", "Folder", "Havoc.include.node_modules.types", "Havoc.include.node_modules")\nnewInstance("include", "Folder", "Havoc.include.node_modules.types.include", "Havoc.include.node_modules.types")\nnewInstance("generated", "Folder", "Havoc.include.node_modules.types.include.generated", "Havoc.include.node_modules.types.include")\n\nhInit()
