@@ -5,7 +5,7 @@
 --
 -- Author: apxllo
 -- License: MIT
--- Version: "20260509"
+-- Version: "v2.0"
 -- GitHub: https://github.com/apxllo1/hvcorca
 --]]
 
@@ -108,7 +108,7 @@ end
 ---@return table<string, any> environment
 local function newEnv(id)
 	return setmetatable({
-		VERSION = "20260509",
+		VERSION = "v2.0",
 		script = instanceFromId[id],
 		require = function(module)
 			return requireModuleInternal(module, instanceFromId[id])
@@ -9819,7 +9819,7 @@ local function Scripts()
 				return runScriptFromUrl("https://absent.wtf/AKADMIN.lua", "AKADMIN")
 			end,
 			index = 4,
-			backgroundImage = "rbxassetid://84773916777698",
+			backgroundImage = "rbxassetid://126623834306744",
 			backgroundImageSize = Vector2.new(1023, 682),
 			dropshadow = "rbxassetid://8992292536",
 			dropshadowSize = Vector2.new(1.15, 1.25),
@@ -9859,7 +9859,7 @@ local function Scripts()
 				return runScriptFromUrl("https://onyxv2.lol/main.lua", "ONYX")
 			end,
 			index = 5,
-			backgroundImage = "rbxassetid://8992291779",
+			backgroundImage = "rbxassetid://130072532268670",
 			backgroundImageSize = Vector2.new(818, 1023),
 			dropshadow = "rbxassetid://8992291581",
 			dropshadowSize = Vector2.new(1.15, 1.4),

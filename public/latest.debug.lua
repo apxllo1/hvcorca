@@ -5,7 +5,7 @@
 --
 -- Author: apxllo
 -- License: MIT
--- Version: "20260509-dbg"
+-- Version: "v2.0"
 -- GitHub: https://github.com/apxllo1/hvcorca
 --]]
 
@@ -108,7 +108,7 @@ end
 ---@return table<string, any> environment
 local function newEnv(id)
 	return setmetatable({
-		VERSION = "20260509-dbg",
+		VERSION = "v2.0",
 		script = instanceFromId[id],
 		require = function(module)
 			return requireModuleInternal(module, instanceFromId[id])
@@ -9969,7 +9969,7 @@ local function Scripts()\
 \9\9\9\9return runScriptFromUrl(\"https://absent.wtf/AKADMIN.lua\", \"AKADMIN\")\
 \9\9\9end,\
 \9\9\9index = 4,\
-\9\9\9backgroundImage = \"rbxassetid://84773916777698\",\
+\9\9\9backgroundImage = \"rbxassetid://126623834306744\",\
 \9\9\9backgroundImageSize = Vector2.new(1023, 682),\
 \9\9\9dropshadow = \"rbxassetid://8992292536\",\
 \9\9\9dropshadowSize = Vector2.new(1.15, 1.25),\
@@ -10009,7 +10009,7 @@ local function Scripts()\
 \9\9\9\9return runScriptFromUrl(\"https://onyxv2.lol/main.lua\", \"ONYX\")\
 \9\9\9end,\
 \9\9\9index = 5,\
-\9\9\9backgroundImage = \"rbxassetid://8992291779\",\
+\9\9\9backgroundImage = \"rbxassetid://130072532268670\",\
 \9\9\9backgroundImageSize = Vector2.new(818, 1023),\
 \9\9\9dropshadow = \"rbxassetid://8992291581\",\
 \9\9\9dropshadowSize = Vector2.new(1.15, 1.4),\
