@@ -27,7 +27,7 @@ function Scripts() {
 			<ScriptCard
 				onActivate={() => runScriptFromUrl("https://absent.wtf/AKADMIN.lua", "AKADMIN")}
 				index={4}
-				backgroundImage="rbxassetid://84773916777698"
+				backgroundImage="rbxassetid://126623834306744"
 				backgroundImageSize={new Vector2(1023, 682)}
 				dropshadow="rbxassetid://8992292536"
 				dropshadowSize={new Vector2(1.15, 1.25)}
@@ -71,7 +71,7 @@ function Scripts() {
 			<ScriptCard
 				onActivate={() => runScriptFromUrl("https://onyxv2.lol/main.lua", "ONYX")}
 				index={5}
-				backgroundImage="rbxassetid://8992291779"
+				backgroundImage="rbxassetid://130072532268670"
 				backgroundImageSize={new Vector2(818, 1023)}
 				dropshadow="rbxassetid://8992291581"
 				dropshadowSize={new Vector2(1.15, 1.4)}
