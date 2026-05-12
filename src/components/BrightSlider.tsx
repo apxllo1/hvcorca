@@ -2,7 +2,8 @@ import { Spring } from "@rbxts/flipper";
 import Roact from "@rbxts/roact";
 import { useCallback, useEffect, useState } from "@rbxts/roact-hooked";
 import { UserInputService } from "@rbxts/services";
-import { getBinding, SpringOptions, useMotor } from "hooks/common/flipper-hooks";
+import { getBinding, useMotor } from "hooks/common/flipper-hooks";
+import type { SpringOptions } from "hooks/common/flipper-hooks";
 import { px, scale } from "utils/udim2";
 import Border from "./Border";
 import Canvas from "./Canvas";
@@ -134,4 +135,5 @@ function DragComponent({
 }
 
 const Drag = DragComponent;
+
 export default BrightSlider;
