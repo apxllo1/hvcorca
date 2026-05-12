@@ -1,5 +1,6 @@
 import Roact from "@rbxts/roact";
-import { asBinding, BindingOrValue, mapBinding } from "utils/binding-util";
+import { asBinding, mapBinding } from "utils/binding-util";
+import type { BindingOrValue } from "utils/binding-util";
 import { hex } from "utils/color3";
 import { px } from "utils/udim2";
 
