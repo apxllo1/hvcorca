@@ -27,7 +27,7 @@ function NavbarTab({ page }: Props) {
 			AutoButtonColor={false}
 			Active={!isActive}
 			Size={TAB_SIZE}
-			Position={scale(PAGE_TO_INDEX[page] / 4, 0)}
+			Position={scale(PAGE_TO_INDEX[page] / 5, 0)}
 			BackgroundTransparency={1}
 			Event={{
 				Activated: () => dispatch(setDashboardPage(page)),
