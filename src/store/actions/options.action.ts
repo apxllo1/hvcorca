@@ -1,5 +1,5 @@
 import Rodux from "@rbxts/rodux";
-import { OptionsState } from "store/models/options.model";
+import type { OptionsState } from "store/models/options.model";
 
 export type OptionsAction =
 	| Rodux.InferActionFromCreator<typeof setConfig>
