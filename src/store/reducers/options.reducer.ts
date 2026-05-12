@@ -1,6 +1,6 @@
 import Rodux from "@rbxts/rodux";
-import { OptionsAction } from "store/actions/options.action";
-import { OptionsState } from "store/models/options.model";
+import type { OptionsAction } from "store/actions/options.action";
+import type { OptionsState } from "store/models/options.model";
 import { persistentState } from "store/persistent-state";
 
 const initialState: OptionsState = persistentState<OptionsState>("options", (state) => state.options, {
