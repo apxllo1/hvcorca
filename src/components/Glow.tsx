@@ -1,24 +1,22 @@
 import Roact from "@rbxts/roact";
 import { useBinding } from "@rbxts/roact-hooked";
 import { useScale } from "hooks/use-scale";
-import { GradientTheme } from "themes/theme.interface";
-import { asBinding, BindingOrValue } from "utils/binding-util";
+import type { GradientTheme } from "themes/theme.interface";
+import type { BindingOrValue } from "utils/binding-util";
+import { asBinding } from "utils/binding-util";
 import { map } from "utils/number-util";
 import { applyUDim2, px } from "utils/udim2";
 import Canvas from "./Canvas";
-
 export enum GlowRadius {
 	Size70 = "rbxassetid://8992230903",
 	Size146 = "rbxassetid://8992584561",
 	Size198 = "rbxassetid://8992230677",
 }
-
 export const RADIUS_TO_CENTER_OFFSET: Record<GlowRadius, number> = {
 	[GlowRadius.Size70]: 70 / 2,
 	[GlowRadius.Size146]: 146 / 2,
 	[GlowRadius.Size198]: 198 / 2,
 };
-
 interface Props extends Roact.PropsWithChildren {
 	radius: GlowRadius;
 	size: BindingOrValue<UDim2>;
@@ -28,7 +26,6 @@ interface Props extends Roact.PropsWithChildren {
 	transparency?: BindingOrValue<number>;
 	maintainCornerRadius?: boolean;
 }
-
 function Glow({
 	radius,
 	size,
@@ -42,25 +39,23 @@ function Glow({
 	const [absoluteSize, setAbsoluteSize] = useBinding(new Vector2());
 	const scaleFactor = useScale();
 	const centerOffset = RADIUS_TO_CENTER_OFFSET[radius];
-
 	const sizeModifier = maintainCornerRadius
 		? Roact.joinBindings({
 				absoluteSize,
 				scaleFactor,
 				size: asBinding(size),
-		  }).map(({ absoluteSize, size, scaleFactor }) => {
+			}).map(({ absoluteSize, size, scaleFactor }) => {
 				const currentSize = applyUDim2(absoluteSize, size, scaleFactor);
 				return px(math.max(currentSize.X, centerOffset * 2), math.max(currentSize.Y, centerOffset * 2));
-		  })
+			})
 		: size;
-
 	const transparencyModifier = maintainCornerRadius
 		? Roact.joinBindings({
 				absoluteSize,
 				scaleFactor,
 				size: asBinding(size),
 				transparency: asBinding(transparency),
-		  }).map(({ absoluteSize, size, transparency, scaleFactor }) => {
+			}).map(({ absoluteSize, size, transparency, scaleFactor }) => {
 				const minSize = centerOffset * 2;
 				const currentSize = applyUDim2(
 					absoluteSize,
@@ -72,9 +67,8 @@ function Glow({
 				} else {
 					return transparency;
 				}
-		  })
+			})
 		: transparency;
-
 	return (
 		<Canvas
 			onChange={{
@@ -105,5 +99,4 @@ function Glow({
 		</Canvas>
 	);
 }
-
 export default Glow;
