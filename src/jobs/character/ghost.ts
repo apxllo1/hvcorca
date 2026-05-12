@@ -1,6 +1,6 @@
 import { Players, Workspace } from "@rbxts/services";
 import { getStore, onJobChange } from "jobs/helpers/job-store";
-import { JobsAction } from "store/actions/jobs.action";
+import type { JobsAction } from "store/actions/jobs.action";
 
 const player = Players.LocalPlayer;
 const screenGuisWithResetOnSpawn = new Array<ScreenGui>();
@@ -29,7 +29,7 @@ function enableResetOnSpawn() {
 }
 
 async function main() {
-	await onJobChange("ghost", (job, state) => {
+	onJobChange("ghost", (job, state) => {
 		if (state.jobs.refresh.active && job.active) {
 			// Can't enable ghost while respawning
 			deactivate();
