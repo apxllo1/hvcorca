@@ -5,8 +5,8 @@ import { useAppDispatch, useAppSelector } from "hooks/common/rodux-hooks";
 import { useSpring } from "hooks/common/use-spring";
 import { clearHint, setHint } from "store/actions/dashboard.action";
 import { setJobActive } from "store/actions/jobs.action";
-import { JobsState, Job } from "store/models/jobs.model";
-import { Theme } from "themes/theme.interface";
+import type { JobsState, Job } from "store/models/jobs.model";
+import type { Theme } from "themes/theme.interface";
 import { px } from "utils/udim2";
 
 interface Props {
@@ -20,12 +20,10 @@ interface Props {
 
 function ActionButton({ action, hint, theme, image, position, canDeactivate }: Props) {
 	const dispatch = useAppDispatch();
-
 	const active = useAppSelector((state) => {
 		const job = state.jobs[action] as Job | undefined;
 		return job?.active ?? false;
 	});
-
 	const [hovered, setHovered] = useState(false);
 
 	const highlightMap = theme.highlight as Record<string, Color3>;
@@ -35,11 +33,10 @@ function ActionButton({ action, hint, theme, image, position, canDeactivate }: P
 		active
 			? accent
 			: hovered
-			? theme.button.backgroundHovered ?? theme.button.background.Lerp(accent, 0.1)
-			: theme.button.background,
+				? (theme.button.backgroundHovered ?? theme.button.background.Lerp(accent, 0.1))
+				: theme.button.background,
 		{},
 	);
-
 	const foreground = useSpring(
 		active && theme.button.foregroundAccent ? theme.button.foregroundAccent : theme.button.foreground,
 		{},
@@ -77,8 +74,8 @@ function ActionButton({ action, hint, theme, image, position, canDeactivate }: P
 					active
 						? 0
 						: hovered
-						? theme.button.foregroundTransparency - 0.25
-						: theme.button.foregroundTransparency,
+							? theme.button.foregroundTransparency - 0.25
+							: theme.button.foregroundTransparency,
 					{},
 				)}
 				Size={px(36, 36)}
