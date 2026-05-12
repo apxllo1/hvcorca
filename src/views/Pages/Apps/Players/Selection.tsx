@@ -13,7 +13,8 @@ import { useSpring } from "hooks/common/use-spring";
 import { useIsPageOpen } from "hooks/use-current-page";
 import { useTheme } from "hooks/use-theme";
 import { playerDeselected, playerSelected } from "store/actions/dashboard.action";
-import { DashboardPage } from "store/models/dashboard.model";
+import type { DashboardPage } from "store/models/dashboard.model";
+import { DashboardPage as DP } from "store/models/dashboard.model";
 import { arrayToMap } from "utils/array-util";
 import { lerp } from "utils/number-util";
 import { px, scale } from "utils/udim2";
@@ -109,7 +110,7 @@ function PlayerEntry({ name, userId, displayName, index }: PlayerEntryProps) {
 	const dispatch = useAppDispatch();
 	const theme = useTheme("apps").players.playerButton;
 
-	const isOpen = useIsPageOpen(DashboardPage.Apps);
+	const isOpen = useIsPageOpen(DP.Apps);
 	const isVisible = useDelayedUpdate(isOpen, isOpen ? 170 + index * 40 : 150);
 	const isSelected = useAppSelector((state) => state.dashboard.apps.playerSelected === name);
 
@@ -128,16 +129,16 @@ function PlayerEntry({ name, userId, displayName, index }: PlayerEntryProps) {
 		isSelected
 			? theme.accent
 			: hovered
-			? theme.backgroundHovered ?? theme.background.Lerp(theme.accent, 0.1)
-			: theme.background,
+				? (theme.backgroundHovered ?? theme.background.Lerp(theme.accent, 0.1))
+				: theme.background,
 		{},
 	);
 	const dropshadow = useSpring(
 		isSelected
 			? theme.accent
 			: hovered
-			? theme.backgroundHovered ?? theme.dropshadow.Lerp(theme.accent, 0.5)
-			: theme.dropshadow,
+				? (theme.backgroundHovered ?? theme.dropshadow.Lerp(theme.accent, 0.5))
+				: theme.dropshadow,
 		{},
 	);
 	const foreground = useSpring(isSelected && theme.foregroundAccent ? theme.foregroundAccent : theme.foreground, {});
@@ -162,8 +163,8 @@ function PlayerEntry({ name, userId, displayName, index }: PlayerEntryProps) {
 					isSelected
 						? theme.glowTransparency
 						: hovered
-						? lerp(theme.dropshadowTransparency, theme.glowTransparency, 0.5)
-						: theme.dropshadowTransparency,
+							? lerp(theme.dropshadowTransparency, theme.glowTransparency, 0.5)
+							: theme.dropshadowTransparency,
 					{},
 				)}
 			/>
