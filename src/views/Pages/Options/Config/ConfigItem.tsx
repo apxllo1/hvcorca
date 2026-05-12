@@ -9,7 +9,7 @@ import { useSpring } from "hooks/common/use-spring";
 import { useTheme } from "hooks/use-theme";
 import { clearHint, setHint } from "store/actions/dashboard.action";
 import { setConfig } from "store/actions/options.action";
-import { OptionsState } from "store/models/options.model";
+import type { OptionsState } from "store/models/options.model";
 import { lerp } from "utils/number-util";
 import { px, scale } from "utils/udim2";
 
@@ -28,10 +28,8 @@ interface Props {
 function ConfigItem({ action, description, hint, index }: Props) {
 	const dispatch = useAppDispatch();
 	const buttonTheme = useTheme("options").config.configButton;
-
 	const active = useAppSelector((state) => state.options.config[action]);
 	const [hovered, setHovered] = useState(false);
-
 	const background = useSpring(
 		active
 			? buttonTheme.accent
@@ -52,7 +50,6 @@ function ConfigItem({ action, description, hint, index }: Props) {
 		active && buttonTheme.foregroundAccent ? buttonTheme.foregroundAccent : buttonTheme.foreground,
 		{},
 	);
-
 	return (
 		<Canvas size={px(ENTRY_WIDTH, ENTRY_HEIGHT)} position={px(0, (PADDING + ENTRY_HEIGHT) * index)} zIndex={index}>
 			{/* Underglow */}
@@ -70,10 +67,8 @@ function ConfigItem({ action, description, hint, index }: Props) {
 					{},
 				)}
 			/>
-
 			{/* Body */}
 			<Fill color={background} transparency={buttonTheme.backgroundTransparency} radius={8} />
-
 			{/* Description */}
 			<textlabel
 				Text={description}
@@ -91,10 +86,8 @@ function ConfigItem({ action, description, hint, index }: Props) {
 				BackgroundTransparency={1}
 				ClipsDescendants
 			/>
-
 			{/* Border */}
 			{buttonTheme.outlined && <Border color={foreground} transparency={0.8} radius={8} />}
-
 			{/* Input capture */}
 			<textbutton
 				Event={{
