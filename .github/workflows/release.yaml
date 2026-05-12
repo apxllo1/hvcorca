@@ -1,45 +1,64 @@
 name: Publish Release
+
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g. v1.2.0)'
+        required: true
+        type: string
   push:
-    branches: [master]
-    paths:
-      - 'src/**'
+    tags:
+      - 'v*'
+
 jobs:
   bundle-release:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     permissions:
       contents: write
+
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Resolve version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "tag=${{ inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
+          fi
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'npm'
+
       - name: Install Rojo/Aftman
         uses: ok-nick/setup-aftman@v0.4.2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Install Remodel
-        run: |
-          curl -L --fail --retry 3 --retry-delay 2 \
-            https://github.com/rojo-rbx/remodel/releases/download/v0.11.0/remodel-0.11.0-linux-x86_64.zip \
-            -o remodel.zip
-          unzip remodel.zip
-          chmod +x remodel
-          sudo mv remodel /usr/local/bin/remodel
+        run: aftman install remodel
+
       - name: Install NPM dependencies
-        run: npm install
-      - name: Build
+        run: npm ci
+
+      - name: Compile TypeScript
+        run: npm run compile
+
+      - name: Build Rojo project
+        run: npm run build
+
+      - name: Bundle release
         run: |
-          npm run compile
-          npm run build
-      - name: Bundle modules  # ← CRITICAL FIX HERE
-        run: |
-          remodel run ci/bundle.lua public/latest.lua v2.0 Havoc.rbxm minify
-          remodel run ci/bundle.lua public/latest.debug.lua v2.0 Havoc.rbxm debug
+          remodel run ci/bundle.lua public/latest.lua ${{ steps.version.outputs.tag }} hvcorca.rbxm minify
+          remodel run ci/bundle.lua public/latest.debug.lua ${{ steps.version.outputs.tag }} hvcorca.rbxm debug
+
       - name: Commit latest builds
         uses: EndBug/add-and-commit@v9
         with:
@@ -47,16 +66,20 @@ jobs:
           add: |
             public/latest.lua
             public/latest.debug.lua
-          message: "🔥 Release build ${{ github.run_id }} - Auto-build from src [skip ci]"
-          push: '--force-with-lease'
+          message: "🔥 build: ${{ steps.version.outputs.tag }} [skip ci]"
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
-        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         with:
-          tag_name: latest
-          name: Latest Release
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: ${{ steps.version.outputs.tag }}
           body: |
-            **Auto-built** from commit ${{ github.sha }}
+            Built from commit ${{ github.sha }}.
+
+            **Quick start:**
+            ```lua
+            loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/apxllo1/hvcorca/master/public/latest.lua"))()
+            ```
           draft: false
           prerelease: false
           files: |
