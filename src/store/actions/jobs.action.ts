@@ -1,5 +1,5 @@
 import Rodux from "@rbxts/rodux";
-import { InferJobValue, JobsState } from "store/models/jobs.model";
+import type { InferJobValue, JobsState } from "store/models/jobs.model";
 
 export type JobsAction =
 	| Rodux.InferActionFromCreator<typeof setJobActive>
