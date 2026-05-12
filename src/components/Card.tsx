@@ -1,18 +1,15 @@
 import Roact from "@rbxts/roact";
-
 import Acrylic from "components/Acrylic";
 import Border from "components/Border";
 import Canvas from "components/Canvas";
 import Fill from "components/Fill";
 import Glow, { GlowRadius } from "components/Glow";
-
 import { useDelayedUpdate } from "hooks/common/use-delayed-update";
 import { useSpring } from "hooks/common/use-spring";
 import { useIsPageOpen } from "hooks/use-current-page";
-import { DashboardPage } from "store/models/dashboard.model";
-import { ViewTheme } from "themes/theme.interface";
+import type { DashboardPage } from "store/models/dashboard.model";
+import type { ViewTheme } from "themes/theme.interface";
 import { px } from "utils/udim2";
-
 interface Props extends Roact.PropsWithChildren {
 	index: number;
 	page: DashboardPage;
@@ -20,15 +17,12 @@ interface Props extends Roact.PropsWithChildren {
 	size: UDim2;
 	position: UDim2;
 }
-
 function Card({ index, page, theme, size, position, [Roact.Children]: children }: Props) {
 	const isOpen = useIsPageOpen(page);
 	const isActive = useDelayedUpdate(isOpen, index * 40);
-
 	const positionWhenHidden = new UDim2(new UDim(), position.Y)
 		.sub(px((size.X.Offset + 48) * 2 - position.X.Offset, 0))
 		.sub(px(size.X.Offset + 48 * 2, 0));
-
 	return (
 		<Canvas
 			anchor={new Vector2(0, 1)}
@@ -44,7 +38,6 @@ function Card({ index, page, theme, size, position, [Roact.Children]: children }
 				gradient={theme.dropshadowGradient}
 				transparency={theme.dropshadowTransparency}
 			/>
-
 			{/* Body */}
 			<Fill
 				color={theme.background}
@@ -52,16 +45,12 @@ function Card({ index, page, theme, size, position, [Roact.Children]: children }
 				transparency={theme.transparency}
 				radius={16}
 			/>
-
 			{children}
-
 			{/* Effects */}
 			{theme.acrylic && <Acrylic Key="acrylic" />}
-
 			{/* Border overlaps children */}
 			{theme.outlined && <Border color={theme.foreground} radius={16} transparency={0.8} />}
 		</Canvas>
 	);
 }
-
 export default Card;
