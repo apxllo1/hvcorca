@@ -112,7 +112,7 @@ async function main() {
 	const store = await getStore();
 	const playerSelected = await getSelectedPlayer();
 
-	await onJobChange("kill", (job) => {
+	onJobChange("kill", (job) => {
 		if (job.active) {
 			if (!playerSelected.current) {
 				store.dispatch(setJobActive("kill", false));
