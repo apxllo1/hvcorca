@@ -8,10 +8,12 @@ import { useAppSelector } from "hooks/common/rodux-hooks";
 import { useSpring } from "hooks/common/use-spring";
 import { useCurrentPage } from "hooks/use-current-page";
 import { useTheme } from "hooks/use-theme";
-import { DashboardPage, PAGE_TO_INDEX } from "store/models/dashboard.model";
+import type { DashboardPage } from "store/models/dashboard.model";
+import { PAGE_TO_INDEX } from "store/models/dashboard.model";
 import { getColorInSequence, hex } from "utils/color3";
 import { px, scale } from "utils/udim2";
 import NavbarTab from "./NavbarTab";
+import { DashboardPage as DP } from "store/models/dashboard.model";
 
 const NAVBAR_SIZE = px(625, 56);
 
@@ -64,11 +66,11 @@ function Navbar() {
 				</frame>
 			</Canvas>
 			{theme.outlined && <Border Key="border" color={theme.foreground} radius={8} transparency={0.8} />}
-			<NavbarTab page={DashboardPage.Home} />
-			<NavbarTab page={DashboardPage.Apps} />
-			<NavbarTab page={DashboardPage.Scripts} />
-			<NavbarTab page={DashboardPage.Options} />
-			<NavbarTab page={DashboardPage.Misc} />
+			<NavbarTab page={DP.Home} />
+			<NavbarTab page={DP.Apps} />
+			<NavbarTab page={DP.Scripts} />
+			<NavbarTab page={DP.Options} />
+			<NavbarTab page={DP.Misc} />
 			{theme.acrylic && <Acrylic />}
 		</frame>
 	);
