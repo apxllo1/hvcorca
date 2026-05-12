@@ -1,30 +1,70 @@
-name: ESLint Auto-Fix
+name: ESLint
+
 on:
   push:
     branches: [master]
     paths:
       - 'src/**'
+      - '.eslintrc'
+      - 'tsconfig.json'
+      - 'package.json'
   pull_request:
     branches: [master]
     paths:
       - 'src/**'
+      - '.eslintrc'
+      - 'tsconfig.json'
+      - 'package.json'
+
 jobs:
-  ESLint:
+  lint:
+    name: Lint Check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npx eslint src/ --ext .ts,.tsx --max-warnings 0
+
+  autofix:
+    name: Auto-Fix & Commit
+    # Only run autofix on direct pushes to master, not on PRs
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    needs: lint
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Need full history for the commit action to work correctly
+          ref: ${{ github.ref }}
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Install NPM dependencies
-        run: npm install
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
       - name: Run ESLint Fix
-        run: npx eslint src/ --ext .ts,.tsx --fix || true
-      - name: Commit Fixed Code
+        run: npx eslint src/ --ext .ts,.tsx --fix
+
+      - name: Commit fixed code
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "🤖 Bot: Fixed formatting and brackets [skip ci]"
-          branch: ${{ github.head_ref || github.ref_name }}
+          commit_message: "🤖 bot: auto-fix lint [skip ci]"
+          branch: master
