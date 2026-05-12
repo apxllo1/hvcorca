@@ -1,6 +1,7 @@
 import Rodux from "@rbxts/rodux";
-import { DashboardAction } from "../actions/dashboard.action";
-import { DashboardPage, DashboardState } from "../models/dashboard.model";
+import type { DashboardAction } from "../actions/dashboard.action";
+import { DashboardPage } from "../models/dashboard.model";
+import type { DashboardState } from "../models/dashboard.model";
 
 const initialState: DashboardState = {
 	page: DashboardPage.Home,
