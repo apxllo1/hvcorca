@@ -1,5 +1,5 @@
 import Rodux from "@rbxts/rodux";
-import { DashboardPage } from "../models/dashboard.model";
+import type { DashboardPage } from "../models/dashboard.model";
 
 export type DashboardAction =
 	| Rodux.InferActionFromCreator<typeof setDashboardPage>
