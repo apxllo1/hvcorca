@@ -1,26 +1,45 @@
 {
-	"compilerOptions": {
-		"noLib": true,
-		"allowSyntheticDefaultImports": true,
-		"downlevelIteration": true,
-		"jsx": "react",
-		"jsxFactory": "Roact.createElement",
-		"jsxFragmentFactory": "Roact.Fragment",
-		"module": "commonjs",
-		"moduleResolution": "Node",
-		"resolveJsonModule": true,
-		"forceConsistentCasingInFileNames": true,
-		"strict": true,
-		"target": "es2017",
-		"typeRoots": ["node_modules/@rbxts", "types"],
-		"esModuleInterop": true,
-		"rootDir": "src",
-		"outDir": "out",
-		"baseUrl": "src",
-		"incremental": true,
-		"removeComments": true,
-		"tsBuildInfoFile": "out/tsconfig.tsbuildinfo"
-	},
-	"include": ["src/**/*", "types/**/*"],
-	"exclude": ["node_modules"]
+  "compilerOptions": {
+    /* Required by roblox-ts */
+    "noLib": true,
+    "moduleResolution": "node",
+    "typeRoots": ["node_modules/@rbxts"],
+
+    /* JSX - Roact */
+    "jsx": "react",
+    "jsxFactory": "Roact.createElement",
+    "jsxFragmentFactory": "Roact.Fragment",
+
+    /* Module */
+    "module": "commonjs",
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+
+    /* Paths */
+    "rootDir": "src",
+    "outDir": "out",
+    "baseUrl": "src",
+
+    /* TypeScript strictness */
+    "strict": true,
+    "exactOptionalPropertyTypes": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noUncheckedIndexedAccess": true,
+    "useUnknownInCatchVariables": true,
+    "allowUnreachableCode": false,
+
+    /* Build */
+    "target": "es2017",
+    "downlevelIteration": true,
+    "forceConsistentCasingInFileNames": true,
+    "incremental": true,
+    "tsBuildInfoFile": "out/tsconfig.tsbuildinfo",
+    "removeComments": true,
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*", "types/**/*"],
+  "exclude": ["node_modules", "out"]
 }
