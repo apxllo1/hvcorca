@@ -1,14 +1,13 @@
 import Roact from "@rbxts/roact";
-import { BindingOrValue, mapBinding } from "utils/binding-util";
+import type { BindingOrValue } from "utils/binding-util";
+import { mapBinding } from "utils/binding-util";
 import { scale } from "utils/udim2";
-
 interface Props extends Roact.PropsWithChildren {
 	image: string;
 	imageSize: Vector2;
 	padding: Vector2;
 	offset: BindingOrValue<Vector2>; // { -1, -1 } - { 1, 1 }
 }
-
 function ParallaxImage({ image, imageSize, offset, padding, [Roact.Children]: children }: Props) {
 	return (
 		<imagelabel
@@ -23,5 +22,4 @@ function ParallaxImage({ image, imageSize, offset, padding, [Roact.Children]: ch
 		</imagelabel>
 	);
 }
-
 export default ParallaxImage;
