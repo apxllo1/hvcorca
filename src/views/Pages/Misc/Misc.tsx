@@ -6,17 +6,24 @@ import { px } from "utils/udim2";
 import GistLoader from "./GistLoader";
 
 function MiscPage() {
-	const theme = useTheme("apps").players;
+	// Reuses the "scripts" theme bucket — closest visual match for a script runner.
+	// Swap to a dedicated "misc" key once you add it to your theme definitions.
+	const theme = useTheme("scripts");
 
 	return (
-		<Card index={2} page={DashboardPage.Apps} theme={theme} size={px(326, 648)} position={new UDim2(0, 0, 1, 0)}>
-			<uipadding PaddingTop={new UDim(0, 20)} PaddingLeft={new UDim(0, 20)} PaddingRight={new UDim(0, 20)} />
-
+		<Card index={4} page={DashboardPage.Misc} theme={theme} size={px(326, 648)} position={new UDim2(0, 0, 0, 0)}>
+			<uipadding
+				PaddingTop={new UDim(0, 20)}
+				PaddingLeft={new UDim(0, 20)}
+				PaddingRight={new UDim(0, 20)}
+				PaddingBottom={new UDim(0, 20)}
+			/>
 			<scrollingframe
 				Key="ContentScroll"
 				Size={new UDim2(1, 0, 1, 0)}
 				BackgroundTransparency={1}
 				ScrollBarThickness={2}
+				ScrollBarImageColor3={Color3.fromRGB(100, 100, 100)}
 				CanvasSize={new UDim2(0, 0, 0, 0)}
 				AutomaticCanvasSize={Enum.AutomaticSize.Y}
 				ZIndex={1}
@@ -26,7 +33,6 @@ function MiscPage() {
 					SortOrder={Enum.SortOrder.LayoutOrder}
 					HorizontalAlignment={Enum.HorizontalAlignment.Center}
 				/>
-
 				<GistLoader />
 			</scrollingframe>
 		</Card>
