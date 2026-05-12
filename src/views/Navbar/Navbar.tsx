@@ -13,14 +13,13 @@ import { getColorInSequence, hex } from "utils/color3";
 import { px, scale } from "utils/udim2";
 import NavbarTab from "./NavbarTab";
 
-const NAVBAR_SIZE = px(500, 56);
+const NAVBAR_SIZE = px(625, 56);
 
 function Navbar() {
 	const theme = useTheme("navbar");
 	const page = useCurrentPage();
 	const isOpen = useAppSelector((state) => state.dashboard.isOpen);
-
-	const alpha = useSpring(PAGE_TO_INDEX[page] / 4, { frequency: 3.9, dampingRatio: 0.76 });
+	const alpha = useSpring(PAGE_TO_INDEX[page] / 5, { frequency: 3.9, dampingRatio: 0.76 });
 
 	return (
 		<frame
@@ -38,20 +37,17 @@ function Navbar() {
 				gradient={theme.dropshadowGradient}
 				transparency={theme.transparency}
 			/>
-
 			<Underglow
 				transparency={theme.glowTransparency}
 				position={alpha}
 				sequenceColor={alpha.map((a) => getColorInSequence(theme.accentGradient.color, a))}
 			/>
-
 			<Fill
 				color={theme.background}
 				gradient={theme.backgroundGradient}
 				radius={8}
 				transparency={theme.transparency}
 			/>
-
 			<Canvas size={px(100, 56)} position={alpha.map((a) => scale(a, 0))} clipsDescendants>
 				<frame
 					Size={NAVBAR_SIZE}
@@ -67,15 +63,12 @@ function Navbar() {
 					<uicorner CornerRadius={new UDim(0, 8)} />
 				</frame>
 			</Canvas>
-
 			{theme.outlined && <Border Key="border" color={theme.foreground} radius={8} transparency={0.8} />}
-
 			<NavbarTab page={DashboardPage.Home} />
 			<NavbarTab page={DashboardPage.Apps} />
 			<NavbarTab page={DashboardPage.Scripts} />
 			<NavbarTab page={DashboardPage.Options} />
 			<NavbarTab page={DashboardPage.Misc} />
-
 			{theme.acrylic && <Acrylic />}
 		</frame>
 	);
