@@ -6,7 +6,7 @@ import { useSpring } from "hooks/common/use-spring";
 import { useTheme } from "hooks/use-theme";
 import { clearHint, setHint } from "store/actions/dashboard.action";
 import { setJobActive } from "store/actions/jobs.action";
-import { JobsState, Job } from "store/models/jobs.model";
+import type { JobsState, Job } from "store/models/jobs.model";
 import { px, scale } from "utils/udim2";
 
 interface Props {
@@ -20,14 +20,11 @@ interface Props {
 function ServerAction({ action, hint, icon, size, position }: Props) {
 	const dispatch = useAppDispatch();
 	const theme = useTheme("home").server[action === "switchServer" ? "switchButton" : "rejoinButton"];
-
 	const active = useAppSelector((state) => {
 		const job = state.jobs[action] as Job | undefined;
 		return job?.active ?? false;
 	});
-
 	const [hovered, setHovered] = useState(false);
-
 	const background = useSpring(
 		active
 			? theme.accent
@@ -37,7 +34,6 @@ function ServerAction({ action, hint, icon, size, position }: Props) {
 		{},
 	);
 	const foreground = useSpring(active && theme.foregroundAccent ? theme.foregroundAccent : theme.foreground, {});
-
 	return (
 		<BrightButton
 			onActivate={() => dispatch(setJobActive(action, !active))}
