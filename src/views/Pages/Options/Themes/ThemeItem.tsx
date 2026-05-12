@@ -11,7 +11,7 @@ import { useIsPageOpen } from "hooks/use-current-page";
 import { useTheme } from "hooks/use-theme";
 import { setTheme } from "store/actions/options.action";
 import { DashboardPage } from "store/models/dashboard.model";
-import { Theme } from "themes/theme.interface";
+import type { Theme } from "themes/theme.interface";
 import { getLuminance, hex } from "utils/color3";
 import { lerp } from "utils/number-util";
 import { px, scale } from "utils/udim2";
@@ -39,16 +39,16 @@ function ThemeItem({ theme, index }: Props) {
 		isSelected
 			? buttonTheme.accent
 			: hovered
-			? buttonTheme.backgroundHovered ?? buttonTheme.background.Lerp(buttonTheme.accent, 0.1)
-			: buttonTheme.background,
+				? (buttonTheme.backgroundHovered ?? buttonTheme.background.Lerp(buttonTheme.accent, 0.1))
+				: buttonTheme.background,
 		{},
 	);
 	const dropshadow = useSpring(
 		isSelected
 			? buttonTheme.accent
 			: hovered
-			? buttonTheme.backgroundHovered ?? buttonTheme.dropshadow.Lerp(buttonTheme.accent, 0.5)
-			: buttonTheme.dropshadow,
+				? (buttonTheme.backgroundHovered ?? buttonTheme.dropshadow.Lerp(buttonTheme.accent, 0.5))
+				: buttonTheme.dropshadow,
 		{},
 	);
 	const foreground = useSpring(
@@ -77,8 +77,8 @@ function ThemeItem({ theme, index }: Props) {
 					isSelected
 						? buttonTheme.glowTransparency
 						: hovered
-						? lerp(buttonTheme.dropshadowTransparency, buttonTheme.glowTransparency, 0.5)
-						: buttonTheme.dropshadowTransparency,
+							? lerp(buttonTheme.dropshadowTransparency, buttonTheme.glowTransparency, 0.5)
+							: buttonTheme.dropshadowTransparency,
 					{},
 				)}
 			/>
@@ -98,8 +98,8 @@ function ThemeItem({ theme, index }: Props) {
 					isSelected
 						? 0
 						: hovered
-						? buttonTheme.foregroundTransparency / 2
-						: buttonTheme.foregroundTransparency,
+							? buttonTheme.foregroundTransparency / 2
+							: buttonTheme.foregroundTransparency,
 					{},
 				)}
 				BackgroundTransparency={1}
