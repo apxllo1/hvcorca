@@ -1,5 +1,5 @@
 import Roact from "@rbxts/roact";
-import { useCallback, useEffect, useState } from "@rbxts/roact-hooked";
+import { useCallback, useState } from "@rbxts/roact-hooked";
 import { HttpService } from "@rbxts/services";
 import * as http from "utils/http";
 
@@ -9,11 +9,22 @@ export interface CommandEntry {
 	gistId: string;
 }
 
-declare function loadstring(chunk: string, chunkname?: string): [(...args: unknown[]) => unknown, string];
+declare function loadstring(chunk: string, chunkname?: string): LuaTuple<[(...args: unknown[]) => unknown, string]>;
 
-const INDEX_GIST_ID = "REPLACE_WITH_YOUR_GIST_ID";
-const GIST_API_URL = (id: string) => `https://api.github.com/gists/${id}`;
+// ─── Hardcoded command list ───────────────────────────────────────────────────
+// Add your Gist IDs here. Each gistId should point to a public Gist containing
+// a single .lua file that will be executed when the user clicks Run.
+const COMMANDS: CommandEntry[] = [
+	{
+		name: "Example Script",
+		description: "A placeholder — replace with your own Gist",
+		gistId: "YOUR_GIST_ID_HERE",
+	},
+	// Add more entries here:
+	// { name: "...", description: "...", gistId: "..." },
+];
 
+// ─── Theme constants (matching dashboard palette) ─────────────────────────────
 const GREEN = Color3.fromRGB(80, 220, 140);
 const BG_INPUT = Color3.fromRGB(20, 20, 20);
 const BG_ITEM = Color3.fromRGB(25, 25, 25);
@@ -22,103 +33,84 @@ const TEXT_PRIMARY = Color3.fromRGB(255, 255, 255);
 const TEXT_SECONDARY = Color3.fromRGB(160, 160, 160);
 const TEXT_DIM = Color3.fromRGB(100, 100, 100);
 
+const GIST_RAW_URL = (id: string) =>
+	`https://gist.githubusercontent.com/${id}/raw`;
+
+// ─── Main component ───────────────────────────────────────────────────────────
 function GistLoader() {
-	const [commands, setCommands] = useState<CommandEntry[]>([]);
-	const [filtered, setFiltered] = useState<CommandEntry[]>([]);
+	const [filtered, setFiltered] = useState<CommandEntry[]>(COMMANDS);
 	const [searchText, setSearchText] = useState("");
 	const [selected, setSelected] = useState<CommandEntry | undefined>(undefined);
-	const [status, setStatus] = useState("Loading commands...");
+	const [status, setStatus] = useState(`${COMMANDS.size()} commands available`);
 	const [isRunning, setIsRunning] = useState(false);
-
-	useEffect(() => {
-		task.spawn(() => {
-			try {
-				const response = http.get(GIST_API_URL(INDEX_GIST_ID));
-				response
-					.then((body) => {
-						const gistData = HttpService.JSONDecode(body) as {
-							files: Record<string, { content: string }>;
-						};
-						let content = "";
-						for (const [, file] of pairs(gistData.files)) {
-							content = file.content;
-							break;
-						}
-						if (content === "") {
-							setStatus("Index gist is empty");
-							return;
-						}
-						const entries = HttpService.JSONDecode(content) as CommandEntry[];
-						setCommands(entries);
-						setFiltered(entries);
-						setStatus(`${entries.size()} commands loaded`);
-					})
-					.catch((err) => {
-						setStatus(`Failed to load: ${err}`);
-					});
-			} catch (err) {
-				setStatus(`Failed to load: ${err}`);
-			}
-		});
-	}, []);
 
 	const handleSearch = useCallback(
 		(rbx: TextBox) => {
 			const query = rbx.Text.lower();
 			setSearchText(rbx.Text);
 			if (query === "") {
-				setFiltered(commands);
+				setFiltered(COMMANDS);
 			} else {
 				setFiltered(
-					commands.filter(
+					COMMANDS.filter(
 						(cmd) =>
-							cmd.name.lower().find(query)[0] !== undefined ||
-							cmd.description.lower().find(query)[0] !== undefined,
+							cmd.name.lower().find(query, 1, true)[0] !== undefined ||
+							cmd.description.lower().find(query, 1, true)[0] !== undefined,
 					),
 				);
 			}
 		},
-		[commands],
+		[],
 	);
 
 	const handleRun = useCallback(() => {
-		if (!selected || isRunning) return;
+		if (selected === undefined || isRunning) return;
 		setIsRunning(true);
-		setStatus(`Running ${selected.name}...`);
+		setStatus(`Fetching ${selected.name}...`);
+
+		const entry = selected;
 		task.spawn(() => {
-			try {
-				const content = http.get(GIST_API_URL(selected.gistId));
-				content
-					.then((body) => {
-						const gistData = HttpService.JSONDecode(body) as {
-							files: Record<string, { content: string }>;
-						};
-						let luaCode = "";
-						for (const [, file] of pairs(gistData.files)) {
-							luaCode = file.content;
-							break;
-						}
-						if (luaCode === "") {
-							setStatus("Gist file is empty");
-							setIsRunning(false);
-							return;
-						}
-						const [fn, err] = loadstring(luaCode, `@${selected.name}`);
-						assert(fn, `loadstring failed: ${err}`);
-						task.defer(fn);
-						setStatus(`Ran ${selected.name}`);
-						setIsRunning(false);
-					})
-					.catch((err) => {
-						setStatus(`Error: ${err}`);
-						setIsRunning(false);
-					});
-			} catch (err) {
-				setStatus(`Error: ${err}`);
+			// Fetch the raw Gist content
+			const [fetchOk, bodyOrErr] = pcall(() => http.get(GIST_RAW_URL(entry.gistId)));
+			if (!fetchOk) {
+				setStatus(`Fetch error: ${bodyOrErr}`);
 				setIsRunning(false);
+				return;
 			}
+
+			// http.get may return a Promise — await it properly
+			(bodyOrErr as Promise<string>)
+				.then((body) => {
+					if (body === undefined || body === "") {
+						setStatus("Gist returned empty content");
+						setIsRunning(false);
+						return;
+					}
+
+					// Safely compile and run
+					const [fn, err] = loadstring(body, `@${entry.name}`);
+					if (fn === undefined) {
+						setStatus(`Compile error: ${err}`);
+						setIsRunning(false);
+						return;
+					}
+
+					const [runOk, runErr] = pcall(fn);
+					if (!runOk) {
+						setStatus(`Runtime error: ${runErr}`);
+					} else {
+						setStatus(`✓ Ran ${entry.name}`);
+					}
+					setIsRunning(false);
+				})
+				.catch((err: unknown) => {
+					setStatus(`Error: ${tostring(err)}`);
+					setIsRunning(false);
+				});
 		});
 	}, [selected, isRunning]);
+
+	const runButtonActive = selected !== undefined && !isRunning;
 
 	return (
 		<frame Key="GistLoader" Size={new UDim2(1, 0, 0, 400)} BackgroundTransparency={1}>
@@ -159,7 +151,7 @@ function GistLoader() {
 				<uilistlayout Padding={new UDim(0, 4)} SortOrder={Enum.SortOrder.LayoutOrder} />
 				{filtered.map((cmd, i) => (
 					<CommandItem
-						Key={`cmd-${i}`}
+						Key={cmd.gistId}
 						entry={cmd}
 						isSelected={selected !== undefined && selected.gistId === cmd.gistId}
 						layoutOrder={i}
@@ -169,34 +161,36 @@ function GistLoader() {
 				{filtered.size() === 0 && (
 					<textlabel
 						Key="NoResults"
-						Text={commands.size() === 0 ? status : "No matching commands"}
+						Text="No matching commands"
 						Size={new UDim2(1, 0, 0, 40)}
 						BackgroundTransparency={1}
 						TextColor3={TEXT_DIM}
 						Font={Enum.Font.Gotham}
 						TextSize={13}
+						TextXAlignment={Enum.TextXAlignment.Center}
 					/>
 				)}
 			</scrollingframe>
 
-			{/* Run button + status */}
-			<frame Key="Footer" Size={new UDim2(1, 0, 0, 44)} BackgroundTransparency={1} LayoutOrder={2}>
+			{/* Run button */}
+			<frame Key="Footer" Size={new UDim2(1, 0, 0, 40)} BackgroundTransparency={1} LayoutOrder={2}>
 				<textbutton
 					Key="RunButton"
-					Text={isRunning ? "Running..." : selected ? `Run: ${selected.name}` : "Select a command"}
-					Size={new UDim2(1, 0, 0, 40)}
-					BackgroundColor3={selected && !isRunning ? GREEN : Color3.fromRGB(40, 40, 40)}
-					TextColor3={selected && !isRunning ? Color3.fromRGB(10, 10, 10) : TEXT_DIM}
+					Text={isRunning ? "Running..." : selected !== undefined ? `Run: ${selected.name}` : "Select a command"}
+					Size={new UDim2(1, 0, 1, 0)}
+					BackgroundColor3={runButtonActive ? GREEN : Color3.fromRGB(40, 40, 40)}
+					TextColor3={runButtonActive ? Color3.fromRGB(10, 10, 10) : TEXT_DIM}
 					Font={Enum.Font.GothamBold}
 					TextSize={14}
 					AutoButtonColor={false}
+					Active={runButtonActive}
 					Event={{ Activated: handleRun }}
 				>
 					<uicorner CornerRadius={new UDim(0, 8)} />
 				</textbutton>
 			</frame>
 
-			{/* Status text */}
+			{/* Status */}
 			<textlabel
 				Key="Status"
 				Text={status}
@@ -212,6 +206,7 @@ function GistLoader() {
 	);
 }
 
+// ─── Command item ─────────────────────────────────────────────────────────────
 interface CommandItemProps {
 	entry: CommandEntry;
 	isSelected: boolean;
@@ -226,7 +221,7 @@ function CommandItem({ entry, isSelected, layoutOrder, onSelect }: CommandItemPr
 		<textbutton
 			Key={entry.gistId}
 			Text=""
-			Size={new UDim2(1, 0, 0, 50)}
+			Size={new UDim2(1, 0, 0, 52)}
 			BackgroundColor3={isSelected ? Color3.fromRGB(30, 50, 35) : hovered ? BG_ITEM_HOVER : BG_ITEM}
 			AutoButtonColor={false}
 			LayoutOrder={layoutOrder}
@@ -242,7 +237,7 @@ function CommandItem({ entry, isSelected, layoutOrder, onSelect }: CommandItemPr
 				Key="Name"
 				Text={entry.name}
 				Size={new UDim2(1, -16, 0, 22)}
-				Position={new UDim2(0, 12, 0, 6)}
+				Position={new UDim2(0, 12, 0, 7)}
 				BackgroundTransparency={1}
 				TextColor3={TEXT_PRIMARY}
 				Font={Enum.Font.GothamBold}
@@ -253,7 +248,7 @@ function CommandItem({ entry, isSelected, layoutOrder, onSelect }: CommandItemPr
 				Key="Description"
 				Text={entry.description}
 				Size={new UDim2(1, -16, 0, 16)}
-				Position={new UDim2(0, 12, 0, 28)}
+				Position={new UDim2(0, 12, 0, 29)}
 				BackgroundTransparency={1}
 				TextColor3={TEXT_SECONDARY}
 				Font={Enum.Font.Gotham}
