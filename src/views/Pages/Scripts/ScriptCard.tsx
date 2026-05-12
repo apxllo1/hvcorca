@@ -12,7 +12,7 @@ import useSetState from "hooks/common/use-set-state";
 import { useSpring } from "hooks/common/use-spring";
 import { useIsPageOpen } from "hooks/use-current-page";
 import { useParallaxOffset } from "hooks/use-parallax-offset";
-import { DashboardPage } from "store/models/dashboard.model";
+import type { DashboardPage } from "store/models/dashboard.model";
 import { hex } from "utils/color3";
 import { scale } from "utils/udim2";
 
