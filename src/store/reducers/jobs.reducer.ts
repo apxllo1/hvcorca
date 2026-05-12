@@ -1,6 +1,6 @@
 import Rodux from "@rbxts/rodux";
-import { JobsAction } from "store/actions/jobs.action";
-import { JobsState, JobWithSliders } from "../models/jobs.model";
+import type { JobsAction } from "store/actions/jobs.action";
+import type { JobsState, JobWithSliders } from "../models/jobs.model";
 
 const initialState: JobsState = {
 	flight: { value: 60, active: false },
