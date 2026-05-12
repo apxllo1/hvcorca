@@ -3,7 +3,7 @@ import Border from "components/Border";
 import Canvas from "components/Canvas";
 import Fill from "components/Fill";
 import Glow, { GlowRadius } from "components/Glow";
-import { BindingOrValue } from "utils/binding-util";
+import type { BindingOrValue } from "utils/binding-util";
 import { hex } from "utils/color3";
 import { px, scale } from "utils/udim2";
 
@@ -45,11 +45,9 @@ function BrightButton({
 				position={px(-18, 5 - 18)}
 				transparency={transparency}
 			/>
-
 			{/* Body */}
 			<Fill color={color} radius={radius} transparency={transparency} />
 			{borderEnabled && <Border color={borderColor} radius={radius} transparency={0.8} />}
-
 			{/* Input capture */}
 			<textbutton
 				Text=""
@@ -64,7 +62,6 @@ function BrightButton({
 					MouseLeave: () => onHover?.(false),
 				}}
 			/>
-
 			{children}
 		</Canvas>
 	);
