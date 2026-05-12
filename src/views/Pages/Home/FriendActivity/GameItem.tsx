@@ -4,7 +4,7 @@ import Border from "components/Border";
 import { useDelayedUpdate } from "hooks/common/use-delayed-update";
 import { useSpring } from "hooks/common/use-spring";
 import { useIsPageOpen } from "hooks/use-current-page";
-import { GameActivity } from "hooks/use-friends";
+import type { GameActivity } from "hooks/use-friends";
 import { useTheme } from "hooks/use-theme";
 import { DashboardPage } from "store/models/dashboard.model";
 import { arrayToMap } from "utils/array-util";
@@ -20,13 +20,11 @@ interface Props {
 
 function GameItem({ gameActivity, index }: Props) {
 	const theme = useTheme("home").friendActivity;
-
 	const isOpen = useIsPageOpen(DashboardPage.Home);
 	const isVisible = useDelayedUpdate(isOpen, isOpen ? 330 + index * 100 : 300);
 	const canvasLength = useMemo(() => {
 		return gameActivity.friends.size() * (48 + 10) + 96;
 	}, [gameActivity.friends.size()]);
-
 	return (
 		<imagelabel
 			Image={gameActivity.thumbnail}
@@ -40,7 +38,6 @@ function GameItem({ gameActivity, index }: Props) {
 		>
 			<Border color={theme.foreground} radius={8} transparency={0.8} />
 			<uicorner CornerRadius={new UDim(0, 8)} />
-
 			{/* Friends */}
 			<scrollingframe
 				Size={new UDim2(1, 0, 0, 64)}
@@ -61,7 +58,6 @@ function GameItem({ gameActivity, index }: Props) {
 					Padding={new UDim(0, 10)}
 				/>
 				<uipadding PaddingLeft={new UDim(0, 10)} />
-
 				{arrayToMap(gameActivity.friends, (friend, index) => [
 					tostring(friend.VisitorId),
 					<FriendItem friend={friend} index={index} />,
