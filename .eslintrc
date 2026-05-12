@@ -20,13 +20,12 @@
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:@typescript-eslint/recommended-requiring-type-checking",
-    "plugin:roblox-ts/recommended-legacy",
+    "plugin:roblox-ts/recommended",
     "plugin:prettier/recommended"
   ],
   "rules": {
     /* Formatting - error so CI fails on bad formatting */
     "prettier/prettier": "error",
-
     /* TypeScript */
     "@typescript-eslint/no-explicit-any": "error",
     "@typescript-eslint/no-unsafe-assignment": "warn",
@@ -35,10 +34,8 @@
     "@typescript-eslint/no-unsafe-return": "warn",
     "@typescript-eslint/consistent-type-imports": ["error", { "prefer": "type-imports" }],
     "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
-
     /* roblox-ts - off because hvcorca uses namespace merging intentionally */
     "roblox-ts/no-namespace-merging": "off",
-
     /* roblox-ts - useful extra rules */
     "roblox-ts/lua-truthiness": "error",
     "roblox-ts/no-null": "error",
