@@ -1,7 +1,7 @@
 import Roact from "@rbxts/roact";
-import { BindingOrValue, mapBinding } from "utils/binding-util";
+import type { BindingOrValue } from "utils/binding-util";
+import { mapBinding } from "utils/binding-util";
 import { scale } from "utils/udim2";
-
 interface Props extends Roact.PropsWithChildren {
 	size?: BindingOrValue<UDim2>;
 	position?: BindingOrValue<UDim2>;
@@ -16,7 +16,6 @@ interface Props extends Roact.PropsWithChildren {
 	zIndex?: number;
 	onChange?: Roact.JsxInstanceChangeEvents<Frame>;
 }
-
 function Canvas({
 	size = scale(1, 1),
 	position = scale(0, 0),
@@ -50,5 +49,4 @@ function Canvas({
 		</frame>
 	);
 }
-
 export = Canvas;
