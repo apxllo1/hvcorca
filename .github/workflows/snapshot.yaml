@@ -1,67 +1,81 @@
 name: Publish Nightly Snapshot
+
 on:
   workflow_dispatch:
-  push:
-    branches: [master]
-    paths:
-      - 'src/**'
+  # Only run on schedule - pushes to master are handled by the release workflow.
+  # The cron runs nightly but the job skips itself if nothing changed in 24h.
   schedule:
-    - cron: "0 0 * * *"
+    - cron: "0 2 * * *"
+
 jobs:
   bundle-snapshot:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     permissions:
       contents: write
+
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: "master"
+          ref: master
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check for recent changes
+        id: changes
+        run: |
+          # Skip if nothing in src/ changed in the last 24 hours
+          CHANGED=$(git log --since="24 hours ago" --oneline -- src/ | wc -l)
+          echo "changed=$CHANGED" >> $GITHUB_OUTPUT
+          if [ "$CHANGED" -eq 0 ] && [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
+            echo "No changes in src/ in the last 24h — skipping snapshot."
+          fi
+
       - name: Setup Node.js
+        if: steps.changes.outputs.changed != '0' || github.event_name == 'workflow_dispatch'
         uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Get current date
-        id: date
-        run: echo "date=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
-      - name: Install OpenSSL 1.1
-        run: |
-          wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb
-          sudo dpkg -i libssl1.1_1.1.1f-1ubuntu2_amd64.deb
-      - name: Install Tools (Aftman)
+          cache: 'npm'
+
+      - name: Install Rojo/Aftman
+        if: steps.changes.outputs.changed != '0' || github.event_name == 'workflow_dispatch'
         uses: ok-nick/setup-aftman@v0.4.2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Install Remodel
-        run: |
-          curl -L --fail --retry 3 --retry-delay 2 \
-            https://github.com/rojo-rbx/remodel/releases/download/v0.11.0/remodel-0.11.0-linux-x86_64.zip \
-            -o remodel.zip
-          unzip remodel.zip
-          chmod +x remodel
-          sudo mv remodel /usr/local/bin/remodel
+        if: steps.changes.outputs.changed != '0' || github.event_name == 'workflow_dispatch'
+        run: aftman install remodel
+
       - name: Install NPM dependencies
-        run: npm install
-      - name: Compile & Build
+        if: steps.changes.outputs.changed != '0' || github.event_name == 'workflow_dispatch'
+        run: npm ci
+
+      - name: Get snapshot tag
+        if: steps.changes.outputs.changed != '0' || github.event_name == 'workflow_dispatch'
+        id: tag
+        run: echo "tag=snapshot-$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
+
+      - name: Compile TypeScript
+        if: steps.changes.outputs.changed != '0' || github.event_name == 'workflow_dispatch'
+        run: npm run compile
+
+      - name: Build Rojo project
+        if: steps.changes.outputs.changed != '0' || github.event_name == 'workflow_dispatch'
+        run: npm run build
+
+      - name: Bundle snapshot
+        if: steps.changes.outputs.changed != '0' || github.event_name == 'workflow_dispatch'
         run: |
-          npm run compile
-          npm run build
-      - name: Bundle modules
-        run: |
-          remodel run ci/bundle.lua public/latest.lua ${{ steps.date.outputs.date }} minify
-          remodel run ci/bundle.lua public/latest.debug.lua ${{ steps.date.outputs.date }}-dbg debug
-      - name: Commit and Force Sync
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          mkdir -p public
-          git add public/latest.lua public/latest.debug.lua
-          if ! git diff --cached --quiet; then
-            git commit -m "🔥 Snapshot ${{ steps.date.outputs.date }}"
-            git fetch origin master
-            git rebase origin/master --autostash
-            git push origin master --force
-          else
-            echo "No changes to commit."
-          fi
+          remodel run ci/bundle.lua public/snapshot.lua ${{ steps.tag.outputs.tag }} hvcorca.rbxm minify
+          remodel run ci/bundle.lua public/snapshot.debug.lua ${{ steps.tag.outputs.tag }} hvcorca.rbxm debug
+
+      - name: Commit snapshot builds
+        if: steps.changes.outputs.changed != '0' || github.event_name == 'workflow_dispatch'
+        uses: EndBug/add-and-commit@v9
+        with:
+          default_author: github_actions
+          add: |
+            public/snapshot.lua
+            public/snapshot.debug.lua
+          message: "🌙 snapshot: ${{ steps.tag.outputs.tag }} [skip ci]"
