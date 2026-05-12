@@ -8,7 +8,7 @@ import { useSpring } from "hooks/common/use-spring";
 import { useTheme } from "hooks/use-theme";
 import { clearHint, setHint } from "store/actions/dashboard.action";
 import { setJobActive, setJobValue } from "store/actions/jobs.action";
-import { JobWithValue, JobsState } from "store/models/jobs.model";
+import type { JobWithValue, JobsState } from "store/models/jobs.model";
 import { px, scale } from "utils/udim2";
 
 function Sliders() {
