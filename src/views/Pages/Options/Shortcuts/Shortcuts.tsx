@@ -6,9 +6,9 @@ import { useAppDispatch, useAppStore } from "hooks/common/rodux-hooks";
 import { useTheme } from "hooks/use-theme";
 import { toggleDashboard } from "store/actions/dashboard.action";
 import { setJobActive } from "store/actions/jobs.action";
-import { DashboardPage } from "store/models/dashboard.model";
-import { Job } from "store/models/jobs.model";
-import { RootState } from "store/store";
+import type { DashboardPage } from "store/models/dashboard.model";
+import type { Job } from "store/models/jobs.model";
+import type { RootState } from "store/store";
 import { px, scale } from "utils/udim2";
 import ShortcutItem, { ENTRY_HEIGHT, PADDING } from "./ShortcutItem";
 
@@ -18,7 +18,6 @@ function Shortcuts() {
 	const store = useAppStore();
 	const dispatch = useAppDispatch();
 	const theme = useTheme("options").shortcuts;
-
 	const [selectedItem, setSelectedItem] = useState<string | undefined>(undefined);
 
 	return (
