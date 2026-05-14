@@ -6,23 +6,23 @@ import { setJobActive } from "store/actions/jobs.action";
 const player = Players.LocalPlayer;
 
 // https://github.com/EdgeIY/infiniteyield/blob/master/source#L11261
-async function attachToVictim(victim: Player): Promise<BasePart> {
+function attachToVictim(victim: Player): Promise<BasePart> {
 	const backpack = player.FindFirstChildWhichIsA("Backpack");
 	if (!backpack) {
-		throw "No inventory found";
+		return Promise.reject("No inventory found");
 	}
 
 	const playerCharacter = player.Character;
 	const victimCharacter = victim.Character;
 	if (!playerCharacter || !victimCharacter) {
-		throw "Victim or local player has no character";
+		return Promise.reject("Victim or local player has no character");
 	}
 
 	const playerHumanoid = playerCharacter.FindFirstChildWhichIsA("Humanoid");
 	const playerRootPart = playerCharacter.FindFirstChild("HumanoidRootPart") as BasePart | undefined;
 	const victimRootPart = victimCharacter.FindFirstChild("HumanoidRootPart") as BasePart | undefined;
 	if (!playerHumanoid || !playerRootPart || !victimRootPart) {
-		throw "Victim or local player has no Humanoid or root part";
+		return Promise.reject("Victim or local player has no Humanoid or root part");
 	}
 
 	// Only search for tools that contain a Handle; Prefer currently equipped
@@ -31,7 +31,7 @@ async function attachToVictim(victim: Player): Promise<BasePart> {
 		(obj): obj is Tool => obj.IsA("Tool") && obj.FindFirstChild("Handle") !== undefined,
 	);
 	if (!tool) {
-		throw "A tool with a handle is required to kill this victim";
+		return Promise.reject("A tool with a handle is required to kill this victim");
 	}
 
 	// Replace the local player's humanoid with one created locally
@@ -51,20 +51,21 @@ async function attachToVictim(victim: Player): Promise<BasePart> {
 	tool.Parent = playerCharacter;
 
 	// Teleport to victim to cause the equip bug
-	for (let count = 0; count < 250; count++) {
-		if (victimRootPart.Parent !== victimCharacter || playerRootPart.Parent !== playerCharacter) {
-			throw "Victim or local player has no root part; did a player respawn?";
+	return new Promise((resolve, reject) => {
+		for (let count = 0; count < 250; count++) {
+			if (victimRootPart.Parent !== victimCharacter || playerRootPart.Parent !== playerCharacter) {
+				reject("Victim or local player has no root part; did a player respawn?");
+				return;
+			}
+			if (tool.Parent !== playerCharacter) {
+				resolve(playerRootPart);
+				return;
+			}
+			playerRootPart.CFrame = victimRootPart.CFrame;
+			task.wait(0.1);
 		}
-		if (tool.Parent !== playerCharacter) {
-			// Assume that some player equipped the tool. It might be the wrong
-			// person, but this script is free of charge.
-			return playerRootPart;
-		}
-		playerRootPart.CFrame = victimRootPart.CFrame;
-		task.wait(0.1);
-	}
-
-	throw "Failed to attach to victim";
+		reject("Failed to attach to victim");
+	});
 }
 
 // https://github.com/EdgeIY/infiniteyield/blob/master/source#L11297
@@ -119,7 +120,7 @@ async function main() {
 				return;
 			}
 
-			bringVictimToVoid(playerSelected.current)
+			void bringVictimToVoid(playerSelected.current)
 				.catch((err) => warn(`[kill-worker] ${err}`))
 				.finally(() => store.dispatch(setJobActive("kill", false)));
 		}
