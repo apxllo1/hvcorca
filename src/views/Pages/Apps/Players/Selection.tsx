@@ -67,21 +67,13 @@ function Selection() {
 	}, [players, playerSelectedName]);
 
 	useEffect(() => {
-		if (
-			playerSelectedName !== undefined &&
-			!sortedPlayers.find((player) => player.Name === playerSelectedName)
-		) {
+		if (playerSelectedName !== undefined && !sortedPlayers.find((player) => player.Name === playerSelectedName)) {
 			dispatch(playerDeselected());
 		}
 	}, [players, playerSelectedName, dispatch, sortedPlayers]);
 
 	return (
-		<Canvas
-			size={px(326, 280)}
-			position={px(0, 368)}
-			padding={{ left: 24, right: 24, top: 8 }}
-			clipsDescendants
-		>
+		<Canvas size={px(326, 280)} position={px(0, 368)} padding={{ left: 24, right: 24, top: 8 }} clipsDescendants>
 			<scrollingframe
 				Size={scale(1, 1)}
 				CanvasSize={px(0, sortedPlayers.size() * (ENTRY_HEIGHT + PADDING) + PADDING)}
@@ -137,7 +129,7 @@ function PlayerEntry({ name, userId, displayName, index }: PlayerEntryProps) {
 		isSelected
 			? theme.accent
 			: hovered
-				? (theme.backgroundHovered ?? theme.background.Lerp(theme.accent, 0.1))
+				? theme.backgroundHovered ?? theme.background.Lerp(theme.accent, 0.1)
 				: theme.background,
 		{},
 	);
@@ -146,7 +138,7 @@ function PlayerEntry({ name, userId, displayName, index }: PlayerEntryProps) {
 		isSelected
 			? theme.accent
 			: hovered
-				? (theme.backgroundHovered ?? theme.dropshadow.Lerp(theme.accent, 0.5))
+				? theme.backgroundHovered ?? theme.dropshadow.Lerp(theme.accent, 0.5)
 				: theme.dropshadow,
 		{},
 	);
@@ -160,9 +152,7 @@ function PlayerEntry({ name, userId, displayName, index }: PlayerEntryProps) {
 		<Canvas
 			size={px(ENTRY_WIDTH, ENTRY_HEIGHT)}
 			position={useSpring(
-				isVisible
-					? px(0, (PADDING + ENTRY_HEIGHT) * index)
-					: px(-ENTRY_WIDTH - 24, (PADDING + ENTRY_HEIGHT) * index),
+				isVisible ? px(0, (PADDING + ENTRY_HEIGHT) * index) : px(-ENTRY_WIDTH - 24, (PADDING + ENTRY_HEIGHT) * index),
 				{},
 			)}
 			zIndex={index}
@@ -182,11 +172,7 @@ function PlayerEntry({ name, userId, displayName, index }: PlayerEntryProps) {
 				)}
 			/>
 
-			<Fill
-				color={background}
-				transparency={useSpring(theme.backgroundTransparency, {})}
-				radius={8}
-			/>
+			<Fill color={background} transparency={useSpring(theme.backgroundTransparency, {})} radius={8} />
 
 			<textlabel
 				Text={text}
