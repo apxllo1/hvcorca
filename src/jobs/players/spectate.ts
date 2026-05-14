@@ -29,24 +29,20 @@ async function main() {
 	});
 	connectCameraSubject(Workspace.CurrentCamera!);
 
-	await onJobChange("spectate", (job) => {
+	onJobChange("spectate", (job) => {
 		const camera = Workspace.CurrentCamera!;
-
 		if (job.active) {
 			const cameraSubject = playerSelected.current?.Character?.FindFirstChildWhichIsA("Humanoid");
-
 			if (!cameraSubject) {
 				store.dispatch(setJobActive("spectate", false));
 			} else {
 				shouldResetCameraSubject = true;
-
 				defaultSubject = camera.CameraSubject;
 				currentSubject = cameraSubject;
 				camera.CameraSubject = cameraSubject;
 			}
 		} else if (shouldResetCameraSubject) {
 			shouldResetCameraSubject = false;
-
 			camera.CameraSubject = defaultSubject;
 			defaultSubject = undefined;
 			currentSubject = undefined;
