@@ -1,149 +1,150 @@
 import Roact from "@rbxts/roact";
-import type { PropsWithChildren } from "@rbxts/roact";
-import { useEffect } from "@rbxts/roact-hooked";
-
-import Border from "components/Border";
 import Canvas from "components/Canvas";
-import Fill from "components/Fill";
-import ParallaxImage from "components/ParallaxImage";
-
-import { SpringOptions } from "hooks/common/flipper-hooks";
-import { useDelayedUpdate } from "hooks/common/use-delayed-update";
-import { useIsMount } from "hooks/common/use-did-mount";
-import { useForcedUpdate } from "hooks/common/use-forced-update";
-import useSetState from "hooks/common/use-set-state";
-import { useSpring } from "hooks/common/use-spring";
-import { useIsPageOpen } from "hooks/use-current-page";
-import { useParallaxOffset } from "hooks/use-parallax-offset";
-
-import type { DashboardPage } from "store/models/dashboard.model";
-
-import { hex } from "utils/color3";
+import * as http from "utils/http";
 import { scale } from "utils/udim2";
 
-interface Props extends PropsWithChildren {
-	index: number;
-	backgroundImage: string;
-	backgroundImageSize: Vector2;
-	dropshadow: string;
-	dropshadowSize: Vector2;
-	dropshadowPosition: Vector2;
-	anchorPoint?: Vector2;
-	size: UDim2;
-	position: UDim2;
-	onActivate: () => void;
+import { BASE_PADDING, BASE_WINDOW_HEIGHT } from "views/Pages/Scripts/constants";
+import Content from "views/Pages/Scripts/Content";
+import ScriptCard from "views/Pages/Scripts/ScriptCard";
+
+declare function loadstring(chunk: string, chunkname?: string): [(...args: unknown[]) => unknown, string];
+
+async function runScriptFromUrl(url: string, src: string): Promise<string> {
+	try {
+		const content = await http.get(url);
+		const [fn, err] = loadstring(content, "@" + src);
+		assert(fn, `Failed to call loadstring on Lua script from '${url}': ${err}`);
+		task.defer(fn);
+		return "";
+	} catch (e) {
+		warn(`Failed to run Lua script from '${url}': ${e}`);
+		return "";
+	}
 }
 
-const shineSpringOptions: SpringOptions = {
-	dampingRatio: 3,
-	frequency: 2,
-};
-
-function ScriptCard({
-	index,
-	backgroundImage,
-	backgroundImageSize,
-	dropshadow,
-	dropshadowSize,
-	dropshadowPosition,
-	anchorPoint,
-	size,
-	position,
-	onActivate,
-	[Roact.Children]: children,
-}: Props) {
-	const rerender = useForcedUpdate();
-	const isCurrentlyOpen = useIsPageOpen(DashboardPage.Scripts);
-	const isOpen = useIsMount() ? false : isCurrentlyOpen;
-	const isTransitioning = useDelayedUpdate(isOpen, index * 30);
-
-	useEffect(() => {
-		rerender();
-	}, [rerender]);
-
-	const offset = useParallaxOffset();
-	const [{ isHovered, isPressed }, setButtonState] = useSetState({ isHovered: false, isPressed: false });
-
+function Scripts() {
 	return (
-		<Canvas
-			anchor={anchorPoint}
-			size={size}
-			position={useSpring(
-				isTransitioning ? position : position.add(new UDim2(0, 0, 1, 48 * 3 + 56)),
-				{
-					frequency: 2.2,
-					dampingRatio: 0.75,
-				},
-			)}
-		>
-			<Canvas
-				anchor={new Vector2(0.5, 0.5)}
-				size={useSpring(isHovered && !isPressed ? new UDim2(1, 48, 1, 48) : scale(1, 1), {
-					frequency: 2,
-				})}
-				position={scale(0.5, 0.5)}
+		<Canvas position={scale(0, 1)} anchor={new Vector2(0, 1)}>
+			<ScriptCard
+				onActivate={() => void runScriptFromUrl("https://absent.wtf/AKADMIN.lua", "AKADMIN")}
+				index={4}
+				backgroundImage="rbxassetid://126623834306744"
+				backgroundImageSize={new Vector2(1023, 682)}
+				dropshadow="rbxassetid://8992292536"
+				dropshadowSize={new Vector2(1.15, 1.25)}
+				dropshadowPosition={new Vector2(0.5, 0.55)}
+				anchorPoint={new Vector2(0, 0)}
+				size={new UDim2(1 / 3, -BASE_PADDING * (2 / 3), (416 + BASE_PADDING / 2) / BASE_WINDOW_HEIGHT, -BASE_PADDING / 2)}
+				position={scale(0, 0)}
 			>
-				<imagelabel
-					Image={dropshadow}
-					AnchorPoint={new Vector2(0.5, 0.5)}
-					Size={scale(dropshadowSize.X, dropshadowSize.Y)}
-					Position={scale(dropshadowPosition.X, dropshadowPosition.Y)}
-					BackgroundTransparency={1}
+				<Content header="AK ADMIN" body="Universal with 60k+ users!" footer="absent.wtf" />
+			</ScriptCard>
+
+			<ScriptCard
+				onActivate={() => void runScriptFromUrl("https://novoline.pro", "Novoline")}
+				index={1}
+				backgroundImage="rbxassetid://127094516248328"
+				backgroundImageSize={new Vector2(1021, 1023)}
+				dropshadow="rbxassetid://8992291993"
+				dropshadowSize={new Vector2(1.15, 1.25)}
+				dropshadowPosition={new Vector2(0.5, 0.55)}
+				anchorPoint={new Vector2(0, 1)}
+				size={new UDim2(1 / 3, -BASE_PADDING * (2 / 3), (416 + BASE_PADDING / 2) / BASE_WINDOW_HEIGHT, -BASE_PADDING / 2)}
+				position={scale(0, 1)}
+			>
+				<Content header="Novoline" body="Keyless Universal by Gladius." footer="novoline.pro" />
+			</ScriptCard>
+
+			<ScriptCard
+				onActivate={() => void runScriptFromUrl("https://onyxv2.lol/main.lua", "ONYX")}
+				index={5}
+				backgroundImage="rbxassetid://130072532268670"
+				backgroundImageSize={new Vector2(818, 1023)}
+				dropshadow="rbxassetid://8992291581"
+				dropshadowSize={new Vector2(1.15, 1.4)}
+				dropshadowPosition={new Vector2(0.5, 0.6)}
+				anchorPoint={new Vector2(0.5, 0)}
+				size={new UDim2(1 / 3, -BASE_PADDING * (2 / 3), (242 + BASE_PADDING / 2) / BASE_WINDOW_HEIGHT, -BASE_PADDING / 2)}
+				position={scale(0.5, 0)}
+			>
+				<Content header="ONYX" footer="Made by Biscit" />
+			</ScriptCard>
+
+			<ScriptCard
+				onActivate={() =>
+					void runScriptFromUrl(
+						"https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source",
+						"Infinite Yield",
+					)
+				}
+				index={3}
+				backgroundImage="rbxassetid://8992291444"
+				backgroundImageSize={new Vector2(1023, 682)}
+				dropshadow="rbxassetid://8992291268"
+				dropshadowSize={new Vector2(1.15, 1.4)}
+				dropshadowPosition={new Vector2(0.5, 0.6)}
+				anchorPoint={new Vector2(0.5, 0)}
+				size={new UDim2(1 / 3, -BASE_PADDING * (2 / 3), (242 + BASE_PADDING) / BASE_WINDOW_HEIGHT, -BASE_PADDING)}
+				position={new UDim2(0.5, 0, 1 - (590 + BASE_PADDING / 2) / BASE_WINDOW_HEIGHT, BASE_PADDING / 2)}
+			>
+				<Content header="Infinite Yield" footer="github.com/EdgeIY" />
+			</ScriptCard>
+
+			<ScriptCard
+				onActivate={() => void runScriptFromUrl("https://pastebin.com/raw/mMbsHWiQ", "Dex Explorer")}
+				index={1}
+				backgroundImage="rbxassetid://8992290931"
+				backgroundImageSize={new Vector2(818, 1023)}
+				dropshadow="rbxassetid://8992291101"
+				dropshadowSize={new Vector2(1.15, 1.35)}
+				dropshadowPosition={new Vector2(0.5, 0.55)}
+				anchorPoint={new Vector2(0.5, 1)}
+				size={new UDim2(1 / 3, -BASE_PADDING * (2 / 3), (300 + BASE_PADDING / 2) / BASE_WINDOW_HEIGHT, -BASE_PADDING / 2)}
+				position={scale(0.5, 1)}
+			>
+				<Content header="Dex Explorer" footer="github.com/LorekeeperZinnia" />
+			</ScriptCard>
+
+			<ScriptCard
+				onActivate={() =>
+					void runScriptFromUrl(
+						"https://raw.githubusercontent.com/ic3w0lf22/Unnamed-ESP/master/UnnamedESP.lua",
+						"Unnamed ESP",
+					)
+				}
+				index={6}
+				backgroundImage="rbxassetid://8992290714"
+				backgroundImageSize={new Vector2(1023, 682)}
+				dropshadow="rbxassetid://8992290570"
+				dropshadowSize={new Vector2(1.15, 1.35)}
+				dropshadowPosition={new Vector2(0.5, 0.55)}
+				anchorPoint={new Vector2(1, 0)}
+				size={new UDim2(1 / 3, -BASE_PADDING * (2 / 3), (300 + BASE_PADDING / 2) / BASE_WINDOW_HEIGHT, -BASE_PADDING / 2)}
+				position={scale(1, 0)}
+			>
+				<Content header="Unnamed ESP" footer="github.com/ic3w0lf22" />
+			</ScriptCard>
+
+			<ScriptCard
+				onActivate={() => void runScriptFromUrl("https://projectevo.xyz/script/loader.lua", "EvoV2")}
+				index={2}
+				backgroundImage="rbxassetid://8992290314"
+				backgroundImageSize={new Vector2(682, 1023)}
+				dropshadow="rbxassetid://8992290105"
+				dropshadowSize={new Vector2(1.15, 1.22)}
+				dropshadowPosition={new Vector2(0.5, 0.53)}
+				anchorPoint={new Vector2(1, 1)}
+				size={new UDim2(1 / 3, -BASE_PADDING * (2 / 3), (532 + BASE_PADDING / 2) / BASE_WINDOW_HEIGHT, -BASE_PADDING / 2)}
+				position={scale(1, 1)}
+			>
+				<Content
+					header="EvoV2"
+					body="Reliable cheats for\nRoblox's top shooter\ngames, reimagined."
+					footer="projectevo.xyz"
 				/>
-
-				<ParallaxImage
-					image={backgroundImage}
-					imageSize={backgroundImageSize}
-					padding={new Vector2(50, 50)}
-					offset={offset}
-				>
-					<uicorner CornerRadius={new UDim(0, 16)} />
-				</ParallaxImage>
-
-				<Canvas clipsDescendants>{children}</Canvas>
-
-				<Fill
-					radius={16}
-					color={hex("#ffffff")}
-					transparency={useSpring(isHovered ? 0 : 1, shineSpringOptions)}
-				>
-					<uigradient
-						Transparency={new NumberSequence(0.75, 1)}
-						Offset={useSpring(isHovered ? new Vector2(0, 0) : new Vector2(-1, -1), shineSpringOptions)}
-						Rotation={45}
-					/>
-				</Fill>
-
-				<Border
-					radius={18}
-					size={3}
-					color={hex("#ffffff")}
-					transparency={useSpring(isHovered ? 0 : 1, shineSpringOptions)}
-				>
-					<uigradient
-						Transparency={new NumberSequence(0.7, 0.9)}
-						Offset={useSpring(isHovered ? new Vector2(0, 0) : new Vector2(-1, -1), shineSpringOptions)}
-						Rotation={45}
-					/>
-				</Border>
-
-				<Border color={hex("#ffffff")} radius={16} transparency={useSpring(isHovered ? 1 : 0.8, {})} />
-			</Canvas>
-
-			<textbutton
-				Event={{
-					Activated: () => onActivate(),
-					MouseEnter: () => setButtonState({ isHovered: true }),
-					MouseLeave: () => setButtonState({ isHovered: false, isPressed: false }),
-					MouseButton1Down: () => setButtonState({ isPressed: true }),
-					MouseButton1Up: () => setButtonState({ isPressed: false }),
-				}}
-				Size={scale(1, 1)}
-				Text=""
-				Transparency={1}
-			/>
+			</ScriptCard>
 		</Canvas>
 	);
 }
 
-export default ScriptCard;
+export default Scripts;
