@@ -7,6 +7,7 @@ const player = Players.LocalPlayer;
 
 async function main() {
 	const store = await getStore();
+
 	function deactivate() {
 		store.dispatch({
 			type: "jobs/setJobActive",
@@ -14,11 +15,13 @@ async function main() {
 			active: false,
 		} as JobsAction);
 	}
+
 	onJobChange("refresh", (job, state) => {
 		if (state.jobs.ghost.active && job.active) {
+			// Can't refresh while ghost is active
 			deactivate();
 		} else if (job.active) {
-			respawn()
+			void respawn()
 				.catch((err) => warn(`[refresh-worker-respawn] ${err}`))
 				.finally(() => deactivate());
 		}
@@ -31,26 +34,37 @@ async function respawn() {
 	if (!character) {
 		throw "Character is null";
 	}
+
 	// Save current location
-	const respawnLocation = (character.FindFirstChild("HumanoidRootPart") as BasePart | undefined)?.CFrame;
+	const rootPart = character.FindFirstChild("HumanoidRootPart") as BasePart | undefined;
+	const respawnLocation = rootPart?.CFrame;
+
 	const humanoid = character.FindFirstChildWhichIsA("Humanoid");
 	humanoid?.ChangeState(Enum.HumanoidStateType.Dead);
+
+	// Clear character
 	character.ClearAllChildren();
+
+	// Force respawn
 	const mockCharacter = new Instance("Model", Workspace);
 	player.Character = mockCharacter;
 	player.Character = character;
 	mockCharacter.Destroy();
+
 	if (!respawnLocation) {
-		return; // Skip waiting for character to respawn
+		return;
 	}
+
+	// Wait for new character
 	const newCharacter = await Promise.fromEvent(player.CharacterAdded).timeout(
 		MAX_RESPAWN_TIME,
 		"CharacterAdded event timed out",
 	);
-	const humanoidRoot = newCharacter.WaitForChild("HumanoidRootPart", 5);
-	if (humanoidRoot && humanoidRoot.IsA("BasePart") && respawnLocation) {
+
+	const newRoot = newCharacter.WaitForChild("HumanoidRootPart", 5);
+	if (newRoot && newRoot.IsA("BasePart")) {
 		task.delay(0.1, () => {
-			humanoidRoot.CFrame = respawnLocation;
+			newRoot.CFrame = respawnLocation;
 		});
 	}
 }
