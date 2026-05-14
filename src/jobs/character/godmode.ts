@@ -1,18 +1,16 @@
-import { Players, RunService, Workspace } from "@rbxts/services";
+import { Players, RunService } from "@rbxts/services";
 import { getStore, onJobChange } from "jobs/helpers/job-store";
 import type { JobsAction } from "store/actions/jobs.action";
 
 const player = Players.LocalPlayer;
-
 let healthConnection: RBXScriptConnection | undefined;
-let currentCharacter: Model | undefined;
 
 function errorHandler(err: unknown) {
-	warn(`[godmode-worker] ${err}`);
+	warn(`[godmode-worker] ${String(err)}`);
 	void deactivate();
 }
 
-async function main() {
+function main() {
 	onJobChange("godmode", (job, state) => {
 		if (state.jobs.ghost.active && job.active) {
 			// Conflict with ghost
@@ -30,27 +28,20 @@ async function deactivate() {
 		healthConnection.Disconnect();
 		healthConnection = undefined;
 	}
-
-	currentCharacter = undefined;
-
 	const store = await getStore();
 	store.dispatch({
 		type: "jobs/setJobActive",
 		jobName: "godmode",
 		active: false,
 	} as JobsAction);
-
 	print("[Godmode] Deactivated");
 }
 
 async function activateGodmode() {
 	const character = player.Character;
 	if (!character) throw "No character found";
-
 	const humanoid = character.FindFirstChildWhichIsA("Humanoid");
 	if (!humanoid) throw "No humanoid found";
-
-	currentCharacter = character;
 
 	// Main godmode: keep health at maximum
 	healthConnection = humanoid.HealthChanged.Connect(() => {
@@ -77,12 +68,10 @@ async function activateGodmode() {
 	});
 
 	// Clean up backup when godmode ends
-	healthConnection = healthConnection; // keep reference
+	const savedConnection = healthConnection;
 	task.delay(0, () => {
-		if (!healthConnection) backupLoop.Disconnect();
+		if (!savedConnection) backupLoop.Disconnect();
 	});
 }
 
-main().catch((err) => {
-	warn(`[godmode-worker] ${err}`);
-});
+main();
