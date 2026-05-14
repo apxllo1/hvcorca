@@ -1,5 +1,6 @@
 import { darkTheme } from "themes/sorbet";
-import { Theme } from "themes/theme.interface";
+import type { Theme } from "themes/theme.interface";
+
 import { hex } from "utils/color3";
 
 const accent = hex("#000000");
@@ -7,9 +8,7 @@ const accentSequence = new ColorSequence(hex("#000000"));
 
 export const obsidian: Theme = {
 	...darkTheme,
-
 	name: "Obsidian",
-
 	preview: {
 		foreground: {
 			color: new ColorSequence(hex("#ffffff")),
@@ -18,10 +17,9 @@ export const obsidian: Theme = {
 			color: new ColorSequence(hex("#000000")),
 		},
 		accent: {
-			color: new ColorSequence(hex("#000000")),
+			color: accentSequence,
 		},
 	},
-
 	navbar: {
 		...darkTheme.navbar,
 		acrylic: true,
@@ -35,7 +33,6 @@ export const obsidian: Theme = {
 			transparency: new NumberSequence(0.5),
 		},
 	},
-
 	clock: {
 		...darkTheme.clock,
 		acrylic: true,
@@ -45,7 +42,6 @@ export const obsidian: Theme = {
 		dropshadow: hex("#000000"),
 		transparency: 0.7,
 	},
-
 	home: {
 		title: {
 			...darkTheme.home.title,
