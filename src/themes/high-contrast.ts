@@ -1,12 +1,11 @@
 import { darkTheme } from "themes/sorbet";
-import { Theme } from "themes/theme.interface";
+import type { Theme } from "themes/theme.interface";
+
 import { hex } from "utils/color3";
 
 export const highContrast: Theme = {
 	...darkTheme,
-
 	name: "High contrast",
-
 	preview: {
 		foreground: {
 			color: new ColorSequence(hex("#ffffff")),
@@ -23,21 +22,18 @@ export const highContrast: Theme = {
 			rotation: 25,
 		},
 	},
-
 	navbar: {
 		...darkTheme.navbar,
 		foreground: hex("#ffffff"),
 		background: hex("#000000"),
 		dropshadow: hex("#000000"),
 	},
-
 	clock: {
 		...darkTheme.clock,
 		foreground: hex("#ffffff"),
 		background: hex("#000000"),
 		dropshadow: hex("#000000"),
 	},
-
 	home: {
 		title: {
 			...darkTheme.home.title,
