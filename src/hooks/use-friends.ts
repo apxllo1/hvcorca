@@ -14,9 +14,11 @@ export function useFriends(deps?: unknown[]) {
 
 export function useFriendsPlaying(deps?: unknown[]) {
 	const [friends, err, status] = useFriends(deps);
+
 	const friendsPlaying = friends?.filter(
 		(friend): friend is FriendOnlineInfoGame => "PlaceId" in friend && "GameId" in friend,
 	);
+
 	return [friendsPlaying, err, status] as const;
 }
 
@@ -28,12 +30,13 @@ export function useFriendActivity(deps?: unknown[]) {
 
 	// If there are no friends yet, or games already has data (deps didn't change),
 	// don't rebuild the list.
-	if (!friends || games.size() > 0) {
+	if (!friends || games.size() !== 0) {
 		return [games, err, status] as const;
 	}
 
 	friends.forEach((friend) => {
 		let gameActivity = games.find((g) => g.placeId === friend.PlaceId);
+
 		if (!gameActivity) {
 			gameActivity = {
 				friends: [friend],
