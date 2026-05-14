@@ -22,12 +22,16 @@ export function useFriendsPlaying(deps?: unknown[]) {
 
 export function useFriendActivity(deps?: unknown[]) {
 	const [friends, err, status] = useFriendsPlaying(deps);
+
+	// Persistent array that only resets when deps change
 	const games = useMemo(() => new Array<GameActivity>(), deps);
-	// If there are no friends yet, or `games` is not empty (deps didn't change),
-	// don't do anything.
+
+	// If there are no friends yet, or games already has data (deps didn't change),
+	// don't rebuild the list.
 	if (!friends || games.size() > 0) {
 		return [games, err, status] as const;
 	}
+
 	friends.forEach((friend) => {
 		let gameActivity = games.find((g) => g.placeId === friend.PlaceId);
 		if (!gameActivity) {
@@ -41,5 +45,6 @@ export function useFriendActivity(deps?: unknown[]) {
 			gameActivity.friends.push(friend);
 		}
 	});
+
 	return [games, err, status] as const;
 }
