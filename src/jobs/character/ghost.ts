@@ -27,7 +27,7 @@ function enableResetOnSpawn() {
 	screenGuisWithResetOnSpawn.clear();
 }
 
-async function main() {
+function main() {
 	onJobChange("ghost", (job, state) => {
 		if (state.jobs.refresh.active && job.active) {
 			// Can't enable ghost while respawning
@@ -122,9 +122,9 @@ async function activateGhost() {
 	});
 }
 
-async function deactivateGhost() {
+function deactivateGhost() {
 	if (!originalCharacter || !ghostCharacter) {
-		return; // Not currently ghost
+		return Promise.resolve(); // Not currently ghost
 	}
 
 	// Store current position in ghost mode if possible
@@ -147,7 +147,7 @@ async function deactivateGhost() {
 	humanoid?.GetPlayingAnimationTracks().forEach((track) => track.Stop());
 
 	// Restore original character
-	const position = currentPosition || lastPosition;
+	const position = currentPosition ?? lastPosition;
 	if (rootPart?.IsA("BasePart") && position) {
 		rootPart.CFrame = position;
 	}
@@ -166,8 +166,8 @@ async function deactivateGhost() {
 	originalCharacter = undefined;
 	ghostCharacter = undefined;
 	lastPosition = undefined;
+
+	return Promise.resolve();
 }
 
-main().catch((err) => {
-	warn(`[ghost-worker] ${err}`);
-});
+main();
