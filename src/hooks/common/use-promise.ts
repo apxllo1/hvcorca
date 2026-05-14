@@ -61,15 +61,18 @@ export function usePromise<T>(
 	promise: Promise<T> | (() => Promise<T>),
 	deps: unknown[] = [],
 ): [result: T | undefined, err: unknown, state: PromiseState] {
-	const [{ err, result, state }, dispatch] = useReducer(reducer as Reducer<State<T>, Action>, defaultState);
+	const [{ err, result, state }, dispatch] = useReducer(
+		reducer as Reducer<State<T>, Action>,
+		defaultState,
+	);
+
 	useEffect(() => {
-		promise = resolvePromise<T>(promise);
-		if (!promise) {
-			return;
-		}
+		const resolvedPromise = resolvePromise<T>(promise);
+
 		let canceled = false;
 		dispatch({ type: states.pending });
-		void promise.then(
+
+		void resolvedPromise.then(
 			(result) => {
 				if (!canceled) {
 					dispatch({
@@ -87,9 +90,11 @@ export function usePromise<T>(
 				}
 			},
 		);
+
 		return () => {
 			canceled = true;
 		};
 	}, deps);
+
 	return [result, err, state];
 }
