@@ -25,14 +25,14 @@ export function persistentState<T extends object>(name: string, selector: (state
 		const serializedState = read(`_orca/${name}.json`);
 		if (serializedState === undefined) {
 			write(`_orca/${name}.json`, HttpService.JSONEncode(defaultValue));
-			autosave(name, selector);
+			void autosave(name, selector);
 			return defaultValue;
 		}
 		const value = HttpService.JSONDecode(serializedState) as T;
-		autosave(name, selector);
+		void autosave(name, selector);
 		return value;
 	} catch (err) {
-		warn(`[PersistentState] Load failed for ${name}: ${err}`);
+		warn(`[PersistentState] Load failed for ${name}: ${String(err)}`);
 		return defaultValue;
 	}
 }
@@ -44,7 +44,7 @@ async function autosave(name: string, selector: (state: RootState) => object) {
 			const state = selector(store.getState());
 			write(`_orca/${name}.json`, HttpService.JSONEncode(state));
 		} catch (err) {
-			warn(`[PersistentState] Autosave failed for ${name}: ${err}`);
+			warn(`[PersistentState] Autosave failed for ${name}: ${String(err)}`);
 		}
 	};
 	setInterval(save, 60000);
