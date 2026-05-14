@@ -32,7 +32,7 @@ async function onServerHop(): Promise<void> {
 	}
 }
 
-async function onRejoin(): Promise<void> {
+function onRejoin(): void {
 	queueExecution();
 	if (Players.GetPlayers().size() === 1) {
 		TeleportService.Teleport(game.PlaceId, Players.LocalPlayer);
@@ -50,10 +50,12 @@ function queueExecution(): void {
 async function main(): Promise<void> {
 	const store = await getStore();
 	let timeout: Timeout | undefined;
+
 	function clearTimeout(): void {
 		timeout?.clear();
 		timeout = undefined;
 	}
+
 	onJobChange("rejoinServer", (job, state) => {
 		clearTimeout();
 		if (state.jobs.switchServer.active) {
@@ -61,13 +63,16 @@ async function main(): Promise<void> {
 		}
 		if (job.active) {
 			timeout = setTimeout(() => {
-				onRejoin().catch((err: unknown) => {
-					warn(`[server-worker-rejoin] ${err}`);
+				try {
+					onRejoin();
+				} catch (err: unknown) {
+					warn(`[server-worker-rejoin] ${String(err)}`);
 					store.dispatch(setJobActive("rejoinServer", false));
-				});
+				}
 			}, 1000);
 		}
 	});
+
 	onJobChange("switchServer", (job, state) => {
 		clearTimeout();
 		if (state.jobs.rejoinServer.active) {
@@ -75,8 +80,8 @@ async function main(): Promise<void> {
 		}
 		if (job.active) {
 			timeout = setTimeout(() => {
-				onServerHop().catch((err: unknown) => {
-					warn(`[server-worker-switch] ${err}`);
+				void onServerHop().catch((err: unknown) => {
+					warn(`[server-worker-switch] ${String(err)}`);
 					store.dispatch(setJobActive("switchServer", false));
 				});
 			}, 1000);
@@ -85,5 +90,5 @@ async function main(): Promise<void> {
 }
 
 main().catch((err: unknown) => {
-	warn(`[server-worker] ${err}`);
+	warn(`[server-worker] ${String(err)}`);
 });
