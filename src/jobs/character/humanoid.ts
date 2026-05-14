@@ -4,12 +4,10 @@ import type { JobWithValue } from "store/models/jobs.model";
 
 const JUMP_POWER_CONSTANT = 349.24;
 const player = Players.LocalPlayer;
-
 const defaults = {
 	walkSpeed: 16,
 	jumpHeight: 7.2,
 };
-
 let humanoid: Humanoid | undefined;
 let walkSpeedJob: JobWithValue<number>;
 let jumpHeightJob: JobWithValue<number>;
@@ -17,7 +15,6 @@ let jumpHeightJob: JobWithValue<number>;
 async function main() {
 	const store = await getStore();
 	const state = store.getState();
-
 	walkSpeedJob = state.jobs.walkSpeed;
 	jumpHeightJob = state.jobs.jumpHeight;
 
@@ -41,10 +38,8 @@ async function main() {
 		const newHumanoid = character.WaitForChild("Humanoid", 5) as Humanoid | undefined;
 		if (newHumanoid?.IsA("Humanoid")) {
 			humanoid = newHumanoid;
-
 			setDefaultWalkSpeed(newHumanoid);
 			setDefaultJumpHeight(newHumanoid);
-
 			if (walkSpeedJob.active) updateWalkSpeed(newHumanoid, walkSpeedJob);
 			if (jumpHeightJob.active) updateJumpHeight(newHumanoid, jumpHeightJob);
 		}
@@ -70,7 +65,6 @@ function updateWalkSpeed(humanoid: Humanoid | undefined, job: JobWithValue<numbe
 
 function updateJumpHeight(humanoid: Humanoid | undefined, job: JobWithValue<number>) {
 	if (!humanoid) return;
-
 	if (job.active) {
 		humanoid.JumpHeight = job.value;
 		if (humanoid.UseJumpPower) {
