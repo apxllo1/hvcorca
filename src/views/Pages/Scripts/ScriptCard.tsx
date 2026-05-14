@@ -1,9 +1,12 @@
 import Roact from "@rbxts/roact";
+import type { PropsWithChildren } from "@rbxts/roact";
 import { useEffect } from "@rbxts/roact-hooked";
+
 import Border from "components/Border";
 import Canvas from "components/Canvas";
 import Fill from "components/Fill";
 import ParallaxImage from "components/ParallaxImage";
+
 import { SpringOptions } from "hooks/common/flipper-hooks";
 import { useDelayedUpdate } from "hooks/common/use-delayed-update";
 import { useIsMount } from "hooks/common/use-did-mount";
@@ -12,11 +15,13 @@ import useSetState from "hooks/common/use-set-state";
 import { useSpring } from "hooks/common/use-spring";
 import { useIsPageOpen } from "hooks/use-current-page";
 import { useParallaxOffset } from "hooks/use-parallax-offset";
+
 import type { DashboardPage } from "store/models/dashboard.model";
+
 import { hex } from "utils/color3";
 import { scale } from "utils/udim2";
 
-interface Props extends Roact.PropsWithChildren {
+interface Props extends PropsWithChildren {
 	index: number;
 	backgroundImage: string;
 	backgroundImageSize: Vector2;
@@ -48,26 +53,29 @@ function ScriptCard({
 	[Roact.Children]: children,
 }: Props) {
 	const rerender = useForcedUpdate();
-
 	const isCurrentlyOpen = useIsPageOpen(DashboardPage.Scripts);
 	const isOpen = useIsMount() ? false : isCurrentlyOpen;
 	const isTransitioning = useDelayedUpdate(isOpen, index * 30);
 
 	// Force a rerender to start the intro transition
-	useEffect(() => rerender(), []);
+	useEffect(() => {
+		rerender();
+	}, [rerender]);
 
 	const offset = useParallaxOffset();
-
 	const [{ isHovered, isPressed }, setButtonState] = useSetState({ isHovered: false, isPressed: false });
 
 	return (
 		<Canvas
 			anchor={anchorPoint}
 			size={size}
-			position={useSpring(isTransitioning ? position : position.add(new UDim2(0, 0, 1, 48 * 3 + 56)), {
-				frequency: 2.2,
-				dampingRatio: 0.75,
-			})}
+			position={useSpring(
+				isTransitioning ? position : position.add(new UDim2(0, 0, 1, 48 * 3 + 56)),
+				{
+					frequency: 2.2,
+					dampingRatio: 0.75,
+				},
+			)}
 		>
 			{/* Body */}
 			<Canvas
@@ -111,6 +119,7 @@ function ScriptCard({
 						Rotation={45}
 					/>
 				</Fill>
+
 				<Border
 					radius={18}
 					size={3}
