@@ -70,8 +70,8 @@ function Slider(props: {
 		job.active
 			? accent
 			: hovered
-			? theme.button.backgroundHovered ?? theme.button.background.Lerp(accent, 0.1)
-			: theme.button.background,
+				? (theme.button.backgroundHovered ?? theme.button.background.Lerp(accent, 0.1))
+				: theme.button.background,
 		{},
 	);
 	const buttonForeground = useSpring(
@@ -136,11 +136,7 @@ function Slider(props: {
 					TextXAlignment="Center"
 					TextYAlignment="Center"
 					TextTransparency={useSpring(
-						job.active
-							? 0
-							: hovered
-							? theme.button.foregroundTransparency - 0.25
-							: theme.button.foregroundTransparency,
+						job.active ? 0 : hovered ? theme.button.foregroundTransparency - 0.25 : theme.button.foregroundTransparency,
 						{},
 					)}
 					Size={scale(1, 1)}
