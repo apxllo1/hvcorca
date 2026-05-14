@@ -2,6 +2,7 @@ import Roact from "@rbxts/roact";
 import Canvas from "components/Canvas";
 import * as http from "utils/http";
 import { scale } from "utils/udim2";
+
 import { BASE_PADDING, BASE_WINDOW_HEIGHT } from "views/Pages/Scripts/constants";
 import Content from "views/Pages/Scripts/Content";
 import ScriptCard from "views/Pages/Scripts/ScriptCard";
@@ -25,7 +26,7 @@ function Scripts() {
 	return (
 		<Canvas position={scale(0, 1)} anchor={new Vector2(0, 1)}>
 			<ScriptCard
-				onActivate={() => runScriptFromUrl("https://absent.wtf/AKADMIN.lua", "AKADMIN")}
+				onActivate={() => void runScriptFromUrl("https://absent.wtf/AKADMIN.lua", "AKADMIN")}
 				index={4}
 				backgroundImage="rbxassetid://126623834306744"
 				backgroundImageSize={new Vector2(1023, 682)}
@@ -47,7 +48,7 @@ function Scripts() {
 			</ScriptCard>
 
 			<ScriptCard
-				onActivate={() => runScriptFromUrl("https://novoline.pro", "Novoline")}
+				onActivate={() => void runScriptFromUrl("https://novoline.pro", "Novoline")}
 				index={1}
 				backgroundImage="rbxassetid://127094516248328"
 				backgroundImageSize={new Vector2(1021, 1023)}
@@ -69,7 +70,7 @@ function Scripts() {
 			</ScriptCard>
 
 			<ScriptCard
-				onActivate={() => runScriptFromUrl("https://onyxv2.lol/main.lua", "ONYX")}
+				onActivate={() => void runScriptFromUrl("https://onyxv2.lol/main.lua", "ONYX")}
 				index={5}
 				backgroundImage="rbxassetid://130072532268670"
 				backgroundImageSize={new Vector2(818, 1023)}
@@ -92,7 +93,7 @@ function Scripts() {
 
 			<ScriptCard
 				onActivate={() =>
-					runScriptFromUrl(
+					void runScriptFromUrl(
 						"https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source",
 						"Infinite Yield",
 					)
@@ -113,7 +114,7 @@ function Scripts() {
 			</ScriptCard>
 
 			<ScriptCard
-				onActivate={() => runScriptFromUrl("https://pastebin.com/raw/mMbsHWiQ", "Dex Explorer")}
+				onActivate={() => void runScriptFromUrl("https://pastebin.com/raw/mMbsHWiQ", "Dex Explorer")}
 				index={1}
 				backgroundImage="rbxassetid://8992290931"
 				backgroundImageSize={new Vector2(818, 1023)}
@@ -136,7 +137,7 @@ function Scripts() {
 
 			<ScriptCard
 				onActivate={() =>
-					runScriptFromUrl(
+					void runScriptFromUrl(
 						"https://raw.githubusercontent.com/ic3w0lf22/Unnamed-ESP/master/UnnamedESP.lua",
 						"Unnamed ESP",
 					)
@@ -162,7 +163,7 @@ function Scripts() {
 			</ScriptCard>
 
 			<ScriptCard
-				onActivate={() => runScriptFromUrl("https://projectevo.xyz/script/loader.lua", "EvoV2")}
+				onActivate={() => void runScriptFromUrl("https://projectevo.xyz/script/loader.lua", "EvoV2")}
 				index={2}
 				backgroundImage="rbxassetid://8992290314"
 				backgroundImageSize={new Vector2(682, 1023)}
