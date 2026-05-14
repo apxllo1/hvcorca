@@ -11,20 +11,14 @@ export interface CommandEntry {
 
 declare function loadstring(chunk: string, chunkname?: string): LuaTuple<[(...args: unknown[]) => unknown, string]>;
 
-// ─── Hardcoded command list ───────────────────────────────────────────────────
-// Add your Gist IDs here. Each gistId should point to a public Gist containing
-// a single .lua file that will be executed when the user clicks Run.
 const COMMANDS: CommandEntry[] = [
 	{
 		name: "Example Script",
 		description: "A placeholder — replace with your own Gist",
 		gistId: "YOUR_GIST_ID_HERE",
 	},
-	// Add more entries here:
-	// { name: "...", description: "...", gistId: "..." },
 ];
 
-// ─── Theme constants (matching dashboard palette) ─────────────────────────────
 const GREEN = Color3.fromRGB(80, 220, 140);
 const BG_INPUT = Color3.fromRGB(20, 20, 20);
 const BG_ITEM = Color3.fromRGB(25, 25, 25);
@@ -33,10 +27,8 @@ const TEXT_PRIMARY = Color3.fromRGB(255, 255, 255);
 const TEXT_SECONDARY = Color3.fromRGB(160, 160, 160);
 const TEXT_DIM = Color3.fromRGB(100, 100, 100);
 
-const GIST_RAW_URL = (id: string) =>
-	`https://gist.githubusercontent.com/${id}/raw`;
+const GIST_RAW_URL = (id: string) => `https://gist.githubusercontent.com/${id}/raw`;
 
-// ─── Main component ───────────────────────────────────────────────────────────
 function GistLoader() {
 	const [filtered, setFiltered] = useState<CommandEntry[]>(COMMANDS);
 	const [searchText, setSearchText] = useState("");
@@ -70,15 +62,13 @@ function GistLoader() {
 
 		const entry = selected;
 		task.spawn(() => {
-			// Fetch the raw Gist content
 			const [fetchOk, bodyOrErr] = pcall(() => http.get(GIST_RAW_URL(entry.gistId)));
 			if (!fetchOk) {
-				setStatus(`Fetch error: ${bodyOrErr}`);
+				setStatus(`Fetch error: ${String(bodyOrErr)}`);
 				setIsRunning(false);
 				return;
 			}
 
-			// http.get may return a Promise — await it properly
 			(bodyOrErr as Promise<string>)
 				.then((body) => {
 					if (body === undefined || body === "") {
@@ -87,24 +77,23 @@ function GistLoader() {
 						return;
 					}
 
-					// Safely compile and run
 					const [fn, err] = loadstring(body, `@${entry.name}`);
 					if (fn === undefined) {
-						setStatus(`Compile error: ${err}`);
+						setStatus(`Compile error: ${String(err)}`);
 						setIsRunning(false);
 						return;
 					}
 
 					const [runOk, runErr] = pcall(fn);
 					if (!runOk) {
-						setStatus(`Runtime error: ${runErr}`);
+						setStatus(`Runtime error: ${String(runErr)}`);
 					} else {
 						setStatus(`✓ Ran ${entry.name}`);
 					}
 					setIsRunning(false);
 				})
 				.catch((err: unknown) => {
-					setStatus(`Error: ${tostring(err)}`);
+					setStatus(`Error: ${String(err)}`);
 					setIsRunning(false);
 				});
 		});
@@ -116,7 +105,6 @@ function GistLoader() {
 		<frame Key="GistLoader" Size={new UDim2(1, 0, 0, 400)} BackgroundTransparency={1}>
 			<uilistlayout Padding={new UDim(0, 8)} SortOrder={Enum.SortOrder.LayoutOrder} />
 
-			{/* Search bar */}
 			<frame Key="SearchBar" Size={new UDim2(1, 0, 0, 36)} BackgroundColor3={BG_INPUT} LayoutOrder={0}>
 				<uicorner CornerRadius={new UDim(0, 8)} />
 				<uistroke Color={Color3.fromRGB(40, 40, 40)} Thickness={1} />
@@ -137,7 +125,6 @@ function GistLoader() {
 				/>
 			</frame>
 
-			{/* Command list */}
 			<scrollingframe
 				Key="CommandList"
 				Size={new UDim2(1, 0, 0, 260)}
@@ -172,11 +159,16 @@ function GistLoader() {
 				)}
 			</scrollingframe>
 
-			{/* Run button */}
 			<frame Key="Footer" Size={new UDim2(1, 0, 0, 40)} BackgroundTransparency={1} LayoutOrder={2}>
 				<textbutton
 					Key="RunButton"
-					Text={isRunning ? "Running..." : selected !== undefined ? `Run: ${selected.name}` : "Select a command"}
+					Text={
+						isRunning
+							? "Running..."
+							: selected !== undefined
+								? `Run: ${selected.name}`
+								: "Select a command"
+					}
 					Size={new UDim2(1, 0, 1, 0)}
 					BackgroundColor3={runButtonActive ? GREEN : Color3.fromRGB(40, 40, 40)}
 					TextColor3={runButtonActive ? Color3.fromRGB(10, 10, 10) : TEXT_DIM}
@@ -190,7 +182,6 @@ function GistLoader() {
 				</textbutton>
 			</frame>
 
-			{/* Status */}
 			<textlabel
 				Key="Status"
 				Text={status}
@@ -206,7 +197,6 @@ function GistLoader() {
 	);
 }
 
-// ─── Command item ─────────────────────────────────────────────────────────────
 interface CommandItemProps {
 	entry: CommandEntry;
 	isSelected: boolean;
