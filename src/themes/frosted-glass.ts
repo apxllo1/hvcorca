@@ -1,5 +1,6 @@
 import { darkTheme } from "themes/sorbet";
-import { Theme, ViewTheme } from "themes/theme.interface";
+import type { Theme, ViewTheme } from "themes/theme.interface";
+
 import { hex } from "utils/color3";
 
 const accent = hex("#000000");
@@ -23,9 +24,7 @@ const view: ViewTheme = {
 
 export const frostedGlass: Theme = {
 	...darkTheme,
-
 	name: "Frosted glass",
-
 	preview: {
 		foreground: {
 			color: new ColorSequence(hex("#ffffff")),
@@ -37,7 +36,6 @@ export const frostedGlass: Theme = {
 			color: accentSequence,
 		},
 	},
-
 	navbar: {
 		...darkTheme.navbar,
 		outlined: true,
@@ -55,7 +53,6 @@ export const frostedGlass: Theme = {
 		},
 		glowTransparency: 0.5,
 	},
-
 	clock: {
 		outlined: true,
 		acrylic: true,
@@ -66,7 +63,6 @@ export const frostedGlass: Theme = {
 		dropshadow: hex("#000000"),
 		dropshadowTransparency: 0.2,
 	},
-
 	home: {
 		title: {
 			...view,
