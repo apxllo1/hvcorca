@@ -4,7 +4,6 @@ import type { JobsAction } from "store/actions/jobs.action";
 
 const player = Players.LocalPlayer;
 const screenGuisWithResetOnSpawn = new Array<ScreenGui>();
-
 let originalCharacter: Model | undefined;
 let ghostCharacter: Model | undefined;
 let lastPosition: CFrame | undefined;
@@ -32,18 +31,18 @@ async function main() {
 	onJobChange("ghost", (job, state) => {
 		if (state.jobs.refresh.active && job.active) {
 			// Can't enable ghost while respawning
-			deactivate();
+			void deactivate();
 		} else if (job.active) {
 			// Enable ghost mode
-			activateGhost()
+			void activateGhost()
 				.then(deactivateOnCharacterAdded)
 				.catch((err) => {
 					warn(`[ghost-worker-active] ${err}`);
-					deactivate();
+					void deactivate();
 				});
 		} else if (!state.jobs.refresh.active) {
 			// Deactivate ghost if inactive & not respawning
-			deactivateGhost().catch((err) => {
+			void deactivateGhost().catch((err) => {
 				warn(`[ghost-worker-inactive] ${err}`);
 			});
 		}
@@ -91,6 +90,7 @@ async function activateGhost() {
 			child.Transparency = 1 - (1 - child.Transparency) * 0.5;
 		}
 	}
+
 	if (ghostHumanoid) {
 		ghostHumanoid.DisplayName = utf8.char(128123); // Ghost emoji
 	}
@@ -118,7 +118,7 @@ async function activateGhost() {
 	// Respawn on death
 	const handle = humanoid.Died.Connect(() => {
 		handle.Disconnect();
-		deactivate();
+		void deactivate();
 	});
 }
 
