@@ -9,34 +9,28 @@ export interface GameActivity {
 }
 
 export function useFriends(deps?: unknown[]) {
-	return usePromise(() => Players.LocalPlayer.GetFriendsOnline(), deps);
+	return usePromise(() => Players.LocalPlayer.GetFriendsOnline() as Promise<FriendOnlineInfo[]>, deps);
 }
 
 export function useFriendsPlaying(deps?: unknown[]) {
 	const [friends, err, status] = useFriends(deps);
-
 	const friendsPlaying = friends?.filter(
 		(friend): friend is FriendOnlineInfoGame => "PlaceId" in friend && "GameId" in friend,
 	);
-
 	return [friendsPlaying, err, status] as const;
 }
 
 export function useFriendActivity(deps?: unknown[]) {
 	const [friends, err, status] = useFriendsPlaying(deps);
-
 	// Persistent array that only resets when deps change
 	const games = useMemo(() => new Array<GameActivity>(), deps);
-
 	// If there are no friends yet, or games already has data (deps didn't change),
 	// don't rebuild the list.
-	if (!friends || games.size() !== 0) {
+	if (friends === undefined || friends.size() === 0 || games.size() !== 0) {
 		return [games, err, status] as const;
 	}
-
-	friends.forEach((friend) => {
+	friends.forEach((friend: FriendOnlineInfoGame) => {
 		let gameActivity = games.find((g) => g.placeId === friend.PlaceId);
-
 		if (!gameActivity) {
 			gameActivity = {
 				friends: [friend],
@@ -48,6 +42,5 @@ export function useFriendActivity(deps?: unknown[]) {
 			gameActivity.friends.push(friend);
 		}
 	});
-
 	return [games, err, status] as const;
 }
