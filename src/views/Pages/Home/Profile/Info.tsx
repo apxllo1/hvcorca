@@ -1,23 +1,31 @@
 import Roact from "@rbxts/roact";
 import { Players } from "@rbxts/services";
+
 import Canvas from "components/Canvas";
+
 import { useDelayedUpdate } from "hooks/common/use-delayed-update";
 import { useSpring } from "hooks/common/use-spring";
 import { useIsPageOpen } from "hooks/use-current-page";
 import { useFriends } from "hooks/use-friends";
 import { useTheme } from "hooks/use-theme";
-import { DashboardPage } from "store/models/dashboard.model";
+
+import type { DashboardPage } from "store/models/dashboard.model";
+import { DashboardPage as DP } from "store/models/dashboard.model";
+
 import { px } from "utils/udim2";
 
 function Info() {
 	const theme = useTheme("home").profile;
-	const isOpen = useIsPageOpen(DashboardPage.Home);
+	const isOpen = useIsPageOpen(DP.Home);
 
 	const [friends = [], , status] = useFriends();
-	const friendsOnline = friends.size();
-	const friendsJoined = friends.filter((friend) => "PlaceId" in friend && friend.PlaceId === game.PlaceId).size();
 
-	// Transition
+	const friendsOnline = friends.size();
+	const friendsJoined = friends.filter(
+		(friend) => "PlaceId" in friend && friend.PlaceId === game.PlaceId,
+	).size();
+
+	// Transition delays
 	const showJoinDate = useDelayedUpdate(isOpen, 400, (open) => !open);
 	const showFriendsJoined = useDelayedUpdate(isOpen && status !== "pending", 500, (open) => !open);
 	const showFriendsOnline = useDelayedUpdate(isOpen && status !== "pending", 600, (open) => !open);
@@ -36,7 +44,7 @@ function Info() {
 			<textlabel
 				Font="GothamBold"
 				Text={`Joined\n${
-					os.date("%m/%d/%Y", os.time() - Players.LocalPlayer.AccountAge * 24 * 60 * 60) as string | undefined
+					(os.date("%m/%d/%Y", os.time() - Players.LocalPlayer.AccountAge * 24 * 60 * 60) as string | undefined) ?? ""
 				}`}
 				TextSize={13}
 				TextColor3={theme.foreground}
@@ -47,6 +55,7 @@ function Info() {
 				Position={useSpring(showJoinDate ? px(0, 0) : px(-20, 0), {})}
 				BackgroundTransparency={1}
 			/>
+
 			<textlabel
 				Font="GothamBold"
 				Text={friendsJoined === 1 ? "1 friend\njoined" : `${friendsJoined} friends\njoined`}
@@ -59,6 +68,7 @@ function Info() {
 				Position={useSpring(showFriendsJoined ? px(97, 0) : px(97 - 20, 0), {})}
 				BackgroundTransparency={1}
 			/>
+
 			<textlabel
 				Font="GothamBold"
 				Text={friendsOnline === 1 ? "1 friend\nonline" : `${friendsOnline} friends\nonline`}
