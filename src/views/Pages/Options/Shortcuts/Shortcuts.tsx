@@ -54,7 +54,7 @@ function Shortcuts() {
 					/>
 					<ShortcutItem
 						onActivate={() => {
-							const state = store.getState() as RootState;
+							const state = store.getState();
 							const job = state.jobs.flight as Job;
 							dispatch(setJobActive("flight", !job.active));
 						}}
@@ -66,7 +66,7 @@ function Shortcuts() {
 					/>
 					<ShortcutItem
 						onActivate={() => {
-							const state = store.getState() as RootState;
+							const state = store.getState();
 							const job = state.jobs.freecam as Job;
 							dispatch(setJobActive("freecam", !job.active));
 						}}
@@ -78,7 +78,7 @@ function Shortcuts() {
 					/>
 					<ShortcutItem
 						onActivate={() => {
-							const state = store.getState() as RootState;
+							const state = store.getState();
 							const job = state.jobs.ghost as Job;
 							dispatch(setJobActive("ghost", !job.active));
 						}}
@@ -90,7 +90,7 @@ function Shortcuts() {
 					/>
 					<ShortcutItem
 						onActivate={() => {
-							const state = store.getState() as RootState;
+							const state = store.getState();
 							const job = state.jobs.walkSpeed as Job;
 							dispatch(setJobActive("walkSpeed", !job.active));
 						}}
@@ -102,7 +102,7 @@ function Shortcuts() {
 					/>
 					<ShortcutItem
 						onActivate={() => {
-							const state = store.getState() as RootState;
+							const state = store.getState();
 							const job = state.jobs.jumpHeight as Job;
 							dispatch(setJobActive("jumpHeight", !job.active));
 						}}
