@@ -30,29 +30,30 @@ function ConfigItem({ action, description, hint, index }: Props) {
 	const buttonTheme = useTheme("options").config.configButton;
 	const active = useAppSelector((state) => state.options.config[action]);
 	const [hovered, setHovered] = useState(false);
+
 	const background = useSpring(
 		active
 			? buttonTheme.accent
 			: hovered
-			? buttonTheme.backgroundHovered ?? buttonTheme.background.Lerp(buttonTheme.accent, 0.1)
-			: buttonTheme.background,
+				? (buttonTheme.backgroundHovered ?? buttonTheme.background.Lerp(buttonTheme.accent, 0.1))
+				: buttonTheme.background,
 		{},
 	);
 	const dropshadow = useSpring(
 		active
 			? buttonTheme.accent
 			: hovered
-			? buttonTheme.backgroundHovered ?? buttonTheme.dropshadow.Lerp(buttonTheme.accent, 0.5)
-			: buttonTheme.dropshadow,
+				? (buttonTheme.backgroundHovered ?? buttonTheme.dropshadow.Lerp(buttonTheme.accent, 0.5))
+				: buttonTheme.dropshadow,
 		{},
 	);
 	const foreground = useSpring(
 		active && buttonTheme.foregroundAccent ? buttonTheme.foregroundAccent : buttonTheme.foreground,
 		{},
 	);
+
 	return (
 		<Canvas size={px(ENTRY_WIDTH, ENTRY_HEIGHT)} position={px(0, (PADDING + ENTRY_HEIGHT) * index)} zIndex={index}>
-			{/* Underglow */}
 			<Glow
 				radius={GlowRadius.Size70}
 				color={dropshadow}
@@ -62,14 +63,14 @@ function ConfigItem({ action, description, hint, index }: Props) {
 					active
 						? buttonTheme.glowTransparency
 						: hovered
-						? lerp(buttonTheme.dropshadowTransparency, buttonTheme.glowTransparency, 0.5)
-						: buttonTheme.dropshadowTransparency,
+							? lerp(buttonTheme.dropshadowTransparency, buttonTheme.glowTransparency, 0.5)
+							: buttonTheme.dropshadowTransparency,
 					{},
 				)}
 			/>
-			{/* Body */}
+
 			<Fill color={background} transparency={buttonTheme.backgroundTransparency} radius={8} />
-			{/* Description */}
+
 			<textlabel
 				Text={description}
 				Font="GothamBold"
@@ -86,9 +87,9 @@ function ConfigItem({ action, description, hint, index }: Props) {
 				BackgroundTransparency={1}
 				ClipsDescendants
 			/>
-			{/* Border */}
+
 			{buttonTheme.outlined && <Border color={foreground} transparency={0.8} radius={8} />}
-			{/* Input capture */}
+
 			<textbutton
 				Event={{
 					Activated: () => dispatch(setConfig(action, !active)),
