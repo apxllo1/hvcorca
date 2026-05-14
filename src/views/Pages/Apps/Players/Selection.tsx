@@ -1,10 +1,12 @@
 import Roact from "@rbxts/roact";
 import { useEffect, useMemo, useState } from "@rbxts/roact-hooked";
 import { Players, TextService } from "@rbxts/services";
+
 import Border from "components/Border";
 import Canvas from "components/Canvas";
 import Fill from "components/Fill";
 import Glow, { GlowRadius } from "components/Glow";
+
 import { IS_DEV } from "constants";
 import { useLinear } from "hooks/common/flipper-hooks";
 import { useAppDispatch, useAppSelector } from "hooks/common/rodux-hooks";
@@ -12,9 +14,11 @@ import { useDelayedUpdate } from "hooks/common/use-delayed-update";
 import { useSpring } from "hooks/common/use-spring";
 import { useIsPageOpen } from "hooks/use-current-page";
 import { useTheme } from "hooks/use-theme";
+
 import { playerDeselected, playerSelected } from "store/actions/dashboard.action";
 import type { DashboardPage } from "store/models/dashboard.model";
-import { DashboardPage as DP } from "store/models/dashboard.model";
+import { DashboardPage as DP, PAGE_TO_ICON, PAGE_TO_INDEX } from "store/models/dashboard.model"; // Wait — actually not needed here
+
 import { arrayToMap } from "utils/array-util";
 import { lerp } from "utils/number-util";
 import { px, scale } from "utils/udim2";
@@ -36,12 +40,8 @@ function usePlayers() {
 	const [players, setPlayers] = useState(Players.GetPlayers());
 
 	useEffect(() => {
-		const addedHandle = Players.PlayerAdded.Connect(() => {
-			setPlayers(Players.GetPlayers());
-		});
-		const removingHandle = Players.PlayerRemoving.Connect(() => {
-			setPlayers(Players.GetPlayers());
-		});
+		const addedHandle = Players.PlayerAdded.Connect(() => setPlayers(Players.GetPlayers()));
+		const removingHandle = Players.PlayerRemoving.Connect(() => setPlayers(Players.GetPlayers()));
 
 		return () => {
 			addedHandle.Disconnect();
@@ -67,13 +67,21 @@ function Selection() {
 	}, [players, playerSelectedName]);
 
 	useEffect(() => {
-		if (playerSelectedName !== undefined && !sortedPlayers.find((player) => player.Name === playerSelectedName)) {
+		if (
+			playerSelectedName !== undefined &&
+			!sortedPlayers.find((player) => player.Name === playerSelectedName)
+		) {
 			dispatch(playerDeselected());
 		}
-	}, [players, playerSelectedName]);
+	}, [players, playerSelectedName, dispatch, sortedPlayers]);
 
 	return (
-		<Canvas size={px(326, 280)} position={px(0, 368)} padding={{ left: 24, right: 24, top: 8 }} clipsDescendants>
+		<Canvas
+			size={px(326, 280)}
+			position={px(0, 368)}
+			padding={{ left: 24, right: 24, top: 8 }}
+			clipsDescendants
+		>
 			<scrollingframe
 				Size={scale(1, 1)}
 				CanvasSize={px(0, sortedPlayers.size() * (ENTRY_HEIGHT + PADDING) + PADDING)}
@@ -109,11 +117,9 @@ interface PlayerEntryProps {
 function PlayerEntry({ name, userId, displayName, index }: PlayerEntryProps) {
 	const dispatch = useAppDispatch();
 	const theme = useTheme("apps").players.playerButton;
-
-	const isOpen = useIsPageOpen(DP.Apps);
+	const isOpen = useIsPageOpen(DP.Apps); // Using alias for runtime value
 	const isVisible = useDelayedUpdate(isOpen, isOpen ? 170 + index * 40 : 150);
 	const isSelected = useAppSelector((state) => state.dashboard.apps.playerSelected === name);
-
 	const [hovered, setHovered] = useState(false);
 
 	const text = ` ${displayName} (@${name})`;
@@ -121,6 +127,7 @@ function PlayerEntry({ name, userId, displayName, index }: PlayerEntryProps) {
 		() => TextService.GetTextSize(text, 14, Enum.Font.GothamBold, new Vector2(1000, ENTRY_HEIGHT)),
 		[text],
 	);
+
 	const textScrollOffset = useLinear(hovered ? ENTRY_WIDTH - ENTRY_TEXT_PADDING - 20 - textSize.X : 0, {
 		velocity: hovered ? 40 : 150,
 	}).map((x) => new UDim(0, math.min(x, 0)));
@@ -133,6 +140,7 @@ function PlayerEntry({ name, userId, displayName, index }: PlayerEntryProps) {
 				: theme.background,
 		{},
 	);
+
 	const dropshadow = useSpring(
 		isSelected
 			? theme.accent
@@ -141,7 +149,11 @@ function PlayerEntry({ name, userId, displayName, index }: PlayerEntryProps) {
 				: theme.dropshadow,
 		{},
 	);
-	const foreground = useSpring(isSelected && theme.foregroundAccent ? theme.foregroundAccent : theme.foreground, {});
+
+	const foreground = useSpring(
+		isSelected && theme.foregroundAccent ? theme.foregroundAccent : theme.foreground,
+		{},
+	);
 
 	return (
 		<Canvas
@@ -169,7 +181,11 @@ function PlayerEntry({ name, userId, displayName, index }: PlayerEntryProps) {
 				)}
 			/>
 
-			<Fill color={background} transparency={useSpring(theme.backgroundTransparency, {})} radius={8} />
+			<Fill
+				color={background}
+				transparency={useSpring(theme.backgroundTransparency, {})}
+				radius={8}
+			/>
 
 			<textlabel
 				Text={text}
