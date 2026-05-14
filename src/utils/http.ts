@@ -13,11 +13,11 @@ export async function request(requestOptions: RequestAsyncRequest): Promise<Requ
 	}
 }
 
-export async function get(url: string, requestType?: Enum.HttpRequestType): Promise<string> {
+export function get(url: string, requestType?: Enum.HttpRequestType): Promise<string> {
 	return game.HttpGetAsync(url, requestType);
 }
 
-export async function post(
+export function post(
 	url: string,
 	data: string,
 	contentType?: string,
