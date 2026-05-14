@@ -30,7 +30,6 @@ function Server() {
 				BackgroundTransparency={1}
 			/>
 
-			{/* Server status */}
 			<StatusLabel
 				index={0}
 				offset={69}
@@ -50,10 +49,10 @@ function Server() {
 					return days > 0
 						? `${days} days`
 						: hours > 0
-						? `${hours} hours`
-						: minutes > 0
-						? `${minutes} minutes`
-						: `${seconds} seconds`;
+							? `${hours} hours`
+							: minutes > 0
+								? `${minutes} minutes`
+								: `${seconds} seconds`;
 				}}
 			/>
 			<StatusLabel
@@ -63,7 +62,6 @@ function Server() {
 				getValue={() => `${math.round(Players.LocalPlayer.GetNetworkPing() * 1000)} ms`}
 			/>
 
-			{/* Server actions */}
 			<ServerAction
 				action="switchServer"
 				hint="<font face='GothamBlack'>Switch</font> to a different server"
