@@ -1,81 +1,86 @@
-import { Players, Workspace } from "@rbxts/services";
+import { Players, RunService, Workspace } from "@rbxts/services";
 import { getStore, onJobChange } from "jobs/helpers/job-store";
 import type { JobsAction } from "store/actions/jobs.action";
 
 const player = Players.LocalPlayer;
+
+let healthConnection: RBXScriptConnection | undefined;
 let currentCharacter: Model | undefined;
 
+function errorHandler(err: unknown) {
+	warn(`[godmode-worker] ${err}`);
+	void deactivate();
+}
+
 async function main() {
-	function errorHandler(err: unknown) {
-		warn(`[godmode-worker] ${err}`);
-		deactivate();
-	}
 	onJobChange("godmode", (job, state) => {
 		if (state.jobs.ghost.active && job.active) {
-			// Can't enable godmode while ghost
-			deactivate();
+			// Conflict with ghost
+			void deactivate();
 		} else if (job.active) {
-			// Activate godmode
-			activateGodmode().then(deactivateOnCharacterAdded).catch(errorHandler);
+			void activateGodmode().catch(errorHandler);
+		} else {
+			void deactivate();
 		}
 	});
 }
 
 async function deactivate() {
+	if (healthConnection) {
+		healthConnection.Disconnect();
+		healthConnection = undefined;
+	}
+
+	currentCharacter = undefined;
+
 	const store = await getStore();
 	store.dispatch({
 		type: "jobs/setJobActive",
 		jobName: "godmode",
 		active: false,
 	} as JobsAction);
+
+	print("[Godmode] Deactivated");
 }
 
-async function deactivateOnCharacterAdded() {
-	const store = await getStore();
-	await Promise.fromEvent(player.CharacterAdded, (character) => {
-		const jobs = store.getState().jobs;
-		return !jobs.ghost.active && character !== currentCharacter;
-	});
-	await deactivate();
-}
-
-// https://github.com/EdgeIY/infiniteyield/blob/master/source#L9043
 async function activateGodmode() {
-	const cameraCFrame = Workspace.CurrentCamera!.CFrame;
 	const character = player.Character;
-	if (!character) {
-		throw "Character is null";
-	}
+	if (!character) throw "No character found";
+
 	const humanoid = character.FindFirstChildWhichIsA("Humanoid");
-	if (!humanoid) {
-		throw "No humanoid found";
-	}
-	const mockHumanoid = humanoid.Clone();
-	mockHumanoid.Parent = character;
+	if (!humanoid) throw "No humanoid found";
+
 	currentCharacter = character;
-	player.Character = undefined;
-	// TODO: Check if these are optional
-	mockHumanoid.SetStateEnabled(Enum.HumanoidStateType.Dead, false);
-	mockHumanoid.SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false);
-	mockHumanoid.SetStateEnabled(Enum.HumanoidStateType.FallingDown, false);
-	mockHumanoid.BreakJointsOnDeath = true;
-	mockHumanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None;
-	humanoid.Destroy();
-	player.Character = character;
-	Workspace.CurrentCamera!.CameraSubject = mockHumanoid;
-	task.defer(() => {
-		// TODO: Check if this is optional
-		Workspace.CurrentCamera!.CFrame = cameraCFrame;
+
+	// Main godmode: keep health at maximum
+	healthConnection = humanoid.HealthChanged.Connect(() => {
+		if (humanoid.Health < humanoid.MaxHealth) {
+			humanoid.Health = humanoid.MaxHealth;
+		}
 	});
-	const animation = character.FindFirstChild("Animate") as LocalScript | undefined;
-	if (animation) {
-		// Re-run the animation script for the new Humanoid
-		animation.Disabled = true;
-		animation.Disabled = false;
-	}
-	// Mark the character as godmode
-	mockHumanoid.MaxHealth = math.huge;
-	mockHumanoid.Health = mockHumanoid.MaxHealth;
+
+	// Force max health immediately
+	humanoid.MaxHealth = math.huge;
+	humanoid.Health = humanoid.MaxHealth;
+
+	// Optional: Prevent some death states
+	humanoid.SetStateEnabled(Enum.HumanoidStateType.Dead, false);
+	humanoid.BreakJointsOnDeath = false;
+
+	print("[Godmode] Activated - Health locked at maximum");
+
+	// Backup loop (in case HealthChanged is blocked in some games)
+	const backupLoop = RunService.Heartbeat.Connect(() => {
+		if (humanoid && humanoid.Health < humanoid.MaxHealth) {
+			humanoid.Health = humanoid.MaxHealth;
+		}
+	});
+
+	// Clean up backup when godmode ends
+	healthConnection = healthConnection; // keep reference
+	task.delay(0, () => {
+		if (!healthConnection) backupLoop.Disconnect();
+	});
 }
 
 main().catch((err) => {
