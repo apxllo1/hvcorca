@@ -70,8 +70,8 @@ function Slider(props: {
 		job.active
 			? accent
 			: hovered
-			? theme.button.backgroundHovered ?? theme.button.background.Lerp(accent, 0.1)
-			: theme.button.background,
+				? (theme.button.backgroundHovered ?? theme.button.background.Lerp(accent, 0.1))
+				: theme.button.background,
 		{},
 	);
 	const buttonForeground = useSpring(
@@ -83,7 +83,7 @@ function Slider(props: {
 		<Canvas size={px(278, 49)} position={px(0, props.position)}>
 			<BrightSlider
 				onValueChanged={setValue}
-				onRelease={() => dispatch(setJobValue(props.jobName as keyof JobsState, math.round(value.getValue())))}
+				onRelease={() => dispatch(setJobValue(props.jobName, math.round(value.getValue())))}
 				min={props.min}
 				max={props.max}
 				initialValue={job.value}
@@ -139,8 +139,8 @@ function Slider(props: {
 						job.active
 							? 0
 							: hovered
-							? theme.button.foregroundTransparency - 0.25
-							: theme.button.foregroundTransparency,
+								? theme.button.foregroundTransparency - 0.25
+								: theme.button.foregroundTransparency,
 						{},
 					)}
 					Size={scale(1, 1)}

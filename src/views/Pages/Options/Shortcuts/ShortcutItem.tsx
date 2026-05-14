@@ -101,16 +101,16 @@ function ShortcutItem({ onActivate, onSelect, selectedItem, action, description,
 		selected
 			? buttonTheme.accent
 			: hovered
-			? buttonTheme.backgroundHovered ?? buttonTheme.background.Lerp(buttonTheme.accent, 0.1)
-			: buttonTheme.background,
+				? (buttonTheme.backgroundHovered ?? buttonTheme.background.Lerp(buttonTheme.accent, 0.1))
+				: buttonTheme.background,
 		{},
 	);
 	const dropshadow = useSpring(
 		selected
 			? buttonTheme.accent
 			: hovered
-			? buttonTheme.backgroundHovered ?? buttonTheme.dropshadow.Lerp(buttonTheme.accent, 0.5)
-			: buttonTheme.dropshadow,
+				? (buttonTheme.backgroundHovered ?? buttonTheme.dropshadow.Lerp(buttonTheme.accent, 0.5))
+				: buttonTheme.dropshadow,
 		{},
 	);
 	const foreground = useSpring(
@@ -139,8 +139,8 @@ function ShortcutItem({ onActivate, onSelect, selectedItem, action, description,
 					selected
 						? buttonTheme.glowTransparency
 						: hovered
-						? lerp(buttonTheme.dropshadowTransparency, buttonTheme.glowTransparency, 0.5)
-						: buttonTheme.dropshadowTransparency,
+							? lerp(buttonTheme.dropshadowTransparency, buttonTheme.glowTransparency, 0.5)
+							: buttonTheme.dropshadowTransparency,
 					{},
 				)}
 			/>
@@ -160,8 +160,8 @@ function ShortcutItem({ onActivate, onSelect, selectedItem, action, description,
 					selected
 						? 0
 						: hovered
-						? buttonTheme.foregroundTransparency / 2
-						: buttonTheme.foregroundTransparency,
+							? buttonTheme.foregroundTransparency / 2
+							: buttonTheme.foregroundTransparency,
 					{},
 				)}
 				Position={px(ENTRY_TEXT_PADDING, 1)}
@@ -182,8 +182,8 @@ function ShortcutItem({ onActivate, onSelect, selectedItem, action, description,
 					selected
 						? 0
 						: hovered
-						? buttonTheme.foregroundTransparency / 2
-						: buttonTheme.foregroundTransparency,
+							? buttonTheme.foregroundTransparency / 2
+							: buttonTheme.foregroundTransparency,
 					{},
 				)}
 				TextTruncate="AtEnd"

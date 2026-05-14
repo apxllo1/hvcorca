@@ -9,7 +9,6 @@ import { useIsPageOpen } from "hooks/use-current-page";
 import { useFriends } from "hooks/use-friends";
 import { useTheme } from "hooks/use-theme";
 
-import type { DashboardPage } from "store/models/dashboard.model";
 import { DashboardPage as DP } from "store/models/dashboard.model";
 
 import { px } from "utils/udim2";
@@ -21,9 +20,7 @@ function Info() {
 	const [friends = [], , status] = useFriends();
 
 	const friendsOnline = friends.size();
-	const friendsJoined = friends.filter(
-		(friend) => "PlaceId" in friend && friend.PlaceId === game.PlaceId,
-	).size();
+	const friendsJoined = friends.filter((friend) => "PlaceId" in friend && friend.PlaceId === game.PlaceId).size();
 
 	// Transition delays
 	const showJoinDate = useDelayedUpdate(isOpen, 400, (open) => !open);
@@ -44,7 +41,9 @@ function Info() {
 			<textlabel
 				Font="GothamBold"
 				Text={`Joined\n${
-					(os.date("%m/%d/%Y", os.time() - Players.LocalPlayer.AccountAge * 24 * 60 * 60) as string | undefined) ?? ""
+					(os.date("%m/%d/%Y", os.time() - Players.LocalPlayer.AccountAge * 24 * 60 * 60) as
+						| string
+						| undefined) ?? ""
 				}`}
 				TextSize={13}
 				TextColor3={theme.foreground}

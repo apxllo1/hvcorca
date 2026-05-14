@@ -35,10 +35,7 @@ function Navbar() {
 		<frame
 			Key="Navbar"
 			Size={NAVBAR_SIZE}
-			Position={useSpring(
-				isOpen ? new UDim2(0.5, 0, 1, -20) : new UDim2(0.5, 0, 1, 100),
-				{},
-			)}
+			Position={useSpring(isOpen ? new UDim2(0.5, 0, 1, -20) : new UDim2(0.5, 0, 1, 100), {})}
 			AnchorPoint={new Vector2(0.5, 1)}
 			BackgroundTransparency={1}
 		>
@@ -93,11 +90,7 @@ function Navbar() {
 	);
 }
 
-function Underglow(props: {
-	sequenceColor: Binding<Color3>;
-	position: Binding<number>;
-	transparency: number;
-}) {
+function Underglow(props: { sequenceColor: Binding<Color3>; position: Binding<number>; transparency: number }) {
 	return (
 		<imagelabel
 			Key="Underglow"

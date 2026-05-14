@@ -16,10 +16,9 @@ import { useIsPageOpen } from "hooks/use-current-page";
 import { useTheme } from "hooks/use-theme";
 
 import { playerDeselected, playerSelected } from "store/actions/dashboard.action";
-import type { DashboardPage } from "store/models/dashboard.model";
-import { DashboardPage as DP } from "store/models/dashboard.model";
 
 import { arrayToMap } from "utils/array-util";
+import { DashboardPage as DP } from "store/models/dashboard.model";
 import { lerp } from "utils/number-util";
 import { px, scale } from "utils/udim2";
 
@@ -67,21 +66,13 @@ function Selection() {
 	}, [players, playerSelectedName]);
 
 	useEffect(() => {
-		if (
-			playerSelectedName !== undefined &&
-			!sortedPlayers.find((player) => player.Name === playerSelectedName)
-		) {
+		if (playerSelectedName !== undefined && !sortedPlayers.find((player) => player.Name === playerSelectedName)) {
 			dispatch(playerDeselected());
 		}
 	}, [players, playerSelectedName, dispatch, sortedPlayers]);
 
 	return (
-		<Canvas
-			size={px(326, 280)}
-			position={px(0, 368)}
-			padding={{ left: 24, right: 24, top: 8 }}
-			clipsDescendants
-		>
+		<Canvas size={px(326, 280)} position={px(0, 368)} padding={{ left: 24, right: 24, top: 8 }} clipsDescendants>
 			<scrollingframe
 				Size={scale(1, 1)}
 				CanvasSize={px(0, sortedPlayers.size() * (ENTRY_HEIGHT + PADDING) + PADDING)}
@@ -151,10 +142,7 @@ function PlayerEntry({ name, userId, displayName, index }: PlayerEntryProps) {
 		{},
 	);
 
-	const foreground = useSpring(
-		isSelected && theme.foregroundAccent ? theme.foregroundAccent : theme.foreground,
-		{},
-	);
+	const foreground = useSpring(isSelected && theme.foregroundAccent ? theme.foregroundAccent : theme.foreground, {});
 
 	return (
 		<Canvas
@@ -182,11 +170,7 @@ function PlayerEntry({ name, userId, displayName, index }: PlayerEntryProps) {
 				)}
 			/>
 
-			<Fill
-				color={background}
-				transparency={useSpring(theme.backgroundTransparency, {})}
-				radius={8}
-			/>
+			<Fill color={background} transparency={useSpring(theme.backgroundTransparency, {})} radius={8} />
 
 			<textlabel
 				Text={text}

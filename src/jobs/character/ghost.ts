@@ -1,4 +1,4 @@
-import { Players, Workspace } from "@rbxts/services";
+import { Players } from "@rbxts/services";
 import { getStore, onJobChange } from "jobs/helpers/job-store";
 import type { JobsAction } from "store/actions/jobs.action";
 
@@ -13,7 +13,7 @@ function disableResetOnSpawn() {
 	if (playerGui) {
 		for (const object of playerGui.GetChildren()) {
 			if (object.IsA("ScreenGui") && object.ResetOnSpawn) {
-				screenGuisWithResetOnSpawn.push(object as ScreenGui);
+				screenGuisWithResetOnSpawn.push(object);
 				object.ResetOnSpawn = false;
 			}
 		}

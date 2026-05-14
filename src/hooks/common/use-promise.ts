@@ -61,10 +61,7 @@ export function usePromise<T>(
 	promise: Promise<T> | (() => Promise<T>),
 	deps: unknown[] = [],
 ): [result: T | undefined, err: unknown, state: PromiseState] {
-	const [{ err, result, state }, dispatch] = useReducer(
-		reducer as Reducer<State<T>, Action>,
-		defaultState,
-	);
+	const [{ err, result, state }, dispatch] = useReducer(reducer as Reducer<State<T>, Action>, defaultState);
 
 	useEffect(() => {
 		const resolvedPromise = resolvePromise<T>(promise);

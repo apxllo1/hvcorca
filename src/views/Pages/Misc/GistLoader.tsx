@@ -1,6 +1,5 @@
 import Roact from "@rbxts/roact";
 import { useCallback, useState } from "@rbxts/roact-hooked";
-import { HttpService } from "@rbxts/services";
 import * as http from "utils/http";
 
 export interface CommandEntry {
@@ -33,8 +32,7 @@ const TEXT_PRIMARY = Color3.fromRGB(255, 255, 255);
 const TEXT_SECONDARY = Color3.fromRGB(160, 160, 160);
 const TEXT_DIM = Color3.fromRGB(100, 100, 100);
 
-const GIST_RAW_URL = (id: string) =>
-	`https://gist.githubusercontent.com/${id}/raw`;
+const GIST_RAW_URL = (id: string) => `https://gist.githubusercontent.com/${id}/raw`;
 
 // ─── Main component ───────────────────────────────────────────────────────────
 function GistLoader() {
@@ -44,24 +42,21 @@ function GistLoader() {
 	const [status, setStatus] = useState(`${COMMANDS.size()} commands available`);
 	const [isRunning, setIsRunning] = useState(false);
 
-	const handleSearch = useCallback(
-		(rbx: TextBox) => {
-			const query = rbx.Text.lower();
-			setSearchText(rbx.Text);
-			if (query === "") {
-				setFiltered(COMMANDS);
-			} else {
-				setFiltered(
-					COMMANDS.filter(
-						(cmd) =>
-							cmd.name.lower().find(query, 1, true)[0] !== undefined ||
-							cmd.description.lower().find(query, 1, true)[0] !== undefined,
-					),
-				);
-			}
-		},
-		[],
-	);
+	const handleSearch = useCallback((rbx: TextBox) => {
+		const query = rbx.Text.lower();
+		setSearchText(rbx.Text);
+		if (query === "") {
+			setFiltered(COMMANDS);
+		} else {
+			setFiltered(
+				COMMANDS.filter(
+					(cmd) =>
+						cmd.name.lower().find(query, 1, true)[0] !== undefined ||
+						cmd.description.lower().find(query, 1, true)[0] !== undefined,
+				),
+			);
+		}
+	}, []);
 
 	const handleRun = useCallback(() => {
 		if (selected === undefined || isRunning) return;
@@ -79,7 +74,7 @@ function GistLoader() {
 			}
 
 			// http.get may return a Promise — await it properly
-			(bodyOrErr as Promise<string>)
+			bodyOrErr
 				.then((body) => {
 					if (body === undefined || body === "") {
 						setStatus("Gist returned empty content");
@@ -176,7 +171,9 @@ function GistLoader() {
 			<frame Key="Footer" Size={new UDim2(1, 0, 0, 40)} BackgroundTransparency={1} LayoutOrder={2}>
 				<textbutton
 					Key="RunButton"
-					Text={isRunning ? "Running..." : selected !== undefined ? `Run: ${selected.name}` : "Select a command"}
+					Text={
+						isRunning ? "Running..." : selected !== undefined ? `Run: ${selected.name}` : "Select a command"
+					}
 					Size={new UDim2(1, 0, 1, 0)}
 					BackgroundColor3={runButtonActive ? GREEN : Color3.fromRGB(40, 40, 40)}
 					TextColor3={runButtonActive ? Color3.fromRGB(10, 10, 10) : TEXT_DIM}

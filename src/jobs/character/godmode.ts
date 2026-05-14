@@ -1,11 +1,10 @@
-import { Players, RunService, Workspace } from "@rbxts/services";
+import { Players, RunService } from "@rbxts/services";
 import { getStore, onJobChange } from "jobs/helpers/job-store";
 import type { JobsAction } from "store/actions/jobs.action";
 
 const player = Players.LocalPlayer;
 
 let healthConnection: RBXScriptConnection | undefined;
-let currentCharacter: Model | undefined;
 
 function errorHandler(err: unknown) {
 	warn(`[godmode-worker] ${err}`);
@@ -31,8 +30,6 @@ async function deactivate() {
 		healthConnection = undefined;
 	}
 
-	currentCharacter = undefined;
-
 	const store = await getStore();
 	store.dispatch({
 		type: "jobs/setJobActive",
@@ -49,8 +46,6 @@ async function activateGodmode() {
 
 	const humanoid = character.FindFirstChildWhichIsA("Humanoid");
 	if (!humanoid) throw "No humanoid found";
-
-	currentCharacter = character;
 
 	// Main godmode: keep health at maximum
 	healthConnection = humanoid.HealthChanged.Connect(() => {

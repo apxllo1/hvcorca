@@ -29,8 +29,8 @@ function ServerAction({ action, hint, icon, size, position }: Props) {
 		active
 			? theme.accent
 			: hovered
-			? theme.backgroundHovered ?? theme.background.Lerp(theme.accent, 0.1)
-			: theme.background,
+				? (theme.backgroundHovered ?? theme.background.Lerp(theme.accent, 0.1))
+				: theme.background,
 		{},
 	);
 	const foreground = useSpring(active && theme.foregroundAccent ? theme.foregroundAccent : theme.foreground, {});

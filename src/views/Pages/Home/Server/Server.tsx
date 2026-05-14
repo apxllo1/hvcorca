@@ -50,10 +50,10 @@ function Server() {
 					return days > 0
 						? `${days} days`
 						: hours > 0
-						? `${hours} hours`
-						: minutes > 0
-						? `${minutes} minutes`
-						: `${seconds} seconds`;
+							? `${hours} hours`
+							: minutes > 0
+								? `${minutes} minutes`
+								: `${seconds} seconds`;
 				}}
 			/>
 			<StatusLabel

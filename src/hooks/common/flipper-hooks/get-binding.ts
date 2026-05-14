@@ -6,9 +6,7 @@ import { createBinding } from "@rbxts/roact";
 
 const AssignedBinding = setmetatable({}, { __tostring: () => "AssignedBinding" }) as symbol;
 
-export function getBinding<T>(motor: SingleMotor | GroupMotor<T>): T extends undefined
-	? Binding<number>
-	: Binding<T>;
+export function getBinding<T>(motor: SingleMotor | GroupMotor<T>): T extends undefined ? Binding<number> : Binding<T>;
 
 export function getBinding(motor: SingleMotor | GroupMotor<number>): Binding<number> {
 	assert(motor, "Missing argument #1: motor");

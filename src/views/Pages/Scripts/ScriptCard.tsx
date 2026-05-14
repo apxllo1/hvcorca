@@ -7,7 +7,7 @@ import Canvas from "components/Canvas";
 import Fill from "components/Fill";
 import ParallaxImage from "components/ParallaxImage";
 
-import { SpringOptions } from "hooks/common/flipper-hooks";
+import type { SpringOptions } from "hooks/common/flipper-hooks";
 import { useDelayedUpdate } from "hooks/common/use-delayed-update";
 import { useIsMount } from "hooks/common/use-did-mount";
 import { useForcedUpdate } from "hooks/common/use-forced-update";
@@ -69,13 +69,10 @@ function ScriptCard({
 		<Canvas
 			anchor={anchorPoint}
 			size={size}
-			position={useSpring(
-				isTransitioning ? position : position.add(new UDim2(0, 0, 1, 48 * 3 + 56)),
-				{
-					frequency: 2.2,
-					dampingRatio: 0.75,
-				},
-			)}
+			position={useSpring(isTransitioning ? position : position.add(new UDim2(0, 0, 1, 48 * 3 + 56)), {
+				frequency: 2.2,
+				dampingRatio: 0.75,
+			})}
 		>
 			{/* Body */}
 			<Canvas

@@ -30,6 +30,7 @@ export function useFriendActivity(deps?: unknown[]) {
 
 	// If there are no friends yet, or games already has data (deps didn't change),
 	// don't rebuild the list.
+	// eslint-disable-next-line roblox-ts/lua-truthiness
 	if (!friends || games.size() !== 0) {
 		return [games, err, status] as const;
 	}
@@ -39,12 +40,13 @@ export function useFriendActivity(deps?: unknown[]) {
 
 		if (!gameActivity) {
 			gameActivity = {
-				friends: [friend],
+				friends: [friend] as FriendOnlineInfoGame[],
 				placeId: friend.PlaceId,
 				thumbnail: `https://www.roblox.com/asset-thumbnail/image?assetId=${friend.PlaceId}&width=768&height=432&format=png`,
 			};
 			games.push(gameActivity);
 		} else {
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 			gameActivity.friends.push(friend);
 		}
 	});

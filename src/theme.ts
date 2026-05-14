@@ -1,6 +1,4 @@
 export const UI_COLORS = {
-
-	
 	// Primary Brand Colors
 	Accent: Color3.fromRGB(235, 76, 105),
 	AccentDark: Color3.fromRGB(150, 40, 60),

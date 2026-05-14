@@ -7,14 +7,9 @@ import { obsidian } from "./obsidian";
 
 import type { Theme } from "./theme.interface";
 
-const themeList: Theme[] = [
-	crimson,
-	darkTheme,
-	lightTheme,
-	frostedGlass,
-	obsidian,
-	highContrast,
-].filter((t): t is Theme => t !== undefined);
+const themeList: Theme[] = [crimson, darkTheme, lightTheme, frostedGlass, obsidian, highContrast].filter(
+	(t): t is Theme => t !== undefined,
+);
 
 const themeMap = new Map<string, Theme>();
 
