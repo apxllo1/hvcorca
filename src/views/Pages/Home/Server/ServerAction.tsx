@@ -25,15 +25,17 @@ function ServerAction({ action, hint, icon, size, position }: Props) {
 		return job?.active ?? false;
 	});
 	const [hovered, setHovered] = useState(false);
+
 	const background = useSpring(
 		active
 			? theme.accent
 			: hovered
-			? theme.backgroundHovered ?? theme.background.Lerp(theme.accent, 0.1)
-			: theme.background,
+				? (theme.backgroundHovered ?? theme.background.Lerp(theme.accent, 0.1))
+				: theme.background,
 		{},
 	);
 	const foreground = useSpring(active && theme.foregroundAccent ? theme.foregroundAccent : theme.foreground, {});
+
 	return (
 		<BrightButton
 			onActivate={() => dispatch(setJobActive(action, !active))}
