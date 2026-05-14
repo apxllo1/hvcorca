@@ -17,7 +17,7 @@ import { useTheme } from "hooks/use-theme";
 
 import { playerDeselected, playerSelected } from "store/actions/dashboard.action";
 import type { DashboardPage } from "store/models/dashboard.model";
-import { DashboardPage as DP, PAGE_TO_ICON, PAGE_TO_INDEX } from "store/models/dashboard.model"; // Wait — actually not needed here
+import { DashboardPage as DP } from "store/models/dashboard.model";
 
 import { arrayToMap } from "utils/array-util";
 import { lerp } from "utils/number-util";
@@ -117,12 +117,13 @@ interface PlayerEntryProps {
 function PlayerEntry({ name, userId, displayName, index }: PlayerEntryProps) {
 	const dispatch = useAppDispatch();
 	const theme = useTheme("apps").players.playerButton;
-	const isOpen = useIsPageOpen(DP.Apps); // Using alias for runtime value
+	const isOpen = useIsPageOpen(DP.Apps);
 	const isVisible = useDelayedUpdate(isOpen, isOpen ? 170 + index * 40 : 150);
 	const isSelected = useAppSelector((state) => state.dashboard.apps.playerSelected === name);
 	const [hovered, setHovered] = useState(false);
 
 	const text = ` ${displayName} (@${name})`;
+
 	const textSize = useMemo(
 		() => TextService.GetTextSize(text, 14, Enum.Font.GothamBold, new Vector2(1000, ENTRY_HEIGHT)),
 		[text],
