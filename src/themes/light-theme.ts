@@ -1,12 +1,11 @@
 import { darkTheme } from "themes/sorbet";
-import { Theme } from "themes/theme.interface";
+import type { Theme } from "themes/theme.interface";
+
 import { hex } from "utils/color3";
 
 export const lightTheme: Theme = {
 	...darkTheme,
-
 	name: "Light theme",
-
 	preview: {
 		foreground: {
 			color: new ColorSequence(hex("#000000")),
@@ -23,19 +22,16 @@ export const lightTheme: Theme = {
 			rotation: 25,
 		},
 	},
-
 	navbar: {
 		...darkTheme.navbar,
 		foreground: hex("#000000"),
 		background: hex("#ffffff"),
 	},
-
 	clock: {
 		...darkTheme.clock,
 		foreground: hex("#000000"),
 		background: hex("#ffffff"),
 	},
-
 	home: {
 		title: {
 			...darkTheme.home.title,
