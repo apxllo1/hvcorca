@@ -1,11 +1,15 @@
 import Roact from "@rbxts/roact";
 import { useState } from "@rbxts/roact-hooked";
+
 import { useAppDispatch } from "hooks/common/rodux-hooks";
 import { useSpring } from "hooks/common/use-spring";
 import { useIsPageOpen } from "hooks/use-current-page";
 import { useTheme } from "hooks/use-theme";
+
 import { setDashboardPage } from "store/actions/dashboard.action";
-import { DashboardPage, PAGE_TO_ICON, PAGE_TO_INDEX } from "store/models/dashboard.model";
+import type { DashboardPage } from "store/models/dashboard.model";
+import { PAGE_TO_ICON, PAGE_TO_INDEX } from "store/models/dashboard.model";
+
 import { px, scale } from "utils/udim2";
 
 interface Props {
