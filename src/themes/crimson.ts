@@ -1,11 +1,10 @@
 import { darkTheme } from "themes/sorbet";
-import { Theme, ViewTheme } from "themes/theme.interface";
+import type { Theme, ViewTheme } from "themes/theme.interface";
+
 import { hex } from "utils/color3";
 
 const redAccent = hex("#FF2222");
 const white = hex("#ffffff");
-const black = hex("#0a0a0a");
-
 const accentSequence = new ColorSequence([
 	new ColorSequenceKeypoint(0, hex("#FF4444")),
 	new ColorSequenceKeypoint(0.5, hex("#CC0000")),
@@ -28,9 +27,7 @@ const view: ViewTheme = {
 
 export const crimson: Theme = {
 	...darkTheme,
-
 	name: "Crimson",
-
 	preview: {
 		foreground: {
 			color: new ColorSequence(white),
@@ -43,7 +40,6 @@ export const crimson: Theme = {
 			rotation: 25,
 		},
 	},
-
 	navbar: {
 		...darkTheme.navbar,
 		outlined: true,
@@ -54,7 +50,6 @@ export const crimson: Theme = {
 			color: accentSequence,
 		},
 	},
-
 	clock: {
 		...darkTheme.clock,
 		outlined: true,
@@ -62,7 +57,6 @@ export const crimson: Theme = {
 		dropshadow: background,
 		foreground: white,
 	},
-
 	home: {
 		title: {
 			...view,
@@ -139,7 +133,6 @@ export const crimson: Theme = {
 			},
 		},
 	},
-
 	apps: {
 		players: {
 			...view,
@@ -174,7 +167,6 @@ export const crimson: Theme = {
 			},
 		},
 	},
-
 	options: {
 		config: {
 			...view,
