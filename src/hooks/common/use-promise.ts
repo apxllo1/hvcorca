@@ -72,24 +72,26 @@ export function usePromise<T>(
 		let canceled = false;
 		dispatch({ type: states.pending });
 
-		void resolvedPromise.then(
-			(result) => {
-				if (!canceled) {
-					dispatch({
-						payload: result,
-						type: states.resolved,
-					});
-				}
-			},
-			(err: unknown) => {
-				if (!canceled) {
-					dispatch({
-						payload: err,
-						type: states.rejected,
-					});
-				}
-			},
-		);
+		resolvedPromise
+			.then(
+				(result) => {
+					if (!canceled) {
+						dispatch({
+							payload: result,
+							type: states.resolved,
+						});
+					}
+				},
+				(err: unknown) => {
+					if (!canceled) {
+						dispatch({
+							payload: err,
+							type: states.rejected,
+						});
+					}
+				},
+			)
+			.catch(() => {}); // Satisfy no-floating-promises + no-void
 
 		return () => {
 			canceled = true;
