@@ -29,9 +29,6 @@ interface Props {
 	index: number;
 }
 
-/**
- * A single shortcut entry. Handles setting and activating the shortcut.
- */
 function ShortcutItem({ onActivate, onSelect, selectedItem, action, description, index }: Props) {
 	const dispatch = useAppDispatch();
 	const buttonTheme = useTheme("options").shortcuts.shortcutButton;
@@ -44,7 +41,6 @@ function ShortcutItem({ onActivate, onSelect, selectedItem, action, description,
 	const selected = selectedItem === action;
 	const [hovered, setHovered] = useState(false);
 
-	// On shortcut activated
 	useEffect(() => {
 		if (selectedItem !== undefined) {
 			return;
@@ -59,7 +55,6 @@ function ShortcutItem({ onActivate, onSelect, selectedItem, action, description,
 		};
 	}, [selectedItem, shortcut]);
 
-	// On shortcut changed
 	useEffect(() => {
 		if (!selected) {
 			return;
@@ -101,16 +96,16 @@ function ShortcutItem({ onActivate, onSelect, selectedItem, action, description,
 		selected
 			? buttonTheme.accent
 			: hovered
-			? buttonTheme.backgroundHovered ?? buttonTheme.background.Lerp(buttonTheme.accent, 0.1)
-			: buttonTheme.background,
+				? (buttonTheme.backgroundHovered ?? buttonTheme.background.Lerp(buttonTheme.accent, 0.1))
+				: buttonTheme.background,
 		{},
 	);
 	const dropshadow = useSpring(
 		selected
 			? buttonTheme.accent
 			: hovered
-			? buttonTheme.backgroundHovered ?? buttonTheme.dropshadow.Lerp(buttonTheme.accent, 0.5)
-			: buttonTheme.dropshadow,
+				? (buttonTheme.backgroundHovered ?? buttonTheme.dropshadow.Lerp(buttonTheme.accent, 0.5))
+				: buttonTheme.dropshadow,
 		{},
 	);
 	const foreground = useSpring(
@@ -122,14 +117,11 @@ function ShortcutItem({ onActivate, onSelect, selectedItem, action, description,
 		<Canvas
 			size={px(ENTRY_WIDTH, ENTRY_HEIGHT)}
 			position={useSpring(
-				isVisible
-					? px(0, (PADDING + ENTRY_HEIGHT) * index)
-					: px(-ENTRY_WIDTH - 24, (PADDING + ENTRY_HEIGHT) * index),
+				isVisible ? px(0, (PADDING + ENTRY_HEIGHT) * index) : px(-ENTRY_WIDTH - 24, (PADDING + ENTRY_HEIGHT) * index),
 				{},
 			)}
 			zIndex={index}
 		>
-			{/* Underglow */}
 			<Glow
 				radius={GlowRadius.Size70}
 				color={dropshadow}
@@ -139,16 +131,14 @@ function ShortcutItem({ onActivate, onSelect, selectedItem, action, description,
 					selected
 						? buttonTheme.glowTransparency
 						: hovered
-						? lerp(buttonTheme.dropshadowTransparency, buttonTheme.glowTransparency, 0.5)
-						: buttonTheme.dropshadowTransparency,
+							? lerp(buttonTheme.dropshadowTransparency, buttonTheme.glowTransparency, 0.5)
+							: buttonTheme.dropshadowTransparency,
 					{},
 				)}
 			/>
 
-			{/* Body */}
 			<Fill color={background} transparency={buttonTheme.backgroundTransparency} radius={8} />
 
-			{/* Description */}
 			<textlabel
 				Text={description}
 				Font="GothamBold"
@@ -157,11 +147,7 @@ function ShortcutItem({ onActivate, onSelect, selectedItem, action, description,
 				TextXAlignment="Left"
 				TextYAlignment="Center"
 				TextTransparency={useSpring(
-					selected
-						? 0
-						: hovered
-						? buttonTheme.foregroundTransparency / 2
-						: buttonTheme.foregroundTransparency,
+					selected ? 0 : hovered ? buttonTheme.foregroundTransparency / 2 : buttonTheme.foregroundTransparency,
 					{},
 				)}
 				Position={px(ENTRY_TEXT_PADDING, 1)}
@@ -170,7 +156,6 @@ function ShortcutItem({ onActivate, onSelect, selectedItem, action, description,
 				ClipsDescendants
 			/>
 
-			{/* Shortcut */}
 			<textlabel
 				Text={shortcutEnum ? shortcutEnum.Name : "Not bound"}
 				Font="GothamBold"
@@ -179,11 +164,7 @@ function ShortcutItem({ onActivate, onSelect, selectedItem, action, description,
 				TextXAlignment="Center"
 				TextYAlignment="Center"
 				TextTransparency={useSpring(
-					selected
-						? 0
-						: hovered
-						? buttonTheme.foregroundTransparency / 2
-						: buttonTheme.foregroundTransparency,
+					selected ? 0 : hovered ? buttonTheme.foregroundTransparency / 2 : buttonTheme.foregroundTransparency,
 					{},
 				)}
 				TextTruncate="AtEnd"
@@ -201,10 +182,8 @@ function ShortcutItem({ onActivate, onSelect, selectedItem, action, description,
 				BorderSizePixel={0}
 			/>
 
-			{/* Border */}
 			{buttonTheme.outlined && <Border color={foreground} transparency={0.8} radius={8} />}
 
-			{/* Input capture */}
 			<textbutton
 				Event={{
 					Activated: () => onSelect(action),
