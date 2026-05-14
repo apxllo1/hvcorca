@@ -1,22 +1,18 @@
 import Roact from "@rbxts/roact";
 import type { Binding } from "@rbxts/roact";
-
 import Acrylic from "components/Acrylic";
 import Border from "components/Border";
 import Canvas from "components/Canvas";
 import Fill from "components/Fill";
 import Glow, { GlowRadius } from "components/Glow";
-
 import { useAppSelector } from "hooks/common/rodux-hooks";
 import { useSpring } from "hooks/common/use-spring";
 import { useCurrentPage } from "hooks/use-current-page";
 import { useTheme } from "hooks/use-theme";
-
 import type { DashboardPage } from "store/models/dashboard.model";
 import { PAGE_TO_INDEX } from "store/models/dashboard.model";
 import { getColorInSequence, hex } from "utils/color3";
 import { px, scale } from "utils/udim2";
-
 import NavbarTab from "./NavbarTab";
 
 const NAVBAR_SIZE = px(625, 56);
@@ -25,7 +21,6 @@ function Navbar() {
 	const theme = useTheme("navbar");
 	const page = useCurrentPage();
 	const isOpen = useAppSelector((state) => state.dashboard.isOpen);
-
 	const alpha = useSpring(PAGE_TO_INDEX[page] / 5, {
 		frequency: 3.9,
 		dampingRatio: 0.76,
@@ -35,10 +30,7 @@ function Navbar() {
 		<frame
 			Key="Navbar"
 			Size={NAVBAR_SIZE}
-			Position={useSpring(
-				isOpen ? new UDim2(0.5, 0, 1, -20) : new UDim2(0.5, 0, 1, 100),
-				{},
-			)}
+			Position={useSpring(isOpen ? new UDim2(0.5, 0, 1, -20) : new UDim2(0.5, 0, 1, 100), {})}
 			AnchorPoint={new Vector2(0.5, 1)}
 			BackgroundTransparency={1}
 		>
@@ -50,20 +42,17 @@ function Navbar() {
 				gradient={theme.dropshadowGradient}
 				transparency={theme.transparency}
 			/>
-
 			<Underglow
 				transparency={theme.glowTransparency}
 				position={alpha}
 				sequenceColor={alpha.map((a) => getColorInSequence(theme.accentGradient.color, a))}
 			/>
-
 			<Fill
 				color={theme.background}
 				gradient={theme.backgroundGradient}
 				radius={8}
 				transparency={theme.transparency}
 			/>
-
 			<Canvas size={px(100, 56)} position={alpha.map((a) => scale(a, 0))} clipsDescendants>
 				<frame
 					Size={NAVBAR_SIZE}
@@ -79,15 +68,12 @@ function Navbar() {
 					<uicorner CornerRadius={new UDim(0, 8)} />
 				</frame>
 			</Canvas>
-
 			{theme.outlined && <Border Key="border" color={theme.foreground} radius={8} transparency={0.8} />}
-
 			<NavbarTab page={DashboardPage.Home} />
 			<NavbarTab page={DashboardPage.Apps} />
 			<NavbarTab page={DashboardPage.Scripts} />
 			<NavbarTab page={DashboardPage.Options} />
 			<NavbarTab page={DashboardPage.Misc} />
-
 			{theme.acrylic && <Acrylic />}
 		</frame>
 	);
