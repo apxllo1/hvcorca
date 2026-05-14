@@ -1,4 +1,5 @@
-import { Theme, ViewTheme } from "./theme.interface";
+import type { Theme, ViewTheme } from "./theme.interface";
+
 import { hex } from "../utils/color3";
 
 const redAccent = hex("#C6428E");
@@ -25,7 +26,6 @@ const view: ViewTheme = {
 
 export const darkTheme: Theme = {
 	name: "Sorbet",
-
 	preview: {
 		foreground: {
 			color: new ColorSequence(hex("#ffffff")),
@@ -37,7 +37,6 @@ export const darkTheme: Theme = {
 			color: accentSequence,
 		},
 	},
-
 	navbar: {
 		outlined: false,
 		acrylic: false,
@@ -51,7 +50,6 @@ export const darkTheme: Theme = {
 		dropshadowTransparency: 0.3,
 		glowTransparency: 0,
 	},
-
 	clock: {
 		outlined: false,
 		acrylic: false,
@@ -61,7 +59,6 @@ export const darkTheme: Theme = {
 		dropshadow: background,
 		dropshadowTransparency: 0.3,
 	},
-
 	home: {
 		title: {
 			...view,
@@ -135,8 +132,8 @@ export const darkTheme: Theme = {
 			friendButton: {
 				outlined: false,
 				foreground: hex("#ffffff"),
-				background: backgroundDark,
 				foregroundTransparency: 0,
+				background: backgroundDark,
 				backgroundTransparency: 0,
 				dropshadow: backgroundDark,
 				dropshadowTransparency: 0.4,
@@ -145,7 +142,6 @@ export const darkTheme: Theme = {
 			},
 		},
 	},
-
 	apps: {
 		players: {
 			...view,
@@ -183,7 +179,6 @@ export const darkTheme: Theme = {
 			},
 		},
 	},
-
 	options: {
 		themes: {
 			...view,
