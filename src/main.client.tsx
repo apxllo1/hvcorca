@@ -14,7 +14,7 @@ withHookDetection(Roact);
 const store = configureStore();
 setStore(store);
 
-async function mount() {
+function mount() {
 	const container = Make("Folder", {});
 	Roact.mount(
 		<StoreProvider store={store}>
@@ -30,7 +30,6 @@ function render(app: ScreenGui) {
 	if (protect) {
 		protect(app);
 	}
-
 	if (IS_DEV) {
 		app.Parent = Players.LocalPlayer.WaitForChild("PlayerGui");
 	} else if (gethui) {
@@ -45,18 +44,14 @@ async function main() {
 	if (g[LOAD_GUARD] === true) {
 		throw "Havoc is already loaded!";
 	}
-
 	const app = await mount();
 	render(app);
-
 	if (time() > 3) {
 		task.defer(() => store.dispatch(toggleDashboard()));
 	}
-
 	if (getgenv) {
 		getgenv()[LOAD_GUARD] = true;
 	}
-
 	print("[Havoc] Loaded successfully");
 }
 
