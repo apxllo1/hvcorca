@@ -13,13 +13,13 @@ function errorHandler(err: unknown) {
 function main() {
 	onJobChange("godmode", (job, state) => {
 		if (state.jobs.ghost.active && job.active) {
-			deactivate().catch((err) => warn(`[godmode-worker] ${err instanceof Error ? err.message : err}`));
+			deactivate().catch((err: unknown) => warn(`[godmode-worker] ${err instanceof Error ? err.message : err}`));
 		} else if (job.active) {
 			activateGodmode().catch(errorHandler);
 		} else {
-			deactivate().catch((err) => warn(`[godmode-worker] ${err instanceof Error ? err.message : err}`));
+			deactivate().catch((err: unknown) => warn(`[godmode-worker] ${err instanceof Error ? err.message : err}`));
 		}
-	}).catch((err) => warn(`[godmode-worker] ${err instanceof Error ? err.message : err}`));
+	}).catch((err: unknown) => warn(`[godmode-worker] ${err instanceof Error ? err.message : err}`));
 }
 
 async function deactivate() {
