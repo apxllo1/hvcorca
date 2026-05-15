@@ -108,12 +108,12 @@ async function main() {
 			}
 
 			bringVictimToVoid(playerSelected.current)
-				.catch((err) => warn(`[kill-worker] ${String(err)}`))
+				.catch((err: unknown) => warn(`[kill-worker] ${String(err)}`))
 				.finally(() => store.dispatch(setJobActive("kill", false)));
 		}
-	}).catch((err) => warn(`[kill-worker] ${String(err)}`));
+	}).catch((err: unknown) => warn(`[kill-worker] ${String(err)}}`));
 }
 
-main().catch((err) => {
+main().catch((err: unknown) => {
 	warn(`[kill-worker] ${String(err)}`);
 });

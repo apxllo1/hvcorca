@@ -32,9 +32,9 @@ async function main() {
 				rootPart.CFrame = targetRootPart.CFrame.mul(new CFrame(0, 0, 1));
 			}, 1000);
 		}
-	}).catch((err) => warn(`[teleport-worker] ${String(err)}`));
+	}).catch((err: unknown) => warn(`[teleport-worker] ${String(err)}}`));
 }
 
-main().catch((err) => {
+main().catch((err: unknown) => {
 	warn(`[teleport-worker] ${String(err)}`);
 });

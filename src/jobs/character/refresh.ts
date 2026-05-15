@@ -21,10 +21,10 @@ async function main() {
 			deactivate();
 		} else if (job.active) {
 			respawn()
-				.catch((err) => warn(`[refresh-worker-respawn] ${String(err)}`))
+				.catch((err: unknown) => warn(`[refresh-worker-respawn] ${String(err)}`))
 				.finally(() => deactivate());
 		}
-	}).catch((err) => warn(`[refresh-worker] ${String(err)}`));
+	}).catch((err: unknown) => warn(`[refresh-worker] ${String(err)`));
 }
 
 async function respawn() {
@@ -63,6 +63,6 @@ async function respawn() {
 	}
 }
 
-main().catch((err) => {
+main().catch((err: unknown) => {
 	warn(`[refresh-worker] ${String(err)}`);
 });

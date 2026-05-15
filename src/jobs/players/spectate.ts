@@ -45,9 +45,9 @@ async function main() {
 			defaultSubject = undefined;
 			currentSubject = undefined;
 		}
-	}).catch((err) => warn(`[spectate-worker] ${String(err)}`));
+	}).catch((err: unknown) => warn(`[spectate-worker] ${String(err)}}`));
 }
 
-main().catch((err) => {
+main().catch((err: unknown) => {
 	warn(`[spectate-worker] ${String(err)}`);
 });
