@@ -3,6 +3,8 @@ import { getStore } from "../jobs/helpers/job-store";
 import type { RootState } from "./store";
 import { setInterval } from "../utils/timeout";
 
+const warnLog = warn as (msg: string) => void;
+
 if (typeIs(makefolder, "function") && !isfolder("_orca")) {
 	makefolder("_orca");
 }
@@ -25,14 +27,14 @@ export function persistentState<T extends object>(name: string, selector: (state
 		const serializedState = read(`_orca/${name}.json`);
 		if (serializedState === undefined) {
 			write(`_orca/${name}.json`, HttpService.JSONEncode(defaultValue));
-			void autosave(name, selector);
+			autosave(name, selector).catch((err) => warnLog(`[PersistentState] ${String(err)}`));
 			return defaultValue;
 		}
 		const value = HttpService.JSONDecode(serializedState) as T;
-		void autosave(name, selector);
+		autosave(name, selector).catch((err) => warnLog(`[PersistentState] ${String(err)}`));
 		return value;
 	} catch (err) {
-		warn(`[PersistentState] Load failed for ${name}: ${String(err)}`);
+		warnLog(`[PersistentState] Load failed for ${name}: ${String(err)}`);
 		return defaultValue;
 	}
 }
@@ -44,7 +46,7 @@ async function autosave(name: string, selector: (state: RootState) => object) {
 			const state = selector(store.getState());
 			write(`_orca/${name}.json`, HttpService.JSONEncode(state));
 		} catch (err) {
-			warn(`[PersistentState] Autosave failed for ${name}: ${String(err)}`);
+			warnLog(`[PersistentState] Autosave failed for ${name}: ${String(err)}`);
 		}
 	};
 	setInterval(save, 60000);
