@@ -79,11 +79,7 @@ function Navbar() {
 	);
 }
 
-function Underglow(props: {
-	sequenceColor: Binding<Color3>;
-	position: Binding<number>;
-	transparency: number;
-}) {
+function Underglow(props: { sequenceColor: Binding<Color3>; position: Binding<number>; transparency: number }) {
 	return (
 		<imagelabel
 			Key="Underglow"
