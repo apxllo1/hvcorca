@@ -53,7 +53,9 @@ function ScriptCard({
 	const isOpen = useIsMount() ? false : isCurrentlyOpen;
 	const isTransitioning = useDelayedUpdate(isOpen, index * 30);
 
-	useEffect(() => rerender(), []);
+	useEffect(() => {
+		rerender();
+	}, []);
 
 	const offset = useParallaxOffset();
 
