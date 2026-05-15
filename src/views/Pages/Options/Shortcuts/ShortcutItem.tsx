@@ -117,7 +117,9 @@ function ShortcutItem({ onActivate, onSelect, selectedItem, action, description,
 		<Canvas
 			size={px(ENTRY_WIDTH, ENTRY_HEIGHT)}
 			position={useSpring(
-				isVisible ? px(0, (PADDING + ENTRY_HEIGHT) * index) : px(-ENTRY_WIDTH - 24, (PADDING + ENTRY_HEIGHT) * index),
+				isVisible
+					? px(0, (PADDING + ENTRY_HEIGHT) * index)
+					: px(-ENTRY_WIDTH - 24, (PADDING + ENTRY_HEIGHT) * index),
 				{},
 			)}
 			zIndex={index}
@@ -147,7 +149,11 @@ function ShortcutItem({ onActivate, onSelect, selectedItem, action, description,
 				TextXAlignment="Left"
 				TextYAlignment="Center"
 				TextTransparency={useSpring(
-					selected ? 0 : hovered ? buttonTheme.foregroundTransparency / 2 : buttonTheme.foregroundTransparency,
+					selected
+						? 0
+						: hovered
+							? buttonTheme.foregroundTransparency / 2
+							: buttonTheme.foregroundTransparency,
 					{},
 				)}
 				Position={px(ENTRY_TEXT_PADDING, 1)}
@@ -164,7 +170,11 @@ function ShortcutItem({ onActivate, onSelect, selectedItem, action, description,
 				TextXAlignment="Center"
 				TextYAlignment="Center"
 				TextTransparency={useSpring(
-					selected ? 0 : hovered ? buttonTheme.foregroundTransparency / 2 : buttonTheme.foregroundTransparency,
+					selected
+						? 0
+						: hovered
+							? buttonTheme.foregroundTransparency / 2
+							: buttonTheme.foregroundTransparency,
 					{},
 				)}
 				TextTruncate="AtEnd"
@@ -174,6 +184,7 @@ function ShortcutItem({ onActivate, onSelect, selectedItem, action, description,
 				BackgroundTransparency={1}
 				ClipsDescendants
 			/>
+
 			<frame
 				Size={buttonTheme.outlined ? new UDim2(0, 1, 1, -2) : new UDim2(0, 1, 1, -36)}
 				Position={buttonTheme.outlined ? new UDim2(1, -124, 0, 1) : new UDim2(1, -124, 0, 18)}
