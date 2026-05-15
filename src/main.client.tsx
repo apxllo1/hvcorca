@@ -9,9 +9,6 @@ import { toggleDashboard } from "store/actions/dashboard.action";
 import { configureStore } from "store/store";
 import App from "./App";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const safeWarn = warn as unknown as (msg: string) => void;
-
 withHookDetection(Roact);
 const store = configureStore();
 setStore(store);
