@@ -13,8 +13,6 @@ async function main() {
 	let currentSubject: Humanoid | BasePart | undefined;
 	let defaultSubject: Humanoid | BasePart | undefined;
 
-	// When a third party changes the camera subject, disable spectate mode
-	// without resetting the camera subject.
 	function connectCameraSubject(camera: Camera) {
 		camera.GetPropertyChangedSignal("CameraSubject").Connect(() => {
 			if (currentSubject !== camera.CameraSubject && store.getState().jobs.spectate.active) {
@@ -47,9 +45,9 @@ async function main() {
 			defaultSubject = undefined;
 			currentSubject = undefined;
 		}
-	});
+	}).catch((err) => warn(`[spectate-worker] ${String(err)}`));
 }
 
 main().catch((err) => {
-	warn(`[spectate-worker] ${err}`);
+	warn(`[spectate-worker] ${String(err)}`);
 });
