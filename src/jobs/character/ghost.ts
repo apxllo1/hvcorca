@@ -2,7 +2,9 @@ import { Players, Workspace } from "@rbxts/services";
 import { getStore, onJobChange } from "jobs/helpers/job-store";
 import type { JobsAction } from "store/actions/jobs.action";
 
-const warnLog = warn as (msg: string) => void;
+function logWarn(msg: string): void {
+	print(`[warn] ${msg}`);
+}
 
 const player = Players.LocalPlayer;
 const screenGuisWithResetOnSpawn = new Array<ScreenGui>();
@@ -15,7 +17,7 @@ function disableResetOnSpawn() {
 	if (playerGui) {
 		for (const object of playerGui.GetChildren()) {
 			if (object.IsA("ScreenGui") && object.ResetOnSpawn) {
-				screenGuisWithResetOnSpawn.push(object as ScreenGui);
+				screenGuisWithResetOnSpawn.push(object);
 				object.ResetOnSpawn = false;
 			}
 		}
@@ -33,20 +35,20 @@ function main() {
 	onJobChange("ghost", (job, state) => {
 		if (state.jobs.refresh.active && job.active) {
 			deactivate().catch((err: unknown) => {
-				warnLog(`[ghost-worker-deactivate] ${String(err)}`);
+				logWarn(`[ghost-worker-deactivate] ${String(err)}`);
 			});
 		} else if (job.active) {
 			activateGhost()
 				.then(deactivateOnCharacterAdded)
 				.catch((err: unknown) => {
-					warnLog(`[ghost-worker-active] ${String(err)}`);
+					logWarn(`[ghost-worker-active] ${String(err)}`);
 					deactivate().catch((e: unknown) => {
-						warnLog(`[ghost-worker-deactivate] ${String(e)}`);
+						logWarn(`[ghost-worker-deactivate] ${String(e)}`);
 					});
 				});
 		} else if (!state.jobs.refresh.active) {
 			deactivateGhost().catch((err: unknown) => {
-				warnLog(`[ghost-worker-inactive] ${String(err)}`);
+				logWarn(`[ghost-worker-inactive] ${String(err)}`);
 			});
 		}
 	});
@@ -69,11 +71,11 @@ async function deactivateOnCharacterAdded() {
 	await deactivate();
 }
 
-async function activateGhost() {
+function activateGhost(): Promise<void> {
 	const character = player.Character;
 	const humanoid = character?.FindFirstChildWhichIsA("Humanoid");
 	if (!character || !humanoid) {
-		throw "Character or Humanoid is null";
+		return Promise.reject("Character or Humanoid is null");
 	}
 
 	character.Archivable = true;
@@ -115,9 +117,11 @@ async function activateGhost() {
 	const handle = humanoid.Died.Connect(() => {
 		handle.Disconnect();
 		deactivate().catch((err: unknown) => {
-			warnLog(`[ghost-worker-died] ${String(err)}`);
+			logWarn(`[ghost-worker-died] ${String(err)}`);
 		});
 	});
+
+	return Promise.resolve();
 }
 
 function deactivateGhost(): Promise<void> {
