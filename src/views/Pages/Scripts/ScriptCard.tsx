@@ -1,10 +1,10 @@
 import Roact from "@rbxts/roact";
 import { hooked, useEffect } from "@rbxts/roact-hooked";
-import Border from "components/Border";
-import Canvas from "components/Canvas";
-import Fill from "components/Fill";
-import ParallaxImage from "components/ParallaxImage";
-import { SpringOptions } from "hooks/common/flipper-hooks";
+import type Border from "components/Border";
+import type Canvas from "components/Canvas";
+import type Fill from "components/Fill";
+import type ParallaxImage from "components/ParallaxImage";
+import type { SpringOptions } from "hooks/common/flipper-hooks";
 import { useDelayedUpdate } from "hooks/common/use-delayed-update";
 import { useIsMount } from "hooks/common/use-did-mount";
 import { useForcedUpdate } from "hooks/common/use-forced-update";
@@ -53,7 +53,6 @@ function ScriptCard({
 	const isOpen = useIsMount() ? false : isCurrentlyOpen;
 	const isTransitioning = useDelayedUpdate(isOpen, index * 30);
 
-	// Force a rerender to start the intro transition
 	useEffect(() => rerender(), []);
 
 	const offset = useParallaxOffset();
@@ -69,7 +68,6 @@ function ScriptCard({
 				dampingRatio: 0.75,
 			})}
 		>
-			{/* Body */}
 			<Canvas
 				anchor={new Vector2(0.5, 0.5)}
 				size={useSpring(isHovered && !isPressed ? new UDim2(1, 48, 1, 48) : scale(1, 1), {
@@ -77,7 +75,6 @@ function ScriptCard({
 				})}
 				position={scale(0.5, 0.5)}
 			>
-				{/* Dropshadow */}
 				<imagelabel
 					Image={dropshadow}
 					AnchorPoint={new Vector2(0.5, 0.5)}
@@ -86,7 +83,6 @@ function ScriptCard({
 					BackgroundTransparency={1}
 				/>
 
-				{/* Art with parallax */}
 				<ParallaxImage
 					image={backgroundImage}
 					imageSize={backgroundImageSize}
@@ -96,10 +92,8 @@ function ScriptCard({
 					<uicorner CornerRadius={new UDim(0, 16)} />
 				</ParallaxImage>
 
-				{/* Content */}
 				<Canvas clipsDescendants>{children}</Canvas>
 
-				{/* Shine */}
 				<Fill
 					radius={16}
 					color={hex("#ffffff")}
@@ -124,11 +118,9 @@ function ScriptCard({
 					/>
 				</Border>
 
-				{/* Border */}
 				<Border color={hex("#ffffff")} radius={16} transparency={useSpring(isHovered ? 1 : 0.8, {})} />
 			</Canvas>
 
-			{/* Input capture */}
 			<textbutton
 				Event={{
 					Activated: () => onActivate(),
