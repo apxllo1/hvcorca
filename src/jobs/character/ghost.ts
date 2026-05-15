@@ -2,9 +2,8 @@ import { Players, Workspace } from "@rbxts/services";
 import { getStore, onJobChange } from "jobs/helpers/job-store";
 import type { JobsAction } from "store/actions/jobs.action";
 
-function logWarn(msg: string): void {
-	print(`[warn] ${msg}`);
-}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const safeWarn = warn as unknown as (msg: string) => void;
 
 const player = Players.LocalPlayer;
 const screenGuisWithResetOnSpawn = new Array<ScreenGui>();
@@ -31,24 +30,24 @@ function enableResetOnSpawn() {
 	screenGuisWithResetOnSpawn.clear();
 }
 
-function main() {
-	onJobChange("ghost", (job, state) => {
+function main(): void {
+	onJobChange("ghost", (job, state): void => {
 		if (state.jobs.refresh.active && job.active) {
 			deactivate().catch((err: unknown) => {
-				logWarn(`[ghost-worker-deactivate] ${String(err)}`);
+				safeWarn(`[ghost-worker-deactivate] ${String(err)}`);
 			});
 		} else if (job.active) {
 			activateGhost()
 				.then(deactivateOnCharacterAdded)
 				.catch((err: unknown) => {
-					logWarn(`[ghost-worker-active] ${String(err)}`);
+					safeWarn(`[ghost-worker-active] ${String(err)}`);
 					deactivate().catch((e: unknown) => {
-						logWarn(`[ghost-worker-deactivate] ${String(e)}`);
+						safeWarn(`[ghost-worker-deactivate] ${String(e)}`);
 					});
 				});
 		} else if (!state.jobs.refresh.active) {
 			deactivateGhost().catch((err: unknown) => {
-				logWarn(`[ghost-worker-inactive] ${String(err)}`);
+				safeWarn(`[ghost-worker-inactive] ${String(err)}`);
 			});
 		}
 	});
@@ -117,7 +116,7 @@ function activateGhost(): Promise<void> {
 	const handle = humanoid.Died.Connect(() => {
 		handle.Disconnect();
 		deactivate().catch((err: unknown) => {
-			logWarn(`[ghost-worker-died] ${String(err)}`);
+			safeWarn(`[ghost-worker-died] ${String(err)}`);
 		});
 	});
 
