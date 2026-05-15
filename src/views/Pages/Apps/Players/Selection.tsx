@@ -16,7 +16,6 @@ import { useIsPageOpen } from "hooks/use-current-page";
 import { useTheme } from "hooks/use-theme";
 
 import { playerDeselected, playerSelected } from "store/actions/dashboard.action";
-import type { DashboardPage } from "store/models/dashboard.model";
 import { DashboardPage as DP } from "store/models/dashboard.model";
 
 import { arrayToMap } from "utils/array-util";
@@ -129,7 +128,7 @@ function PlayerEntry({ name, userId, displayName, index }: PlayerEntryProps) {
 		isSelected
 			? theme.accent
 			: hovered
-				? theme.backgroundHovered ?? theme.background.Lerp(theme.accent, 0.1)
+				? (theme.backgroundHovered ?? theme.background.Lerp(theme.accent, 0.1))
 				: theme.background,
 		{},
 	);
@@ -138,7 +137,7 @@ function PlayerEntry({ name, userId, displayName, index }: PlayerEntryProps) {
 		isSelected
 			? theme.accent
 			: hovered
-				? theme.backgroundHovered ?? theme.dropshadow.Lerp(theme.accent, 0.5)
+				? (theme.backgroundHovered ?? theme.dropshadow.Lerp(theme.accent, 0.5))
 				: theme.dropshadow,
 		{},
 	);
@@ -152,7 +151,9 @@ function PlayerEntry({ name, userId, displayName, index }: PlayerEntryProps) {
 		<Canvas
 			size={px(ENTRY_WIDTH, ENTRY_HEIGHT)}
 			position={useSpring(
-				isVisible ? px(0, (PADDING + ENTRY_HEIGHT) * index) : px(-ENTRY_WIDTH - 24, (PADDING + ENTRY_HEIGHT) * index),
+				isVisible
+					? px(0, (PADDING + ENTRY_HEIGHT) * index)
+					: px(-ENTRY_WIDTH - 24, (PADDING + ENTRY_HEIGHT) * index),
 				{},
 			)}
 			zIndex={index}
