@@ -2,6 +2,8 @@ import { Players, Workspace } from "@rbxts/services";
 import { getStore, onJobChange } from "jobs/helpers/job-store";
 import type { JobsAction } from "store/actions/jobs.action";
 
+const warnLog = warn as (msg: string) => void;
+
 const player = Players.LocalPlayer;
 const screenGuisWithResetOnSpawn = new Array<ScreenGui>();
 let originalCharacter: Model | undefined;
@@ -30,20 +32,21 @@ function enableResetOnSpawn() {
 function main() {
 	onJobChange("ghost", (job, state) => {
 		if (state.jobs.refresh.active && job.active) {
-			// Can't enable ghost while respawning
-			void deactivate();
+			deactivate().catch((err: unknown) => {
+				warnLog(`[ghost-worker-deactivate] ${String(err)}`);
+			});
 		} else if (job.active) {
-			// Enable ghost mode
-			void activateGhost()
+			activateGhost()
 				.then(deactivateOnCharacterAdded)
-				.catch((err) => {
-					warn(`[ghost-worker-active] ${err}`);
-					void deactivate();
+				.catch((err: unknown) => {
+					warnLog(`[ghost-worker-active] ${String(err)}`);
+					deactivate().catch((e: unknown) => {
+						warnLog(`[ghost-worker-deactivate] ${String(e)}`);
+					});
 				});
 		} else if (!state.jobs.refresh.active) {
-			// Deactivate ghost if inactive & not respawning
-			void deactivateGhost().catch((err) => {
-				warn(`[ghost-worker-inactive] ${err}`);
+			deactivateGhost().catch((err: unknown) => {
+				warnLog(`[ghost-worker-inactive] ${String(err)}`);
 			});
 		}
 	});
@@ -73,17 +76,14 @@ async function activateGhost() {
 		throw "Character or Humanoid is null";
 	}
 
-	// Create fake character
 	character.Archivable = true;
 	ghostCharacter = character.Clone();
 	character.Archivable = false;
 
-	// Save position to restore later
 	const rootPart = character.FindFirstChild("HumanoidRootPart");
 	lastPosition = rootPart?.IsA("BasePart") ? rootPart.CFrame : undefined;
 	originalCharacter = character;
 
-	// Add ghost effect
 	const ghostHumanoid = ghostCharacter.FindFirstChildWhichIsA("Humanoid");
 	for (const child of ghostCharacter.GetDescendants()) {
 		if (child.IsA("BasePart")) {
@@ -92,10 +92,9 @@ async function activateGhost() {
 	}
 
 	if (ghostHumanoid) {
-		ghostHumanoid.DisplayName = utf8.char(128123); // Ghost emoji
+		ghostHumanoid.DisplayName = utf8.char(128123);
 	}
 
-	// Set up animation
 	ghostCharacter.FindFirstChild("Animate")?.Destroy();
 	const animation = originalCharacter.FindFirstChild("Animate") as LocalScript | undefined;
 	if (animation) {
@@ -103,50 +102,44 @@ async function activateGhost() {
 		animation.Parent = ghostCharacter;
 	}
 
-	// Set up fake character
 	disableResetOnSpawn();
 	ghostCharacter.Parent = character.Parent;
 	player.Character = ghostCharacter;
 	Workspace.CurrentCamera!.CameraSubject = ghostHumanoid;
 	enableResetOnSpawn();
 
-	// Start animation
 	if (animation) {
 		animation.Disabled = false;
 	}
 
-	// Respawn on death
 	const handle = humanoid.Died.Connect(() => {
 		handle.Disconnect();
-		void deactivate();
+		deactivate().catch((err: unknown) => {
+			warnLog(`[ghost-worker-died] ${String(err)}`);
+		});
 	});
 }
 
-function deactivateGhost() {
+function deactivateGhost(): Promise<void> {
 	if (!originalCharacter || !ghostCharacter) {
-		return Promise.resolve(); // Not currently ghost
+		return Promise.resolve();
 	}
 
-	// Store current position in ghost mode if possible
 	const rootPart = originalCharacter.FindFirstChild("HumanoidRootPart");
 	const ghostRootPart = ghostCharacter.FindFirstChild("HumanoidRootPart");
 	const currentPosition = ghostRootPart?.IsA("BasePart") ? ghostRootPart.CFrame : undefined;
 
-	// Save animation script
 	const animation = ghostCharacter.FindFirstChild("Animate") as LocalScript | undefined;
 	if (animation) {
 		animation.Disabled = true;
 		animation.Parent = undefined;
 	}
 
-	// Remove fake character
 	ghostCharacter.Destroy();
 
-	// Clear animations on original character
 	const humanoid = originalCharacter.FindFirstChildWhichIsA("Humanoid");
 	humanoid?.GetPlayingAnimationTracks().forEach((track) => track.Stop());
 
-	// Restore original character
 	const position = currentPosition ?? lastPosition;
 	if (rootPart?.IsA("BasePart") && position) {
 		rootPart.CFrame = position;
@@ -157,7 +150,6 @@ function deactivateGhost() {
 	Workspace.CurrentCamera!.CameraSubject = humanoid;
 	enableResetOnSpawn();
 
-	// Restore animation
 	if (animation) {
 		animation.Parent = originalCharacter;
 		animation.Disabled = false;
