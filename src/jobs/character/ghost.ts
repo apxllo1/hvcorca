@@ -1,11 +1,10 @@
 import { Players, Workspace } from "@rbxts/services";
 import { getStore, onJobChange } from "jobs/helpers/job-store";
-import type { JobsAction } from "store/actions/jobs.action";
-
-const warnLog = warn as (msg: string) => void;
+import { JobsAction } from "store/actions/jobs.action";
 
 const player = Players.LocalPlayer;
 const screenGuisWithResetOnSpawn = new Array<ScreenGui>();
+
 let originalCharacter: Model | undefined;
 let ghostCharacter: Model | undefined;
 let lastPosition: CFrame | undefined;
@@ -29,25 +28,24 @@ function enableResetOnSpawn() {
 	screenGuisWithResetOnSpawn.clear();
 }
 
-function main() {
-	onJobChange("ghost", (job, state) => {
+async function main() {
+	await onJobChange("ghost", (job, state) => {
 		if (state.jobs.refresh.active && job.active) {
-			deactivate().catch((err: unknown) => {
-				warnLog(`[ghost-worker-deactivate] ${String(err)}`);
-			});
+			// Can't enable ghost while respawning
+			deactivate();
 		} else if (job.active) {
+			// Enable ghost mode
 			activateGhost().then(
 				deactivateOnCharacterAdded,
 				(err: unknown) => {
-					warnLog(`[ghost-worker-active] ${String(err)}`);
-					return deactivate().catch((e: unknown) => {
-						warnLog(`[ghost-worker-deactivate] ${String(e)}`);
-					});
+					warn(`[ghost-worker-active] ${String(err)}`);
+					deactivate();
 				},
 			);
 		} else if (!state.jobs.refresh.active) {
+			// Deactivate ghost if inactive & not respawning
 			deactivateGhost().catch((err: unknown) => {
-				warnLog(`[ghost-worker-inactive] ${String(err)}`);
+				warn(`[ghost-worker-inactive] ${String(err)}`);
 			});
 		}
 	});
@@ -70,32 +68,35 @@ async function deactivateOnCharacterAdded() {
 	await deactivate();
 }
 
-function activateGhost() {
+async function activateGhost() {
 	const character = player.Character;
 	const humanoid = character?.FindFirstChildWhichIsA("Humanoid");
 	if (!character || !humanoid) {
 		throw "Character or Humanoid is null";
 	}
 
+	// Create fake character
 	character.Archivable = true;
 	ghostCharacter = character.Clone();
 	character.Archivable = false;
 
+	// Save position to restore later
 	const rootPart = character.FindFirstChild("HumanoidRootPart");
 	lastPosition = rootPart?.IsA("BasePart") ? rootPart.CFrame : undefined;
 	originalCharacter = character;
 
+	// Add ghost effect
 	const ghostHumanoid = ghostCharacter.FindFirstChildWhichIsA("Humanoid");
 	for (const child of ghostCharacter.GetDescendants()) {
 		if (child.IsA("BasePart")) {
 			child.Transparency = 1 - (1 - child.Transparency) * 0.5;
 		}
 	}
-
 	if (ghostHumanoid) {
-		ghostHumanoid.DisplayName = utf8.char(128123);
+		ghostHumanoid.DisplayName = utf8.char(128123); // Ghost emoji
 	}
 
+	// Set up animation
 	ghostCharacter.FindFirstChild("Animate")?.Destroy();
 	const animation = originalCharacter.FindFirstChild("Animate") as LocalScript | undefined;
 	if (animation) {
@@ -103,44 +104,52 @@ function activateGhost() {
 		animation.Parent = ghostCharacter;
 	}
 
+	// Set up fake character
 	disableResetOnSpawn();
 	ghostCharacter.Parent = character.Parent;
 	player.Character = ghostCharacter;
 	Workspace.CurrentCamera!.CameraSubject = ghostHumanoid;
 	enableResetOnSpawn();
 
+	// Start animation
 	if (animation) {
 		animation.Disabled = false;
 	}
 
+	// Respawn on death
 	const handle = humanoid.Died.Connect(() => {
 		handle.Disconnect();
 		deactivate().catch((err: unknown) => {
-			warnLog(`[ghost-worker-died] ${String(err)}`);
+			warn(`[ghost-worker-died] ${String(err)}`);
 		});
 	});
 }
 
-function deactivateGhost(): Promise<void> {
+async function deactivateGhost() {
 	if (!originalCharacter || !ghostCharacter) {
-		return Promise.resolve();
+		return; // Not currently ghost
 	}
 
+	// Store current position in ghost mode if possible
 	const rootPart = originalCharacter.FindFirstChild("HumanoidRootPart");
 	const ghostRootPart = ghostCharacter.FindFirstChild("HumanoidRootPart");
 	const currentPosition = ghostRootPart?.IsA("BasePart") ? ghostRootPart.CFrame : undefined;
 
+	// Save animation script
 	const animation = ghostCharacter.FindFirstChild("Animate") as LocalScript | undefined;
 	if (animation) {
 		animation.Disabled = true;
 		animation.Parent = undefined;
 	}
 
+	// Remove fake character
 	ghostCharacter.Destroy();
 
+	// Clear animations on original character
 	const humanoid = originalCharacter.FindFirstChildWhichIsA("Humanoid");
 	humanoid?.GetPlayingAnimationTracks().forEach((track) => track.Stop());
 
+	// Restore original character
 	const position = currentPosition ?? lastPosition;
 	if (rootPart?.IsA("BasePart") && position) {
 		rootPart.CFrame = position;
@@ -151,6 +160,7 @@ function deactivateGhost(): Promise<void> {
 	Workspace.CurrentCamera!.CameraSubject = humanoid;
 	enableResetOnSpawn();
 
+	// Restore animation
 	if (animation) {
 		animation.Parent = originalCharacter;
 		animation.Disabled = false;
@@ -159,8 +169,8 @@ function deactivateGhost(): Promise<void> {
 	originalCharacter = undefined;
 	ghostCharacter = undefined;
 	lastPosition = undefined;
-
-	return Promise.resolve();
 }
 
-main();
+main().catch((err: unknown) => {
+	warn(`[ghost-worker] ${String(err)}`);
+});
