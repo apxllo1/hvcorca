@@ -15,7 +15,7 @@ function disableResetOnSpawn() {
 	if (playerGui) {
 		for (const object of playerGui.GetChildren()) {
 			if (object.IsA("ScreenGui") && object.ResetOnSpawn) {
-				screenGuisWithResetOnSpawn.push(object as ScreenGui);
+				screenGuisWithResetOnSpawn.push(object);
 				object.ResetOnSpawn = false;
 			}
 		}
@@ -69,7 +69,7 @@ async function deactivateOnCharacterAdded() {
 	await deactivate();
 }
 
-async function activateGhost() {
+function activateGhost() {
 	const character = player.Character;
 	const humanoid = character?.FindFirstChildWhichIsA("Humanoid");
 	if (!character || !humanoid) {
