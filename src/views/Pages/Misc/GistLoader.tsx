@@ -1,6 +1,5 @@
 import Roact from "@rbxts/roact";
 import { useCallback, useState } from "@rbxts/roact-hooked";
-import { HttpService } from "@rbxts/services";
 import * as http from "utils/http";
 
 export interface CommandEntry {
@@ -29,6 +28,8 @@ const TEXT_DIM = Color3.fromRGB(100, 100, 100);
 
 const GIST_RAW_URL = (id: string) => `https://gist.githubusercontent.com/${id}/raw`;
 
+const compile = loadstring as (chunk: string, name?: string) => LuaTuple<[(...args: unknown[]) => unknown, string]>;
+
 function GistLoader() {
 	const [filtered, setFiltered] = useState<CommandEntry[]>(COMMANDS);
 	const [searchText, setSearchText] = useState("");
@@ -36,24 +37,21 @@ function GistLoader() {
 	const [status, setStatus] = useState(`${COMMANDS.size()} commands available`);
 	const [isRunning, setIsRunning] = useState(false);
 
-	const handleSearch = useCallback(
-		(rbx: TextBox) => {
-			const query = rbx.Text.lower();
-			setSearchText(rbx.Text);
-			if (query === "") {
-				setFiltered(COMMANDS);
-			} else {
-				setFiltered(
-					COMMANDS.filter(
-						(cmd) =>
-							cmd.name.lower().find(query, 1, true)[0] !== undefined ||
-							cmd.description.lower().find(query, 1, true)[0] !== undefined,
-					),
-				);
-			}
-		},
-		[],
-	);
+	const handleSearch = useCallback((rbx: TextBox) => {
+		const query = rbx.Text.lower();
+		setSearchText(rbx.Text);
+		if (query === "") {
+			setFiltered(COMMANDS);
+		} else {
+			setFiltered(
+				COMMANDS.filter(
+					(cmd) =>
+						cmd.name.lower().find(query, 1, true)[0] !== undefined ||
+						cmd.description.lower().find(query, 1, true)[0] !== undefined,
+				),
+			);
+		}
+	}, []);
 
 	const handleRun = useCallback(() => {
 		if (selected === undefined || isRunning) return;
@@ -62,38 +60,32 @@ function GistLoader() {
 
 		const entry = selected;
 		task.spawn(() => {
-			const [fetchOk, bodyOrErr] = pcall(() => http.get(GIST_RAW_URL(entry.gistId)));
-			if (!fetchOk) {
-				setStatus(`Fetch error: ${String(bodyOrErr)}`);
-				setIsRunning(false);
-				return;
-			}
-
-			(bodyOrErr as Promise<string>)
-				.then((body) => {
-					if (body === undefined || body === "") {
+			http
+				.get(GIST_RAW_URL(entry.gistId))
+				.then((body: string) => {
+					if (body === "") {
 						setStatus("Gist returned empty content");
 						setIsRunning(false);
 						return;
 					}
 
-					const [fn, err] = loadstring(body, `@${entry.name}`);
+					const [fn, err] = compile(body, `@${entry.name}`);
 					if (fn === undefined) {
 						setStatus(`Compile error: ${String(err)}`);
 						setIsRunning(false);
 						return;
 					}
 
-					const [runOk, runErr] = pcall(fn);
-					if (!runOk) {
-						setStatus(`Runtime error: ${String(runErr)}`);
-					} else {
+					try {
+						fn();
 						setStatus(`✓ Ran ${entry.name}`);
+					} catch (runErr: unknown) {
+						setStatus(`Runtime error: ${String(runErr)}`);
 					}
 					setIsRunning(false);
 				})
 				.catch((err: unknown) => {
-					setStatus(`Error: ${String(err)}`);
+					setStatus(`Fetch error: ${String(err)}`);
 					setIsRunning(false);
 				});
 		});
@@ -162,13 +154,7 @@ function GistLoader() {
 			<frame Key="Footer" Size={new UDim2(1, 0, 0, 40)} BackgroundTransparency={1} LayoutOrder={2}>
 				<textbutton
 					Key="RunButton"
-					Text={
-						isRunning
-							? "Running..."
-							: selected !== undefined
-								? `Run: ${selected.name}`
-								: "Select a command"
-					}
+					Text={isRunning ? "Running..." : selected !== undefined ? `Run: ${selected.name}` : "Select a command"}
 					Size={new UDim2(1, 0, 1, 0)}
 					BackgroundColor3={runButtonActive ? GREEN : Color3.fromRGB(40, 40, 40)}
 					TextColor3={runButtonActive ? Color3.fromRGB(10, 10, 10) : TEXT_DIM}
