@@ -6,7 +6,6 @@ import { useSpring } from "hooks/common/use-spring";
 import { useIsPageOpen } from "hooks/use-current-page";
 import { useFriends } from "hooks/use-friends";
 import { useTheme } from "hooks/use-theme";
-import type { DashboardPage } from "store/models/dashboard.model";
 import { DashboardPage as DP } from "store/models/dashboard.model";
 import { px } from "utils/udim2";
 
