@@ -18,7 +18,6 @@ async function main() {
 	walkSpeedJob = state.jobs.walkSpeed;
 	jumpHeightJob = state.jobs.jumpHeight;
 
-	// Initial setup
 	humanoid = player.Character?.FindFirstChildWhichIsA("Humanoid");
 	setDefaultWalkSpeed(humanoid);
 	setDefaultJumpHeight(humanoid);
@@ -26,14 +25,13 @@ async function main() {
 	onJobChange("walkSpeed", (job) => {
 		walkSpeedJob = job;
 		updateWalkSpeed(humanoid, job);
-	});
+	}).catch((err) => warn(`[humanoid-worker] ${String(err)}`));
 
 	onJobChange("jumpHeight", (job) => {
 		jumpHeightJob = job;
 		updateJumpHeight(humanoid, job);
-	});
+	}).catch((err) => warn(`[humanoid-worker] ${String(err)}`));
 
-	// Handle respawn
 	player.CharacterAdded.Connect((character) => {
 		const newHumanoid = character.WaitForChild("Humanoid", 5) as Humanoid | undefined;
 		if (newHumanoid?.IsA("Humanoid")) {
@@ -79,5 +77,5 @@ function updateJumpHeight(humanoid: Humanoid | undefined, job: JobWithValue<numb
 }
 
 main().catch((err) => {
-	warn(`[humanoid-worker] ${err}`);
+	warn(`[humanoid-worker] ${String(err)}`);
 });
