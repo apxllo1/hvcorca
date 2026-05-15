@@ -2,9 +2,6 @@ import { Players, Workspace } from "@rbxts/services";
 import { getStore, onJobChange } from "jobs/helpers/job-store";
 import type { JobsAction } from "store/actions/jobs.action";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const safeWarn = warn as unknown as (msg: string) => void;
-
 const player = Players.LocalPlayer;
 const screenGuisWithResetOnSpawn = new Array<ScreenGui>();
 let originalCharacter: Model | undefined;
@@ -34,24 +31,24 @@ function main(): void {
 	onJobChange("ghost", (job, state): void => {
 		if (state.jobs.refresh.active && job.active) {
 			deactivate().catch((err: unknown) => {
-				safeWarn(`[ghost-worker-deactivate] ${String(err)}`);
+				warn(`[ghost-worker-deactivate] ${String(err)}`);
 			});
 		} else if (job.active) {
 			activateGhost()
 				.then(deactivateOnCharacterAdded)
 				.catch((err: unknown) => {
-					safeWarn(`[ghost-worker-active] ${String(err)}`);
+					warn(`[ghost-worker-active] ${String(err)}`);
 					deactivate().catch((e: unknown) => {
-						safeWarn(`[ghost-worker-deactivate] ${String(e)}`);
+						warn(`[ghost-worker-deactivate] ${String(e)}`);
 					});
 				});
 		} else if (!state.jobs.refresh.active) {
 			deactivateGhost().catch((err: unknown) => {
-				safeWarn(`[ghost-worker-inactive] ${String(err)}`);
+				warn(`[ghost-worker-inactive] ${String(err)}`);
 			});
 		}
 	}).catch((err: unknown) => {
-		safeWarn(`[ghost-worker] ${String(err)}`);
+		warn(`[ghost-worker] ${String(err)}`);
 	});
 }
 
@@ -87,7 +84,7 @@ function activateGhost(): Promise<void> {
 	lastPosition = rootPart?.IsA("BasePart") ? rootPart.CFrame : undefined;
 	originalCharacter = character;
 
-	const ghostHumanoid = ghostCharacter.FindFirstChildWhichIsA("Humanoid");
+	const ghostHumanoid = ghostCharacter?.FindFirstChildWhichIsA("Humanoid");
 	for (const child of ghostCharacter.GetDescendants()) {
 		if (child.IsA("BasePart")) {
 			child.Transparency = 1 - (1 - child.Transparency) * 0.5;
@@ -118,7 +115,7 @@ function activateGhost(): Promise<void> {
 	const handle = humanoid.Died.Connect(() => {
 		handle.Disconnect();
 		deactivate().catch((err: unknown) => {
-			safeWarn(`[ghost-worker-died] ${String(err)}`);
+			warn(`[ghost-worker-died] ${String(err)}`);
 		});
 	});
 
