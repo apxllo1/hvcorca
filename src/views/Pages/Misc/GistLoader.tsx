@@ -155,9 +155,11 @@ function GistLoader() {
 				<textbutton
 					Key="RunButton"
 					Text={
-						<>
-							{isRunning ? "Running..." : selected !== undefined ? `Run: ${selected.name}` : "Select a command"}
-						</>
+						isRunning
+							? "Running..."
+							: selected !== undefined
+								? `Run: ${selected.name}`
+								: "Select a command"
 					}
 					Size={new UDim2(1, 0, 1, 0)}
 					BackgroundColor3={runButtonActive ? GREEN : Color3.fromRGB(40, 40, 40)}
