@@ -37,10 +37,9 @@ function main() {
 			});
 		} else if (job.active) {
 			activateGhost()
-				.then(deactivateOnCharacterAdded)
-				.catch((err: unknown) => {
+				.then(deactivateOnCharacterAdded, (err: unknown) => {
 					warnLog(`[ghost-worker-active] ${String(err)}`);
-					deactivate().catch((e: unknown) => {
+					return deactivate().catch((e: unknown) => {
 						warnLog(`[ghost-worker-deactivate] ${String(e)}`);
 					});
 				});
