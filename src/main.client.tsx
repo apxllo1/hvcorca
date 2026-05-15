@@ -9,6 +9,8 @@ import { toggleDashboard } from "store/actions/dashboard.action";
 import { configureStore } from "store/store";
 import App from "./App";
 
+const warnLog = warn as (msg: string) => void;
+
 withHookDetection(Roact);
 
 const store = configureStore();
@@ -44,7 +46,7 @@ async function main() {
 	if (g[LOAD_GUARD] === true) {
 		throw "Havoc is already loaded!";
 	}
-	const app = await mount();
+	const app = mount();
 	render(app);
 	if (time() > 3) {
 		task.defer(() => store.dispatch(toggleDashboard()));
@@ -56,5 +58,5 @@ async function main() {
 }
 
 main().catch((err) => {
-	warn(`[Havoc] Failed to load: ${err}`);
+	warnLog(`[Havoc] Failed to load: ${String(err)}`);
 });
