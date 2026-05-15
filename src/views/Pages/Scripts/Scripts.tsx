@@ -7,18 +7,18 @@ import { BASE_PADDING, BASE_WINDOW_HEIGHT } from "views/Pages/Scripts/constants"
 import Content from "views/Pages/Scripts/Content";
 import ScriptCard from "views/Pages/Scripts/ScriptCard";
 
+const warnLog = warn as (msg: string) => void;
+
 declare function loadstring(chunk: string, chunkname?: string): [(...args: unknown[]) => unknown, string];
 
-async function runScriptFromUrl(url: string, src: string): Promise<string> {
+async function runScriptFromUrl(url: string, src: string): Promise<void> {
 	try {
 		const content = await http.get(url);
 		const [fn, err] = loadstring(content, "@" + src);
 		assert(fn, `Failed to call loadstring on Lua script from '${url}': ${err}`);
 		task.defer(fn);
-		return "";
 	} catch (e) {
-		warn(`Failed to run Lua script from '${url}': ${e}`);
-		return "";
+		warnLog(`Failed to run Lua script from '${url}': ${String(e)}`);
 	}
 }
 
@@ -26,7 +26,11 @@ function Scripts() {
 	return (
 		<Canvas position={scale(0, 1)} anchor={new Vector2(0, 1)}>
 			<ScriptCard
-				onActivate={() => void runScriptFromUrl("https://absent.wtf/AKADMIN.lua", "AKADMIN")}
+				onActivate={() => {
+					runScriptFromUrl("https://absent.wtf/AKADMIN.lua", "AKADMIN").catch((e: unknown) => {
+						warnLog(`Failed to run script: ${String(e)}`);
+					});
+				}}
 				index={4}
 				backgroundImage="rbxassetid://126623834306744"
 				backgroundImageSize={new Vector2(1023, 682)}
@@ -48,7 +52,11 @@ function Scripts() {
 			</ScriptCard>
 
 			<ScriptCard
-				onActivate={() => void runScriptFromUrl("https://novoline.pro", "Novoline")}
+				onActivate={() => {
+					runScriptFromUrl("https://novoline.pro", "Novoline").catch((e: unknown) => {
+						warnLog(`Failed to run script: ${String(e)}`);
+					});
+				}}
 				index={1}
 				backgroundImage="rbxassetid://127094516248328"
 				backgroundImageSize={new Vector2(1021, 1023)}
@@ -70,7 +78,11 @@ function Scripts() {
 			</ScriptCard>
 
 			<ScriptCard
-				onActivate={() => void runScriptFromUrl("https://onyxv2.lol/main.lua", "ONYX")}
+				onActivate={() => {
+					runScriptFromUrl("https://onyxv2.lol/main.lua", "ONYX").catch((e: unknown) => {
+						warnLog(`Failed to run script: ${String(e)}`);
+					});
+				}}
 				index={5}
 				backgroundImage="rbxassetid://130072532268670"
 				backgroundImageSize={new Vector2(818, 1023)}
@@ -92,12 +104,14 @@ function Scripts() {
 			</ScriptCard>
 
 			<ScriptCard
-				onActivate={() =>
-					void runScriptFromUrl(
+				onActivate={() => {
+					runScriptFromUrl(
 						"https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source",
 						"Infinite Yield",
-					)
-				}
+					).catch((e: unknown) => {
+						warnLog(`Failed to run script: ${String(e)}`);
+					});
+				}}
 				index={3}
 				backgroundImage="rbxassetid://8992291444"
 				backgroundImageSize={new Vector2(1023, 682)}
@@ -105,16 +119,18 @@ function Scripts() {
 				dropshadowSize={new Vector2(1.15, 1.4)}
 				dropshadowPosition={new Vector2(0.5, 0.6)}
 				anchorPoint={new Vector2(0.5, 0)}
-				size={
-					new UDim2(1 / 3, -BASE_PADDING * (2 / 3), (242 + BASE_PADDING) / BASE_WINDOW_HEIGHT, -BASE_PADDING)
-				}
+				size={new UDim2(1 / 3, -BASE_PADDING * (2 / 3), (242 + BASE_PADDING) / BASE_WINDOW_HEIGHT, -BASE_PADDING)}
 				position={new UDim2(0.5, 0, 1 - (590 + BASE_PADDING / 2) / BASE_WINDOW_HEIGHT, BASE_PADDING / 2)}
 			>
 				<Content header="Infinite Yield" footer="github.com/EdgeIY" />
 			</ScriptCard>
 
 			<ScriptCard
-				onActivate={() => void runScriptFromUrl("https://pastebin.com/raw/mMbsHWiQ", "Dex Explorer")}
+				onActivate={() => {
+					runScriptFromUrl("https://pastebin.com/raw/mMbsHWiQ", "Dex Explorer").catch((e: unknown) => {
+						warnLog(`Failed to run script: ${String(e)}`);
+					});
+				}}
 				index={1}
 				backgroundImage="rbxassetid://8992290931"
 				backgroundImageSize={new Vector2(818, 1023)}
@@ -136,12 +152,14 @@ function Scripts() {
 			</ScriptCard>
 
 			<ScriptCard
-				onActivate={() =>
-					void runScriptFromUrl(
+				onActivate={() => {
+					runScriptFromUrl(
 						"https://raw.githubusercontent.com/ic3w0lf22/Unnamed-ESP/master/UnnamedESP.lua",
 						"Unnamed ESP",
-					)
-				}
+					).catch((e: unknown) => {
+						warnLog(`Failed to run script: ${String(e)}`);
+					});
+				}}
 				index={6}
 				backgroundImage="rbxassetid://8992290714"
 				backgroundImageSize={new Vector2(1023, 682)}
@@ -163,7 +181,11 @@ function Scripts() {
 			</ScriptCard>
 
 			<ScriptCard
-				onActivate={() => void runScriptFromUrl("https://projectevo.xyz/script/loader.lua", "EvoV2")}
+				onActivate={() => {
+					runScriptFromUrl("https://projectevo.xyz/script/loader.lua", "EvoV2").catch((e: unknown) => {
+						warnLog(`Failed to run script: ${String(e)}`);
+					});
+				}}
 				index={2}
 				backgroundImage="rbxassetid://8992290314"
 				backgroundImageSize={new Vector2(682, 1023)}
