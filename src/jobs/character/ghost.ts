@@ -36,13 +36,15 @@ function main() {
 				warnLog(`[ghost-worker-deactivate] ${String(err)}`);
 			});
 		} else if (job.active) {
-			activateGhost()
-				.then(deactivateOnCharacterAdded, (err: unknown) => {
+			activateGhost().then(
+				deactivateOnCharacterAdded,
+				(err: unknown) => {
 					warnLog(`[ghost-worker-active] ${String(err)}`);
 					return deactivate().catch((e: unknown) => {
 						warnLog(`[ghost-worker-deactivate] ${String(e)}`);
 					});
-				});
+				},
+			);
 		} else if (!state.jobs.refresh.active) {
 			deactivateGhost().catch((err: unknown) => {
 				warnLog(`[ghost-worker-inactive] ${String(err)}`);
