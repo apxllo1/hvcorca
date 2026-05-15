@@ -111,7 +111,7 @@ async function main() {
 				.catch((err: unknown) => warn(`[kill-worker] ${String(err)}`))
 				.finally(() => store.dispatch(setJobActive("kill", false)));
 		}
-	}).catch((err: unknown) => warn(`[kill-worker] ${String(err)}}`));
+	}).catch((err: unknown) => warn(`[kill-worker] ${String(err)}`));
 }
 
 main().catch((err: unknown) => {

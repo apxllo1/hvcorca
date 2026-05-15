@@ -24,7 +24,7 @@ async function main() {
 				.catch((err: unknown) => warn(`[refresh-worker-respawn] ${String(err)}`))
 				.finally(() => deactivate());
 		}
-	}).catch((err: unknown) => warn(`[refresh-worker] ${String(err)`));
+	}).catch((err: unknown) => warn(`[refresh-worker] ${String(err)}`));
 }
 
 async function respawn() {

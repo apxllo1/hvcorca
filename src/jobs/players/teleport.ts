@@ -5,6 +5,8 @@ import { setJobActive } from "store/actions/jobs.action";
 import { setTimeout } from "utils/timeout";
 import type { Timeout } from "utils/timeout";
 
+const warnLog = warn as (msg: string) => void;
+
 async function main() {
 	const store = await getStore();
 	const playerSelected = await getSelectedPlayer(() => {
@@ -23,7 +25,7 @@ async function main() {
 
 			if (!rootPart || !targetRootPart || !rootPart.IsA("BasePart") || !targetRootPart.IsA("BasePart")) {
 				store.dispatch(setJobActive("teleport", false));
-				warn(`[teleport-worker] Failed to find root parts (${String(rootPart)} -> ${String(targetRootPart)})`);
+				warnLog(`[teleport-worker] Failed to find root parts (${String(rootPart)} -> ${String(targetRootPart)})`);
 				return;
 			}
 
@@ -32,9 +34,9 @@ async function main() {
 				rootPart.CFrame = targetRootPart.CFrame.mul(new CFrame(0, 0, 1));
 			}, 1000);
 		}
-	}).catch((err: unknown) => warn(`[teleport-worker] ${String(err)}}`));
+	}).catch((err: unknown) => warnLog(`[teleport-worker] ${String(err)}`));
 }
 
 main().catch((err: unknown) => {
-	warn(`[teleport-worker] ${String(err)}`);
+	warnLog(`[teleport-worker] ${String(err)}`);
 });
