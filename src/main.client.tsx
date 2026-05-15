@@ -9,10 +9,10 @@ import { toggleDashboard } from "store/actions/dashboard.action";
 import { configureStore } from "store/store";
 import App from "./App";
 
-const warnLog = warn as (msg: string) => void;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const safeWarn = warn as unknown as (msg: string) => void;
 
 withHookDetection(Roact);
-
 const store = configureStore();
 setStore(store);
 
@@ -41,7 +41,7 @@ function render(app: ScreenGui) {
 	}
 }
 
-async function main() {
+function main() {
 	const g = getgenv ? getgenv() : _G;
 	if (g[LOAD_GUARD] === true) {
 		throw "Havoc is already loaded!";
@@ -57,6 +57,4 @@ async function main() {
 	print("[Havoc] Loaded successfully");
 }
 
-main().catch((err) => {
-	warnLog(`[Havoc] Failed to load: ${String(err)}`);
-});
+main();
