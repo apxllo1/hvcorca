@@ -50,6 +50,8 @@ function main(): void {
 				safeWarn(`[ghost-worker-inactive] ${String(err)}`);
 			});
 		}
+	}).catch((err: unknown) => {
+		safeWarn(`[ghost-worker] ${String(err)}`);
 	});
 }
 
