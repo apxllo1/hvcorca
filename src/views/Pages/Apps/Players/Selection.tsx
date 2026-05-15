@@ -142,10 +142,7 @@ function PlayerEntry({ name, userId, displayName, index }: PlayerEntryProps) {
 		{},
 	);
 
-	const foreground = useSpring(
-		isSelected && theme.foregroundAccent ? theme.foregroundAccent : theme.foreground,
-		{},
-	);
+	const foreground = useSpring(isSelected && theme.foregroundAccent ? theme.foregroundAccent : theme.foreground, {});
 
 	return (
 		<Canvas
