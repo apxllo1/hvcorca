@@ -64,7 +64,7 @@ function Slider(props: {
 	const [hovered, setHovered] = useState(false);
 
 	const highlightColors = theme.highlight as Record<string, Color3>;
-	const accent = highlightColors[props.jobName as string] ?? theme.foreground;
+	const accent = highlightColors[props.jobName] ?? theme.foreground;
 
 	const buttonBackground = useSpring(
 		job.active
@@ -83,7 +83,7 @@ function Slider(props: {
 		<Canvas size={px(278, 49)} position={px(0, props.position)}>
 			<BrightSlider
 				onValueChanged={setValue}
-				onRelease={() => dispatch(setJobValue(props.jobName as keyof JobsState, math.round(value.getValue())))}
+				onRelease={() => dispatch(setJobValue(props.jobName, math.round(value.getValue())))}
 				min={props.min}
 				max={props.max}
 				initialValue={job.value}
@@ -136,7 +136,11 @@ function Slider(props: {
 					TextXAlignment="Center"
 					TextYAlignment="Center"
 					TextTransparency={useSpring(
-						job.active ? 0 : hovered ? theme.button.foregroundTransparency - 0.25 : theme.button.foregroundTransparency,
+						job.active
+							? 0
+							: hovered
+								? theme.button.foregroundTransparency - 0.25
+								: theme.button.foregroundTransparency,
 						{},
 					)}
 					Size={scale(1, 1)}
