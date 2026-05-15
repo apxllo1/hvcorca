@@ -31,24 +31,24 @@ function main(): void {
 	onJobChange("ghost", (job, state): void => {
 		if (state.jobs.refresh.active && job.active) {
 			deactivate().catch((err: unknown) => {
-				warn(`[ghost-worker-deactivate] ${err instanceof Error ? err.message : String(err)}`);
+				warn(`[ghost-worker-deactivate] ${(err as Error).message ?? String(err)}`);
 			});
 		} else if (job.active) {
 			activateGhost()
 				.then(deactivateOnCharacterAdded)
 				.catch((err: unknown) => {
-					warn(`[ghost-worker-active] ${err instanceof Error ? err.message : String(err)}`);
+					warn(`[ghost-worker-active] ${(err as Error).message ?? String(err)}`);
 					deactivate().catch((e: unknown) => {
-						warn(`[ghost-worker-deactivate] ${e instanceof Error ? e.message : String(e)}`);
+						warn(`[ghost-worker-deactivate] ${(e as Error).message ?? String(e)}`);
 					});
 				});
 		} else if (!state.jobs.refresh.active) {
 			deactivateGhost().catch((err: unknown) => {
-				warn(`[ghost-worker-inactive] ${err instanceof Error ? err.message : String(err)}`);
+				warn(`[ghost-worker-inactive] ${(err as Error).message ?? String(err)}`);
 			});
 		}
 	}).catch((err: unknown) => {
-		warn(`[ghost-worker] ${err instanceof Error ? err.message : String(err)}`);
+		warn(`[ghost-worker] ${(err as Error).message ?? String(err)}`);
 	});
 }
 
@@ -115,7 +115,7 @@ function activateGhost(): Promise<void> {
 	const handle = humanoid.Died.Connect(() => {
 		handle.Disconnect();
 		deactivate().catch((err: unknown) => {
-			warn(`[ghost-worker-died] ${err instanceof Error ? err.message : String(err)}`);
+			warn(`[ghost-worker-died] ${(err as Error).message ?? String(err)}`);
 		});
 	});
 
