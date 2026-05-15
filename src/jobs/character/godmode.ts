@@ -6,20 +6,20 @@ const player = Players.LocalPlayer;
 let healthConnection: RBXScriptConnection | undefined;
 
 function errorHandler(err: unknown) {
-	(warn as (msg: string) => void)(`[godmode-worker] ${String(err)}`);
+	warn(`[godmode-worker] ${err}`);
 	deactivate().catch(() => {});
 }
 
 function main() {
 	onJobChange("godmode", (job, state) => {
 		if (state.jobs.ghost.active && job.active) {
-			deactivate().catch((err) => (warn as (msg: string) => void)(`[godmode-worker] ${String(err)}`));
+			deactivate().catch((err) => warn(`[godmode-worker] ${err}`));
 		} else if (job.active) {
 			activateGodmode().catch(errorHandler);
 		} else {
-			deactivate().catch((err) => (warn as (msg: string) => void)(`[godmode-worker] ${String(err)}`));
+			deactivate().catch((err) => warn(`[godmode-worker] ${err}`));
 		}
-	}).catch((err) => (warn as (msg: string) => void)(`[godmode-worker] ${String(err)}`));
+	}).catch((err) => warn(`[godmode-worker] ${err}`));
 }
 
 async function deactivate() {
