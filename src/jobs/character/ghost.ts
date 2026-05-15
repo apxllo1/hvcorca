@@ -1,6 +1,6 @@
 import { Players, Workspace } from "@rbxts/services";
 import { getStore, onJobChange } from "jobs/helpers/job-store";
-import { JobsAction } from "store/actions/jobs.action";
+import type { JobsAction } from "store/actions/jobs.action";
 
 const player = Players.LocalPlayer;
 const screenGuisWithResetOnSpawn = new Array<ScreenGui>();
@@ -68,7 +68,7 @@ async function deactivateOnCharacterAdded() {
 	await deactivate();
 }
 
-async function activateGhost() {
+function activateGhost() {
 	const character = player.Character;
 	const humanoid = character?.FindFirstChildWhichIsA("Humanoid");
 	if (!character || !humanoid) {
@@ -125,9 +125,9 @@ async function activateGhost() {
 	});
 }
 
-async function deactivateGhost() {
+function deactivateGhost(): Promise<void> {
 	if (!originalCharacter || !ghostCharacter) {
-		return; // Not currently ghost
+		return Promise.resolve();
 	}
 
 	// Store current position in ghost mode if possible
@@ -169,6 +169,8 @@ async function deactivateGhost() {
 	originalCharacter = undefined;
 	ghostCharacter = undefined;
 	lastPosition = undefined;
+
+	return Promise.resolve();
 }
 
 main().catch((err: unknown) => {
