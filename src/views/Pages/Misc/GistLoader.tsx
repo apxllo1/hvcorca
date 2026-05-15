@@ -71,7 +71,7 @@ function GistLoader() {
 
 					const [fn, err] = compile(body, `@${entry.name}`);
 					if (fn === undefined) {
-						setStatus(`Compile error: ${String(err)}`);
+						setStatus(`Compile error: ${err}`);
 						setIsRunning(false);
 						return;
 					}
@@ -80,12 +80,12 @@ function GistLoader() {
 						fn();
 						setStatus(`✓ Ran ${entry.name}`);
 					} catch (runErr: unknown) {
-						setStatus(`Runtime error: ${String(runErr)}`);
+						setStatus(`Runtime error: ${runErr instanceof Error ? runErr.message : runErr}`);
 					}
 					setIsRunning(false);
 				})
 				.catch((err: unknown) => {
-					setStatus(`Fetch error: ${String(err)}`);
+					setStatus(`Fetch error: ${err instanceof Error ? err.message : err}`);
 					setIsRunning(false);
 				});
 		});
@@ -154,7 +154,13 @@ function GistLoader() {
 			<frame Key="Footer" Size={new UDim2(1, 0, 0, 40)} BackgroundTransparency={1} LayoutOrder={2}>
 				<textbutton
 					Key="RunButton"
-					Text={isRunning ? "Running..." : selected !== undefined ? `Run: ${selected.name}` : "Select a command"}
+					Text={
+						isRunning
+							? "Running..."
+							: selected !== undefined
+								? `Run: ${selected.name}`
+								: "Select a command"
+					}
 					Size={new UDim2(1, 0, 1, 0)}
 					BackgroundColor3={runButtonActive ? GREEN : Color3.fromRGB(40, 40, 40)}
 					TextColor3={runButtonActive ? Color3.fromRGB(10, 10, 10) : TEXT_DIM}
