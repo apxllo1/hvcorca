@@ -6,21 +6,20 @@ const player = Players.LocalPlayer;
 let healthConnection: RBXScriptConnection | undefined;
 
 function errorHandler(err: unknown) {
-	warn(`[godmode-worker] ${String(err)}`);
-	void deactivate();
+	(warn as (msg: string) => void)(`[godmode-worker] ${String(err)}`);
+	deactivate().catch(() => {});
 }
 
 function main() {
 	onJobChange("godmode", (job, state) => {
 		if (state.jobs.ghost.active && job.active) {
-			// Conflict with ghost
-			void deactivate();
+			deactivate().catch((err) => (warn as (msg: string) => void)(`[godmode-worker] ${String(err)}`));
 		} else if (job.active) {
-			void activateGodmode().catch(errorHandler);
+			activateGodmode().catch(errorHandler);
 		} else {
-			void deactivate();
+			deactivate().catch((err) => (warn as (msg: string) => void)(`[godmode-worker] ${String(err)}`));
 		}
-	});
+	}).catch((err) => (warn as (msg: string) => void)(`[godmode-worker] ${String(err)}`));
 }
 
 async function deactivate() {
@@ -37,41 +36,38 @@ async function deactivate() {
 	print("[Godmode] Deactivated");
 }
 
-async function activateGodmode() {
+function activateGodmode(): Promise<void> {
 	const character = player.Character;
-	if (!character) throw "No character found";
+	if (!character) return Promise.reject("No character found");
 	const humanoid = character.FindFirstChildWhichIsA("Humanoid");
-	if (!humanoid) throw "No humanoid found";
+	if (!humanoid) return Promise.reject("No humanoid found");
 
-	// Main godmode: keep health at maximum
 	healthConnection = humanoid.HealthChanged.Connect(() => {
 		if (humanoid.Health < humanoid.MaxHealth) {
 			humanoid.Health = humanoid.MaxHealth;
 		}
 	});
 
-	// Force max health immediately
 	humanoid.MaxHealth = math.huge;
 	humanoid.Health = humanoid.MaxHealth;
 
-	// Optional: Prevent some death states
 	humanoid.SetStateEnabled(Enum.HumanoidStateType.Dead, false);
 	humanoid.BreakJointsOnDeath = false;
 
 	print("[Godmode] Activated - Health locked at maximum");
 
-	// Backup loop (in case HealthChanged is blocked in some games)
 	const backupLoop = RunService.Heartbeat.Connect(() => {
 		if (humanoid && humanoid.Health < humanoid.MaxHealth) {
 			humanoid.Health = humanoid.MaxHealth;
 		}
 	});
 
-	// Clean up backup when godmode ends
 	const savedConnection = healthConnection;
 	task.delay(0, () => {
 		if (!savedConnection) backupLoop.Disconnect();
 	});
+
+	return Promise.resolve();
 }
 
 main();
