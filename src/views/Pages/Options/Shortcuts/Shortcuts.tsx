@@ -8,7 +8,6 @@ import { toggleDashboard } from "store/actions/dashboard.action";
 import { setJobActive } from "store/actions/jobs.action";
 import type { DashboardPage } from "store/models/dashboard.model";
 import type { Job } from "store/models/jobs.model";
-import type { RootState } from "store/store";
 import { px, scale } from "utils/udim2";
 import ShortcutItem, { ENTRY_HEIGHT, PADDING } from "./ShortcutItem";
 
@@ -54,8 +53,7 @@ function Shortcuts() {
 					/>
 					<ShortcutItem
 						onActivate={() => {
-							const state = store.getState();
-							const job = state.jobs.flight as Job;
+							const job = store.getState().jobs.flight as Job;
 							dispatch(setJobActive("flight", !job.active));
 						}}
 						onSelect={setSelectedItem}
@@ -66,8 +64,7 @@ function Shortcuts() {
 					/>
 					<ShortcutItem
 						onActivate={() => {
-							const state = store.getState();
-							const job = state.jobs.freecam as Job;
+							const job = store.getState().jobs.freecam as Job;
 							dispatch(setJobActive("freecam", !job.active));
 						}}
 						onSelect={setSelectedItem}
@@ -78,8 +75,7 @@ function Shortcuts() {
 					/>
 					<ShortcutItem
 						onActivate={() => {
-							const state = store.getState();
-							const job = state.jobs.ghost as Job;
+							const job = store.getState().jobs.ghost as Job;
 							dispatch(setJobActive("ghost", !job.active));
 						}}
 						onSelect={setSelectedItem}
@@ -90,8 +86,7 @@ function Shortcuts() {
 					/>
 					<ShortcutItem
 						onActivate={() => {
-							const state = store.getState();
-							const job = state.jobs.walkSpeed as Job;
+							const job = store.getState().jobs.walkSpeed as Job;
 							dispatch(setJobActive("walkSpeed", !job.active));
 						}}
 						onSelect={setSelectedItem}
@@ -102,8 +97,7 @@ function Shortcuts() {
 					/>
 					<ShortcutItem
 						onActivate={() => {
-							const state = store.getState();
-							const job = state.jobs.jumpHeight as Job;
+							const job = store.getState().jobs.jumpHeight as Job;
 							dispatch(setJobActive("jumpHeight", !job.active));
 						}}
 						onSelect={setSelectedItem}
