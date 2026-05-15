@@ -12,7 +12,7 @@
     "serve": "rojo serve place.project.json",
     "lint": "eslint src --ext .ts,.tsx",
     "fix": "eslint src --ext .ts,.tsx --fix",
-    "bundle": "npm run compile && npm run build && node -e \"const d=new Date();console.log('🔥 Release v'+d.toISOString().replace(/[-:T]/g,'').slice(0,13))\" && remodel run ci/bundle.lua public/latest.lua v1.1.4",
+    "bundle": "npm run compile && npm run build && node -e \"const d=new Date();console.log('🔥 Release v'+d.toISOString().replace(/[-:T]/g,'').slice(0,13))\" && remodel run ci/bundle.lua public/latest.lua v1.1.4 && remodel run ci/bundle.lua public/latest.debug.lua v1.1.4 debug",
     "bundle:dbg": "npm run compile && npm run build && remodel run ci/bundle.lua public/latest.debug.lua v1.1.4 debug",
     "bundle:min": "npm run compile && npm run build && remodel run ci/bundle.lua public/latest.lua v1.1.4 minify"
   },
