@@ -5,6 +5,8 @@ import * as http from "utils/http";
 import { setTimeout } from "utils/timeout";
 import type { Timeout } from "utils/timeout";
 
+const warnLog = warn as (msg: string) => void;
+
 interface GameServer {
 	id: string;
 	maxPlayers: number;
@@ -66,12 +68,12 @@ async function main(): Promise<void> {
 				try {
 					onRejoin();
 				} catch (err: unknown) {
-					warn(`[server-worker-rejoin] ${String(err)}`);
+					warnLog(`[server-worker-rejoin] ${String(err)}`);
 					store.dispatch(setJobActive("rejoinServer", false));
 				}
 			}, 1000);
 		}
-	});
+	}).catch((err: unknown) => warnLog(`[server-worker] ${String(err)}`));
 
 	onJobChange("switchServer", (job, state) => {
 		clearTimeout();
@@ -80,15 +82,15 @@ async function main(): Promise<void> {
 		}
 		if (job.active) {
 			timeout = setTimeout(() => {
-				void onServerHop().catch((err: unknown) => {
-					warn(`[server-worker-switch] ${String(err)}`);
+				onServerHop().catch((err: unknown) => {
+					warnLog(`[server-worker-switch] ${String(err)}`);
 					store.dispatch(setJobActive("switchServer", false));
 				});
 			}, 1000);
 		}
-	});
+	}).catch((err: unknown) => warnLog(`[server-worker] ${String(err)}`));
 }
 
 main().catch((err: unknown) => {
-	warn(`[server-worker] ${String(err)}`);
+	warnLog(`[server-worker] ${String(err)}`);
 });
