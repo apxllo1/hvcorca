@@ -64,7 +64,7 @@ function Shortcuts() {
 					/>
 					<ShortcutItem
 						onActivate={() => {
-							const job = store.getState().jobs.freecam as Job;
+							const job = store.getState().jobs.freecam;
 							dispatch(setJobActive("freecam", !job.active));
 						}}
 						onSelect={setSelectedItem}
@@ -75,7 +75,7 @@ function Shortcuts() {
 					/>
 					<ShortcutItem
 						onActivate={() => {
-							const job = store.getState().jobs.ghost as Job;
+							const job = store.getState().jobs.ghost;
 							dispatch(setJobActive("ghost", !job.active));
 						}}
 						onSelect={setSelectedItem}
