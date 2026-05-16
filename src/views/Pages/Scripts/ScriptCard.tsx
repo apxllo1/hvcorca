@@ -125,6 +125,7 @@ function ScriptCard({
 
 			<textbutton
 				Event={{
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-call
 					Activated: onActivate,
 					MouseEnter: () => setButtonState({ isHovered: true }),
 					MouseLeave: () => setButtonState({ isHovered: false, isPressed: false }),
