@@ -27,14 +27,14 @@ export function persistentState<T extends object>(name: string, selector: (state
 		const serializedState = read(`_orca/${name}.json`);
 		if (serializedState === undefined) {
 			write(`_orca/${name}.json`, HttpService.JSONEncode(defaultValue));
-			autosave(name, selector).catch((err: unknown) => warnLog(`[PersistentState] ${String(err)}`));
+			autosave(name, selector).catch((err: unknown) => warnLog(`[PersistentState] ${tostring(err)}`));
 			return defaultValue;
 		}
 		const value = HttpService.JSONDecode(serializedState) as T;
-		autosave(name, selector).catch((err: unknown) => warnLog(`[PersistentState] ${String(err)}`));
+		autosave(name, selector).catch((err: unknown) => warnLog(`[PersistentState] ${tostring(err)}`));
 		return value;
 	} catch (err: unknown) {
-		warnLog(`[PersistentState] Load failed for ${name}: ${String(err)}`);
+		warnLog(`[PersistentState] Load failed for ${name}: ${tostring(err)}`);
 		return defaultValue;
 	}
 }
@@ -46,7 +46,7 @@ async function autosave(name: string, selector: (state: RootState) => object) {
 			const state = selector(store.getState());
 			write(`_orca/${name}.json`, HttpService.JSONEncode(state));
 		} catch (err: unknown) {
-			warnLog(`[PersistentState] Autosave failed for ${name}: ${String(err)}`);
+			warnLog(`[PersistentState] Autosave failed for ${name}: ${tostring(err)}`);
 		}
 	};
 	setInterval(save, 60000);
