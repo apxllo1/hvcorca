@@ -61,6 +61,9 @@ function ScriptCard({
 
 	const [{ isHovered, isPressed }, setButtonState] = useSetState({ isHovered: false, isPressed: false });
 
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-call
+	const handleActivate = onActivate as (rbx: TextButton) => void;
+
 	return (
 		<Canvas
 			anchor={anchorPoint}
@@ -125,8 +128,7 @@ function ScriptCard({
 
 			<textbutton
 				Event={{
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-call
-					Activated: onActivate,
+					Activated: handleActivate,
 					MouseEnter: () => setButtonState({ isHovered: true }),
 					MouseLeave: () => setButtonState({ isHovered: false, isPressed: false }),
 					MouseButton1Down: () => setButtonState({ isPressed: true }),
