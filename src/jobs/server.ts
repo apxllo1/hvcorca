@@ -68,12 +68,12 @@ async function main(): Promise<void> {
 				try {
 					onRejoin();
 				} catch (err: unknown) {
-					warnLog(`[server-worker-rejoin] ${String(err)}`);
+					warnLog(`[server-worker-rejoin] ${tostring(err)}`);
 					store.dispatch(setJobActive("rejoinServer", false));
 				}
 			}, 1000);
 		}
-	}).catch((err: unknown) => warnLog(`[server-worker] ${String(err)}`));
+	}).catch((err: unknown) => warnLog(`[server-worker] ${tostring(err)}`));
 
 	onJobChange("switchServer", (job, state) => {
 		clearTimeout();
@@ -83,14 +83,14 @@ async function main(): Promise<void> {
 		if (job.active) {
 			timeout = setTimeout(() => {
 				onServerHop().catch((err: unknown) => {
-					warnLog(`[server-worker-switch] ${String(err)}`);
+					warnLog(`[server-worker-switch] ${tostring(err)}`);
 					store.dispatch(setJobActive("switchServer", false));
 				});
 			}, 1000);
 		}
-	}).catch((err: unknown) => warnLog(`[server-worker] ${String(err)}`));
+	}).catch((err: unknown) => warnLog(`[server-worker] ${tostring(err)}`));
 }
 
 main().catch((err: unknown) => {
-	warnLog(`[server-worker] ${String(err)}`);
+	warnLog(`[server-worker] ${tostring(err)}`);
 });
