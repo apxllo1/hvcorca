@@ -69,7 +69,7 @@ async function respawn() {
 		]);
 
 		// Wait for root part and humanoid
-		const newRoot = (newCharacter.WaitForChild("HumanoidRootPart", 5)) as BasePart | undefined;
+		const newRoot = newCharacter.WaitForChild("HumanoidRootPart", 5) as BasePart | undefined;
 		if (newRoot !== undefined && newRoot.IsA("BasePart")) {
 			task.delay(() => {
 				if (newRoot.Parent) {
