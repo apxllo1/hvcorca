@@ -1,4 +1,3 @@
-
 import Roact from "@rbxts/roact";
 import { hooked, useEffect } from "@rbxts/roact-hooked";
 import type Border from "components/Border";
