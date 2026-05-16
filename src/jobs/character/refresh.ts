@@ -1,3 +1,4 @@
+
 import { Players, Workspace, Instance, RunService } from "@rbxts/services";
 import { getStore, onJobChange } from "jobs/helpers/job-store";
 import type { JobsAction } from "store/actions/jobs.action";
@@ -21,10 +22,10 @@ async function main() {
 			deactivate();
 		} else if (job.active) {
 			respawn()
-				.catch((err: unknown) => warn([refresh-worker-respawn] ${String(err)}))
+				.catch((err: unknown) => warn(`[refresh-worker-respawn] ${String(err)}`))
 				.finally(() => deactivate());
 		}
-	}).catch((err: unknown) => warn([refresh-worker] ${String(err)}));
+	}).catch((err: unknown) => warn(`[refresh-worker] ${String(err)}`));
 }
 
 async function respawn() {
@@ -91,5 +92,5 @@ async function respawn() {
 }
 
 main().catch((err: unknown) => {
-	warn([refresh-worker] ${String(err)});
+	warn(`[refresh-worker] ${String(err)}`);
 });
