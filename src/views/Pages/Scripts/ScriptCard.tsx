@@ -1,4 +1,3 @@
-
 import Roact from "@rbxts/roact";
 import { hooked, useEffect } from "@rbxts/roact-hooked";
 import type Border from "components/Border";
@@ -108,6 +107,7 @@ function ScriptCard({
 						Rotation={45}
 					/>
 				</Fill>
+
 				<Border
 					radius={18}
 					size={3}
@@ -141,4 +141,3 @@ function ScriptCard({
 }
 
 export default hooked(ScriptCard);
-</parameter>
