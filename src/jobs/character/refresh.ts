@@ -1,4 +1,3 @@
-
 import { Players, Workspace, Instance } from "@rbxts/services";
 import { getStore, onJobChange } from "jobs/helpers/job-store";
 import type { JobsAction } from "store/actions/jobs.action";
