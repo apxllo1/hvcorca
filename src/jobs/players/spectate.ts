@@ -3,6 +3,8 @@ import { getSelectedPlayer } from "jobs/helpers/get-selected-player";
 import { getStore, onJobChange } from "jobs/helpers/job-store";
 import { setJobActive } from "store/actions/jobs.action";
 
+const warnLog = warn as (msg: string) => void;
+
 async function main() {
 	const store = await getStore();
 	const playerSelected = await getSelectedPlayer(() => {
@@ -45,9 +47,9 @@ async function main() {
 			defaultSubject = undefined;
 			currentSubject = undefined;
 		}
-	}).catch((err: unknown) => warn(`[spectate-worker] ${String(err)}`));
+	}).catch((err: unknown) => warnLog(`[spectate-worker] ${tostring(err)}`));
 }
 
 main().catch((err: unknown) => {
-	warn(`[spectate-worker] ${String(err)}`);
+	warnLog(`[spectate-worker] ${tostring(err)}`);
 });
