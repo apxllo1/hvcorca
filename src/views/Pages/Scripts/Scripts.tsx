@@ -18,7 +18,7 @@ async function runScriptFromUrl(url: string, src: string): Promise<void> {
 		assert(fn, `Failed to call loadstring on Lua script from '${url}': ${err}`);
 		task.defer(fn);
 	} catch (e: unknown) {
-		warnLog(`Failed to run Lua script from '${url}': ${String(e)}`);
+		warnLog(`Failed to run Lua script from '${url}': ${tostring(e)}`);
 	}
 }
 
@@ -28,7 +28,7 @@ function Scripts() {
 			<ScriptCard
 				onActivate={() => {
 					runScriptFromUrl("https://absent.wtf/AKADMIN.lua", "AKADMIN").catch((e: unknown) => {
-						warnLog(`Failed to run script: ${String(e)}`);
+						warnLog(`Failed to run script: ${tostring(e)}`);
 					});
 				}}
 				index={4}
@@ -54,7 +54,7 @@ function Scripts() {
 			<ScriptCard
 				onActivate={() => {
 					runScriptFromUrl("https://novoline.pro", "Novoline").catch((e: unknown) => {
-						warnLog(`Failed to run script: ${String(e)}`);
+						warnLog(`Failed to run script: ${tostring(e)}`);
 					});
 				}}
 				index={1}
@@ -80,7 +80,7 @@ function Scripts() {
 			<ScriptCard
 				onActivate={() => {
 					runScriptFromUrl("https://onyxv2.lol/main.lua", "ONYX").catch((e: unknown) => {
-						warnLog(`Failed to run script: ${String(e)}`);
+						warnLog(`Failed to run script: ${tostring(e)}`);
 					});
 				}}
 				index={5}
@@ -109,7 +109,7 @@ function Scripts() {
 						"https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source",
 						"Infinite Yield",
 					).catch((e: unknown) => {
-						warnLog(`Failed to run script: ${String(e)}`);
+						warnLog(`Failed to run script: ${tostring(e)}`);
 					});
 				}}
 				index={3}
@@ -119,14 +119,7 @@ function Scripts() {
 				dropshadowSize={new Vector2(1.15, 1.4)}
 				dropshadowPosition={new Vector2(0.5, 0.6)}
 				anchorPoint={new Vector2(0.5, 0)}
-				size={
-					new UDim2(
-						1 / 3,
-						-BASE_PADDING * (2 / 3),
-						(242 + BASE_PADDING) / BASE_WINDOW_HEIGHT,
-						-BASE_PADDING,
-					)
-				}
+				size={new UDim2(1 / 3, -BASE_PADDING * (2 / 3), (242 + BASE_PADDING) / BASE_WINDOW_HEIGHT, -BASE_PADDING)}
 				position={new UDim2(0.5, 0, 1 - (590 + BASE_PADDING / 2) / BASE_WINDOW_HEIGHT, BASE_PADDING / 2)}
 			>
 				<Content header="Infinite Yield" footer="github.com/EdgeIY" />
@@ -135,7 +128,7 @@ function Scripts() {
 			<ScriptCard
 				onActivate={() => {
 					runScriptFromUrl("https://pastebin.com/raw/mMbsHWiQ", "Dex Explorer").catch((e: unknown) => {
-						warnLog(`Failed to run script: ${String(e)}`);
+						warnLog(`Failed to run script: ${tostring(e)}`);
 					});
 				}}
 				index={1}
@@ -164,7 +157,7 @@ function Scripts() {
 						"https://raw.githubusercontent.com/ic3w0lf22/Unnamed-ESP/master/UnnamedESP.lua",
 						"Unnamed ESP",
 					).catch((e: unknown) => {
-						warnLog(`Failed to run script: ${String(e)}`);
+						warnLog(`Failed to run script: ${tostring(e)}`);
 					});
 				}}
 				index={6}
@@ -190,7 +183,7 @@ function Scripts() {
 			<ScriptCard
 				onActivate={() => {
 					runScriptFromUrl("https://projectevo.xyz/script/loader.lua", "EvoV2").catch((e: unknown) => {
-						warnLog(`Failed to run script: ${String(e)}`);
+						warnLog(`Failed to run script: ${tostring(e)}`);
 					});
 				}}
 				index={2}
