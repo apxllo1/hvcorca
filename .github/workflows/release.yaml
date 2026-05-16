@@ -38,12 +38,9 @@ jobs:
           cache: 'npm'
 
       - name: Install Rojo/Aftman
-        uses: ok-nick/setup-aftman@v0.4.4       # ← updated
+        uses: ok-nick/setup-aftman@v0.4.2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          # ↑ this already runs `aftman install` — installs ALL tools from aftman.toml
-
-      # ← REMOVED the broken "aftman install remodel" step
 
       - name: Install NPM dependencies
         run: npm ci
@@ -73,7 +70,7 @@ jobs:
         with:
           tag_name: ${{ steps.version.outputs.tag }}
           name: ${{ steps.version.outputs.tag }}
-          make_latest: true                       # ← added
+          make_latest: true
           body: |
             Built from commit ${{ github.sha }}.
 
