@@ -1,4 +1,3 @@
-
 import Roact from "@rbxts/roact";
 import type { Binding } from "@rbxts/roact";
 import Acrylic from "components/Acrylic";
