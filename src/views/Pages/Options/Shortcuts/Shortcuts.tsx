@@ -6,7 +6,7 @@ import { useAppDispatch, useAppStore } from "hooks/common/rodux-hooks";
 import { useTheme } from "hooks/use-theme";
 import { toggleDashboard } from "store/actions/dashboard.action";
 import { setJobActive } from "store/actions/jobs.action";
-import type { DashboardPage } from "store/models/dashboard.model";
+import { DashboardPage } from "store/models/dashboard.model"; 
 import type { Job } from "store/models/jobs.model";
 import { px, scale } from "utils/udim2";
 import ShortcutItem, { ENTRY_HEIGHT, PADDING } from "./ShortcutItem";
@@ -46,7 +46,7 @@ function Shortcuts() {
 							dispatch(toggleDashboard());
 						}}
 						onSelect={setSelectedItem}
-						selectedItem={selectedItem}
+						selectedItem={selectedItem ?? ""} // ✅ fallback empty string — undefined not allowed with exactOptionalPropertyTypes
 						action="toggleDashboard"
 						description="Open Orca"
 						index={0}
@@ -57,7 +57,7 @@ function Shortcuts() {
 							dispatch(setJobActive("flight", !job.active));
 						}}
 						onSelect={setSelectedItem}
-						selectedItem={selectedItem}
+						selectedItem={selectedItem ?? ""}
 						action="toggleFlight"
 						description="Toggle flight"
 						index={1}
@@ -68,7 +68,7 @@ function Shortcuts() {
 							dispatch(setJobActive("freecam", !job.active));
 						}}
 						onSelect={setSelectedItem}
-						selectedItem={selectedItem}
+						selectedItem={selectedItem ?? ""}
 						action="setFreecam"
 						description="Set freecam"
 						index={2}
@@ -79,7 +79,7 @@ function Shortcuts() {
 							dispatch(setJobActive("ghost", !job.active));
 						}}
 						onSelect={setSelectedItem}
-						selectedItem={selectedItem}
+						selectedItem={selectedItem ?? ""}
 						action="setGhost"
 						description="Set ghost mode"
 						index={3}
@@ -90,7 +90,7 @@ function Shortcuts() {
 							dispatch(setJobActive("walkSpeed", !job.active));
 						}}
 						onSelect={setSelectedItem}
-						selectedItem={selectedItem}
+						selectedItem={selectedItem ?? ""}
 						action="setSpeed"
 						description="Set walk speed"
 						index={4}
@@ -101,7 +101,7 @@ function Shortcuts() {
 							dispatch(setJobActive("jumpHeight", !job.active));
 						}}
 						onSelect={setSelectedItem}
-						selectedItem={selectedItem}
+						selectedItem={selectedItem ?? ""}
 						action="setJumpHeight"
 						description="Set jump height"
 						index={5}
