@@ -1,3 +1,4 @@
+
 import Roact from "@rbxts/roact";
 import { hooked, useEffect } from "@rbxts/roact-hooked";
 import type Border from "components/Border";
@@ -125,7 +126,7 @@ function ScriptCard({
 
 			<textbutton
 				Event={{
-					Activated: onActivate as () => void, // eslint-disable-line @typescript-eslint/no-unsafe-call
+					Activated: () => onActivate(),
 					MouseEnter: () => setButtonState({ isHovered: true }),
 					MouseLeave: () => setButtonState({ isHovered: false, isPressed: false }),
 					MouseButton1Down: () => setButtonState({ isPressed: true }),
@@ -140,3 +141,4 @@ function ScriptCard({
 }
 
 export default hooked(ScriptCard);
+</parameter>
