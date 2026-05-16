@@ -1,5 +1,4 @@
-
-import { Players, Workspace, Instance, RunService } from "@rbxts/services";
+import { Players, Workspace, Instance } from "@rbxts/services";
 import { getStore, onJobChange } from "jobs/helpers/job-store";
 import type { JobsAction } from "store/actions/jobs.action";
 
@@ -22,10 +21,10 @@ async function main() {
 			deactivate();
 		} else if (job.active) {
 			respawn()
-				.catch((err: unknown) => warn(`[refresh-worker-respawn] ${String(err)}`))
+				.catch((err: unknown) => (warn as (s: string) => void)(`[refresh-worker-respawn] ${String(err)}`))
 				.finally(() => deactivate());
 		}
-	}).catch((err: unknown) => warn(`[refresh-worker] ${String(err)}`));
+	}).catch((err: unknown) => (warn as (s: string) => void)(`[refresh-worker] ${String(err)}`));
 }
 
 async function respawn() {
@@ -46,7 +45,7 @@ async function respawn() {
 	character.ClearAllChildren();
 
 	// Create mock to detach character
-	const mockCharacter = new Instance("Model");
+	const mockCharacter = new Instance("Model") as Model;
 	mockCharacter.Parent = Workspace;
 
 	try {
@@ -70,7 +69,7 @@ async function respawn() {
 
 		// Wait for root part and humanoid
 		const newRoot = (await newCharacter.WaitForChild("HumanoidRootPart", 5)) as BasePart | undefined;
-		if (newRoot && newRoot.IsA("BasePart")) {
+		if (newRoot !== undefined && newRoot.IsA("BasePart")) {
 			task.delay(() => {
 				if (newRoot.Parent) {
 					newRoot.CFrame = respawnLocation;
@@ -80,7 +79,7 @@ async function respawn() {
 
 		// Ensure Humanoid exists
 		if (!newCharacter.FindFirstChildWhichIsA("Humanoid")) {
-			const newHumanoid = new Instance("Humanoid");
+			const newHumanoid = new Instance("Humanoid") as Humanoid;
 			newHumanoid.Parent = newCharacter;
 		}
 	} finally {
@@ -92,5 +91,5 @@ async function respawn() {
 }
 
 main().catch((err: unknown) => {
-	warn(`[refresh-worker] ${String(err)}`);
+	(warn as (s: string) => void)(`[refresh-worker] ${String(err)}`);
 });
