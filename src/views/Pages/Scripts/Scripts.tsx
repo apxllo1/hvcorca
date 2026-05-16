@@ -119,7 +119,9 @@ function Scripts() {
 				dropshadowSize={new Vector2(1.15, 1.4)}
 				dropshadowPosition={new Vector2(0.5, 0.6)}
 				anchorPoint={new Vector2(0.5, 0)}
-				size={new UDim2(1 / 3, -BASE_PADDING * (2 / 3), (242 + BASE_PADDING) / BASE_WINDOW_HEIGHT, -BASE_PADDING)}
+				size={
+					new UDim2(1 / 3, -BASE_PADDING * (2 / 3), (242 + BASE_PADDING) / BASE_WINDOW_HEIGHT, -BASE_PADDING)
+				}
 				position={new UDim2(0.5, 0, 1 - (590 + BASE_PADDING / 2) / BASE_WINDOW_HEIGHT, BASE_PADDING / 2)}
 			>
 				<Content header="Infinite Yield" footer="github.com/EdgeIY" />
