@@ -1,3 +1,4 @@
+
 import Roact from "@rbxts/roact";
 import type { Binding } from "@rbxts/roact";
 import Acrylic from "components/Acrylic";
@@ -9,8 +10,7 @@ import { useAppSelector } from "hooks/common/rodux-hooks";
 import { useSpring } from "hooks/common/use-spring";
 import { useCurrentPage } from "hooks/use-current-page";
 import { useTheme } from "hooks/use-theme";
-import type { DashboardPage } from "store/models/dashboard.model";
-import { PAGE_TO_INDEX } from "store/models/dashboard.model";
+import { DashboardPage, PAGE_TO_INDEX } from "store/models/dashboard.model"; // ✅ removed "import type"
 import { getColorInSequence, hex } from "utils/color3";
 import { px, scale } from "utils/udim2";
 import NavbarTab from "./NavbarTab";
@@ -39,7 +39,7 @@ function Navbar() {
 				size={new UDim2(1, 80, 0, 146)}
 				position={px(-40, -20)}
 				color={theme.dropshadow}
-				gradient={theme.dropshadowGradient}
+				gradient={theme.dropshadowGradient!} // ✅ non-null assertion (dropshadow gradient always set for navbar theme)
 				transparency={theme.transparency}
 			/>
 			<Underglow
@@ -49,7 +49,7 @@ function Navbar() {
 			/>
 			<Fill
 				color={theme.background}
-				gradient={theme.backgroundGradient}
+				gradient={theme.backgroundGradient!} // ✅ non-null assertion
 				radius={8}
 				transparency={theme.transparency}
 			/>
@@ -62,8 +62,8 @@ function Navbar() {
 				>
 					<uigradient
 						Color={theme.accentGradient.color}
-						Transparency={theme.accentGradient.transparency}
-						Rotation={theme.accentGradient.rotation}
+						Transparency={theme.accentGradient.transparency ?? new NumberSequence(0)} // ✅ fallback for undefined
+						Rotation={theme.accentGradient.rotation ?? 0} // ✅ fallback for undefined
 					/>
 					<uicorner CornerRadius={new UDim(0, 8)} />
 				</frame>
