@@ -26,7 +26,7 @@ async function main() {
 			if (!rootPart || !targetRootPart || !rootPart.IsA("BasePart") || !targetRootPart.IsA("BasePart")) {
 				store.dispatch(setJobActive("teleport", false));
 				warnLog(
-					`[teleport-worker] Failed to find root parts (${String(rootPart)} -> ${String(targetRootPart)})`,
+					`[teleport-worker] Failed to find root parts (${tostring(rootPart)} -> ${tostring(targetRootPart)})`,
 				);
 				return;
 			}
@@ -37,18 +37,10 @@ async function main() {
 			}, 1000);
 		}
 	}).catch((err: unknown) => {
-		if (err instanceof Error) {
-			warnLog(`[teleport-worker] ${err.message}`);
-		} else {
-			warnLog(`[teleport-worker] ${String(err)}`);
-		}
+		warnLog(`[teleport-worker] ${tostring(err)}`);
 	});
 }
 
 main().catch((err: unknown) => {
-	if (err instanceof Error) {
-		warnLog(err.message);
-	} else {
-		warnLog(String(err));
-	}
+	warnLog(`[teleport-worker] ${tostring(err)}`);
 });
