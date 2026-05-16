@@ -2,6 +2,7 @@
   "compilerOptions": {
     /* Required by roblox-ts */
     "noLib": true,
+    "moduleDetection": "force",
     "moduleResolution": "node",
     "typeRoots": ["node_modules/@rbxts"],
 
