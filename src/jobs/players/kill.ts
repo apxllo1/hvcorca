@@ -4,6 +4,7 @@ import { getStore, onJobChange } from "jobs/helpers/job-store";
 import { setJobActive } from "store/actions/jobs.action";
 
 const player = Players.LocalPlayer;
+const warnLog = warn as (msg: string) => void;
 
 function attachToVictim(victim: Player): Promise<BasePart> {
 	const backpack = player.FindFirstChildWhichIsA("Backpack");
@@ -108,12 +109,12 @@ async function main() {
 			}
 
 			bringVictimToVoid(playerSelected.current)
-				.catch((err: unknown) => warn(`[kill-worker] ${String(err)}`))
+				.catch((err: unknown) => warnLog(`[kill-worker] ${tostring(err)}`))
 				.finally(() => store.dispatch(setJobActive("kill", false)));
 		}
-	}).catch((err: unknown) => warn(`[kill-worker] ${String(err)}`));
+	}).catch((err: unknown) => warnLog(`[kill-worker] ${tostring(err)}`));
 }
 
 main().catch((err: unknown) => {
-	warn(`[kill-worker] ${String(err)}`);
+	warnLog(`[kill-worker] ${tostring(err)}`);
 });
