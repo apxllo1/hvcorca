@@ -6,7 +6,7 @@ import { useAppDispatch, useAppStore } from "hooks/common/rodux-hooks";
 import { useTheme } from "hooks/use-theme";
 import { toggleDashboard } from "store/actions/dashboard.action";
 import { setJobActive } from "store/actions/jobs.action";
-import { DashboardPage } from "store/models/dashboard.model"; 
+import { DashboardPage } from "store/models/dashboard.model";
 import type { Job } from "store/models/jobs.model";
 import { px, scale } from "utils/udim2";
 import ShortcutItem, { ENTRY_HEIGHT, PADDING } from "./ShortcutItem";
