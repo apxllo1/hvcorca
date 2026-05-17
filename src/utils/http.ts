@@ -1,33 +1,35 @@
 import { HttpService } from "@rbxts/services";
 import { IS_DEV } from "constants";
 
-export async function request(requestOptions: RequestAsyncRequest): Promise<RequestAsyncResponse> {
+export function request(requestOptions: RequestAsyncRequest): Promise<RequestAsyncResponse> {
 	if (IS_DEV) {
-		return HttpService.RequestAsync(requestOptions);
+		return Promise.resolve(HttpService.RequestAsync(requestOptions));
 	}
 
-	// Try executor-injected globals in order of preference
 	const executorRequest =
-		(syn !== undefined ? syn.request : undefined) ??
-		(typeof request === "function" ? (request as unknown as typeof syn.request) : undefined) ??
-		(http !== undefined && http.request !== undefined ? http.request : undefined);
+		syn !== undefined && syn.request !== undefined
+			? syn.request
+			: typeIs(rawget(_G, "request"), "function")
+			? (rawget(_G, "request") as (req: RequestAsyncRequest) => RequestAsyncResponse)
+			: http !== undefined && http.request !== undefined
+			? http.request
+			: undefined;
 
 	if (executorRequest !== undefined) {
-		return executorRequest(requestOptions);
+		return Promise.resolve(executorRequest(requestOptions));
 	}
 
-	throw "No suitable request function found (syn.request / request / http.request)";
+	return Promise.reject("No suitable request function found (syn.request / request / http.request)");
 }
 
 export function get(url: string): Promise<string> {
 	return new Promise((resolve, reject) => {
 		task.spawn(() => {
 			try {
-				// game:HttpGet works on Medium, Velocity, and most modern executors
-				const body = game.HttpGet(url);
+				const body = (game as unknown as { HttpGet: (url: string) => string }).HttpGet(url);
 				resolve(body);
 			} catch (err: unknown) {
-				reject(err);
+				reject(tostring(err));
 			}
 		});
 	});
@@ -45,7 +47,7 @@ export function post(
 				const body = game.HttpPostAsync(url, data, contentType, requestType);
 				resolve(body);
 			} catch (err: unknown) {
-				reject(err);
+				reject(tostring(err));
 			}
 		});
 	});
