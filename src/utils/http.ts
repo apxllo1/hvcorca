@@ -10,10 +10,10 @@ export function request(requestOptions: RequestAsyncRequest): Promise<RequestAsy
 		syn !== undefined && syn.request !== undefined
 			? syn.request
 			: typeIs(rawget(_G, "request"), "function")
-			? (rawget(_G, "request") as (req: RequestAsyncRequest) => RequestAsyncResponse)
-			: http !== undefined && http.request !== undefined
-			? http.request
-			: undefined;
+				? (rawget(_G, "request") as (req: RequestAsyncRequest) => RequestAsyncResponse)
+				: http !== undefined && http.request !== undefined
+					? http.request
+					: undefined;
 
 	if (executorRequest !== undefined) {
 		return Promise.resolve(executorRequest(requestOptions));
