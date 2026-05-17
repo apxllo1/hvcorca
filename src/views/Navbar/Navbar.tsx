@@ -9,7 +9,7 @@ import { useAppSelector } from "hooks/common/rodux-hooks";
 import { useSpring } from "hooks/common/use-spring";
 import { useCurrentPage } from "hooks/use-current-page";
 import { useTheme } from "hooks/use-theme";
-import { DashboardPage, PAGE_TO_INDEX } from "store/models/dashboard.model"; // ✅ removed "import type"
+import { DashboardPage, PAGE_TO_INDEX } from "store/models/dashboard.model";
 import { getColorInSequence, hex } from "utils/color3";
 import { px, scale } from "utils/udim2";
 import NavbarTab from "./NavbarTab";
@@ -24,7 +24,6 @@ function Navbar() {
 		frequency: 3.9,
 		dampingRatio: 0.76,
 	});
-
 	return (
 		<frame
 			Key="Navbar"
@@ -38,7 +37,7 @@ function Navbar() {
 				size={new UDim2(1, 80, 0, 146)}
 				position={px(-40, -20)}
 				color={theme.dropshadow}
-				gradient={theme.dropshadowGradient!} // ✅ non-null assertion (dropshadow gradient always set for navbar theme)
+				gradient={theme.dropshadowGradient}
 				transparency={theme.transparency}
 			/>
 			<Underglow
@@ -48,7 +47,7 @@ function Navbar() {
 			/>
 			<Fill
 				color={theme.background}
-				gradient={theme.backgroundGradient!} // ✅ non-null assertion
+				gradient={theme.backgroundGradient}
 				radius={8}
 				transparency={theme.transparency}
 			/>
@@ -61,8 +60,8 @@ function Navbar() {
 				>
 					<uigradient
 						Color={theme.accentGradient.color}
-						Transparency={theme.accentGradient.transparency ?? new NumberSequence(0)} // ✅ fallback for undefined
-						Rotation={theme.accentGradient.rotation ?? 0} // ✅ fallback for undefined
+						Transparency={theme.accentGradient.transparency ?? new NumberSequence(0)}
+						Rotation={theme.accentGradient.rotation ?? 0}
 					/>
 					<uicorner CornerRadius={new UDim(0, 8)} />
 				</frame>
