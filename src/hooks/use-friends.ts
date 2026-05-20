@@ -9,7 +9,7 @@ export interface GameActivity {
 }
 
 export function useFriends(deps?: unknown[]) {
-	return usePromise(() => Players.LocalPlayer.GetFriendsOnline() as Promise<FriendOnlineInfo[]>, deps);
+	return usePromise(() => Promise.resolve(Players.LocalPlayer.GetFriendsOnline()), deps);
 }
 
 export function useFriendsPlaying(deps?: unknown[]) {

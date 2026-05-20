@@ -77,14 +77,14 @@ function GistLoader() {
 
 					try {
 						fn();
-						setStatus(`✓ Ran ${entry.name}`);
+						setStatus(`Ran ${entry.name}`);
 					} catch (runErr: unknown) {
-						setStatus(`Runtime error: ${runErr instanceof Error ? runErr.message : runErr}`);
+						setStatus(`Runtime error: ${tostring(runErr)}`);
 					}
 					setIsRunning(false);
 				})
 				.catch((err: unknown) => {
-					setStatus(`Fetch error: ${err instanceof Error ? err.message : err}`);
+					setStatus(`Fetch error: ${tostring(err)}`);
 					setIsRunning(false);
 				});
 		});

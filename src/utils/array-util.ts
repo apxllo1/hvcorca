@@ -1,4 +1,4 @@
-export function arrayToMap<T, K, V>(
+export function arrayToMap<T extends defined, K, V>(
 	arr: T[],
 	mapper: (value: T, index: number, array: readonly T[]) => [K, V],
 ): Map<K, V> {

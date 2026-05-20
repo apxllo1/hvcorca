@@ -26,14 +26,14 @@ async function main() {
 		walkSpeedJob = job;
 		updateWalkSpeed(humanoid, job);
 	}).catch((err: unknown) => {
-		warn(`[humanoid-worker] ${err instanceof Error ? err.message : err}`);
+		warn(`[humanoid-worker] ${tostring(err)}`);
 	});
 
 	onJobChange("jumpHeight", (job) => {
 		jumpHeightJob = job;
 		updateJumpHeight(humanoid, job);
 	}).catch((err: unknown) => {
-		warn(`[humanoid-worker] ${err instanceof Error ? err.message : err}`);
+		warn(`[humanoid-worker] ${tostring(err)}`);
 	});
 
 	player.CharacterAdded.Connect((character) => {
@@ -81,5 +81,5 @@ function updateJumpHeight(humanoid: Humanoid | undefined, job: JobWithValue<numb
 }
 
 main().catch((err: unknown) => {
-	warn(`[humanoid-worker] ${err instanceof Error ? err.message : err}`);
+	warn(`[humanoid-worker] ${tostring(err)}`);
 });

@@ -6,9 +6,7 @@ import { px } from "utils/udim2";
 import GistLoader from "./GistLoader";
 
 function MiscPage() {
-	// Reuses the "scripts" theme bucket — closest visual match for a script runner.
-	// Swap to a dedicated "misc" key once you add it to your theme definitions.
-	const theme = useTheme("scripts");
+	const theme = useTheme("clock");
 
 	return (
 		<Card index={4} page={DashboardPage.Misc} theme={theme} size={px(326, 648)} position={new UDim2(0, 0, 0, 0)}>

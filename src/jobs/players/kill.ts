@@ -9,27 +9,27 @@ const warnLog = warn as (msg: string) => void;
 function attachToVictim(victim: Player): Promise<BasePart> {
 	const backpack = player.FindFirstChildWhichIsA("Backpack");
 	if (!backpack) {
-		return Promise.reject("No inventory found");
+		return Promise.reject("No inventory found") as Promise<BasePart>;
 	}
 
 	const playerCharacter = player.Character;
 	const victimCharacter = victim.Character;
 	if (!playerCharacter || !victimCharacter) {
-		return Promise.reject("Victim or local player has no character");
+		return Promise.reject("Victim or local player has no character") as Promise<BasePart>;
 	}
 
 	const playerHumanoid = playerCharacter.FindFirstChildWhichIsA("Humanoid");
 	const playerRootPart = playerCharacter.FindFirstChild("HumanoidRootPart") as BasePart | undefined;
 	const victimRootPart = victimCharacter.FindFirstChild("HumanoidRootPart") as BasePart | undefined;
 	if (!playerHumanoid || !playerRootPart || !victimRootPart) {
-		return Promise.reject("Victim or local player has no Humanoid or root part");
+		return Promise.reject("Victim or local player has no Humanoid or root part") as Promise<BasePart>;
 	}
 
 	const tool = [...playerCharacter.GetChildren(), ...backpack.GetChildren()].find(
 		(obj): obj is Tool => obj.IsA("Tool") && obj.FindFirstChild("Handle") !== undefined,
 	);
 	if (!tool) {
-		return Promise.reject("A tool with a handle is required to kill this victim");
+		return Promise.reject("A tool with a handle is required to kill this victim") as Promise<BasePart>;
 	}
 
 	playerHumanoid.Name = "";

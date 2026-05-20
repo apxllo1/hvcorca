@@ -73,7 +73,7 @@ function activateGhost(): Promise<void> {
 	const character = player.Character;
 	const humanoid = character?.FindFirstChildWhichIsA("Humanoid");
 	if (!character || !humanoid) {
-		return Promise.reject("Character or Humanoid is null");
+		return Promise.reject("Character or Humanoid is null") as Promise<void>;
 	}
 
 	character.Archivable = true;
