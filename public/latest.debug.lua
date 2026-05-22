@@ -5,7 +5,7 @@
 --
 -- Author: apxllo
 -- License: MIT
--- Version: "20260511-dbg"
+-- Version: "v1.1.4"
 -- GitHub: https://github.com/apxllo1/hvcorca
 --]]
 
@@ -108,7 +108,7 @@ end
 ---@return table<string, any> environment
 local function newEnv(id)
 	return setmetatable({
-		VERSION = "20260511-dbg",
+		VERSION = "v1.1.4",
 		script = instanceFromId[id],
 		require = function(module)
 			return requireModuleInternal(module, instanceFromId[id])
@@ -169,9 +169,9 @@ end
 
 newInstance("Havoc", "Folder", "Havoc", nil)
 
-newModule("App", "ModuleScript", "Havoc.App", "Havoc", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("App", "ModuleScript", "Havoc.App", "Havoc", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
+local Roact = TS.import(script, script.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
 local Dashboard = TS.import(script, script.Parent, \"views\", \"Dashboard\").default\
 local DISPLAY_ORDER = 7\
 local function App()\
@@ -192,22 +192,22 @@ return {\
 
 newInstance("components", "Folder", "Havoc.components", "Havoc")
 
-newModule("Acrylic", "ModuleScript", "Havoc.components.Acrylic", "Havoc.components", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Acrylic", "ModuleScript", "Havoc.components.Acrylic", "Havoc.components", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.include.RuntimeLib)\
 local exports = {}\
 exports.default = TS.import(script, script, \"Acrylic\").default\
 return exports\
 ", '@'.."Havoc.components.Acrylic")) setfenv(fn, newEnv("Havoc.components.Acrylic")) return fn() end)
 
-newModule("Acrylic", "ModuleScript", "Havoc.components.Acrylic.Acrylic", "Havoc.components.Acrylic", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Acrylic", "ModuleScript", "Havoc.components.Acrylic.Acrylic", "Havoc.components.Acrylic", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
-local _roact_hooked = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-hooked\").src)\
+local Roact = TS.import(script, script.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
+local _roact_hooked = TS.import(script, script.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact-hooked\", \"src\")\
 local useCallback = _roact_hooked.useCallback\
 local useEffect = _roact_hooked.useEffect\
 local useMemo = _roact_hooked.useMemo\
 local useMutable = _roact_hooked.useMutable\
-local Workspace = TS.import(script, TS.getModule(script, \"@rbxts\", \"services\")).Workspace\
+local Workspace = TS.import(script, script.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"services\").Workspace\
 local acrylicInstance = TS.import(script, script.Parent, \"acrylic-instance\").acrylicInstance\
 local useAppSelector = TS.import(script, script.Parent.Parent.Parent, \"hooks\", \"common\", \"rodux-hooks\").useAppSelector\
 local map = TS.import(script, script.Parent.Parent.Parent, \"utils\", \"number-util\").map\
@@ -216,8 +216,9 @@ local cylinderAngleOffset = CFrame.Angles(0, math.rad(90), 0)\
 local function viewportPointToWorld(location, distance)\
 \9local unitRay = Workspace.CurrentCamera:ScreenPointToRay(location.X, location.Y)\
 \9local _origin = unitRay.Origin\
-\9local _arg0 = unitRay.Direction * distance\
-\9return _origin + _arg0\
+\9local _direction = unitRay.Direction\
+\9local _distance = distance\
+\9return _origin + (_direction * _distance)\
 end\
 local function getOffset()\
 \9return map(Workspace.CurrentCamera.ViewportSize.Y, 0, 2560, 8, 56)\
@@ -267,17 +268,20 @@ function AcrylicBlur(_param)\
 \9\9end\
 \9end, {})\
 \9local updateFrameInfo = useCallback(function(size, position)\
+\9\9local _position = position\
 \9\9local _arg0 = size / 2\
-\9\9local topleftRaw = position - _arg0\
+\9\9local topleftRaw = _position - _arg0\
 \9\9local info = frameInfo.current\
 \9\9info.topleft2d = Vector2.new(math.ceil(topleftRaw.X), math.ceil(topleftRaw.Y))\
 \9\9local _topleft2d = info.topleft2d\
 \9\9local _vector2 = Vector2.new(size.X, 0)\
 \9\9info.topright2d = _topleft2d + _vector2\
-\9\9info.bottomright2d = info.topleft2d + size\
 \9\9local _topleft2d_1 = info.topleft2d\
+\9\9local _size = size\
+\9\9info.bottomright2d = _topleft2d_1 + _size\
+\9\9local _topleft2d_2 = info.topleft2d\
 \9\9local _vector2_1 = Vector2.new(radius, 0)\
-\9\9info.topleftradius2d = _topleft2d_1 + _vector2_1\
+\9\9info.topleftradius2d = _topleft2d_2 + _vector2_1\
 \9end, { distance, radius })\
 \9local updateInstance = useCallback(function()\
 \9\9local _binding = frameInfo.current\
@@ -360,9 +364,9 @@ return {\
 }\
 ", '@'.."Havoc.components.Acrylic.Acrylic")) setfenv(fn, newEnv("Havoc.components.Acrylic.Acrylic")) return fn() end)
 
-newModule("acrylic-instance", "ModuleScript", "Havoc.components.Acrylic.acrylic-instance", "Havoc.components.Acrylic", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("acrylic-instance", "ModuleScript", "Havoc.components.Acrylic.acrylic-instance", "Havoc.components.Acrylic", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
-local Make = TS.import(script, TS.getModule(script, \"@rbxts\", \"make\"))\
+local Make = TS.import(script, script.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"make\")\
 local fill = {\
 \9Color = Color3.new(0, 0, 0),\
 \9Material = Enum.Material.Glass,\
@@ -392,7 +396,7 @@ local _object_1 = {\
 \9\9Offset = Vector3.new(0, 0, -0.000001),\
 \9}) },\
 }\
-for _k, _v in pairs(fill) do\
+for _k, _v in fill do\
 \9_object_1[_k] = _v\
 end\
 local _exp = Make(\"Part\", _object_1)\
@@ -403,7 +407,7 @@ local _object_2 = {\
 \9\9Offset = Vector3.new(0, 0, 0.000001),\
 \9}) },\
 }\
-for _k, _v in pairs(fill) do\
+for _k, _v in fill do\
 \9_object_2[_k] = _v\
 end\
 local _exp_1 = Make(\"Part\", _object_2)\
@@ -413,7 +417,7 @@ local _object_3 = {\
 \9\9MeshType = Enum.MeshType.Cylinder,\
 \9}) },\
 }\
-for _k, _v in pairs(corner) do\
+for _k, _v in corner do\
 \9_object_3[_k] = _v\
 end\
 local _exp_2 = Make(\"Part\", _object_3)\
@@ -423,7 +427,7 @@ local _object_4 = {\
 \9\9MeshType = Enum.MeshType.Cylinder,\
 \9}) },\
 }\
-for _k, _v in pairs(corner) do\
+for _k, _v in corner do\
 \9_object_4[_k] = _v\
 end\
 local _exp_3 = Make(\"Part\", _object_4)\
@@ -433,7 +437,7 @@ local _object_5 = {\
 \9\9MeshType = Enum.MeshType.Cylinder,\
 \9}) },\
 }\
-for _k, _v in pairs(corner) do\
+for _k, _v in corner do\
 \9_object_5[_k] = _v\
 end\
 local _exp_4 = Make(\"Part\", _object_5)\
@@ -443,7 +447,7 @@ local _object_6 = {\
 \9\9MeshType = Enum.MeshType.Cylinder,\
 \9}) },\
 }\
-for _k, _v in pairs(corner) do\
+for _k, _v in corner do\
 \9_object_6[_k] = _v\
 end\
 _object[_left] = { _exp, _exp_1, _exp_2, _exp_3, _exp_4, Make(\"Part\", _object_6) }\
@@ -453,10 +457,10 @@ return {\
 }\
 ", '@'.."Havoc.components.Acrylic.acrylic-instance")) setfenv(fn, newEnv("Havoc.components.Acrylic.acrylic-instance")) return fn() end)
 
-newModule("ActionButton", "ModuleScript", "Havoc.components.ActionButton", "Havoc.components", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("ActionButton", "ModuleScript", "Havoc.components.ActionButton", "Havoc.components", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
-local useState = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-hooked\").src).useState\
+local Roact = TS.import(script, script.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
+local useState = TS.import(script, script.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact-hooked\", \"src\").useState\
 local BrightButton = TS.import(script, script.Parent, \"BrightButton\").default\
 local _rodux_hooks = TS.import(script, script.Parent.Parent, \"hooks\", \"common\", \"rodux-hooks\")\
 local useAppDispatch = _rodux_hooks.useAppDispatch\
@@ -490,7 +494,7 @@ local function ActionButton(_param)\
 \9local hovered, setHovered = useState(false)\
 \9local highlightMap = theme.highlight\
 \9local accent = highlightMap[action] or theme.button.background\
-\9local background = useSpring(if active then accent elseif hovered then theme.button.backgroundHovered or theme.button.background:Lerp(accent, 0.1) else theme.button.background, {})\
+\9local background = useSpring(if active then accent elseif hovered then (theme.button.backgroundHovered or theme.button.background:Lerp(accent, 0.1)) else theme.button.background, {})\
 \9local foreground = useSpring(if active and theme.button.foregroundAccent then theme.button.foregroundAccent else theme.button.foreground, {})\
 \9return Roact.createElement(BrightButton, {\
 \9\9onActivate = function()\
@@ -532,9 +536,9 @@ return {\
 }\
 ", '@'.."Havoc.components.ActionButton")) setfenv(fn, newEnv("Havoc.components.ActionButton")) return fn() end)
 
-newModule("Border", "ModuleScript", "Havoc.components.Border", "Havoc.components", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Border", "ModuleScript", "Havoc.components.Border", "Havoc.components", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
+local Roact = TS.import(script, script.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
 local _binding_util = TS.import(script, script.Parent.Parent, \"utils\", \"binding-util\")\
 local asBinding = _binding_util.asBinding\
 local mapBinding = _binding_util.mapBinding\
@@ -577,7 +581,7 @@ local function Border(_param)\
 \9local _children_1 = {}\
 \9local _length_1 = #_children_1\
 \9if children then\
-\9\9for _k, _v in pairs(children) do\
+\9\9for _k, _v in children do\
 \9\9\9if type(_k) == \"number\" then\
 \9\9\9\9_children_1[_length_1 + _k] = _v\
 \9\9\9else\
@@ -604,9 +608,9 @@ return {\
 }\
 ", '@'.."Havoc.components.Border")) setfenv(fn, newEnv("Havoc.components.Border")) return fn() end)
 
-newModule("BrightButton", "ModuleScript", "Havoc.components.BrightButton", "Havoc.components", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("BrightButton", "ModuleScript", "Havoc.components.BrightButton", "Havoc.components", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
+local Roact = TS.import(script, script.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
 local Border = TS.import(script, script.Parent, \"Border\").default\
 local Canvas = TS.import(script, script.Parent, \"Canvas\")\
 local Fill = TS.import(script, script.Parent, \"Fill\").default\
@@ -718,7 +722,7 @@ local function BrightButton(_param)\
 \9\9end,\
 \9})\
 \9if children then\
-\9\9for _k, _v in pairs(children) do\
+\9\9for _k, _v in children do\
 \9\9\9if type(_k) == \"number\" then\
 \9\9\9\9_children[_length + 1 + _k] = _v\
 \9\9\9else\
@@ -734,15 +738,15 @@ return {\
 }\
 ", '@'.."Havoc.components.BrightButton")) setfenv(fn, newEnv("Havoc.components.BrightButton")) return fn() end)
 
-newModule("BrightSlider", "ModuleScript", "Havoc.components.BrightSlider", "Havoc.components", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("BrightSlider", "ModuleScript", "Havoc.components.BrightSlider", "Havoc.components", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.include.RuntimeLib)\
-local Spring = TS.import(script, TS.getModule(script, \"@rbxts\", \"flipper\").src).Spring\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
-local _roact_hooked = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-hooked\").src)\
+local Spring = TS.import(script, script.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"flipper\", \"src\").Spring\
+local Roact = TS.import(script, script.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
+local _roact_hooked = TS.import(script, script.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact-hooked\", \"src\")\
 local useCallback = _roact_hooked.useCallback\
 local useEffect = _roact_hooked.useEffect\
 local useState = _roact_hooked.useState\
-local UserInputService = TS.import(script, TS.getModule(script, \"@rbxts\", \"services\")).UserInputService\
+local UserInputService = TS.import(script, script.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"services\").UserInputService\
 local _flipper_hooks = TS.import(script, script.Parent.Parent, \"hooks\", \"common\", \"flipper-hooks\")\
 local getBinding = _flipper_hooks.getBinding\
 local useMotor = _flipper_hooks.useMotor\
@@ -852,7 +856,7 @@ local function BrightSlider(_param)\
 \9\9end,\
 \9})\
 \9if children then\
-\9\9for _k, _v in pairs(children) do\
+\9\9for _k, _v in children do\
 \9\9\9if type(_k) == \"number\" then\
 \9\9\9\9_children[_length + 1 + _k] = _v\
 \9\9\9else\
@@ -920,9 +924,9 @@ return {\
 }\
 ", '@'.."Havoc.components.BrightSlider")) setfenv(fn, newEnv("Havoc.components.BrightSlider")) return fn() end)
 
-newModule("Canvas", "ModuleScript", "Havoc.components.Canvas", "Havoc.components", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Canvas", "ModuleScript", "Havoc.components.Canvas", "Havoc.components", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
+local Roact = TS.import(script, script.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
 local mapBinding = TS.import(script, script.Parent.Parent, \"utils\", \"binding-util\").mapBinding\
 local scale = TS.import(script, script.Parent.Parent, \"utils\", \"udim2\").scale\
 local function Canvas(_param)\
@@ -951,7 +955,7 @@ local function Canvas(_param)\
 \9\9BackgroundTransparency = 1,\
 \9\9ZIndex = zIndex,\
 \9}\
-\9for _k, _v in pairs(onChange) do\
+\9for _k, _v in onChange do\
 \9\9_attributes[Roact.Change[_k]] = _v\
 \9end\
 \9local _children = {}\
@@ -977,7 +981,7 @@ local function Canvas(_param)\
 \9end\
 \9_length = #_children\
 \9if children then\
-\9\9for _k, _v in pairs(children) do\
+\9\9for _k, _v in children do\
 \9\9\9if type(_k) == \"number\" then\
 \9\9\9\9_children[_length + _k] = _v\
 \9\9\9else\
@@ -990,9 +994,9 @@ end\
 return Canvas\
 ", '@'.."Havoc.components.Canvas")) setfenv(fn, newEnv("Havoc.components.Canvas")) return fn() end)
 
-newModule("Card", "ModuleScript", "Havoc.components.Card", "Havoc.components", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Card", "ModuleScript", "Havoc.components.Card", "Havoc.components", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
+local Roact = TS.import(script, script.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
 local Acrylic = TS.import(script, script.Parent, \"Acrylic\").default\
 local Border = TS.import(script, script.Parent, \"Border\").default\
 local Canvas = TS.import(script, script.Parent, \"Canvas\")\
@@ -1043,7 +1047,7 @@ local function Card(_param)\
 \9}\
 \9local _length = #_children\
 \9if children then\
-\9\9for _k, _v in pairs(children) do\
+\9\9for _k, _v in children do\
 \9\9\9if type(_k) == \"number\" then\
 \9\9\9\9_children[_length + _k] = _v\
 \9\9\9else\
@@ -1075,9 +1079,9 @@ return {\
 }\
 ", '@'.."Havoc.components.Card")) setfenv(fn, newEnv("Havoc.components.Card")) return fn() end)
 
-newModule("Fill", "ModuleScript", "Havoc.components.Fill", "Havoc.components", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Fill", "ModuleScript", "Havoc.components.Fill", "Havoc.components", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
+local Roact = TS.import(script, script.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
 local mapBinding = TS.import(script, script.Parent.Parent, \"utils\", \"binding-util\").mapBinding\
 local hex = TS.import(script, script.Parent.Parent, \"utils\", \"color3\").hex\
 local scale = TS.import(script, script.Parent.Parent, \"utils\", \"udim2\").scale\
@@ -1126,7 +1130,7 @@ local function Fill(_param)\
 \9end\
 \9_length = #_children\
 \9if children then\
-\9\9for _k, _v in pairs(children) do\
+\9\9for _k, _v in children do\
 \9\9\9if type(_k) == \"number\" then\
 \9\9\9\9_children[_length + _k] = _v\
 \9\9\9else\
@@ -1142,10 +1146,10 @@ return {\
 }\
 ", '@'.."Havoc.components.Fill")) setfenv(fn, newEnv("Havoc.components.Fill")) return fn() end)
 
-newModule("Glow", "ModuleScript", "Havoc.components.Glow", "Havoc.components", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Glow", "ModuleScript", "Havoc.components.Glow", "Havoc.components", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
-local useBinding = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-hooked\").src).useBinding\
+local Roact = TS.import(script, script.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
+local useBinding = TS.import(script, script.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact-hooked\", \"src\").useBinding\
 local useScale = TS.import(script, script.Parent.Parent, \"hooks\", \"use-scale\").useScale\
 local asBinding = TS.import(script, script.Parent.Parent, \"utils\", \"binding-util\").asBinding\
 local map = TS.import(script, script.Parent.Parent, \"utils\", \"number-util\").map\
@@ -1153,19 +1157,11 @@ local _udim2 = TS.import(script, script.Parent.Parent, \"utils\", \"udim2\")\
 local applyUDim2 = _udim2.applyUDim2\
 local px = _udim2.px\
 local Canvas = TS.import(script, script.Parent, \"Canvas\")\
-local GlowRadius\
-do\
-\9local _inverse = {}\
-\9GlowRadius = setmetatable({}, {\
-\9\9__index = _inverse,\
-\9})\
-\9GlowRadius.Size70 = \"rbxassetid://8992230903\"\
-\9_inverse[\"rbxassetid://8992230903\"] = \"Size70\"\
-\9GlowRadius.Size146 = \"rbxassetid://8992584561\"\
-\9_inverse[\"rbxassetid://8992584561\"] = \"Size146\"\
-\9GlowRadius.Size198 = \"rbxassetid://8992230677\"\
-\9_inverse[\"rbxassetid://8992230677\"] = \"Size198\"\
-end\
+local GlowRadius = {\
+\9Size70 = \"rbxassetid://8992230903\",\
+\9Size146 = \"rbxassetid://8992584561\",\
+\9Size198 = \"rbxassetid://8992230677\",\
+}\
 local RADIUS_TO_CENTER_OFFSET = {\
 \9[GlowRadius.Size70] = 70 / 2,\
 \9[GlowRadius.Size146] = 146 / 2,\
@@ -1251,7 +1247,7 @@ local function Glow(_param)\
 \9end\
 \9_length_1 = #_children_1\
 \9if children then\
-\9\9for _k, _v in pairs(children) do\
+\9\9for _k, _v in children do\
 \9\9\9if type(_k) == \"number\" then\
 \9\9\9\9_children_1[_length_1 + _k] = _v\
 \9\9\9else\
@@ -1270,9 +1266,9 @@ return {\
 }\
 ", '@'.."Havoc.components.Glow")) setfenv(fn, newEnv("Havoc.components.Glow")) return fn() end)
 
-newModule("ParallaxImage", "ModuleScript", "Havoc.components.ParallaxImage", "Havoc.components", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("ParallaxImage", "ModuleScript", "Havoc.components.ParallaxImage", "Havoc.components", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
+local Roact = TS.import(script, script.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
 local mapBinding = TS.import(script, script.Parent.Parent, \"utils\", \"binding-util\").mapBinding\
 local scale = TS.import(script, script.Parent.Parent, \"utils\", \"udim2\").scale\
 local function ParallaxImage(_param)\
@@ -1296,7 +1292,7 @@ local function ParallaxImage(_param)\
 \9local _children = {}\
 \9local _length = #_children\
 \9if children then\
-\9\9for _k, _v in pairs(children) do\
+\9\9for _k, _v in children do\
 \9\9\9if type(_k) == \"number\" then\
 \9\9\9\9_children[_length + _k] = _v\
 \9\9\9else\
@@ -1312,7 +1308,7 @@ return {\
 }\
 ", '@'.."Havoc.components.ParallaxImage")) setfenv(fn, newEnv("Havoc.components.ParallaxImage")) return fn() end)
 
-newModule("constants", "ModuleScript", "Havoc.constants", "Havoc", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("constants", "ModuleScript", "Havoc.constants", "Havoc", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local IS_DEV = getgenv == nil\
 local LOAD_GUARD = \"_HAVOC_IS_LOADED\"\
 local _condition = VERSION\
@@ -1329,9 +1325,9 @@ return {\
 
 newInstance("context", "Folder", "Havoc.context", "Havoc")
 
-newModule("scale-context", "ModuleScript", "Havoc.context.scale-context", "Havoc.context", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("scale-context", "ModuleScript", "Havoc.context.scale-context", "Havoc.context", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
+local Roact = TS.import(script, script.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
 local ScaleContext = Roact.createContext((Roact.createBinding(1)))\
 return {\
 \9ScaleContext = ScaleContext,\
@@ -1342,7 +1338,7 @@ newInstance("hooks", "Folder", "Havoc.hooks", "Havoc")
 
 newInstance("common", "Folder", "Havoc.hooks.common", "Havoc.hooks")
 
-newModule("flipper-hooks", "ModuleScript", "Havoc.hooks.common.flipper-hooks", "Havoc.hooks.common", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("flipper-hooks", "ModuleScript", "Havoc.hooks.common.flipper-hooks", "Havoc.hooks.common", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
 local exports = {}\
 exports.getBinding = TS.import(script, script, \"get-binding\").getBinding\
@@ -1354,17 +1350,18 @@ exports.useSpring = TS.import(script, script, \"use-spring\").useSpring\
 return exports\
 ", '@'.."Havoc.hooks.common.flipper-hooks")) setfenv(fn, newEnv("Havoc.hooks.common.flipper-hooks")) return fn() end)
 
-newModule("get-binding", "ModuleScript", "Havoc.hooks.common.flipper-hooks.get-binding", "Havoc.hooks.common.flipper-hooks", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("get-binding", "ModuleScript", "Havoc.hooks.common.flipper-hooks.get-binding", "Havoc.hooks.common.flipper-hooks", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)\
-local isMotor = TS.import(script, TS.getModule(script, \"@rbxts\", \"flipper\").src).isMotor\
-local createBinding = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src).createBinding\
+local isMotor = TS.import(script, script.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"flipper\", \"src\").isMotor\
+local createBinding = TS.import(script, script.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\").createBinding\
 local AssignedBinding = setmetatable({}, {\
 \9__tostring = function()\
 \9\9return \"AssignedBinding\"\
 \9end,\
 })\
 local function getBinding(motor)\
-\9assert(motor, \"Missing argument #1: motor\")\
+\9local _motor = motor\
+\9assert(_motor, \"Missing argument #1: motor\")\
 \9local _arg0 = isMotor(motor)\
 \9assert(_arg0, \"Provided value is not a motor\")\
 \9if motor[AssignedBinding] ~= nil then\
@@ -1380,7 +1377,7 @@ return {\
 }\
 ", '@'.."Havoc.hooks.common.flipper-hooks.get-binding")) setfenv(fn, newEnv("Havoc.hooks.common.flipper-hooks.get-binding")) return fn() end)
 
-newModule("use-goal", "ModuleScript", "Havoc.hooks.common.flipper-hooks.use-goal", "Havoc.hooks.common.flipper-hooks", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("use-goal", "ModuleScript", "Havoc.hooks.common.flipper-hooks.use-goal", "Havoc.hooks.common.flipper-hooks", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)\
 local getBinding = TS.import(script, script.Parent, \"get-binding\").getBinding\
 local useMotor = TS.import(script, script.Parent, \"use-motor\").useMotor\
@@ -1394,9 +1391,9 @@ return {\
 }\
 ", '@'.."Havoc.hooks.common.flipper-hooks.use-goal")) setfenv(fn, newEnv("Havoc.hooks.common.flipper-hooks.use-goal")) return fn() end)
 
-newModule("use-instant", "ModuleScript", "Havoc.hooks.common.flipper-hooks.use-instant", "Havoc.hooks.common.flipper-hooks", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("use-instant", "ModuleScript", "Havoc.hooks.common.flipper-hooks.use-instant", "Havoc.hooks.common.flipper-hooks", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)\
-local Instant = TS.import(script, TS.getModule(script, \"@rbxts\", \"flipper\").src).Instant\
+local Instant = TS.import(script, script.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"flipper\", \"src\").Instant\
 local useGoal = TS.import(script, script.Parent, \"use-goal\").useGoal\
 local function useInstant(targetValue)\
 \9return useGoal(Instant.new(targetValue))\
@@ -1406,9 +1403,9 @@ return {\
 }\
 ", '@'.."Havoc.hooks.common.flipper-hooks.use-instant")) setfenv(fn, newEnv("Havoc.hooks.common.flipper-hooks.use-instant")) return fn() end)
 
-newModule("use-linear", "ModuleScript", "Havoc.hooks.common.flipper-hooks.use-linear", "Havoc.hooks.common.flipper-hooks", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("use-linear", "ModuleScript", "Havoc.hooks.common.flipper-hooks.use-linear", "Havoc.hooks.common.flipper-hooks", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)\
-local Linear = TS.import(script, TS.getModule(script, \"@rbxts\", \"flipper\").src).Linear\
+local Linear = TS.import(script, script.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"flipper\", \"src\").Linear\
 local useGoal = TS.import(script, script.Parent, \"use-goal\").useGoal\
 local function useLinear(targetValue, options)\
 \9return useGoal(Linear.new(targetValue, options))\
@@ -1418,19 +1415,24 @@ return {\
 }\
 ", '@'.."Havoc.hooks.common.flipper-hooks.use-linear")) setfenv(fn, newEnv("Havoc.hooks.common.flipper-hooks.use-linear")) return fn() end)
 
-newModule("use-motor", "ModuleScript", "Havoc.hooks.common.flipper-hooks.use-motor", "Havoc.hooks.common.flipper-hooks", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("use-motor", "ModuleScript", "Havoc.hooks.common.flipper-hooks.use-motor", "Havoc.hooks.common.flipper-hooks", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)\
-local _flipper = TS.import(script, TS.getModule(script, \"@rbxts\", \"flipper\").src)\
+local _flipper = TS.import(script, script.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"flipper\", \"src\")\
 local GroupMotor = _flipper.GroupMotor\
 local SingleMotor = _flipper.SingleMotor\
-local useMutable = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-hooked\").src).useMutable\
+local useMutable = TS.import(script, script.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact-hooked\", \"src\").useMutable\
 local function createMotor(initialValue)\
-\9if type(initialValue) == \"number\" then\
+\9local _initialValue = initialValue\
+\9if type(_initialValue) == \"number\" then\
 \9\9return SingleMotor.new(initialValue)\
-\9elseif type(initialValue) == \"table\" then\
-\9\9return GroupMotor.new(initialValue)\
 \9else\
-\9\9error(\"Invalid type for initialValue. Expected 'number' or 'table', got '\" .. (typeof(initialValue) .. \"'\"))\
+\9\9local _initialValue_1 = initialValue\
+\9\9if type(_initialValue_1) == \"table\" then\
+\9\9\9return GroupMotor.new(initialValue)\
+\9\9else\
+\9\9\9local _initialValue_2 = initialValue\
+\9\9\9error(`Invalid type for initialValue. Expected 'number' or 'table', got '{typeof(_initialValue_2)}'`)\
+\9\9end\
 \9end\
 end\
 local function useMotor(initialValue)\
@@ -1441,9 +1443,9 @@ return {\
 }\
 ", '@'.."Havoc.hooks.common.flipper-hooks.use-motor")) setfenv(fn, newEnv("Havoc.hooks.common.flipper-hooks.use-motor")) return fn() end)
 
-newModule("use-spring", "ModuleScript", "Havoc.hooks.common.flipper-hooks.use-spring", "Havoc.hooks.common.flipper-hooks", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("use-spring", "ModuleScript", "Havoc.hooks.common.flipper-hooks.use-spring", "Havoc.hooks.common.flipper-hooks", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)\
-local Spring = TS.import(script, TS.getModule(script, \"@rbxts\", \"flipper\").src).Spring\
+local Spring = TS.import(script, script.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"flipper\", \"src\").Spring\
 local useGoal = TS.import(script, script.Parent, \"use-goal\").useGoal\
 local function useSpring(targetValue, options)\
 \9return useGoal(Spring.new(targetValue, options))\
@@ -1453,9 +1455,9 @@ return {\
 }\
 ", '@'.."Havoc.hooks.common.flipper-hooks.use-spring")) setfenv(fn, newEnv("Havoc.hooks.common.flipper-hooks.use-spring")) return fn() end)
 
-newModule("rodux-hooks", "ModuleScript", "Havoc.hooks.common.rodux-hooks", "Havoc.hooks.common", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("rodux-hooks", "ModuleScript", "Havoc.hooks.common.rodux-hooks", "Havoc.hooks.common", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
-local _roact_rodux_hooked = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-rodux-hooked\").src)\
+local _roact_rodux_hooked = TS.import(script, script.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact-rodux-hooked\", \"src\")\
 local useDispatch = _roact_rodux_hooked.useDispatch\
 local useSelector = _roact_rodux_hooked.useSelector\
 local useStore = _roact_rodux_hooked.useStore\
@@ -1473,9 +1475,9 @@ return {\
 }\
 ", '@'.."Havoc.hooks.common.rodux-hooks")) setfenv(fn, newEnv("Havoc.hooks.common.rodux-hooks")) return fn() end)
 
-newModule("use-delayed-update", "ModuleScript", "Havoc.hooks.common.use-delayed-update", "Havoc.hooks.common", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("use-delayed-update", "ModuleScript", "Havoc.hooks.common.use-delayed-update", "Havoc.hooks.common", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
-local _roact_hooked = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-hooked\").src)\
+local _roact_hooked = TS.import(script, script.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact-hooked\", \"src\")\
 local useEffect = _roact_hooked.useEffect\
 local useMutable = _roact_hooked.useMutable\
 local useState = _roact_hooked.useState\
@@ -1484,7 +1486,7 @@ local clearTimeout = _timeout.clearTimeout\
 local setTimeout = _timeout.setTimeout\
 local nextId = 0\
 local function clearUpdates(updates, laterThan)\
-\9for id, update in pairs(updates) do\
+\9for id, update in updates do\
 \9\9if laterThan == nil or update.resolveTime >= laterThan then\
 \9\9\9updates[id] = nil\
 \9\9\9clearTimeout(update.timeout)\
@@ -1529,9 +1531,9 @@ return {\
 }\
 ", '@'.."Havoc.hooks.common.use-delayed-update")) setfenv(fn, newEnv("Havoc.hooks.common.use-delayed-update")) return fn() end)
 
-newModule("use-did-mount", "ModuleScript", "Havoc.hooks.common.use-did-mount", "Havoc.hooks.common", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("use-did-mount", "ModuleScript", "Havoc.hooks.common.use-did-mount", "Havoc.hooks.common", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
-local _roact_hooked = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-hooked\").src)\
+local _roact_hooked = TS.import(script, script.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact-hooked\", \"src\")\
 local useEffect = _roact_hooked.useEffect\
 local useMutable = _roact_hooked.useMutable\
 local function useDidMount(callback)\
@@ -1556,9 +1558,9 @@ return {\
 }\
 ", '@'.."Havoc.hooks.common.use-did-mount")) setfenv(fn, newEnv("Havoc.hooks.common.use-did-mount")) return fn() end)
 
-newModule("use-forced-update", "ModuleScript", "Havoc.hooks.common.use-forced-update", "Havoc.hooks.common", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("use-forced-update", "ModuleScript", "Havoc.hooks.common.use-forced-update", "Havoc.hooks.common", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
-local _roact_hooked = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-hooked\").src)\
+local _roact_hooked = TS.import(script, script.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact-hooked\", \"src\")\
 local useCallback = _roact_hooked.useCallback\
 local useState = _roact_hooked.useState\
 local function useForcedUpdate()\
@@ -1574,9 +1576,9 @@ return {\
 }\
 ", '@'.."Havoc.hooks.common.use-forced-update")) setfenv(fn, newEnv("Havoc.hooks.common.use-forced-update")) return fn() end)
 
-newModule("use-interval", "ModuleScript", "Havoc.hooks.common.use-interval", "Havoc.hooks.common", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("use-interval", "ModuleScript", "Havoc.hooks.common.use-interval", "Havoc.hooks.common", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
-local useEffect = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-hooked\").src).useEffect\
+local useEffect = TS.import(script, script.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact-hooked\", \"src\").useEffect\
 local _timeout = TS.import(script, script.Parent.Parent.Parent, \"utils\", \"timeout\")\
 local clearInterval = _timeout.clearInterval\
 local setInterval = _timeout.setInterval\
@@ -1603,12 +1605,12 @@ return {\
 }\
 ", '@'.."Havoc.hooks.common.use-interval")) setfenv(fn, newEnv("Havoc.hooks.common.use-interval")) return fn() end)
 
-newModule("use-mouse-location", "ModuleScript", "Havoc.hooks.common.use-mouse-location", "Havoc.hooks.common", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("use-mouse-location", "ModuleScript", "Havoc.hooks.common.use-mouse-location", "Havoc.hooks.common", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
-local _roact_hooked = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-hooked\").src)\
+local _roact_hooked = TS.import(script, script.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact-hooked\", \"src\")\
 local useBinding = _roact_hooked.useBinding\
 local useEffect = _roact_hooked.useEffect\
-local UserInputService = TS.import(script, TS.getModule(script, \"@rbxts\", \"services\")).UserInputService\
+local UserInputService = TS.import(script, script.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"services\").UserInputService\
 local function useMouseLocation(onChange)\
 \9local location, setLocation = useBinding(UserInputService:GetMouseLocation())\
 \9useEffect(function()\
@@ -1632,13 +1634,14 @@ return {\
 }\
 ", '@'.."Havoc.hooks.common.use-mouse-location")) setfenv(fn, newEnv("Havoc.hooks.common.use-mouse-location")) return fn() end)
 
-newModule("use-promise", "ModuleScript", "Havoc.hooks.common.use-promise", "Havoc.hooks.common", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("use-promise", "ModuleScript", "Havoc.hooks.common.use-promise", "Havoc.hooks.common", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
-local _roact_hooked = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-hooked\").src)\
+local _roact_hooked = TS.import(script, script.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact-hooked\", \"src\")\
 local useEffect = _roact_hooked.useEffect\
 local useReducer = _roact_hooked.useReducer\
 local function resolvePromise(promise)\
-\9if type(promise) == \"function\" then\
+\9local _promise = promise\
+\9if type(_promise) == \"function\" then\
 \9\9return promise()\
 \9end\
 \9return promise\
@@ -1685,27 +1688,26 @@ local function usePromise(promise, deps)\
 \9local result = _binding.result\
 \9local state = _binding.state\
 \9useEffect(function()\
-\9\9promise = resolvePromise(promise)\
-\9\9if not promise then\
-\9\9\9return nil\
-\9\9end\
+\9\9local resolvedPromise = resolvePromise(promise)\
 \9\9local canceled = false\
 \9\9dispatch({\
 \9\9\9type = states.pending,\
 \9\9})\
-\9\9local _arg0 = function(result)\
-\9\9\9return not canceled and dispatch({\
-\9\9\9\9payload = result,\
-\9\9\9\9type = states.resolved,\
-\9\9\9})\
-\9\9end\
-\9\9local _arg1 = function(err)\
-\9\9\9return not canceled and dispatch({\
-\9\9\9\9payload = err,\
-\9\9\9\9type = states.rejected,\
-\9\9\9})\
-\9\9end\
-\9\9promise:andThen(_arg0, _arg1)\
+\9\9resolvedPromise:andThen(function(result)\
+\9\9\9if not canceled then\
+\9\9\9\9dispatch({\
+\9\9\9\9\9payload = result,\
+\9\9\9\9\9type = states.resolved,\
+\9\9\9\9})\
+\9\9\9end\
+\9\9end, function(err)\
+\9\9\9if not canceled then\
+\9\9\9\9dispatch({\
+\9\9\9\9\9payload = err,\
+\9\9\9\9\9type = states.rejected,\
+\9\9\9\9})\
+\9\9\9end\
+\9\9end):catch(function() end)\
 \9\9return function()\
 \9\9\9canceled = true\
 \9\9end\
@@ -1717,20 +1719,21 @@ return {\
 }\
 ", '@'.."Havoc.hooks.common.use-promise")) setfenv(fn, newEnv("Havoc.hooks.common.use-promise")) return fn() end)
 
-newModule("use-set-state", "ModuleScript", "Havoc.hooks.common.use-set-state", "Havoc.hooks.common", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("use-set-state", "ModuleScript", "Havoc.hooks.common.use-set-state", "Havoc.hooks.common", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
-local useState = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-hooked\").src).useState\
+local useState = TS.import(script, script.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact-hooked\", \"src\").useState\
 local function useSetState(initialState)\
 \9local state, setState = useState(initialState)\
 \9local merge = function(action)\
 \9\9return setState(function(s)\
 \9\9\9local _object = {}\
-\9\9\9if type(s) == \"table\" then\
-\9\9\9\9for _k, _v in pairs(s) do\
+\9\9\9if s ~= 0 and s == s and s ~= \"\" and s then\
+\9\9\9\9for _k, _v in s do\
 \9\9\9\9\9_object[_k] = _v\
 \9\9\9\9end\
 \9\9\9end\
-\9\9\9for _k, _v in pairs((if type(action) == \"function\" then action(s) else action)) do\
+\9\9\9local _action = action\
+\9\9\9for _k, _v in (if type(_action) == \"function\" then action(s) else action) do\
 \9\9\9\9_object[_k] = _v\
 \9\9\9end\
 \9\9\9return _object\
@@ -1743,10 +1746,10 @@ return {\
 }\
 ", '@'.."Havoc.hooks.common.use-set-state")) setfenv(fn, newEnv("Havoc.hooks.common.use-set-state")) return fn() end)
 
-newModule("use-spring", "ModuleScript", "Havoc.hooks.common.use-spring", "Havoc.hooks.common", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("use-spring", "ModuleScript", "Havoc.hooks.common.use-spring", "Havoc.hooks.common", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
-local Spring = TS.import(script, TS.getModule(script, \"@rbxts\", \"flipper\").src).Spring\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
+local Spring = TS.import(script, script.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"flipper\", \"src\").Spring\
+local Roact = TS.import(script, script.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
 local _flipper_hooks = TS.import(script, script.Parent, \"flipper-hooks\")\
 local getBinding = _flipper_hooks.getBinding\
 local useMotor = _flipper_hooks.useMotor\
@@ -1797,8 +1800,11 @@ local function useSpring(value, options)\
 \9if not options then\
 \9\9return (Roact.createBinding(value))\
 \9end\
-\9local useSpring = supportedTypes[typeof(value)]\
-\9local _arg1 = \"useAnySpring: \" .. (typeof(value) .. \" is not supported\")\
+\9local _exp = supportedTypes\
+\9local _value = value\
+\9local useSpring = _exp[typeof(_value)]\
+\9local _value_1 = value\
+\9local _arg1 = `useAnySpring: {typeof(_value_1)} is not supported`\
 \9assert(useSpring, _arg1)\
 \9return useSpring(value, options)\
 end\
@@ -1807,13 +1813,13 @@ return {\
 }\
 ", '@'.."Havoc.hooks.common.use-spring")) setfenv(fn, newEnv("Havoc.hooks.common.use-spring")) return fn() end)
 
-newModule("use-viewport-size", "ModuleScript", "Havoc.hooks.common.use-viewport-size", "Havoc.hooks.common", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("use-viewport-size", "ModuleScript", "Havoc.hooks.common.use-viewport-size", "Havoc.hooks.common", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
-local _roact_hooked = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-hooked\").src)\
+local _roact_hooked = TS.import(script, script.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact-hooked\", \"src\")\
 local useBinding = _roact_hooked.useBinding\
 local useEffect = _roact_hooked.useEffect\
 local useState = _roact_hooked.useState\
-local Workspace = TS.import(script, TS.getModule(script, \"@rbxts\", \"services\")).Workspace\
+local Workspace = TS.import(script, script.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"services\").Workspace\
 local function useViewportSize(onChange)\
 \9local camera, setCamera = useState(Workspace.CurrentCamera)\
 \9local size, setSize = useBinding(camera.ViewportSize)\
@@ -1851,7 +1857,7 @@ return {\
 }\
 ", '@'.."Havoc.hooks.common.use-viewport-size")) setfenv(fn, newEnv("Havoc.hooks.common.use-viewport-size")) return fn() end)
 
-newModule("use-current-page", "ModuleScript", "Havoc.hooks.use-current-page", "Havoc.hooks", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("use-current-page", "ModuleScript", "Havoc.hooks.use-current-page", "Havoc.hooks", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.include.RuntimeLib)\
 local useAppSelector = TS.import(script, script.Parent, \"common\", \"rodux-hooks\").useAppSelector\
 local function useCurrentPage()\
@@ -1870,15 +1876,15 @@ return {\
 }\
 ", '@'.."Havoc.hooks.use-current-page")) setfenv(fn, newEnv("Havoc.hooks.use-current-page")) return fn() end)
 
-newModule("use-friends", "ModuleScript", "Havoc.hooks.use-friends", "Havoc.hooks", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("use-friends", "ModuleScript", "Havoc.hooks.use-friends", "Havoc.hooks", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.include.RuntimeLib)\
-local useMemo = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-hooked\").src).useMemo\
-local Players = TS.import(script, TS.getModule(script, \"@rbxts\", \"services\")).Players\
+local useMemo = TS.import(script, script.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact-hooked\", \"src\").useMemo\
+local Players = TS.import(script, script.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"services\").Players\
 local usePromise = TS.import(script, script.Parent, \"common\", \"use-promise\").usePromise\
 local function useFriends(deps)\
-\9return usePromise(TS.async(function()\
-\9\9return Players.LocalPlayer:GetFriendsOnline()\
-\9end), deps)\
+\9return usePromise(function()\
+\9\9return TS.Promise.resolve(Players.LocalPlayer:GetFriendsOnline())\
+\9end, deps)\
 end\
 local function useFriendsPlaying(deps)\
 \9local _binding = useFriends(deps)\
@@ -1887,19 +1893,19 @@ local function useFriendsPlaying(deps)\
 \9local status = _binding[3]\
 \9local _friendsPlaying = friends\
 \9if _friendsPlaying ~= nil then\
-\9\9local _arg0 = function(friend)\
+\9\9-- ▼ ReadonlyArray.filter ▼\
+\9\9local _newValue = {}\
+\9\9local _callback = function(friend)\
 \9\9\9return friend.PlaceId ~= nil and friend.GameId ~= nil\
 \9\9end\
-\9\9--▼ ReadonlyArray.filter ▼\
-\9\9local _newValue = {}\
 \9\9local _length = 0\
-\9\9for _k, _v in ipairs(_friendsPlaying) do\
-\9\9\9if _arg0(_v, _k - 1, _friendsPlaying) == true then\
+\9\9for _k, _v in _friendsPlaying do\
+\9\9\9if _callback(_v, _k - 1, _friendsPlaying) == true then\
 \9\9\9\9_length += 1\
 \9\9\9\9_newValue[_length] = _v\
 \9\9\9end\
 \9\9end\
-\9\9--▲ ReadonlyArray.filter ▲\
+\9\9-- ▲ ReadonlyArray.filter ▲\
 \9\9_friendsPlaying = _newValue\
 \9end\
 \9local friendsPlaying = _friendsPlaying\
@@ -1913,39 +1919,42 @@ local function useFriendActivity(deps)\
 \9local games = useMemo(function()\
 \9\9return {}\
 \9end, deps)\
-\9if not friends or #games > 0 then\
+\9if friends == nil or #friends == 0 or #games ~= 0 then\
 \9\9return { games, err, status }\
 \9end\
-\9local _arg0 = function(friend)\
-\9\9local _arg0_1 = function(g)\
+\9-- ▼ ReadonlyArray.forEach ▼\
+\9local _callback = function(friend)\
+\9\9-- ▼ ReadonlyArray.find ▼\
+\9\9local _callback_1 = function(g)\
 \9\9\9return g.placeId == friend.PlaceId\
 \9\9end\
-\9\9--▼ ReadonlyArray.find ▼\
 \9\9local _result\
-\9\9for _i, _v in ipairs(games) do\
-\9\9\9if _arg0_1(_v, _i - 1, games) == true then\
+\9\9for _i, _v in games do\
+\9\9\9if _callback_1(_v, _i - 1, games) == true then\
 \9\9\9\9_result = _v\
 \9\9\9\9break\
 \9\9\9end\
 \9\9end\
-\9\9--▲ ReadonlyArray.find ▲\
+\9\9-- ▲ ReadonlyArray.find ▲\
 \9\9local gameActivity = _result\
 \9\9if not gameActivity then\
 \9\9\9gameActivity = {\
 \9\9\9\9friends = { friend },\
 \9\9\9\9placeId = friend.PlaceId,\
-\9\9\9\9thumbnail = \"https://www.roblox.com/asset-thumbnail/image?assetId=\" .. (tostring(friend.PlaceId) .. \"&width=768&height=432&format=png\"),\
+\9\9\9\9thumbnail = `https://www.roblox.com/asset-thumbnail/image?assetId={friend.PlaceId}&width=768&height=432&format=png`,\
 \9\9\9}\
 \9\9\9local _gameActivity = gameActivity\
 \9\9\9table.insert(games, _gameActivity)\
 \9\9else\
 \9\9\9local _friends = gameActivity.friends\
-\9\9\9table.insert(_friends, friend)\
+\9\9\9local _friend = friend\
+\9\9\9table.insert(_friends, _friend)\
 \9\9end\
 \9end\
-\9for _k, _v in ipairs(friends) do\
-\9\9_arg0(_v, _k - 1, friends)\
+\9for _k, _v in friends do\
+\9\9_callback(_v, _k - 1, friends)\
 \9end\
+\9-- ▲ ReadonlyArray.forEach ▲\
 \9return { games, err, status }\
 end\
 return {\
@@ -1955,10 +1964,10 @@ return {\
 }\
 ", '@'.."Havoc.hooks.use-friends")) setfenv(fn, newEnv("Havoc.hooks.use-friends")) return fn() end)
 
-newModule("use-parallax-offset", "ModuleScript", "Havoc.hooks.use-parallax-offset", "Havoc.hooks", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("use-parallax-offset", "ModuleScript", "Havoc.hooks.use-parallax-offset", "Havoc.hooks", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.include.RuntimeLib)\
-local Spring = TS.import(script, TS.getModule(script, \"@rbxts\", \"flipper\").src).Spring\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
+local Spring = TS.import(script, script.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"flipper\", \"src\").Spring\
+local Roact = TS.import(script, script.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
 local _flipper_hooks = TS.import(script, script.Parent, \"common\", \"flipper-hooks\")\
 local getBinding = _flipper_hooks.getBinding\
 local useMotor = _flipper_hooks.useMotor\
@@ -1992,10 +2001,10 @@ return {\
 }\
 ", '@'.."Havoc.hooks.use-parallax-offset")) setfenv(fn, newEnv("Havoc.hooks.use-parallax-offset")) return fn() end)
 
-newModule("use-scale", "ModuleScript", "Havoc.hooks.use-scale", "Havoc.hooks", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("use-scale", "ModuleScript", "Havoc.hooks.use-scale", "Havoc.hooks", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
-local useContext = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-hooked\").src).useContext\
+local Roact = TS.import(script, script.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
+local useContext = TS.import(script, script.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact-hooked\", \"src\").useContext\
 local ScaleContext = TS.import(script, script.Parent.Parent, \"context\", \"scale-context\").ScaleContext\
 local defaultScale = Roact.createBinding(1)\
 local function useScale()\
@@ -2006,23 +2015,23 @@ return {\
 }\
 ", '@'.."Havoc.hooks.use-scale")) setfenv(fn, newEnv("Havoc.hooks.use-scale")) return fn() end)
 
-newModule("use-theme", "ModuleScript", "Havoc.hooks.use-theme", "Havoc.hooks", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("use-theme", "ModuleScript", "Havoc.hooks.use-theme", "Havoc.hooks", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.include.RuntimeLib)\
 local useAppSelector = TS.import(script, script.Parent, \"common\", \"rodux-hooks\").useAppSelector\
 local getThemes = TS.import(script, script.Parent.Parent, \"themes\").getThemes\
 local darkTheme = TS.import(script, script.Parent.Parent, \"themes\", \"sorbet\").darkTheme\
 local _exp = getThemes()\
-local _arg0 = function(t)\
+-- ▼ ReadonlyArray.map ▼\
+local _newValue = table.create(#_exp)\
+local _callback = function(t)\
 \9return { t.name, t }\
 end\
---▼ ReadonlyArray.map ▼\
-local _newValue = table.create(#_exp)\
-for _k, _v in ipairs(_exp) do\
-\9_newValue[_k] = _arg0(_v, _k - 1, _exp)\
+for _k, _v in _exp do\
+\9_newValue[_k] = _callback(_v, _k - 1, _exp)\
 end\
---▲ ReadonlyArray.map ▲\
+-- ▲ ReadonlyArray.map ▲\
 local _map = {}\
-for _, _v in ipairs(_newValue) do\
+for _, _v in _newValue do\
 \9_map[_v[1]] = _v[2]\
 end\
 local THEME_MAP = _map\
@@ -2038,7 +2047,7 @@ return {\
 }\
 ", '@'.."Havoc.hooks.use-theme")) setfenv(fn, newEnv("Havoc.hooks.use-theme")) return fn() end)
 
-newModule("jobs", "ModuleScript", "Havoc.jobs", "Havoc", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("jobs", "ModuleScript", "Havoc.jobs", "Havoc", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.include.RuntimeLib)\
 local exports = {}\
 exports.setStore = TS.import(script, script, \"helpers\", \"job-store\").setStore\
@@ -2057,10 +2066,10 @@ TS.import(script, script, \"players\", \"teleport\")\
 return exports\
 ", '@'.."Havoc.jobs")) setfenv(fn, newEnv("Havoc.jobs")) return fn() end)
 
-newModule("acrylic", "ModuleScript", "Havoc.jobs.acrylic", "Havoc.jobs", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("acrylic", "ModuleScript", "Havoc.jobs.acrylic", "Havoc.jobs", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.include.RuntimeLib)\
-local Make = TS.import(script, TS.getModule(script, \"@rbxts\", \"make\"))\
-local Lighting = TS.import(script, TS.getModule(script, \"@rbxts\", \"services\")).Lighting\
+local Make = TS.import(script, script.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"make\")\
+local Lighting = TS.import(script, script.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"services\").Lighting\
 local getStore = TS.import(script, script.Parent, \"helpers\", \"job-store\").getStore\
 local setTimeout = TS.import(script, script.Parent.Parent, \"utils\", \"timeout\").setTimeout\
 local baseEffect = Make(\"DepthOfFieldEffect\", {\
@@ -2070,20 +2079,20 @@ local baseEffect = Make(\"DepthOfFieldEffect\", {\
 })\
 local depthOfFieldDefaults = {}\
 local function enableAcrylic()\
-\9for effect in pairs(depthOfFieldDefaults) do\
+\9for effect in depthOfFieldDefaults do\
 \9\9effect.Enabled = false\
 \9end\
 \9baseEffect.Parent = Lighting\
 end\
 local function disableAcrylic()\
-\9for effect, defaults in pairs(depthOfFieldDefaults) do\
+\9for effect, defaults in depthOfFieldDefaults do\
 \9\9effect.Enabled = defaults.enabled\
 \9end\
 \9baseEffect.Parent = nil\
 end\
 local main = TS.async(function()\
 \9local store = TS.await(getStore())\
-\9for _, effect in ipairs(Lighting:GetChildren()) do\
+\9for _, effect in Lighting:GetChildren() do\
 \9\9if effect:IsA(\"DepthOfFieldEffect\") then\
 \9\9\9local _arg1 = {\
 \9\9\9\9enabled = effect.Enabled,\
@@ -2110,19 +2119,19 @@ local main = TS.async(function()\
 \9end)\
 end)\
 main():catch(function(err)\
-\9warn(\"[acrylic-worker] \" .. tostring(err))\
+\9warn(`[acrylic-worker] {err}`)\
 end)\
 return nil\
 ", '@'.."Havoc.jobs.acrylic")) setfenv(fn, newEnv("Havoc.jobs.acrylic")) return fn() end)
 
 newInstance("character", "Folder", "Havoc.jobs.character", "Havoc.jobs")
 
-newModule("flight", "ModuleScript", "Havoc.jobs.character.flight", "Havoc.jobs.character", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("flight", "ModuleScript", "Havoc.jobs.character.flight", "Havoc.jobs.character", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
-local _flipper = TS.import(script, TS.getModule(script, \"@rbxts\", \"flipper\").src)\
+local _flipper = TS.import(script, script.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"flipper\", \"src\")\
 local GroupMotor = _flipper.GroupMotor\
 local Spring = _flipper.Spring\
-local _services = TS.import(script, TS.getModule(script, \"@rbxts\", \"services\"))\
+local _services = TS.import(script, script.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"services\")\
 local Players = _services.Players\
 local RunService = _services.RunService\
 local UserInputService = _services.UserInputService\
@@ -2162,7 +2171,7 @@ local main = TS.async(function()\
 \9\9updateDirection(input.KeyCode, false)\
 \9end)\
 \9RunService.Heartbeat:Connect(function(deltaTime)\
-\9\9if enabled and (humanoidRoot and coordinate) then\
+\9\9if enabled and humanoidRoot and coordinate then\
 \9\9\9updateCoordinate(deltaTime)\
 \9\9\9coordinateSpring:setGoal({ Spring.new(coordinate.X), Spring.new(coordinate.Y), Spring.new(coordinate.Z) })\
 \9\9\9coordinateSpring:step(deltaTime)\
@@ -2177,7 +2186,7 @@ local main = TS.async(function()\
 \9\9end\
 \9end)\
 \9RunService.RenderStepped:Connect(function()\
-\9\9if enabled and (humanoidRoot and coordinate) then\
+\9\9if enabled and humanoidRoot and coordinate then\
 \9\9\9local _rotation = Workspace.CurrentCamera.CFrame.Rotation\
 \9\9\9local _position = humanoidRoot.CFrame.Position\
 \9\9\9humanoidRoot.CFrame = _rotation + _position\
@@ -2275,14 +2284,14 @@ function updateDirection(code, begin)\
 \9until true\
 end\
 main():catch(function(err)\
-\9warn(\"[flight-worker] \" .. tostring(err))\
+\9warn(`[flight-worker] {err}`)\
 end)\
 return nil\
 ", '@'.."Havoc.jobs.character.flight")) setfenv(fn, newEnv("Havoc.jobs.character.flight")) return fn() end)
 
-newModule("ghost", "ModuleScript", "Havoc.jobs.character.ghost", "Havoc.jobs.character", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("ghost", "ModuleScript", "Havoc.jobs.character.ghost", "Havoc.jobs.character", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
-local _services = TS.import(script, TS.getModule(script, \"@rbxts\", \"services\"))\
+local _services = TS.import(script, script.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"services\")\
 local Players = _services.Players\
 local Workspace = _services.Workspace\
 local _job_store = TS.import(script, script.Parent.Parent, \"helpers\", \"job-store\")\
@@ -2296,7 +2305,7 @@ local lastPosition\
 local function disableResetOnSpawn()\
 \9local playerGui = player:FindFirstChildWhichIsA(\"PlayerGui\")\
 \9if playerGui then\
-\9\9for _, object in ipairs(playerGui:GetChildren()) do\
+\9\9for _, object in playerGui:GetChildren() do\
 \9\9\9if object:IsA(\"ScreenGui\") and object.ResetOnSpawn then\
 \9\9\9\9table.insert(screenGuisWithResetOnSpawn, object)\
 \9\9\9\9object.ResetOnSpawn = false\
@@ -2305,28 +2314,34 @@ local function disableResetOnSpawn()\
 \9end\
 end\
 local function enableResetOnSpawn()\
-\9for _, screenGui in ipairs(screenGuisWithResetOnSpawn) do\
+\9for _, screenGui in screenGuisWithResetOnSpawn do\
 \9\9screenGui.ResetOnSpawn = true\
 \9end\
 \9table.clear(screenGuisWithResetOnSpawn)\
 end\
 local deactivate, activateGhost, deactivateOnCharacterAdded, deactivateGhost\
-local main = TS.async(function()\
-\9TS.await(onJobChange(\"ghost\", function(job, state)\
+local function main()\
+\9onJobChange(\"ghost\", function(job, state)\
 \9\9if state.jobs.refresh.active and job.active then\
-\9\9\9deactivate()\
+\9\9\9deactivate():catch(function(err)\
+\9\9\9\9warn(`[ghost-worker-deactivate] {err}`)\
+\9\9\9end)\
 \9\9elseif job.active then\
 \9\9\9activateGhost():andThen(deactivateOnCharacterAdded):catch(function(err)\
-\9\9\9\9warn(\"[ghost-worker-active] \" .. tostring(err))\
-\9\9\9\9deactivate()\
+\9\9\9\9warn(`[ghost-worker-active] {err}`)\
+\9\9\9\9deactivate():catch(function(e)\
+\9\9\9\9\9warn(`[ghost-worker-deactivate] {e}`)\
+\9\9\9\9end)\
 \9\9\9end)\
 \9\9elseif not state.jobs.refresh.active then\
 \9\9\9deactivateGhost():catch(function(err)\
-\9\9\9\9warn(\"[ghost-worker-inactive] \" .. tostring(err))\
+\9\9\9\9warn(`[ghost-worker-inactive] {err}`)\
 \9\9\9end)\
 \9\9end\
-\9end))\
-end)\
+\9end):catch(function(err)\
+\9\9warn(`[ghost-worker] {err}`)\
+\9end)\
+end\
 deactivate = TS.async(function()\
 \9local store = TS.await(getStore())\
 \9store:dispatch({\
@@ -2341,7 +2356,7 @@ deactivateOnCharacterAdded = TS.async(function()\
 \9end))\
 \9TS.await(deactivate())\
 end)\
-activateGhost = TS.async(function()\
+function activateGhost()\
 \9local character = player.Character\
 \9local _humanoid = character\
 \9if _humanoid ~= nil then\
@@ -2349,7 +2364,7 @@ activateGhost = TS.async(function()\
 \9end\
 \9local humanoid = _humanoid\
 \9if not character or not humanoid then\
-\9\9error(\"Character or Humanoid is null\")\
+\9\9return TS.Promise.reject(\"Character or Humanoid is null\")\
 \9end\
 \9character.Archivable = true\
 \9ghostCharacter = character:Clone()\
@@ -2361,8 +2376,12 @@ activateGhost = TS.async(function()\
 \9end\
 \9lastPosition = if _result then rootPart.CFrame else nil\
 \9originalCharacter = character\
-\9local ghostHumanoid = ghostCharacter:FindFirstChildWhichIsA(\"Humanoid\")\
-\9for _, child in ipairs(ghostCharacter:GetDescendants()) do\
+\9local _ghostHumanoid = ghostCharacter\
+\9if _ghostHumanoid ~= nil then\
+\9\9_ghostHumanoid = _ghostHumanoid:FindFirstChildWhichIsA(\"Humanoid\")\
+\9end\
+\9local ghostHumanoid = _ghostHumanoid\
+\9for _, child in ghostCharacter:GetDescendants() do\
 \9\9if child:IsA(\"BasePart\") then\
 \9\9\9child.Transparency = 1 - (1 - child.Transparency) * 0.5\
 \9\9end\
@@ -2390,12 +2409,15 @@ activateGhost = TS.async(function()\
 \9local handle\
 \9handle = humanoid.Died:Connect(function()\
 \9\9handle:Disconnect()\
-\9\9deactivate()\
+\9\9deactivate():catch(function(err)\
+\9\9\9warn(`[ghost-worker-died] {err}`)\
+\9\9end)\
 \9end)\
-end)\
-deactivateGhost = TS.async(function()\
+\9return TS.Promise.resolve()\
+end\
+function deactivateGhost()\
 \9if not originalCharacter or not ghostCharacter then\
-\9\9return nil\
+\9\9return TS.Promise.resolve()\
 \9end\
 \9local rootPart = originalCharacter:FindFirstChild(\"HumanoidRootPart\")\
 \9local ghostRootPart = ghostCharacter:FindFirstChild(\"HumanoidRootPart\")\
@@ -2414,12 +2436,14 @@ deactivateGhost = TS.async(function()\
 \9local _result_1 = humanoid\
 \9if _result_1 ~= nil then\
 \9\9local _exp = _result_1:GetPlayingAnimationTracks()\
-\9\9local _arg0 = function(track)\
+\9\9-- ▼ ReadonlyArray.forEach ▼\
+\9\9local _callback = function(track)\
 \9\9\9return track:Stop()\
 \9\9end\
-\9\9for _k, _v in ipairs(_exp) do\
-\9\9\9_arg0(_v, _k - 1, _exp)\
+\9\9for _k, _v in _exp do\
+\9\9\9_callback(_v, _k - 1, _exp)\
 \9\9end\
+\9\9-- ▲ ReadonlyArray.forEach ▲\
 \9end\
 \9local position = currentPosition or lastPosition\
 \9local _result_2 = rootPart\
@@ -2444,95 +2468,97 @@ deactivateGhost = TS.async(function()\
 \9originalCharacter = nil\
 \9ghostCharacter = nil\
 \9lastPosition = nil\
-end)\
-main():catch(function(err)\
-\9warn(\"[ghost-worker] \" .. tostring(err))\
-end)\
+\9return TS.Promise.resolve()\
+end\
+main()\
 return nil\
 ", '@'.."Havoc.jobs.character.ghost")) setfenv(fn, newEnv("Havoc.jobs.character.ghost")) return fn() end)
 
-newModule("godmode", "ModuleScript", "Havoc.jobs.character.godmode", "Havoc.jobs.character", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("godmode", "ModuleScript", "Havoc.jobs.character.godmode", "Havoc.jobs.character", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
-local _services = TS.import(script, TS.getModule(script, \"@rbxts\", \"services\"))\
+local _services = TS.import(script, script.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"services\")\
 local Players = _services.Players\
-local Workspace = _services.Workspace\
+local RunService = _services.RunService\
 local _job_store = TS.import(script, script.Parent.Parent, \"helpers\", \"job-store\")\
 local getStore = _job_store.getStore\
 local onJobChange = _job_store.onJobChange\
 local player = Players.LocalPlayer\
-local currentCharacter\
-local deactivate, activateGodmode, deactivateOnCharacterAdded\
-local main = TS.async(function()\
-\9local function errorHandler(err)\
-\9\9warn(\"[godmode-worker] \" .. tostring(err))\
-\9\9deactivate()\
-\9end\
-\9TS.await(onJobChange(\"godmode\", function(job, state)\
+local healthConnection\
+local deactivate\
+local function errorHandler(err)\
+\9warn(`[godmode-worker] {tostring(err)}`)\
+\9deactivate():catch(function() end)\
+end\
+local activateGodmode\
+local function main()\
+\9onJobChange(\"godmode\", function(job, state)\
 \9\9if state.jobs.ghost.active and job.active then\
-\9\9\9deactivate()\
+\9\9\9deactivate():catch(function(err)\
+\9\9\9\9return warn(`[godmode-worker] {tostring(err)}`)\
+\9\9\9end)\
 \9\9elseif job.active then\
-\9\9\9activateGodmode():andThen(deactivateOnCharacterAdded):catch(errorHandler)\
+\9\9\9activateGodmode():catch(errorHandler)\
+\9\9else\
+\9\9\9deactivate():catch(function(err)\
+\9\9\9\9return warn(`[godmode-worker] {tostring(err)}`)\
+\9\9\9end)\
 \9\9end\
-\9end))\
-end)\
+\9end):catch(function(err)\
+\9\9return warn(`[godmode-worker] {tostring(err)}`)\
+\9end)\
+end\
 deactivate = TS.async(function()\
+\9if healthConnection then\
+\9\9healthConnection:Disconnect()\
+\9\9healthConnection = nil\
+\9end\
 \9local store = TS.await(getStore())\
 \9store:dispatch({\
 \9\9type = \"jobs/setJobActive\",\
 \9\9jobName = \"godmode\",\
 \9\9active = false,\
 \9})\
+\9print(\"[Godmode] Deactivated\")\
 end)\
-deactivateOnCharacterAdded = TS.async(function()\
-\9local store = TS.await(getStore())\
-\9TS.await(TS.Promise.fromEvent(player.CharacterAdded, function(character)\
-\9\9local jobs = store:getState().jobs\
-\9\9return not jobs.ghost.active and character ~= currentCharacter\
-\9end))\
-\9TS.await(deactivate())\
-end)\
-activateGodmode = TS.async(function()\
-\9local cameraCFrame = Workspace.CurrentCamera.CFrame\
+function activateGodmode()\
 \9local character = player.Character\
 \9if not character then\
-\9\9error(\"Character is null\")\
+\9\9return TS.Promise.reject(\"No character found\")\
 \9end\
 \9local humanoid = character:FindFirstChildWhichIsA(\"Humanoid\")\
 \9if not humanoid then\
-\9\9error(\"No humanoid found\")\
+\9\9return TS.Promise.reject(\"No humanoid found\")\
 \9end\
-\9local mockHumanoid = humanoid:Clone()\
-\9mockHumanoid.Parent = character\
-\9currentCharacter = character\
-\9player.Character = nil\
-\9mockHumanoid:SetStateEnabled(Enum.HumanoidStateType.Dead, false)\
-\9mockHumanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)\
-\9mockHumanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)\
-\9mockHumanoid.BreakJointsOnDeath = true\
-\9mockHumanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None\
-\9humanoid:Destroy()\
-\9player.Character = character\
-\9Workspace.CurrentCamera.CameraSubject = mockHumanoid\
-\9task.defer(function()\
-\9\9Workspace.CurrentCamera.CFrame = cameraCFrame\
+\9healthConnection = humanoid.HealthChanged:Connect(function()\
+\9\9if humanoid.Health < humanoid.MaxHealth then\
+\9\9\9humanoid.Health = humanoid.MaxHealth\
+\9\9end\
 \9end)\
-\9local animation = character:FindFirstChild(\"Animate\")\
-\9if animation then\
-\9\9animation.Disabled = true\
-\9\9animation.Disabled = false\
-\9end\
-\9mockHumanoid.MaxHealth = math.huge\
-\9mockHumanoid.Health = mockHumanoid.MaxHealth\
-end)\
-main():catch(function(err)\
-\9warn(\"[godmode-worker] \" .. tostring(err))\
-end)\
+\9humanoid.MaxHealth = math.huge\
+\9humanoid.Health = humanoid.MaxHealth\
+\9humanoid:SetStateEnabled(Enum.HumanoidStateType.Dead, false)\
+\9humanoid.BreakJointsOnDeath = false\
+\9print(\"[Godmode] Activated - Health locked at maximum\")\
+\9local backupLoop = RunService.Heartbeat:Connect(function()\
+\9\9if humanoid and humanoid.Health < humanoid.MaxHealth then\
+\9\9\9humanoid.Health = humanoid.MaxHealth\
+\9\9end\
+\9end)\
+\9local savedConnection = healthConnection\
+\9task.delay(0, function()\
+\9\9if not savedConnection then\
+\9\9\9backupLoop:Disconnect()\
+\9\9end\
+\9end)\
+\9return TS.Promise.resolve()\
+end\
+main()\
 return nil\
 ", '@'.."Havoc.jobs.character.godmode")) setfenv(fn, newEnv("Havoc.jobs.character.godmode")) return fn() end)
 
-newModule("humanoid", "ModuleScript", "Havoc.jobs.character.humanoid", "Havoc.jobs.character", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("humanoid", "ModuleScript", "Havoc.jobs.character.humanoid", "Havoc.jobs.character", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
-local Players = TS.import(script, TS.getModule(script, \"@rbxts\", \"services\")).Players\
+local Players = TS.import(script, script.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"services\").Players\
 local _job_store = TS.import(script, script.Parent.Parent, \"helpers\", \"job-store\")\
 local getStore = _job_store.getStore\
 local onJobChange = _job_store.onJobChange\
@@ -2542,34 +2568,41 @@ local defaults = {\
 \9walkSpeed = 16,\
 \9jumpHeight = 7.2,\
 }\
-local setDefaultWalkSpeed, updateWalkSpeed, setDefaultJumpHeight, updateJumpHeight\
+local humanoid\
+local walkSpeedJob\
+local jumpHeightJob\
+local setDefaultWalkSpeed, setDefaultJumpHeight, updateWalkSpeed, updateJumpHeight\
 local main = TS.async(function()\
 \9local store = TS.await(getStore())\
-\9local _humanoid = player.Character\
-\9if _humanoid ~= nil then\
-\9\9_humanoid = _humanoid:FindFirstChildWhichIsA(\"Humanoid\")\
-\9end\
-\9local humanoid = _humanoid\
 \9local state = store:getState()\
-\9local walkSpeedJob = state.jobs.walkSpeed\
-\9local jumpHeightJob = state.jobs.jumpHeight\
-\9TS.await(onJobChange(\"walkSpeed\", function(job)\
-\9\9if job.active and not walkSpeedJob.active then\
-\9\9\9setDefaultWalkSpeed(humanoid)\
-\9\9end\
+\9walkSpeedJob = state.jobs.walkSpeed\
+\9jumpHeightJob = state.jobs.jumpHeight\
+\9local _result = player.Character\
+\9if _result ~= nil then\
+\9\9_result = _result:FindFirstChildWhichIsA(\"Humanoid\")\
+\9end\
+\9humanoid = _result\
+\9setDefaultWalkSpeed(humanoid)\
+\9setDefaultJumpHeight(humanoid)\
+\9onJobChange(\"walkSpeed\", function(job)\
 \9\9walkSpeedJob = job\
-\9\9updateWalkSpeed(humanoid, walkSpeedJob)\
-\9end))\
-\9TS.await(onJobChange(\"jumpHeight\", function(job)\
-\9\9if job.active and not jumpHeightJob.active then\
-\9\9\9setDefaultJumpHeight(humanoid)\
-\9\9end\
+\9\9updateWalkSpeed(humanoid, job)\
+\9end):catch(function(err)\
+\9\9warn(`[humanoid-worker] {tostring(err)}`)\
+\9end)\
+\9onJobChange(\"jumpHeight\", function(job)\
 \9\9jumpHeightJob = job\
-\9\9updateJumpHeight(humanoid, jumpHeightJob)\
-\9end))\
+\9\9updateJumpHeight(humanoid, job)\
+\9end):catch(function(err)\
+\9\9warn(`[humanoid-worker] {tostring(err)}`)\
+\9end)\
 \9player.CharacterAdded:Connect(function(character)\
 \9\9local newHumanoid = character:WaitForChild(\"Humanoid\", 5)\
-\9\9if newHumanoid and newHumanoid:IsA(\"Humanoid\") then\
+\9\9local _result_1 = newHumanoid\
+\9\9if _result_1 ~= nil then\
+\9\9\9_result_1 = _result_1:IsA(\"Humanoid\")\
+\9\9end\
+\9\9if _result_1 then\
 \9\9\9humanoid = newHumanoid\
 \9\9\9setDefaultWalkSpeed(newHumanoid)\
 \9\9\9setDefaultJumpHeight(newHumanoid)\
@@ -2581,8 +2614,6 @@ local main = TS.async(function()\
 \9\9\9end\
 \9\9end\
 \9end)\
-\9setDefaultWalkSpeed(humanoid)\
-\9setDefaultJumpHeight(humanoid)\
 end)\
 function setDefaultWalkSpeed(humanoid)\
 \9if humanoid then\
@@ -2594,24 +2625,20 @@ function setDefaultJumpHeight(humanoid)\
 \9\9defaults.jumpHeight = humanoid.JumpHeight\
 \9end\
 end\
-function updateWalkSpeed(humanoid, walkSpeedJob)\
+function updateWalkSpeed(humanoid, job)\
 \9if not humanoid then\
 \9\9return nil\
 \9end\
-\9if walkSpeedJob.active then\
-\9\9humanoid.WalkSpeed = walkSpeedJob.value\
-\9else\
-\9\9humanoid.WalkSpeed = defaults.walkSpeed\
-\9end\
+\9humanoid.WalkSpeed = if job.active then job.value else defaults.walkSpeed\
 end\
-function updateJumpHeight(humanoid, jumpHeightJob)\
+function updateJumpHeight(humanoid, job)\
 \9if not humanoid then\
 \9\9return nil\
 \9end\
-\9if jumpHeightJob.active then\
-\9\9humanoid.JumpHeight = jumpHeightJob.value\
+\9if job.active then\
+\9\9humanoid.JumpHeight = job.value\
 \9\9if humanoid.UseJumpPower then\
-\9\9\9humanoid.JumpPower = math.sqrt(JUMP_POWER_CONSTANT * jumpHeightJob.value)\
+\9\9\9humanoid.JumpPower = math.sqrt(JUMP_POWER_CONSTANT * job.value)\
 \9\9end\
 \9else\
 \9\9humanoid.JumpHeight = defaults.jumpHeight\
@@ -2621,14 +2648,14 @@ function updateJumpHeight(humanoid, jumpHeightJob)\
 \9end\
 end\
 main():catch(function(err)\
-\9warn(\"[humanoid-worker] \" .. tostring(err))\
+\9warn(`[humanoid-worker] {tostring(err)}`)\
 end)\
 return nil\
 ", '@'.."Havoc.jobs.character.humanoid")) setfenv(fn, newEnv("Havoc.jobs.character.humanoid")) return fn() end)
 
-newModule("refresh", "ModuleScript", "Havoc.jobs.character.refresh", "Havoc.jobs.character", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("refresh", "ModuleScript", "Havoc.jobs.character.refresh", "Havoc.jobs.character", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
-local _services = TS.import(script, TS.getModule(script, \"@rbxts\", \"services\"))\
+local _services = TS.import(script, script.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"services\")\
 local Players = _services.Players\
 local Workspace = _services.Workspace\
 local _job_store = TS.import(script, script.Parent.Parent, \"helpers\", \"job-store\")\
@@ -2646,56 +2673,75 @@ local main = TS.async(function()\
 \9\9\9active = false,\
 \9\9})\
 \9end\
-\9TS.await(onJobChange(\"refresh\", function(job, state)\
+\9onJobChange(\"refresh\", function(job, state)\
 \9\9if state.jobs.ghost.active and job.active then\
 \9\9\9deactivate()\
 \9\9elseif job.active then\
 \9\9\9respawn():catch(function(err)\
-\9\9\9\9return warn(\"[refresh-worker-respawn] \" .. tostring(err))\
+\9\9\9\9return warn(`[refresh-worker-respawn] {tostring(err)}`)\
 \9\9\9end):finally(function()\
 \9\9\9\9return deactivate()\
 \9\9\9end)\
 \9\9end\
-\9end))\
+\9end):catch(function(err)\
+\9\9return warn(`[refresh-worker] {tostring(err)}`)\
+\9end)\
 end)\
 respawn = TS.async(function()\
 \9local character = player.Character\
 \9if not character then\
 \9\9error(\"Character is null\")\
 \9end\
-\9local _respawnLocation = (character:FindFirstChild(\"HumanoidRootPart\"))\
+\9local rootPart = character:FindFirstChild(\"HumanoidRootPart\")\
+\9local _respawnLocation = rootPart\
 \9if _respawnLocation ~= nil then\
 \9\9_respawnLocation = _respawnLocation.CFrame\
 \9end\
 \9local respawnLocation = _respawnLocation\
-\9local humanoid = character:FindFirstAncestorWhichIsA(\"Humanoid\")\
+\9if not respawnLocation then\
+\9\9return nil\
+\9end\
+\9local humanoid = character:FindFirstChildWhichIsA(\"Humanoid\")\
 \9local _result = humanoid\
 \9if _result ~= nil then\
 \9\9_result:ChangeState(Enum.HumanoidStateType.Dead)\
 \9end\
 \9character:ClearAllChildren()\
-\9local mockCharacter = Instance.new(\"Model\", Workspace)\
-\9player.Character = mockCharacter\
-\9player.Character = character\
-\9mockCharacter:Destroy()\
-\9if not respawnLocation then\
-\9\9return nil\
-\9end\
-\9local newCharacter = TS.await(TS.Promise.fromEvent(player.CharacterAdded):timeout(MAX_RESPAWN_TIME, \"CharacterAdded event timed out\"))\
-\9local humanoidRoot = newCharacter:WaitForChild(\"HumanoidRootPart\", 5)\
-\9if humanoidRoot and (humanoidRoot:IsA(\"BasePart\") and respawnLocation) then\
-\9\9task.delay(0.1, function()\
-\9\9\9humanoidRoot.CFrame = respawnLocation\
-\9\9end)\
-\9end\
+\9local mockCharacter = Instance.new(\"Model\")\
+\9mockCharacter.Parent = Workspace\
+\9TS.try(function()\
+\9\9player.Character = nil\
+\9\9player.Character = mockCharacter\
+\9\9TS.await(TS.Promise.delay(0.1))\
+\9\9local clonedCharacter = character:Clone()\
+\9\9clonedCharacter.Parent = Workspace\
+\9\9player.Character = clonedCharacter\
+\9\9local newCharacter = TS.await(TS.Promise.race({ TS.Promise.fromEvent(player.CharacterAdded):timeout(MAX_RESPAWN_TIME, \"Respawn timeout\"), TS.Promise.resolve(clonedCharacter) }))\
+\9\9local newRoot = newCharacter:WaitForChild(\"HumanoidRootPart\", 5)\
+\9\9if newRoot ~= nil and newRoot:IsA(\"BasePart\") then\
+\9\9\9task.delay(0.1, function()\
+\9\9\9\9if newRoot.Parent then\
+\9\9\9\9\9newRoot.CFrame = respawnLocation\
+\9\9\9\9end\
+\9\9\9end)\
+\9\9end\
+\9\9if newCharacter:FindFirstChildWhichIsA(\"Humanoid\") == nil then\
+\9\9\9local newHumanoid = Instance.new(\"Humanoid\")\
+\9\9\9newHumanoid.Parent = newCharacter\
+\9\9end\
+\9end, nil, function()\
+\9\9if mockCharacter.Parent == Workspace then\
+\9\9\9mockCharacter:Destroy()\
+\9\9end\
+\9end)\
 end)\
 main():catch(function(err)\
-\9warn(\"[refresh-worker] \" .. tostring(err))\
+\9warn(`[refresh-worker] {tostring(err)}`)\
 end)\
 return nil\
 ", '@'.."Havoc.jobs.character.refresh")) setfenv(fn, newEnv("Havoc.jobs.character.refresh")) return fn() end)
 
-newModule("freecam", "ModuleScript", "Havoc.jobs.freecam", "Havoc.jobs", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("freecam", "ModuleScript", "Havoc.jobs.freecam", "Havoc.jobs", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.include.RuntimeLib)\
 local _freecam = TS.import(script, script.Parent, \"helpers\", \"freecam\")\
 local DisableFreecam = _freecam.DisableFreecam\
@@ -2711,7 +2757,7 @@ local main = TS.async(function()\
 \9end))\
 end)\
 main():catch(function(err)\
-\9warn(\"[freecam-worker] \" .. tostring(err))\
+\9warn(`[freecam-worker] {err}`)\
 end)\
 return nil\
 ", '@'.."Havoc.jobs.freecam")) setfenv(fn, newEnv("Havoc.jobs.freecam")) return fn() end)
@@ -3177,9 +3223,9 @@ return {\
 }\
 ", '@'.."Havoc.jobs.helpers.freecam")) setfenv(fn, newEnv("Havoc.jobs.helpers.freecam")) return fn() end)
 
-newModule("get-selected-player", "ModuleScript", "Havoc.jobs.helpers.get-selected-player", "Havoc.jobs.helpers", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("get-selected-player", "ModuleScript", "Havoc.jobs.helpers.get-selected-player", "Havoc.jobs.helpers", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
-local Players = TS.import(script, TS.getModule(script, \"@rbxts\", \"services\")).Players\
+local Players = TS.import(script, script.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"services\").Players\
 local getStore = TS.import(script, script.Parent, \"job-store\").getStore\
 local getSelectedPlayer = TS.async(function(onChange)\
 \9local store = TS.await(getStore())\
@@ -3206,7 +3252,7 @@ return {\
 }\
 ", '@'.."Havoc.jobs.helpers.get-selected-player")) setfenv(fn, newEnv("Havoc.jobs.helpers.get-selected-player")) return fn() end)
 
-newModule("job-store", "ModuleScript", "Havoc.jobs.helpers.job-store", "Havoc.jobs.helpers", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("job-store", "ModuleScript", "Havoc.jobs.helpers.job-store", "Havoc.jobs.helpers", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
 local setInterval = TS.import(script, script.Parent.Parent.Parent, \"utils\", \"timeout\").setInterval\
 local store = {}\
@@ -3262,9 +3308,9 @@ return {\
 
 newInstance("players", "Folder", "Havoc.jobs.players", "Havoc.jobs")
 
-newModule("hide", "ModuleScript", "Havoc.jobs.players.hide", "Havoc.jobs.players", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("hide", "ModuleScript", "Havoc.jobs.players.hide", "Havoc.jobs.players", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
-local Players = TS.import(script, TS.getModule(script, \"@rbxts\", \"services\")).Players\
+local Players = TS.import(script, script.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"services\").Players\
 local getSelectedPlayer = TS.import(script, script.Parent.Parent, \"helpers\", \"get-selected-player\").getSelectedPlayer\
 local _job_store = TS.import(script, script.Parent.Parent, \"helpers\", \"job-store\")\
 local getStore = _job_store.getStore\
@@ -3272,7 +3318,8 @@ local onJobChange = _job_store.onJobChange\
 local setJobActive = TS.import(script, script.Parent.Parent.Parent, \"store\", \"actions\", \"jobs.action\").setJobActive\
 local current = {}\
 local function hide(player)\
-\9if current[player] ~= nil then\
+\9local _player = player\
+\9if current[_player] ~= nil then\
 \9\9return nil\
 \9end\
 \9local character = player.Character\
@@ -3285,24 +3332,36 @@ local function hide(player)\
 \9\9\9data.character = character\
 \9\9end),\
 \9}\
-\9current[player] = data\
+\9local _player_1 = player\
+\9current[_player_1] = data\
 \9character.Parent = nil\
 end\
 local function unhide(player, setParent)\
-\9if not (current[player] ~= nil) then\
+\9local _player = player\
+\9if not (current[_player] ~= nil) then\
 \9\9return nil\
 \9end\
-\9local data = current[player]\
+\9local _player_1 = player\
+\9local data = current[_player_1]\
 \9if setParent then\
 \9\9data.character.Parent = data.parent\
 \9end\
 \9data.handle:Disconnect()\
-\9current[player] = nil\
+\9local _player_2 = player\
+\9current[_player_2] = nil\
 end\
 local main = TS.async(function()\
 \9local store = TS.await(getStore())\
 \9local playerSelected = TS.await(getSelectedPlayer(function(player)\
-\9\9store:dispatch(setJobActive(\"hide\", if player then current[player] ~= nil else false))\
+\9\9local _fn = store\
+\9\9local _result\
+\9\9if player then\
+\9\9\9local _player = player\
+\9\9\9_result = current[_player] ~= nil\
+\9\9else\
+\9\9\9_result = false\
+\9\9end\
+\9\9_fn:dispatch(setJobActive(\"hide\", _result))\
 \9end))\
 \9Players.PlayerRemoving:Connect(function(player)\
 \9\9if player == playerSelected.current then\
@@ -3325,14 +3384,14 @@ local main = TS.async(function()\
 \9end))\
 end)\
 main():catch(function(err)\
-\9warn(\"[hide-worker] \" .. tostring(err))\
+\9warn(`[hide-worker] {err}`)\
 end)\
 return nil\
 ", '@'.."Havoc.jobs.players.hide")) setfenv(fn, newEnv("Havoc.jobs.players.hide")) return fn() end)
 
-newModule("kill", "ModuleScript", "Havoc.jobs.players.kill", "Havoc.jobs.players", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("kill", "ModuleScript", "Havoc.jobs.players.kill", "Havoc.jobs.players", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
-local _services = TS.import(script, TS.getModule(script, \"@rbxts\", \"services\"))\
+local _services = TS.import(script, script.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"services\")\
 local Players = _services.Players\
 local Workspace = _services.Workspace\
 local getSelectedPlayer = TS.import(script, script.Parent.Parent, \"helpers\", \"get-selected-player\").getSelectedPlayer\
@@ -3341,21 +3400,22 @@ local getStore = _job_store.getStore\
 local onJobChange = _job_store.onJobChange\
 local setJobActive = TS.import(script, script.Parent.Parent.Parent, \"store\", \"actions\", \"jobs.action\").setJobActive\
 local player = Players.LocalPlayer\
-local attachToVictim = TS.async(function(victim)\
+local warnLog = warn\
+local function attachToVictim(victim)\
 \9local backpack = player:FindFirstChildWhichIsA(\"Backpack\")\
 \9if not backpack then\
-\9\9error(\"No inventory found\")\
+\9\9return TS.Promise.reject(\"No inventory found\")\
 \9end\
 \9local playerCharacter = player.Character\
 \9local victimCharacter = victim.Character\
 \9if not playerCharacter or not victimCharacter then\
-\9\9error(\"Victim or local player has no character\")\
+\9\9return TS.Promise.reject(\"Victim or local player has no character\")\
 \9end\
 \9local playerHumanoid = playerCharacter:FindFirstChildWhichIsA(\"Humanoid\")\
 \9local playerRootPart = playerCharacter:FindFirstChild(\"HumanoidRootPart\")\
 \9local victimRootPart = victimCharacter:FindFirstChild(\"HumanoidRootPart\")\
-\9if not playerHumanoid or (not playerRootPart or not victimRootPart) then\
-\9\9error(\"Victim or local player has no Humanoid or root part\")\
+\9if not playerHumanoid or not playerRootPart or not victimRootPart then\
+\9\9return TS.Promise.reject(\"Victim or local player has no Humanoid or root part\")\
 \9end\
 \9local _array = {}\
 \9local _length = #_array\
@@ -3365,21 +3425,21 @@ local attachToVictim = TS.async(function(victim)\
 \9_length += _Length\
 \9local _array_2 = backpack:GetChildren()\
 \9table.move(_array_2, 1, #_array_2, _length + 1, _array)\
-\9local _arg0 = function(obj)\
+\9-- ▼ ReadonlyArray.find ▼\
+\9local _callback = function(obj)\
 \9\9return obj:IsA(\"Tool\") and obj:FindFirstChild(\"Handle\") ~= nil\
 \9end\
-\9--▼ ReadonlyArray.find ▼\
 \9local _result\
-\9for _i, _v in ipairs(_array) do\
-\9\9if _arg0(_v, _i - 1, _array) == true then\
+\9for _i, _v in _array do\
+\9\9if _callback(_v, _i - 1, _array) == true then\
 \9\9\9_result = _v\
 \9\9\9break\
 \9\9end\
 \9end\
-\9--▲ ReadonlyArray.find ▲\
+\9-- ▲ ReadonlyArray.find ▲\
 \9local tool = _result\
 \9if not tool then\
-\9\9error(\"A tool with a handle is required to kill this victim\")\
+\9\9return TS.Promise.reject(\"A tool with a handle is required to kill this victim\")\
 \9end\
 \9playerHumanoid.Name = \"\"\
 \9local mockHumanoid = playerHumanoid:Clone()\
@@ -3390,30 +3450,34 @@ local attachToVictim = TS.async(function(victim)\
 \9playerHumanoid:Destroy()\
 \9Workspace.CurrentCamera.CameraSubject = mockHumanoid\
 \9tool.Parent = playerCharacter\
-\9do\
-\9\9local count = 0\
-\9\9local _shouldIncrement = false\
-\9\9while true do\
-\9\9\9if _shouldIncrement then\
-\9\9\9\9count += 1\
-\9\9\9else\
-\9\9\9\9_shouldIncrement = true\
+\9return TS.Promise.new(function(resolve, reject)\
+\9\9do\
+\9\9\9local count = 0\
+\9\9\9local _shouldIncrement = false\
+\9\9\9while true do\
+\9\9\9\9if _shouldIncrement then\
+\9\9\9\9\9count += 1\
+\9\9\9\9else\
+\9\9\9\9\9_shouldIncrement = true\
+\9\9\9\9end\
+\9\9\9\9if not (count < 250) then\
+\9\9\9\9\9break\
+\9\9\9\9end\
+\9\9\9\9if victimRootPart.Parent ~= victimCharacter or playerRootPart.Parent ~= playerCharacter then\
+\9\9\9\9\9reject(\"Victim or local player has no root part; did a player respawn?\")\
+\9\9\9\9\9return nil\
+\9\9\9\9end\
+\9\9\9\9if tool.Parent ~= playerCharacter then\
+\9\9\9\9\9resolve(playerRootPart)\
+\9\9\9\9\9return nil\
+\9\9\9\9end\
+\9\9\9\9playerRootPart.CFrame = victimRootPart.CFrame\
+\9\9\9\9task.wait(0.1)\
 \9\9\9end\
-\9\9\9if not (count < 250) then\
-\9\9\9\9break\
-\9\9\9end\
-\9\9\9if victimRootPart.Parent ~= victimCharacter or playerRootPart.Parent ~= playerCharacter then\
-\9\9\9\9error(\"Victim or local player has no root part; did a player respawn?\")\
-\9\9\9end\
-\9\9\9if tool.Parent ~= playerCharacter then\
-\9\9\9\9return playerRootPart\
-\9\9\9end\
-\9\9\9playerRootPart.CFrame = victimRootPart.CFrame\
-\9\9\9task.wait(0.1)\
 \9\9end\
-\9end\
-\9error(\"Failed to attach to victim\")\
-end)\
+\9\9reject(\"Failed to attach to victim\")\
+\9end)\
+end\
 local bringVictimToVoid = TS.async(function(victim)\
 \9local store = TS.await(getStore())\
 \9local _oldRootPart = player.Character\
@@ -3432,9 +3496,7 @@ local bringVictimToVoid = TS.async(function(victim)\
 \9end))\
 \9task.wait(0.3)\
 \9local rootPart = TS.await(attachToVictim(victim))\
-\9local _binding = { victim.Character, player.Character }\
-\9local victimCharacter = _binding[1]\
-\9local playerCharacter = _binding[2]\
+\9local victimCharacter, playerCharacter = victim.Character, player.Character\
 \9repeat\
 \9\9do\
 \9\9\9task.wait(0.1)\
@@ -3463,34 +3525,37 @@ end)\
 local main = TS.async(function()\
 \9local store = TS.await(getStore())\
 \9local playerSelected = TS.await(getSelectedPlayer())\
-\9TS.await(onJobChange(\"kill\", function(job)\
+\9onJobChange(\"kill\", function(job)\
 \9\9if job.active then\
 \9\9\9if not playerSelected.current then\
 \9\9\9\9store:dispatch(setJobActive(\"kill\", false))\
 \9\9\9\9return nil\
 \9\9\9end\
 \9\9\9bringVictimToVoid(playerSelected.current):catch(function(err)\
-\9\9\9\9return warn(\"[kill-worker] \" .. tostring(err))\
+\9\9\9\9return warnLog(`[kill-worker] {tostring(err)}`)\
 \9\9\9end):finally(function()\
 \9\9\9\9return store:dispatch(setJobActive(\"kill\", false))\
 \9\9\9end)\
 \9\9end\
-\9end))\
+\9end):catch(function(err)\
+\9\9return warnLog(`[kill-worker] {tostring(err)}`)\
+\9end)\
 end)\
 main():catch(function(err)\
-\9warn(\"[kill-worker] \" .. tostring(err))\
+\9warnLog(`[kill-worker] {tostring(err)}`)\
 end)\
 return nil\
 ", '@'.."Havoc.jobs.players.kill")) setfenv(fn, newEnv("Havoc.jobs.players.kill")) return fn() end)
 
-newModule("spectate", "ModuleScript", "Havoc.jobs.players.spectate", "Havoc.jobs.players", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("spectate", "ModuleScript", "Havoc.jobs.players.spectate", "Havoc.jobs.players", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
-local Workspace = TS.import(script, TS.getModule(script, \"@rbxts\", \"services\")).Workspace\
+local Workspace = TS.import(script, script.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"services\").Workspace\
 local getSelectedPlayer = TS.import(script, script.Parent.Parent, \"helpers\", \"get-selected-player\").getSelectedPlayer\
 local _job_store = TS.import(script, script.Parent.Parent, \"helpers\", \"job-store\")\
 local getStore = _job_store.getStore\
 local onJobChange = _job_store.onJobChange\
 local setJobActive = TS.import(script, script.Parent.Parent.Parent, \"store\", \"actions\", \"jobs.action\").setJobActive\
+local warnLog = warn\
 local main = TS.async(function()\
 \9local store = TS.await(getStore())\
 \9local playerSelected = TS.await(getSelectedPlayer(function()\
@@ -3511,7 +3576,7 @@ local main = TS.async(function()\
 \9\9connectCameraSubject(Workspace.CurrentCamera)\
 \9end)\
 \9connectCameraSubject(Workspace.CurrentCamera)\
-\9TS.await(onJobChange(\"spectate\", function(job)\
+\9onJobChange(\"spectate\", function(job)\
 \9\9local camera = Workspace.CurrentCamera\
 \9\9if job.active then\
 \9\9\9local _cameraSubject = playerSelected.current\
@@ -3536,30 +3601,33 @@ local main = TS.async(function()\
 \9\9\9defaultSubject = nil\
 \9\9\9currentSubject = nil\
 \9\9end\
-\9end))\
+\9end):catch(function(err)\
+\9\9return warnLog(`[spectate-worker] {tostring(err)}`)\
+\9end)\
 end)\
 main():catch(function(err)\
-\9warn(\"[spectate-worker] \" .. tostring(err))\
+\9warnLog(`[spectate-worker] {tostring(err)}`)\
 end)\
 return nil\
 ", '@'.."Havoc.jobs.players.spectate")) setfenv(fn, newEnv("Havoc.jobs.players.spectate")) return fn() end)
 
-newModule("teleport", "ModuleScript", "Havoc.jobs.players.teleport", "Havoc.jobs.players", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("teleport", "ModuleScript", "Havoc.jobs.players.teleport", "Havoc.jobs.players", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
-local Players = TS.import(script, TS.getModule(script, \"@rbxts\", \"services\")).Players\
+local Players = TS.import(script, script.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"services\").Players\
 local getSelectedPlayer = TS.import(script, script.Parent.Parent, \"helpers\", \"get-selected-player\").getSelectedPlayer\
 local _job_store = TS.import(script, script.Parent.Parent, \"helpers\", \"job-store\")\
 local getStore = _job_store.getStore\
 local onJobChange = _job_store.onJobChange\
 local setJobActive = TS.import(script, script.Parent.Parent.Parent, \"store\", \"actions\", \"jobs.action\").setJobActive\
 local setTimeout = TS.import(script, script.Parent.Parent.Parent, \"utils\", \"timeout\").setTimeout\
+local warnLog = warn\
 local main = TS.async(function()\
 \9local store = TS.await(getStore())\
 \9local playerSelected = TS.await(getSelectedPlayer(function()\
 \9\9store:dispatch(setJobActive(\"teleport\", false))\
 \9end))\
 \9local timeout\
-\9TS.await(onJobChange(\"teleport\", function(job)\
+\9onJobChange(\"teleport\", function(job)\
 \9\9local _result = timeout\
 \9\9if _result ~= nil then\
 \9\9\9_result:clear()\
@@ -3579,9 +3647,9 @@ local main = TS.async(function()\
 \9\9\9\9end\
 \9\9\9end\
 \9\9\9local targetRootPart = _targetRootPart\
-\9\9\9if not targetRootPart or (not rootPart or (not rootPart:IsA(\"BasePart\") or not targetRootPart:IsA(\"BasePart\"))) then\
+\9\9\9if not rootPart or not targetRootPart or not rootPart:IsA(\"BasePart\") or not targetRootPart:IsA(\"BasePart\") then\
 \9\9\9\9store:dispatch(setJobActive(\"teleport\", false))\
-\9\9\9\9warn(\"[teleport-worker] Failed to find root parts (\" .. (tostring(rootPart) .. (\" -> \" .. (tostring(targetRootPart) .. \")\"))))\
+\9\9\9\9warnLog(`[teleport-worker] Failed to find root parts ({tostring(rootPart)} -> {tostring(targetRootPart)})`)\
 \9\9\9\9return nil\
 \9\9\9end\
 \9\9\9timeout = setTimeout(function()\
@@ -3591,17 +3659,19 @@ local main = TS.async(function()\
 \9\9\9\9rootPart.CFrame = _cFrame * _cFrame_1\
 \9\9\9end, 1000)\
 \9\9end\
-\9end))\
+\9end):catch(function(err)\
+\9\9warnLog(`[teleport-worker] {tostring(err)}`)\
+\9end)\
 end)\
 main():catch(function(err)\
-\9warn(\"[teleport-worker] \" .. tostring(err))\
+\9warnLog(`[teleport-worker] {tostring(err)}`)\
 end)\
 return nil\
 ", '@'.."Havoc.jobs.players.teleport")) setfenv(fn, newEnv("Havoc.jobs.players.teleport")) return fn() end)
 
-newModule("server", "ModuleScript", "Havoc.jobs.server", "Havoc.jobs", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("server", "ModuleScript", "Havoc.jobs.server", "Havoc.jobs", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.include.RuntimeLib)\
-local _services = TS.import(script, TS.getModule(script, \"@rbxts\", \"services\"))\
+local _services = TS.import(script, script.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"services\")\
 local HttpService = _services.HttpService\
 local Players = _services.Players\
 local TeleportService = _services.TeleportService\
@@ -3611,25 +3681,26 @@ local onJobChange = _job_store.onJobChange\
 local setJobActive = TS.import(script, script.Parent.Parent, \"store\", \"actions\", \"jobs.action\").setJobActive\
 local http = TS.import(script, script.Parent.Parent, \"utils\", \"http\")\
 local setTimeout = TS.import(script, script.Parent.Parent, \"utils\", \"timeout\").setTimeout\
+local warnLog = warn\
 local queueExecution\
 local onServerHop = TS.async(function()\
 \9queueExecution()\
-\9local serversResult = TS.await(http.get(\"https://games.roblox.com/v1/games/\" .. (tostring(game.PlaceId) .. \"/servers/Public?sortOrder=Asc&limit=100\")))\
+\9local serversResult = TS.await(http.get(`https://games.roblox.com/v1/games/{game.PlaceId}/servers/Public?sortOrder=Asc&limit=100`))\
 \9local servers = HttpService:JSONDecode(serversResult)\
-\9local _data = servers.data\
-\9local _arg0 = function(server)\
+\9local _exp = servers.data\
+\9-- ▼ ReadonlyArray.filter ▼\
+\9local _newValue = {}\
+\9local _callback = function(server)\
 \9\9return server.playing < server.maxPlayers and server.id ~= game.JobId\
 \9end\
-\9--▼ ReadonlyArray.filter ▼\
-\9local _newValue = {}\
 \9local _length = 0\
-\9for _k, _v in ipairs(_data) do\
-\9\9if _arg0(_v, _k - 1, _data) == true then\
+\9for _k, _v in _exp do\
+\9\9if _callback(_v, _k - 1, _exp) == true then\
 \9\9\9_length += 1\
 \9\9\9_newValue[_length] = _v\
 \9\9end\
 \9end\
-\9--▲ ReadonlyArray.filter ▲\
+\9-- ▲ ReadonlyArray.filter ▲\
 \9local serversAvailable = _newValue\
 \9if #serversAvailable == 0 then\
 \9\9error(\"[server-worker-switch] No servers available.\")\
@@ -3638,14 +3709,14 @@ local onServerHop = TS.async(function()\
 \9\9TeleportService:TeleportToPlaceInstance(game.PlaceId, server.id)\
 \9end\
 end)\
-local onRejoin = TS.async(function()\
+local function onRejoin()\
 \9queueExecution()\
 \9if #Players:GetPlayers() == 1 then\
 \9\9TeleportService:Teleport(game.PlaceId, Players.LocalPlayer)\
 \9else\
 \9\9TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId)\
 \9end\
-end)\
+end\
 function queueExecution()\
 \9local code = 'loadstring(game:HttpGetAsync(\"https://raw.githubusercontent.com/apxllo1/hvcorca/master/public/latest.lua\"))()'\
 \9local _result = syn\
@@ -3671,21 +3742,25 @@ local main = TS.async(function()\
 \9\9end\
 \9\9timeout = nil\
 \9end\
-\9TS.await(onJobChange(\"rejoinServer\", function(job, state)\
+\9onJobChange(\"rejoinServer\", function(job, state)\
 \9\9clearTimeout()\
 \9\9if state.jobs.switchServer.active then\
 \9\9\9store:dispatch(setJobActive(\"switchServer\", false))\
 \9\9end\
 \9\9if job.active then\
 \9\9\9timeout = setTimeout(function()\
-\9\9\9\9onRejoin():catch(function(err)\
-\9\9\9\9\9warn(\"[server-worker-rejoin] \" .. tostring(err))\
+\9\9\9\9TS.try(function()\
+\9\9\9\9\9onRejoin()\
+\9\9\9\9end, function(err)\
+\9\9\9\9\9warnLog(`[server-worker-rejoin] {tostring(err)}`)\
 \9\9\9\9\9store:dispatch(setJobActive(\"rejoinServer\", false))\
 \9\9\9\9end)\
 \9\9\9end, 1000)\
 \9\9end\
-\9end))\
-\9TS.await(onJobChange(\"switchServer\", function(job, state)\
+\9end):catch(function(err)\
+\9\9return warnLog(`[server-worker] {tostring(err)}`)\
+\9end)\
+\9onJobChange(\"switchServer\", function(job, state)\
 \9\9clearTimeout()\
 \9\9if state.jobs.rejoinServer.active then\
 \9\9\9store:dispatch(setJobActive(\"rejoinServer\", false))\
@@ -3693,26 +3768,28 @@ local main = TS.async(function()\
 \9\9if job.active then\
 \9\9\9timeout = setTimeout(function()\
 \9\9\9\9onServerHop():catch(function(err)\
-\9\9\9\9\9warn(\"[server-worker-switch] \" .. tostring(err))\
+\9\9\9\9\9warnLog(`[server-worker-switch] {tostring(err)}`)\
 \9\9\9\9\9store:dispatch(setJobActive(\"switchServer\", false))\
 \9\9\9\9end)\
 \9\9\9end, 1000)\
 \9\9end\
-\9end))\
+\9end):catch(function(err)\
+\9\9return warnLog(`[server-worker] {tostring(err)}`)\
+\9end)\
 end)\
 main():catch(function(err)\
-\9warn(\"[server-worker] \" .. tostring(err))\
+\9warnLog(`[server-worker] {tostring(err)}`)\
 end)\
 return nil\
 ", '@'.."Havoc.jobs.server")) setfenv(fn, newEnv("Havoc.jobs.server")) return fn() end)
 
-newModule("main", "LocalScript", "Havoc.main", "Havoc", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("main", "LocalScript", "Havoc.main", "Havoc", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.include.RuntimeLib)\
-local Make = TS.import(script, TS.getModule(script, \"@rbxts\", \"make\"))\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
-local withHookDetection = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-hooked\").src).withHookDetection\
-local StoreProvider = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-rodux-hooked\").src).StoreProvider\
-local Players = TS.import(script, TS.getModule(script, \"@rbxts\", \"services\")).Players\
+local Make = TS.import(script, script.Parent, \"include\", \"node_modules\", \"@rbxts\", \"make\")\
+local Roact = TS.import(script, script.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
+local withHookDetection = TS.import(script, script.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact-hooked\", \"src\").withHookDetection\
+local StoreProvider = TS.import(script, script.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact-rodux-hooked\", \"src\").StoreProvider\
+local Players = TS.import(script, script.Parent, \"include\", \"node_modules\", \"@rbxts\", \"services\").Players\
 local _constants = TS.import(script, script.Parent, \"constants\")\
 local IS_DEV = _constants.IS_DEV\
 local LOAD_GUARD = _constants.LOAD_GUARD\
@@ -3723,7 +3800,7 @@ local App = TS.import(script, script.Parent, \"App\").default\
 withHookDetection(Roact)\
 local store = configureStore()\
 setStore(store)\
-local mount = TS.async(function()\
+local function mount()\
 \9local container = Make(\"Folder\", {})\
 \9Roact.mount(Roact.createElement(StoreProvider, {\
 \9\9store = store,\
@@ -3731,7 +3808,7 @@ local mount = TS.async(function()\
 \9\9Roact.createElement(App),\
 \9}), container)\
 \9return container:WaitForChild(1)\
-end)\
+end\
 local function render(app)\
 \9local protect = if syn then syn.protect_gui else protect_gui\
 \9if protect then\
@@ -3745,12 +3822,12 @@ local function render(app)\
 \9\9app.Parent = game:GetService(\"CoreGui\")\
 \9end\
 end\
-local main = TS.async(function()\
+local function main()\
 \9local g = if getgenv then getgenv() else _G\
 \9if g[LOAD_GUARD] == true then\
 \9\9error(\"Havoc is already loaded!\")\
 \9end\
-\9local app = TS.await(mount())\
+\9local app = mount()\
 \9render(app)\
 \9if time() > 3 then\
 \9\9task.defer(function()\
@@ -3761,19 +3838,17 @@ local main = TS.async(function()\
 \9\9getgenv()[LOAD_GUARD] = true\
 \9end\
 \9print(\"[Havoc] Loaded successfully\")\
-end)\
-main():catch(function(err)\
-\9warn(\"[Havoc] Failed to load: \" .. tostring(err))\
-end)\
+end\
+main()\
 ", '@'.."Havoc.main")) setfenv(fn, newEnv("Havoc.main")) return fn() end)
 
 newInstance("store", "Folder", "Havoc.store", "Havoc")
 
 newInstance("actions", "Folder", "Havoc.store.actions", "Havoc.store")
 
-newModule("dashboard.action", "ModuleScript", "Havoc.store.actions.dashboard.action", "Havoc.store.actions", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("dashboard.action", "ModuleScript", "Havoc.store.actions.dashboard.action", "Havoc.store.actions", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
-local Rodux = TS.import(script, TS.getModule(script, \"@rbxts\", \"rodux\").src)\
+local Rodux = TS.import(script, script.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"rodux\", \"src\")\
 local setDashboardPage = Rodux.makeActionCreator(\"dashboard/setDashboardPage\", function(page)\
 \9return {\
 \9\9page = page,\
@@ -3808,9 +3883,9 @@ return {\
 }\
 ", '@'.."Havoc.store.actions.dashboard.action")) setfenv(fn, newEnv("Havoc.store.actions.dashboard.action")) return fn() end)
 
-newModule("jobs.action", "ModuleScript", "Havoc.store.actions.jobs.action", "Havoc.store.actions", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("jobs.action", "ModuleScript", "Havoc.store.actions.jobs.action", "Havoc.store.actions", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
-local Rodux = TS.import(script, TS.getModule(script, \"@rbxts\", \"rodux\").src)\
+local Rodux = TS.import(script, script.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"rodux\", \"src\")\
 local setJobActive = Rodux.makeActionCreator(\"jobs/setJobActive\", function(jobName, active)\
 \9return {\
 \9\9jobName = jobName,\
@@ -3837,9 +3912,9 @@ return {\
 }\
 ", '@'.."Havoc.store.actions.jobs.action")) setfenv(fn, newEnv("Havoc.store.actions.jobs.action")) return fn() end)
 
-newModule("options.action", "ModuleScript", "Havoc.store.actions.options.action", "Havoc.store.actions", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("options.action", "ModuleScript", "Havoc.store.actions.options.action", "Havoc.store.actions", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
-local Rodux = TS.import(script, TS.getModule(script, \"@rbxts\", \"rodux\").src)\
+local Rodux = TS.import(script, script.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"rodux\", \"src\")\
 local setConfig = Rodux.makeActionCreator(\"options/setConfig\", function(name, active)\
 \9return {\
 \9\9name = name,\
@@ -3872,24 +3947,14 @@ return {\
 
 newInstance("models", "Folder", "Havoc.store.models", "Havoc.store")
 
-newModule("dashboard.model", "ModuleScript", "Havoc.store.models.dashboard.model", "Havoc.store.models", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
-local DashboardPage\
-do\
-\9local _inverse = {}\
-\9DashboardPage = setmetatable({}, {\
-\9\9__index = _inverse,\
-\9})\
-\9DashboardPage.Home = \"home\"\
-\9_inverse.home = \"Home\"\
-\9DashboardPage.Apps = \"apps\"\
-\9_inverse.apps = \"Apps\"\
-\9DashboardPage.Scripts = \"scripts\"\
-\9_inverse.scripts = \"Scripts\"\
-\9DashboardPage.Options = \"options\"\
-\9_inverse.options = \"Options\"\
-\9DashboardPage.Misc = \"misc\"\
-\9_inverse.misc = \"Misc\"\
-end\
+newModule("dashboard.model", "ModuleScript", "Havoc.store.models.dashboard.model", "Havoc.store.models", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
+local DashboardPage = {\
+\9Home = \"home\",\
+\9Apps = \"apps\",\
+\9Scripts = \"scripts\",\
+\9Options = \"options\",\
+\9Misc = \"misc\",\
+}\
 local PAGE_TO_INDEX = {\
 \9[DashboardPage.Home] = 0,\
 \9[DashboardPage.Apps] = 1,\
@@ -3911,19 +3976,20 @@ return {\
 }\
 ", '@'.."Havoc.store.models.dashboard.model")) setfenv(fn, newEnv("Havoc.store.models.dashboard.model")) return fn() end)
 
-newModule("jobs.model", "ModuleScript", "Havoc.store.models.jobs.model", "Havoc.store.models", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("jobs.model", "ModuleScript", "Havoc.store.models.jobs.model", "Havoc.store.models", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 ", '@'.."Havoc.store.models.jobs.model")) setfenv(fn, newEnv("Havoc.store.models.jobs.model")) return fn() end)
 
-newModule("options.model", "ModuleScript", "Havoc.store.models.options.model", "Havoc.store.models", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("options.model", "ModuleScript", "Havoc.store.models.options.model", "Havoc.store.models", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 ", '@'.."Havoc.store.models.options.model")) setfenv(fn, newEnv("Havoc.store.models.options.model")) return fn() end)
 
-newModule("persistent-state", "ModuleScript", "Havoc.store.persistent-state", "Havoc.store", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("persistent-state", "ModuleScript", "Havoc.store.persistent-state", "Havoc.store", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.include.RuntimeLib)\
-local _services = TS.import(script, TS.getModule(script, \"@rbxts\", \"services\"))\
+local _services = TS.import(script, script.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"services\")\
 local HttpService = _services.HttpService\
 local Players = _services.Players\
 local getStore = TS.import(script, script.Parent.Parent, \"jobs\", \"helpers\", \"job-store\").getStore\
 local setInterval = TS.import(script, script.Parent.Parent, \"utils\", \"timeout\").setInterval\
+local warnLog = warn\
 if type(makefolder) == \"function\" and not isfolder(\"_orca\") then\
 \9makefolder(\"_orca\")\
 end\
@@ -3941,17 +4007,21 @@ end\
 local autosave\
 local function persistentState(name, selector, defaultValue)\
 \9local _exitType, _returns = TS.try(function()\
-\9\9local serializedState = read(\"_orca/\" .. (name .. \".json\"))\
+\9\9local serializedState = read(`_orca/{name}.json`)\
 \9\9if serializedState == nil then\
-\9\9\9write(\"_orca/\" .. (name .. \".json\"), HttpService:JSONEncode(defaultValue))\
-\9\9\9autosave(name, selector)\
+\9\9\9write(`_orca/{name}.json`, HttpService:JSONEncode(defaultValue))\
+\9\9\9autosave(name, selector):catch(function(err)\
+\9\9\9\9return warnLog(`[PersistentState] {tostring(err)}`)\
+\9\9\9end)\
 \9\9\9return TS.TRY_RETURN, { defaultValue }\
 \9\9end\
 \9\9local value = HttpService:JSONDecode(serializedState)\
-\9\9autosave(name, selector)\
+\9\9autosave(name, selector):catch(function(err)\
+\9\9\9return warnLog(`[PersistentState] {tostring(err)}`)\
+\9\9end)\
 \9\9return TS.TRY_RETURN, { value }\
 \9end, function(err)\
-\9\9warn(\"[PersistentState] Load failed for \" .. (name .. (\": \" .. tostring(err))))\
+\9\9warnLog(`[PersistentState] Load failed for {name}: {tostring(err)}`)\
 \9\9return TS.TRY_RETURN, { defaultValue }\
 \9end)\
 \9if _exitType then\
@@ -3963,9 +4033,9 @@ autosave = TS.async(function(name, selector)\
 \9local save = function()\
 \9\9TS.try(function()\
 \9\9\9local state = selector(store:getState())\
-\9\9\9write(\"_orca/\" .. (name .. \".json\"), HttpService:JSONEncode(state))\
+\9\9\9write(`_orca/{name}.json`, HttpService:JSONEncode(state))\
 \9\9end, function(err)\
-\9\9\9warn(\"[PersistentState] Autosave failed for \" .. (name .. (\": \" .. tostring(err))))\
+\9\9\9warnLog(`[PersistentState] Autosave failed for {name}: {tostring(err)}`)\
 \9\9end)\
 \9end\
 \9setInterval(save, 60000)\
@@ -3982,9 +4052,9 @@ return {\
 
 newInstance("reducers", "Folder", "Havoc.store.reducers", "Havoc.store")
 
-newModule("dashboard.reducer", "ModuleScript", "Havoc.store.reducers.dashboard.reducer", "Havoc.store.reducers", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("dashboard.reducer", "ModuleScript", "Havoc.store.reducers.dashboard.reducer", "Havoc.store.reducers", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
-local Rodux = TS.import(script, TS.getModule(script, \"@rbxts\", \"rodux\").src)\
+local Rodux = TS.import(script, script.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"rodux\", \"src\")\
 local DashboardPage = TS.import(script, script.Parent.Parent, \"models\", \"dashboard.model\").DashboardPage\
 local initialState = {\
 \9page = DashboardPage.Home,\
@@ -3996,61 +4066,45 @@ local initialState = {\
 }\
 local dashboardReducer = Rodux.createReducer(initialState, {\
 \9[\"dashboard/setDashboardPage\"] = function(state, action)\
-\9\9local _object = {}\
-\9\9for _k, _v in pairs(state) do\
-\9\9\9_object[_k] = _v\
-\9\9end\
+\9\9local _object = table.clone(state)\
+\9\9setmetatable(_object, nil)\
 \9\9_object.page = action.page\
 \9\9return _object\
 \9end,\
 \9[\"dashboard/toggleDashboard\"] = function(state)\
-\9\9local _object = {}\
-\9\9for _k, _v in pairs(state) do\
-\9\9\9_object[_k] = _v\
-\9\9end\
+\9\9local _object = table.clone(state)\
+\9\9setmetatable(_object, nil)\
 \9\9_object.isOpen = not state.isOpen\
 \9\9return _object\
 \9end,\
 \9[\"dashboard/setHint\"] = function(state, action)\
-\9\9local _object = {}\
-\9\9for _k, _v in pairs(state) do\
-\9\9\9_object[_k] = _v\
-\9\9end\
+\9\9local _object = table.clone(state)\
+\9\9setmetatable(_object, nil)\
 \9\9_object.hint = action.hint\
 \9\9return _object\
 \9end,\
 \9[\"dashboard/clearHint\"] = function(state)\
-\9\9local _object = {}\
-\9\9for _k, _v in pairs(state) do\
-\9\9\9_object[_k] = _v\
-\9\9end\
+\9\9local _object = table.clone(state)\
+\9\9setmetatable(_object, nil)\
 \9\9_object.hint = nil\
 \9\9return _object\
 \9end,\
 \9[\"dashboard/playerSelected\"] = function(state, action)\
-\9\9local _object = {}\
-\9\9for _k, _v in pairs(state) do\
-\9\9\9_object[_k] = _v\
-\9\9end\
+\9\9local _object = table.clone(state)\
+\9\9setmetatable(_object, nil)\
 \9\9local _left = \"apps\"\
-\9\9local _object_1 = {}\
-\9\9for _k, _v in pairs(state.apps) do\
-\9\9\9_object_1[_k] = _v\
-\9\9end\
+\9\9local _object_1 = table.clone(state.apps)\
+\9\9setmetatable(_object_1, nil)\
 \9\9_object_1.playerSelected = action.name\
 \9\9_object[_left] = _object_1\
 \9\9return _object\
 \9end,\
 \9[\"dashboard/playerDeselected\"] = function(state)\
-\9\9local _object = {}\
-\9\9for _k, _v in pairs(state) do\
-\9\9\9_object[_k] = _v\
-\9\9end\
+\9\9local _object = table.clone(state)\
+\9\9setmetatable(_object, nil)\
 \9\9local _left = \"apps\"\
-\9\9local _object_1 = {}\
-\9\9for _k, _v in pairs(state.apps) do\
-\9\9\9_object_1[_k] = _v\
-\9\9end\
+\9\9local _object_1 = table.clone(state.apps)\
+\9\9setmetatable(_object_1, nil)\
 \9\9_object_1.playerSelected = nil\
 \9\9_object[_left] = _object_1\
 \9\9return _object\
@@ -4061,9 +4115,9 @@ return {\
 }\
 ", '@'.."Havoc.store.reducers.dashboard.reducer")) setfenv(fn, newEnv("Havoc.store.reducers.dashboard.reducer")) return fn() end)
 
-newModule("jobs.reducer", "ModuleScript", "Havoc.store.reducers.jobs.reducer", "Havoc.store.reducers", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("jobs.reducer", "ModuleScript", "Havoc.store.reducers.jobs.reducer", "Havoc.store.reducers", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
-local Rodux = TS.import(script, TS.getModule(script, \"@rbxts\", \"rodux\").src)\
+local Rodux = TS.import(script, script.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"rodux\", \"src\")\
 local initialState = {\
 \9flight = {\
 \9\9value = 60,\
@@ -4110,29 +4164,21 @@ local initialState = {\
 }\
 local jobsReducer = Rodux.createReducer(initialState, {\
 \9[\"jobs/setJobActive\"] = function(state, action)\
-\9\9local _object = {}\
-\9\9for _k, _v in pairs(state) do\
-\9\9\9_object[_k] = _v\
-\9\9end\
+\9\9local _object = table.clone(state)\
+\9\9setmetatable(_object, nil)\
 \9\9local _left = action.jobName\
-\9\9local _object_1 = {}\
-\9\9for _k, _v in pairs(state[action.jobName]) do\
-\9\9\9_object_1[_k] = _v\
-\9\9end\
+\9\9local _object_1 = table.clone(state[action.jobName])\
+\9\9setmetatable(_object_1, nil)\
 \9\9_object_1.active = action.active\
 \9\9_object[_left] = _object_1\
 \9\9return _object\
 \9end,\
 \9[\"jobs/setJobValue\"] = function(state, action)\
-\9\9local _object = {}\
-\9\9for _k, _v in pairs(state) do\
-\9\9\9_object[_k] = _v\
-\9\9end\
+\9\9local _object = table.clone(state)\
+\9\9setmetatable(_object, nil)\
 \9\9local _left = action.jobName\
-\9\9local _object_1 = {}\
-\9\9for _k, _v in pairs(state[action.jobName]) do\
-\9\9\9_object_1[_k] = _v\
-\9\9end\
+\9\9local _object_1 = table.clone(state[action.jobName])\
+\9\9setmetatable(_object_1, nil)\
 \9\9_object_1.value = action.value\
 \9\9_object[_left] = _object_1\
 \9\9return _object\
@@ -4141,20 +4187,14 @@ local jobsReducer = Rodux.createReducer(initialState, {\
 \9\9local job = state[action.jobName]\
 \9\9if job and job.sliders ~= nil then\
 \9\9\9local jobWithSliders = job\
-\9\9\9local _object = {}\
-\9\9\9for _k, _v in pairs(state) do\
-\9\9\9\9_object[_k] = _v\
-\9\9\9end\
+\9\9\9local _object = table.clone(state)\
+\9\9\9setmetatable(_object, nil)\
 \9\9\9local _left = action.jobName\
-\9\9\9local _object_1 = {}\
-\9\9\9for _k, _v in pairs(jobWithSliders) do\
-\9\9\9\9_object_1[_k] = _v\
-\9\9\9end\
+\9\9\9local _object_1 = table.clone(jobWithSliders)\
+\9\9\9setmetatable(_object_1, nil)\
 \9\9\9local _left_1 = \"sliders\"\
-\9\9\9local _object_2 = {}\
-\9\9\9for _k, _v in pairs(jobWithSliders.sliders) do\
-\9\9\9\9_object_2[_k] = _v\
-\9\9\9end\
+\9\9\9local _object_2 = table.clone(jobWithSliders.sliders)\
+\9\9\9setmetatable(_object_2, nil)\
 \9\9\9_object_2[action.slider] = action.value\
 \9\9\9_object_1[_left_1] = _object_2\
 \9\9\9_object[_left] = _object_1\
@@ -4168,9 +4208,9 @@ return {\
 }\
 ", '@'.."Havoc.store.reducers.jobs.reducer")) setfenv(fn, newEnv("Havoc.store.reducers.jobs.reducer")) return fn() end)
 
-newModule("options.reducer", "ModuleScript", "Havoc.store.reducers.options.reducer", "Havoc.store.reducers", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("options.reducer", "ModuleScript", "Havoc.store.reducers.options.reducer", "Havoc.store.reducers", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
-local Rodux = TS.import(script, TS.getModule(script, \"@rbxts\", \"rodux\").src)\
+local Rodux = TS.import(script, script.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"rodux\", \"src\")\
 local persistentState = TS.import(script, script.Parent.Parent, \"persistent-state\").persistentState\
 local initialState = persistentState(\"options\", function(state)\
 \9return state.options\
@@ -4185,51 +4225,37 @@ end, {\
 })\
 local optionsReducer = Rodux.createReducer(initialState, {\
 \9[\"options/setConfig\"] = function(state, action)\
-\9\9local _object = {}\
-\9\9for _k, _v in pairs(state) do\
-\9\9\9_object[_k] = _v\
-\9\9end\
+\9\9local _object = table.clone(state)\
+\9\9setmetatable(_object, nil)\
 \9\9local _left = \"config\"\
-\9\9local _object_1 = {}\
-\9\9for _k, _v in pairs(state.config) do\
-\9\9\9_object_1[_k] = _v\
-\9\9end\
+\9\9local _object_1 = table.clone(state.config)\
+\9\9setmetatable(_object_1, nil)\
 \9\9_object_1[action.name] = action.active\
 \9\9_object[_left] = _object_1\
 \9\9return _object\
 \9end,\
 \9[\"options/setTheme\"] = function(state, action)\
-\9\9local _object = {}\
-\9\9for _k, _v in pairs(state) do\
-\9\9\9_object[_k] = _v\
-\9\9end\
+\9\9local _object = table.clone(state)\
+\9\9setmetatable(_object, nil)\
 \9\9_object.currentTheme = action.theme\
 \9\9return _object\
 \9end,\
 \9[\"options/setShortcut\"] = function(state, action)\
-\9\9local _object = {}\
-\9\9for _k, _v in pairs(state) do\
-\9\9\9_object[_k] = _v\
-\9\9end\
+\9\9local _object = table.clone(state)\
+\9\9setmetatable(_object, nil)\
 \9\9local _left = \"shortcuts\"\
-\9\9local _object_1 = {}\
-\9\9for _k, _v in pairs(state.shortcuts) do\
-\9\9\9_object_1[_k] = _v\
-\9\9end\
+\9\9local _object_1 = table.clone(state.shortcuts)\
+\9\9setmetatable(_object_1, nil)\
 \9\9_object_1[action.shortcut] = action.keycode\
 \9\9_object[_left] = _object_1\
 \9\9return _object\
 \9end,\
 \9[\"options/removeShortcut\"] = function(state, action)\
-\9\9local _object = {}\
-\9\9for _k, _v in pairs(state) do\
-\9\9\9_object[_k] = _v\
-\9\9end\
+\9\9local _object = table.clone(state)\
+\9\9setmetatable(_object, nil)\
 \9\9local _left = \"shortcuts\"\
-\9\9local _object_1 = {}\
-\9\9for _k, _v in pairs(state.shortcuts) do\
-\9\9\9_object_1[_k] = _v\
-\9\9end\
+\9\9local _object_1 = table.clone(state.shortcuts)\
+\9\9setmetatable(_object_1, nil)\
 \9\9_object_1[action.shortcut] = nil\
 \9\9_object[_left] = _object_1\
 \9\9return _object\
@@ -4240,9 +4266,9 @@ return {\
 }\
 ", '@'.."Havoc.store.reducers.options.reducer")) setfenv(fn, newEnv("Havoc.store.reducers.options.reducer")) return fn() end)
 
-newModule("store", "ModuleScript", "Havoc.store.store", "Havoc.store", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("store", "ModuleScript", "Havoc.store.store", "Havoc.store", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.include.RuntimeLib)\
-local Rodux = TS.import(script, TS.getModule(script, \"@rbxts\", \"rodux\").src)\
+local Rodux = TS.import(script, script.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"rodux\", \"src\")\
 local dashboardReducer = TS.import(script, script.Parent, \"reducers\", \"dashboard.reducer\").dashboardReducer\
 local jobsReducer = TS.import(script, script.Parent, \"reducers\", \"jobs.reducer\").jobsReducer\
 local optionsReducer = TS.import(script, script.Parent, \"reducers\", \"options.reducer\").optionsReducer\
@@ -4259,7 +4285,7 @@ return {\
 }\
 ", '@'.."Havoc.store.store")) setfenv(fn, newEnv("Havoc.store.store")) return fn() end)
 
-newModule("theme", "ModuleScript", "Havoc.theme", "Havoc", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("theme", "ModuleScript", "Havoc.theme", "Havoc", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local UI_COLORS = {\
 \9Accent = Color3.fromRGB(235, 76, 105),\
 \9AccentDark = Color3.fromRGB(150, 40, 60),\
@@ -4291,42 +4317,50 @@ return {\
 }\
 ", '@'.."Havoc.theme")) setfenv(fn, newEnv("Havoc.theme")) return fn() end)
 
-newModule("themes", "ModuleScript", "Havoc.themes", "Havoc", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("themes", "ModuleScript", "Havoc.themes", "Havoc", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.include.RuntimeLib)\
+local crimson = TS.import(script, script, \"crimson\").crimson\
 local darkTheme = TS.import(script, script, \"sorbet\").darkTheme\
 local frostedGlass = TS.import(script, script, \"frosted-glass\").frostedGlass\
 local highContrast = TS.import(script, script, \"high-contrast\").highContrast\
 local lightTheme = TS.import(script, script, \"light-theme\").lightTheme\
 local obsidian = TS.import(script, script, \"obsidian\").obsidian\
-local crimson = TS.import(script, script, \"crimson\").crimson\
 local _exp = { crimson, darkTheme, lightTheme, frostedGlass, obsidian, highContrast }\
-local _arg0 = function(t)\
+-- ▼ ReadonlyArray.filter ▼\
+local _newValue = {}\
+local _callback = function(t)\
 \9return t ~= nil\
 end\
---▼ ReadonlyArray.filter ▼\
-local _newValue = {}\
 local _length = 0\
-for _k, _v in ipairs(_exp) do\
-\9if _arg0(_v, _k - 1, _exp) == true then\
+for _k, _v in _exp do\
+\9if _callback(_v, _k - 1, _exp) == true then\
 \9\9_length += 1\
 \9\9_newValue[_length] = _v\
 \9end\
 end\
---▲ ReadonlyArray.filter ▲\
+-- ▲ ReadonlyArray.filter ▲\
 local themeList = _newValue\
 local themeMap = {}\
-local _arg0_1 = function(theme)\
+-- ▼ ReadonlyArray.forEach ▼\
+local _callback_1 = function(theme)\
 \9local _name = theme.name\
-\9themeMap[_name] = theme\
+\9local _theme = theme\
+\9themeMap[_name] = _theme\
 end\
-for _k, _v in ipairs(themeList) do\
-\9_arg0_1(_v, _k - 1, themeList)\
+for _k, _v in themeList do\
+\9_callback_1(_v, _k - 1, themeList)\
 end\
+-- ▲ ReadonlyArray.forEach ▲\
 local function getThemes()\
 \9return themeList\
 end\
 local function getThemeByName(name)\
-\9return themeMap[name] or darkTheme\
+\9local _name = name\
+\9local _condition = themeMap[_name]\
+\9if _condition == nil then\
+\9\9_condition = darkTheme\
+\9end\
+\9return _condition\
 end\
 return {\
 \9getThemes = getThemes,\
@@ -4335,13 +4369,12 @@ return {\
 }\
 ", '@'.."Havoc.themes")) setfenv(fn, newEnv("Havoc.themes")) return fn() end)
 
-newModule("crimson", "ModuleScript", "Havoc.themes.crimson", "Havoc.themes", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("crimson", "ModuleScript", "Havoc.themes.crimson", "Havoc.themes", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.include.RuntimeLib)\
 local darkTheme = TS.import(script, script.Parent, \"sorbet\").darkTheme\
 local hex = TS.import(script, script.Parent.Parent, \"utils\", \"color3\").hex\
 local redAccent = hex(\"#FF2222\")\
 local white = hex(\"#ffffff\")\
-local black = hex(\"#0a0a0a\")\
 local accentSequence = ColorSequence.new({ ColorSequenceKeypoint.new(0, hex(\"#FF4444\")), ColorSequenceKeypoint.new(0.5, hex(\"#CC0000\")), ColorSequenceKeypoint.new(1, hex(\"#880000\")) })\
 local background = hex(\"#111111\")\
 local backgroundDark = hex(\"#0a0a0a\")\
@@ -4355,10 +4388,8 @@ local view = {\
 \9dropshadow = background,\
 \9dropshadowTransparency = 0.3,\
 }\
-local _object = {}\
-for _k, _v in pairs(darkTheme) do\
-\9_object[_k] = _v\
-end\
+local _object = table.clone(darkTheme)\
+setmetatable(_object, nil)\
 _object.name = \"Crimson\"\
 _object.preview = {\
 \9foreground = {\
@@ -4373,10 +4404,8 @@ _object.preview = {\
 \9},\
 }\
 local _left = \"navbar\"\
-local _object_1 = {}\
-for _k, _v in pairs(darkTheme.navbar) do\
-\9_object_1[_k] = _v\
-end\
+local _object_1 = table.clone(darkTheme.navbar)\
+setmetatable(_object_1, nil)\
 _object_1.outlined = true\
 _object_1.background = background\
 _object_1.dropshadow = background\
@@ -4386,10 +4415,8 @@ _object_1.accentGradient = {\
 }\
 _object[_left] = _object_1\
 local _left_1 = \"clock\"\
-local _object_2 = {}\
-for _k, _v in pairs(darkTheme.clock) do\
-\9_object_2[_k] = _v\
-end\
+local _object_2 = table.clone(darkTheme.clock)\
+setmetatable(_object_2, nil)\
 _object_2.outlined = true\
 _object_2.background = background\
 _object_2.dropshadow = background\
@@ -4398,10 +4425,8 @@ _object[_left_1] = _object_2\
 local _left_2 = \"home\"\
 local _object_3 = {}\
 local _left_3 = \"title\"\
-local _object_4 = {}\
-for _k, _v in pairs(view) do\
-\9_object_4[_k] = _v\
-end\
+local _object_4 = table.clone(view)\
+setmetatable(_object_4, nil)\
 _object_4.background = white\
 _object_4.backgroundGradient = {\
 \9color = accentSequence,\
@@ -4414,15 +4439,11 @@ _object_4.dropshadowGradient = {\
 }\
 _object_3[_left_3] = _object_4\
 local _left_4 = \"profile\"\
-local _object_5 = {}\
-for _k, _v in pairs(view) do\
-\9_object_5[_k] = _v\
-end\
+local _object_5 = table.clone(view)\
+setmetatable(_object_5, nil)\
 local _left_5 = \"avatar\"\
-local _object_6 = {}\
-for _k, _v in pairs(darkTheme.home.profile.avatar) do\
-\9_object_6[_k] = _v\
-end\
+local _object_6 = table.clone(darkTheme.home.profile.avatar)\
+setmetatable(_object_6, nil)\
 _object_6.background = backgroundDark\
 _object_6.transparency = 0\
 _object_6.gradient = {\
@@ -4440,46 +4461,36 @@ _object_5.highlight = {\
 \9freecam = hex(\"#FF6666\"),\
 }\
 local _left_6 = \"slider\"\
-local _object_7 = {}\
-for _k, _v in pairs(darkTheme.home.profile.slider) do\
-\9_object_7[_k] = _v\
-end\
+local _object_7 = table.clone(darkTheme.home.profile.slider)\
+setmetatable(_object_7, nil)\
 _object_7.outlined = true\
 _object_7.foreground = white\
 _object_7.background = backgroundDark\
 _object_5[_left_6] = _object_7\
 local _left_7 = \"button\"\
-local _object_8 = {}\
-for _k, _v in pairs(darkTheme.home.profile.button) do\
-\9_object_8[_k] = _v\
-end\
+local _object_8 = table.clone(darkTheme.home.profile.button)\
+setmetatable(_object_8, nil)\
 _object_8.outlined = true\
 _object_8.foreground = white\
 _object_8.background = backgroundDark\
 _object_5[_left_7] = _object_8\
 _object_3[_left_4] = _object_5\
 local _left_8 = \"server\"\
-local _object_9 = {}\
-for _k, _v in pairs(view) do\
-\9_object_9[_k] = _v\
-end\
+local _object_9 = table.clone(view)\
+setmetatable(_object_9, nil)\
 _object_9.background = hex(\"#CC0000\")\
 _object_9.dropshadow = hex(\"#CC0000\")\
 local _left_9 = \"rejoinButton\"\
-local _object_10 = {}\
-for _k, _v in pairs(darkTheme.home.server.rejoinButton) do\
-\9_object_10[_k] = _v\
-end\
+local _object_10 = table.clone(darkTheme.home.server.rejoinButton)\
+setmetatable(_object_10, nil)\
 _object_10.outlined = true\
 _object_10.foreground = white\
 _object_10.background = hex(\"#880000\")\
 _object_10.foregroundTransparency = 0\
 _object_9[_left_9] = _object_10\
 local _left_10 = \"switchButton\"\
-local _object_11 = {}\
-for _k, _v in pairs(darkTheme.home.server.switchButton) do\
-\9_object_11[_k] = _v\
-end\
+local _object_11 = table.clone(darkTheme.home.server.switchButton)\
+setmetatable(_object_11, nil)\
 _object_11.outlined = true\
 _object_11.foreground = white\
 _object_11.background = hex(\"#880000\")\
@@ -4487,15 +4498,11 @@ _object_11.foregroundTransparency = 0\
 _object_9[_left_10] = _object_11\
 _object_3[_left_8] = _object_9\
 local _left_11 = \"friendActivity\"\
-local _object_12 = {}\
-for _k, _v in pairs(view) do\
-\9_object_12[_k] = _v\
-end\
+local _object_12 = table.clone(view)\
+setmetatable(_object_12, nil)\
 local _left_12 = \"friendButton\"\
-local _object_13 = {}\
-for _k, _v in pairs(darkTheme.home.friendActivity.friendButton) do\
-\9_object_13[_k] = _v\
-end\
+local _object_13 = table.clone(darkTheme.home.friendActivity.friendButton)\
+setmetatable(_object_13, nil)\
 _object_13.outlined = true\
 _object_13.foreground = white\
 _object_13.background = backgroundDark\
@@ -4505,10 +4512,8 @@ _object[_left_2] = _object_3\
 local _left_13 = \"apps\"\
 local _object_14 = {}\
 local _left_14 = \"players\"\
-local _object_15 = {}\
-for _k, _v in pairs(view) do\
-\9_object_15[_k] = _v\
-end\
+local _object_15 = table.clone(view)\
+setmetatable(_object_15, nil)\
 _object_15.highlight = {\
 \9teleport = hex(\"#FF4444\"),\
 \9hide = hex(\"#FF2222\"),\
@@ -4516,10 +4521,8 @@ _object_15.highlight = {\
 \9spectate = hex(\"#FF6666\"),\
 }\
 local _left_15 = \"avatar\"\
-local _object_16 = {}\
-for _k, _v in pairs(darkTheme.apps.players.avatar) do\
-\9_object_16[_k] = _v\
-end\
+local _object_16 = table.clone(darkTheme.apps.players.avatar)\
+setmetatable(_object_16, nil)\
 _object_16.background = backgroundDark\
 _object_16.transparency = 0\
 _object_16.gradient = {\
@@ -4528,19 +4531,15 @@ _object_16.gradient = {\
 }\
 _object_15[_left_15] = _object_16\
 local _left_16 = \"button\"\
-local _object_17 = {}\
-for _k, _v in pairs(darkTheme.apps.players.button) do\
-\9_object_17[_k] = _v\
-end\
+local _object_17 = table.clone(darkTheme.apps.players.button)\
+setmetatable(_object_17, nil)\
 _object_17.outlined = true\
 _object_17.foreground = white\
 _object_17.background = backgroundDark\
 _object_15[_left_16] = _object_17\
 local _left_17 = \"playerButton\"\
-local _object_18 = {}\
-for _k, _v in pairs(darkTheme.apps.players.playerButton) do\
-\9_object_18[_k] = _v\
-end\
+local _object_18 = table.clone(darkTheme.apps.players.playerButton)\
+setmetatable(_object_18, nil)\
 _object_18.outlined = true\
 _object_18.foreground = white\
 _object_18.background = backgroundDark\
@@ -4552,15 +4551,11 @@ _object[_left_13] = _object_14\
 local _left_18 = \"options\"\
 local _object_19 = {}\
 local _left_19 = \"config\"\
-local _object_20 = {}\
-for _k, _v in pairs(view) do\
-\9_object_20[_k] = _v\
-end\
+local _object_20 = table.clone(view)\
+setmetatable(_object_20, nil)\
 local _left_20 = \"configButton\"\
-local _object_21 = {}\
-for _k, _v in pairs(darkTheme.options.config.configButton) do\
-\9_object_21[_k] = _v\
-end\
+local _object_21 = table.clone(darkTheme.options.config.configButton)\
+setmetatable(_object_21, nil)\
 _object_21.outlined = true\
 _object_21.foreground = white\
 _object_21.background = backgroundDark\
@@ -4569,15 +4564,11 @@ _object_21.accent = redAccent\
 _object_20[_left_20] = _object_21\
 _object_19[_left_19] = _object_20\
 local _left_21 = \"shortcuts\"\
-local _object_22 = {}\
-for _k, _v in pairs(view) do\
-\9_object_22[_k] = _v\
-end\
+local _object_22 = table.clone(view)\
+setmetatable(_object_22, nil)\
 local _left_22 = \"shortcutButton\"\
-local _object_23 = {}\
-for _k, _v in pairs(darkTheme.options.shortcuts.shortcutButton) do\
-\9_object_23[_k] = _v\
-end\
+local _object_23 = table.clone(darkTheme.options.shortcuts.shortcutButton)\
+setmetatable(_object_23, nil)\
 _object_23.outlined = true\
 _object_23.foreground = white\
 _object_23.background = backgroundDark\
@@ -4586,15 +4577,11 @@ _object_23.accent = redAccent\
 _object_22[_left_22] = _object_23\
 _object_19[_left_21] = _object_22\
 local _left_23 = \"themes\"\
-local _object_24 = {}\
-for _k, _v in pairs(view) do\
-\9_object_24[_k] = _v\
-end\
+local _object_24 = table.clone(view)\
+setmetatable(_object_24, nil)\
 local _left_24 = \"themeButton\"\
-local _object_25 = {}\
-for _k, _v in pairs(darkTheme.options.themes.themeButton) do\
-\9_object_25[_k] = _v\
-end\
+local _object_25 = table.clone(darkTheme.options.themes.themeButton)\
+setmetatable(_object_25, nil)\
 _object_25.outlined = true\
 _object_25.foreground = white\
 _object_25.background = backgroundDark\
@@ -4609,7 +4596,7 @@ return {\
 }\
 ", '@'.."Havoc.themes.crimson")) setfenv(fn, newEnv("Havoc.themes.crimson")) return fn() end)
 
-newModule("frosted-glass", "ModuleScript", "Havoc.themes.frosted-glass", "Havoc.themes", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("frosted-glass", "ModuleScript", "Havoc.themes.frosted-glass", "Havoc.themes", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.include.RuntimeLib)\
 local darkTheme = TS.import(script, script.Parent, \"sorbet\").darkTheme\
 local hex = TS.import(script, script.Parent.Parent, \"utils\", \"color3\").hex\
@@ -4630,10 +4617,8 @@ local view = {\
 \9\9rotation = 90,\
 \9},\
 }\
-local _object = {}\
-for _k, _v in pairs(darkTheme) do\
-\9_object[_k] = _v\
-end\
+local _object = table.clone(darkTheme)\
+setmetatable(_object, nil)\
 _object.name = \"Frosted glass\"\
 _object.preview = {\
 \9foreground = {\
@@ -4647,10 +4632,8 @@ _object.preview = {\
 \9},\
 }\
 local _left = \"navbar\"\
-local _object_1 = {}\
-for _k, _v in pairs(darkTheme.navbar) do\
-\9_object_1[_k] = _v\
-end\
+local _object_1 = table.clone(darkTheme.navbar)\
+setmetatable(_object_1, nil)\
 _object_1.outlined = true\
 _object_1.acrylic = true\
 _object_1.foreground = hex(\"#ffffff\")\
@@ -4679,21 +4662,15 @@ _object.clock = {\
 local _left_1 = \"home\"\
 local _object_2 = {}\
 local _left_2 = \"title\"\
-local _object_3 = {}\
-for _k, _v in pairs(view) do\
-\9_object_3[_k] = _v\
-end\
+local _object_3 = table.clone(view)\
+setmetatable(_object_3, nil)\
 _object_2[_left_2] = _object_3\
 local _left_3 = \"profile\"\
-local _object_4 = {}\
-for _k, _v in pairs(view) do\
-\9_object_4[_k] = _v\
-end\
+local _object_4 = table.clone(view)\
+setmetatable(_object_4, nil)\
 local _left_4 = \"avatar\"\
-local _object_5 = {}\
-for _k, _v in pairs(darkTheme.home.profile.avatar) do\
-\9_object_5[_k] = _v\
-end\
+local _object_5 = table.clone(darkTheme.home.profile.avatar)\
+setmetatable(_object_5, nil)\
 _object_5.background = hex(\"#ffffff\")\
 _object_5.transparency = 0.7\
 _object_5.gradient = {\
@@ -4712,10 +4689,8 @@ _object_4.highlight = {\
 \9freecam = accent,\
 }\
 local _left_5 = \"slider\"\
-local _object_6 = {}\
-for _k, _v in pairs(darkTheme.home.profile.slider) do\
-\9_object_6[_k] = _v\
-end\
+local _object_6 = table.clone(darkTheme.home.profile.slider)\
+setmetatable(_object_6, nil)\
 _object_6.outlined = false\
 _object_6.foreground = hex(\"#ffffff\")\
 _object_6.background = hex(\"#ffffff\")\
@@ -4723,10 +4698,8 @@ _object_6.backgroundTransparency = 0.8\
 _object_6.indicatorTransparency = 0.3\
 _object_4[_left_5] = _object_6\
 local _left_6 = \"button\"\
-local _object_7 = {}\
-for _k, _v in pairs(darkTheme.home.profile.button) do\
-\9_object_7[_k] = _v\
-end\
+local _object_7 = table.clone(darkTheme.home.profile.button)\
+setmetatable(_object_7, nil)\
 _object_7.outlined = false\
 _object_7.foreground = hex(\"#ffffff\")\
 _object_7.background = hex(\"#ffffff\")\
@@ -4734,15 +4707,11 @@ _object_7.backgroundTransparency = 0.8\
 _object_4[_left_6] = _object_7\
 _object_2[_left_3] = _object_4\
 local _left_7 = \"server\"\
-local _object_8 = {}\
-for _k, _v in pairs(view) do\
-\9_object_8[_k] = _v\
-end\
+local _object_8 = table.clone(view)\
+setmetatable(_object_8, nil)\
 local _left_8 = \"rejoinButton\"\
-local _object_9 = {}\
-for _k, _v in pairs(darkTheme.home.server.rejoinButton) do\
-\9_object_9[_k] = _v\
-end\
+local _object_9 = table.clone(darkTheme.home.server.rejoinButton)\
+setmetatable(_object_9, nil)\
 _object_9.outlined = false\
 _object_9.foreground = hex(\"#ffffff\")\
 _object_9.background = hex(\"#ffffff\")\
@@ -4751,10 +4720,8 @@ _object_9.backgroundTransparency = 0.8\
 _object_9.accent = accent\
 _object_8[_left_8] = _object_9\
 local _left_9 = \"switchButton\"\
-local _object_10 = {}\
-for _k, _v in pairs(darkTheme.home.server.switchButton) do\
-\9_object_10[_k] = _v\
-end\
+local _object_10 = table.clone(darkTheme.home.server.switchButton)\
+setmetatable(_object_10, nil)\
 _object_10.outlined = false\
 _object_10.foreground = hex(\"#ffffff\")\
 _object_10.background = hex(\"#ffffff\")\
@@ -4764,15 +4731,11 @@ _object_10.accent = accent\
 _object_8[_left_9] = _object_10\
 _object_2[_left_7] = _object_8\
 local _left_10 = \"friendActivity\"\
-local _object_11 = {}\
-for _k, _v in pairs(view) do\
-\9_object_11[_k] = _v\
-end\
+local _object_11 = table.clone(view)\
+setmetatable(_object_11, nil)\
 local _left_11 = \"friendButton\"\
-local _object_12 = {}\
-for _k, _v in pairs(darkTheme.home.friendActivity.friendButton) do\
-\9_object_12[_k] = _v\
-end\
+local _object_12 = table.clone(darkTheme.home.friendActivity.friendButton)\
+setmetatable(_object_12, nil)\
 _object_12.outlined = false\
 _object_12.foreground = hex(\"#ffffff\")\
 _object_12.background = hex(\"#ffffff\")\
@@ -4784,10 +4747,8 @@ _object[_left_1] = _object_2\
 local _left_12 = \"apps\"\
 local _object_13 = {}\
 local _left_13 = \"players\"\
-local _object_14 = {}\
-for _k, _v in pairs(view) do\
-\9_object_14[_k] = _v\
-end\
+local _object_14 = table.clone(view)\
+setmetatable(_object_14, nil)\
 _object_14.highlight = {\
 \9teleport = accent,\
 \9hide = accent,\
@@ -4795,10 +4756,8 @@ _object_14.highlight = {\
 \9spectate = accent,\
 }\
 local _left_14 = \"avatar\"\
-local _object_15 = {}\
-for _k, _v in pairs(darkTheme.apps.players.avatar) do\
-\9_object_15[_k] = _v\
-end\
+local _object_15 = table.clone(darkTheme.apps.players.avatar)\
+setmetatable(_object_15, nil)\
 _object_15.background = hex(\"#ffffff\")\
 _object_15.transparency = 0.7\
 _object_15.gradient = {\
@@ -4808,20 +4767,16 @@ _object_15.gradient = {\
 }\
 _object_14[_left_14] = _object_15\
 local _left_15 = \"button\"\
-local _object_16 = {}\
-for _k, _v in pairs(darkTheme.apps.players.button) do\
-\9_object_16[_k] = _v\
-end\
+local _object_16 = table.clone(darkTheme.apps.players.button)\
+setmetatable(_object_16, nil)\
 _object_16.outlined = false\
 _object_16.foreground = hex(\"#ffffff\")\
 _object_16.background = hex(\"#ffffff\")\
 _object_16.backgroundTransparency = 0.8\
 _object_14[_left_15] = _object_16\
 local _left_16 = \"playerButton\"\
-local _object_17 = {}\
-for _k, _v in pairs(darkTheme.apps.players.playerButton) do\
-\9_object_17[_k] = _v\
-end\
+local _object_17 = table.clone(darkTheme.apps.players.playerButton)\
+setmetatable(_object_17, nil)\
 _object_17.outlined = false\
 _object_17.foreground = hex(\"#ffffff\")\
 _object_17.background = hex(\"#ffffff\")\
@@ -4835,15 +4790,11 @@ _object[_left_12] = _object_13\
 local _left_17 = \"options\"\
 local _object_18 = {}\
 local _left_18 = \"config\"\
-local _object_19 = {}\
-for _k, _v in pairs(view) do\
-\9_object_19[_k] = _v\
-end\
+local _object_19 = table.clone(view)\
+setmetatable(_object_19, nil)\
 local _left_19 = \"configButton\"\
-local _object_20 = {}\
-for _k, _v in pairs(darkTheme.options.config.configButton) do\
-\9_object_20[_k] = _v\
-end\
+local _object_20 = table.clone(darkTheme.options.config.configButton)\
+setmetatable(_object_20, nil)\
 _object_20.outlined = false\
 _object_20.foreground = hex(\"#ffffff\")\
 _object_20.background = hex(\"#ffffff\")\
@@ -4854,15 +4805,11 @@ _object_20.dropshadowTransparency = 0.7\
 _object_19[_left_19] = _object_20\
 _object_18[_left_18] = _object_19\
 local _left_20 = \"shortcuts\"\
-local _object_21 = {}\
-for _k, _v in pairs(view) do\
-\9_object_21[_k] = _v\
-end\
+local _object_21 = table.clone(view)\
+setmetatable(_object_21, nil)\
 local _left_21 = \"shortcutButton\"\
-local _object_22 = {}\
-for _k, _v in pairs(darkTheme.options.shortcuts.shortcutButton) do\
-\9_object_22[_k] = _v\
-end\
+local _object_22 = table.clone(darkTheme.options.shortcuts.shortcutButton)\
+setmetatable(_object_22, nil)\
 _object_22.outlined = false\
 _object_22.foreground = hex(\"#ffffff\")\
 _object_22.background = hex(\"#ffffff\")\
@@ -4873,15 +4820,11 @@ _object_22.dropshadowTransparency = 0.7\
 _object_21[_left_21] = _object_22\
 _object_18[_left_20] = _object_21\
 local _left_22 = \"themes\"\
-local _object_23 = {}\
-for _k, _v in pairs(view) do\
-\9_object_23[_k] = _v\
-end\
+local _object_23 = table.clone(view)\
+setmetatable(_object_23, nil)\
 local _left_23 = \"themeButton\"\
-local _object_24 = {}\
-for _k, _v in pairs(darkTheme.options.themes.themeButton) do\
-\9_object_24[_k] = _v\
-end\
+local _object_24 = table.clone(darkTheme.options.themes.themeButton)\
+setmetatable(_object_24, nil)\
 _object_24.outlined = false\
 _object_24.foreground = hex(\"#ffffff\")\
 _object_24.background = hex(\"#ffffff\")\
@@ -4898,14 +4841,12 @@ return {\
 }\
 ", '@'.."Havoc.themes.frosted-glass")) setfenv(fn, newEnv("Havoc.themes.frosted-glass")) return fn() end)
 
-newModule("high-contrast", "ModuleScript", "Havoc.themes.high-contrast", "Havoc.themes", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("high-contrast", "ModuleScript", "Havoc.themes.high-contrast", "Havoc.themes", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.include.RuntimeLib)\
 local darkTheme = TS.import(script, script.Parent, \"sorbet\").darkTheme\
 local hex = TS.import(script, script.Parent.Parent, \"utils\", \"color3\").hex\
-local _object = {}\
-for _k, _v in pairs(darkTheme) do\
-\9_object[_k] = _v\
-end\
+local _object = table.clone(darkTheme)\
+setmetatable(_object, nil)\
 _object.name = \"High contrast\"\
 _object.preview = {\
 \9foreground = {\
@@ -4920,19 +4861,15 @@ _object.preview = {\
 \9},\
 }\
 local _left = \"navbar\"\
-local _object_1 = {}\
-for _k, _v in pairs(darkTheme.navbar) do\
-\9_object_1[_k] = _v\
-end\
+local _object_1 = table.clone(darkTheme.navbar)\
+setmetatable(_object_1, nil)\
 _object_1.foreground = hex(\"#ffffff\")\
 _object_1.background = hex(\"#000000\")\
 _object_1.dropshadow = hex(\"#000000\")\
 _object[_left] = _object_1\
 local _left_1 = \"clock\"\
-local _object_2 = {}\
-for _k, _v in pairs(darkTheme.clock) do\
-\9_object_2[_k] = _v\
-end\
+local _object_2 = table.clone(darkTheme.clock)\
+setmetatable(_object_2, nil)\
 _object_2.foreground = hex(\"#ffffff\")\
 _object_2.background = hex(\"#000000\")\
 _object_2.dropshadow = hex(\"#000000\")\
@@ -4940,27 +4877,21 @@ _object[_left_1] = _object_2\
 local _left_2 = \"home\"\
 local _object_3 = {}\
 local _left_3 = \"title\"\
-local _object_4 = {}\
-for _k, _v in pairs(darkTheme.home.title) do\
-\9_object_4[_k] = _v\
-end\
+local _object_4 = table.clone(darkTheme.home.title)\
+setmetatable(_object_4, nil)\
 _object_4.foreground = hex(\"#ffffff\")\
 _object_4.background = hex(\"#000000\")\
 _object_4.dropshadow = hex(\"#000000\")\
 _object_3[_left_3] = _object_4\
 local _left_4 = \"profile\"\
-local _object_5 = {}\
-for _k, _v in pairs(darkTheme.home.profile) do\
-\9_object_5[_k] = _v\
-end\
+local _object_5 = table.clone(darkTheme.home.profile)\
+setmetatable(_object_5, nil)\
 _object_5.foreground = hex(\"#ffffff\")\
 _object_5.background = hex(\"#000000\")\
 _object_5.dropshadow = hex(\"#000000\")\
 local _left_5 = \"avatar\"\
-local _object_6 = {}\
-for _k, _v in pairs(darkTheme.home.profile.avatar) do\
-\9_object_6[_k] = _v\
-end\
+local _object_6 = table.clone(darkTheme.home.profile.avatar)\
+setmetatable(_object_6, nil)\
 _object_6.background = hex(\"#ffffff\")\
 _object_6.transparency = 0.9\
 _object_6.gradient = {\
@@ -4968,45 +4899,35 @@ _object_6.gradient = {\
 }\
 _object_5[_left_5] = _object_6\
 local _left_6 = \"slider\"\
-local _object_7 = {}\
-for _k, _v in pairs(darkTheme.home.profile.slider) do\
-\9_object_7[_k] = _v\
-end\
+local _object_7 = table.clone(darkTheme.home.profile.slider)\
+setmetatable(_object_7, nil)\
 _object_7.foreground = hex(\"#ffffff\")\
 _object_7.background = hex(\"#000000\")\
 _object_5[_left_6] = _object_7\
 local _left_7 = \"button\"\
-local _object_8 = {}\
-for _k, _v in pairs(darkTheme.home.profile.button) do\
-\9_object_8[_k] = _v\
-end\
+local _object_8 = table.clone(darkTheme.home.profile.button)\
+setmetatable(_object_8, nil)\
 _object_8.foreground = hex(\"#ffffff\")\
 _object_8.background = hex(\"#000000\")\
 _object_5[_left_7] = _object_8\
 _object_3[_left_4] = _object_5\
 local _left_8 = \"server\"\
-local _object_9 = {}\
-for _k, _v in pairs(darkTheme.home.server) do\
-\9_object_9[_k] = _v\
-end\
+local _object_9 = table.clone(darkTheme.home.server)\
+setmetatable(_object_9, nil)\
 _object_9.foreground = hex(\"#ffffff\")\
 _object_9.background = hex(\"#000000\")\
 _object_9.dropshadow = hex(\"#000000\")\
 local _left_9 = \"rejoinButton\"\
-local _object_10 = {}\
-for _k, _v in pairs(darkTheme.home.server.rejoinButton) do\
-\9_object_10[_k] = _v\
-end\
+local _object_10 = table.clone(darkTheme.home.server.rejoinButton)\
+setmetatable(_object_10, nil)\
 _object_10.foreground = hex(\"#ffffff\")\
 _object_10.background = hex(\"#000000\")\
 _object_10.foregroundTransparency = 0.5\
 _object_10.accent = hex(\"#ff3f6c\")\
 _object_9[_left_9] = _object_10\
 local _left_10 = \"switchButton\"\
-local _object_11 = {}\
-for _k, _v in pairs(darkTheme.home.server.switchButton) do\
-\9_object_11[_k] = _v\
-end\
+local _object_11 = table.clone(darkTheme.home.server.switchButton)\
+setmetatable(_object_11, nil)\
 _object_11.foreground = hex(\"#ffffff\")\
 _object_11.background = hex(\"#000000\")\
 _object_11.foregroundTransparency = 0.5\
@@ -5014,18 +4935,14 @@ _object_11.accent = hex(\"#ff3f6c\")\
 _object_9[_left_10] = _object_11\
 _object_3[_left_8] = _object_9\
 local _left_11 = \"friendActivity\"\
-local _object_12 = {}\
-for _k, _v in pairs(darkTheme.home.friendActivity) do\
-\9_object_12[_k] = _v\
-end\
+local _object_12 = table.clone(darkTheme.home.friendActivity)\
+setmetatable(_object_12, nil)\
 _object_12.foreground = hex(\"#ffffff\")\
 _object_12.background = hex(\"#000000\")\
 _object_12.dropshadow = hex(\"#000000\")\
 local _left_12 = \"friendButton\"\
-local _object_13 = {}\
-for _k, _v in pairs(darkTheme.home.friendActivity.friendButton) do\
-\9_object_13[_k] = _v\
-end\
+local _object_13 = table.clone(darkTheme.home.friendActivity.friendButton)\
+setmetatable(_object_13, nil)\
 _object_13.foreground = hex(\"#ffffff\")\
 _object_13.background = hex(\"#000000\")\
 _object_12[_left_12] = _object_13\
@@ -5034,18 +4951,14 @@ _object[_left_2] = _object_3\
 local _left_13 = \"apps\"\
 local _object_14 = {}\
 local _left_14 = \"players\"\
-local _object_15 = {}\
-for _k, _v in pairs(darkTheme.apps.players) do\
-\9_object_15[_k] = _v\
-end\
+local _object_15 = table.clone(darkTheme.apps.players)\
+setmetatable(_object_15, nil)\
 _object_15.foreground = hex(\"#ffffff\")\
 _object_15.background = hex(\"#000000\")\
 _object_15.dropshadow = hex(\"#000000\")\
 local _left_15 = \"avatar\"\
-local _object_16 = {}\
-for _k, _v in pairs(darkTheme.apps.players.avatar) do\
-\9_object_16[_k] = _v\
-end\
+local _object_16 = table.clone(darkTheme.apps.players.avatar)\
+setmetatable(_object_16, nil)\
 _object_16.background = hex(\"#ffffff\")\
 _object_16.transparency = 0.9\
 _object_16.gradient = {\
@@ -5053,18 +4966,14 @@ _object_16.gradient = {\
 }\
 _object_15[_left_15] = _object_16\
 local _left_16 = \"button\"\
-local _object_17 = {}\
-for _k, _v in pairs(darkTheme.apps.players.button) do\
-\9_object_17[_k] = _v\
-end\
+local _object_17 = table.clone(darkTheme.apps.players.button)\
+setmetatable(_object_17, nil)\
 _object_17.foreground = hex(\"#ffffff\")\
 _object_17.background = hex(\"#000000\")\
 _object_15[_left_16] = _object_17\
 local _left_17 = \"playerButton\"\
-local _object_18 = {}\
-for _k, _v in pairs(darkTheme.apps.players.playerButton) do\
-\9_object_18[_k] = _v\
-end\
+local _object_18 = table.clone(darkTheme.apps.players.playerButton)\
+setmetatable(_object_18, nil)\
 _object_18.foreground = hex(\"#ffffff\")\
 _object_18.background = hex(\"#000000\")\
 _object_18.accent = hex(\"#ff3f6c\")\
@@ -5075,18 +4984,14 @@ _object[_left_13] = _object_14\
 local _left_18 = \"options\"\
 local _object_19 = {}\
 local _left_19 = \"config\"\
-local _object_20 = {}\
-for _k, _v in pairs(darkTheme.options.config) do\
-\9_object_20[_k] = _v\
-end\
+local _object_20 = table.clone(darkTheme.options.config)\
+setmetatable(_object_20, nil)\
 _object_20.foreground = hex(\"#ffffff\")\
 _object_20.background = hex(\"#000000\")\
 _object_20.dropshadow = hex(\"#000000\")\
 local _left_20 = \"configButton\"\
-local _object_21 = {}\
-for _k, _v in pairs(darkTheme.options.config.configButton) do\
-\9_object_21[_k] = _v\
-end\
+local _object_21 = table.clone(darkTheme.options.config.configButton)\
+setmetatable(_object_21, nil)\
 _object_21.foreground = hex(\"#ffffff\")\
 _object_21.background = hex(\"#000000\")\
 _object_21.accent = hex(\"#ff3f6c\")\
@@ -5094,18 +4999,14 @@ _object_21.dropshadowTransparency = 0.7\
 _object_20[_left_20] = _object_21\
 _object_19[_left_19] = _object_20\
 local _left_21 = \"shortcuts\"\
-local _object_22 = {}\
-for _k, _v in pairs(darkTheme.options.shortcuts) do\
-\9_object_22[_k] = _v\
-end\
+local _object_22 = table.clone(darkTheme.options.shortcuts)\
+setmetatable(_object_22, nil)\
 _object_22.foreground = hex(\"#ffffff\")\
 _object_22.background = hex(\"#000000\")\
 _object_22.dropshadow = hex(\"#000000\")\
 local _left_22 = \"shortcutButton\"\
-local _object_23 = {}\
-for _k, _v in pairs(darkTheme.options.shortcuts.shortcutButton) do\
-\9_object_23[_k] = _v\
-end\
+local _object_23 = table.clone(darkTheme.options.shortcuts.shortcutButton)\
+setmetatable(_object_23, nil)\
 _object_23.foreground = hex(\"#ffffff\")\
 _object_23.background = hex(\"#000000\")\
 _object_23.accent = hex(\"#ff3f6c\")\
@@ -5113,18 +5014,14 @@ _object_23.dropshadowTransparency = 0.7\
 _object_22[_left_22] = _object_23\
 _object_19[_left_21] = _object_22\
 local _left_23 = \"themes\"\
-local _object_24 = {}\
-for _k, _v in pairs(darkTheme.options.themes) do\
-\9_object_24[_k] = _v\
-end\
+local _object_24 = table.clone(darkTheme.options.themes)\
+setmetatable(_object_24, nil)\
 _object_24.foreground = hex(\"#ffffff\")\
 _object_24.background = hex(\"#000000\")\
 _object_24.dropshadow = hex(\"#000000\")\
 local _left_24 = \"themeButton\"\
-local _object_25 = {}\
-for _k, _v in pairs(darkTheme.options.themes.themeButton) do\
-\9_object_25[_k] = _v\
-end\
+local _object_25 = table.clone(darkTheme.options.themes.themeButton)\
+setmetatable(_object_25, nil)\
 _object_25.foreground = hex(\"#ffffff\")\
 _object_25.background = hex(\"#000000\")\
 _object_25.accent = hex(\"#ff3f6c\")\
@@ -5138,14 +5035,12 @@ return {\
 }\
 ", '@'.."Havoc.themes.high-contrast")) setfenv(fn, newEnv("Havoc.themes.high-contrast")) return fn() end)
 
-newModule("light-theme", "ModuleScript", "Havoc.themes.light-theme", "Havoc.themes", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("light-theme", "ModuleScript", "Havoc.themes.light-theme", "Havoc.themes", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.include.RuntimeLib)\
 local darkTheme = TS.import(script, script.Parent, \"sorbet\").darkTheme\
 local hex = TS.import(script, script.Parent.Parent, \"utils\", \"color3\").hex\
-local _object = {}\
-for _k, _v in pairs(darkTheme) do\
-\9_object[_k] = _v\
-end\
+local _object = table.clone(darkTheme)\
+setmetatable(_object, nil)\
 _object.name = \"Light theme\"\
 _object.preview = {\
 \9foreground = {\
@@ -5160,43 +5055,33 @@ _object.preview = {\
 \9},\
 }\
 local _left = \"navbar\"\
-local _object_1 = {}\
-for _k, _v in pairs(darkTheme.navbar) do\
-\9_object_1[_k] = _v\
-end\
+local _object_1 = table.clone(darkTheme.navbar)\
+setmetatable(_object_1, nil)\
 _object_1.foreground = hex(\"#000000\")\
 _object_1.background = hex(\"#ffffff\")\
 _object[_left] = _object_1\
 local _left_1 = \"clock\"\
-local _object_2 = {}\
-for _k, _v in pairs(darkTheme.clock) do\
-\9_object_2[_k] = _v\
-end\
+local _object_2 = table.clone(darkTheme.clock)\
+setmetatable(_object_2, nil)\
 _object_2.foreground = hex(\"#000000\")\
 _object_2.background = hex(\"#ffffff\")\
 _object[_left_1] = _object_2\
 local _left_2 = \"home\"\
 local _object_3 = {}\
 local _left_3 = \"title\"\
-local _object_4 = {}\
-for _k, _v in pairs(darkTheme.home.title) do\
-\9_object_4[_k] = _v\
-end\
+local _object_4 = table.clone(darkTheme.home.title)\
+setmetatable(_object_4, nil)\
 _object_4.foreground = hex(\"#000000\")\
 _object_4.background = hex(\"#ffffff\")\
 _object_3[_left_3] = _object_4\
 local _left_4 = \"profile\"\
-local _object_5 = {}\
-for _k, _v in pairs(darkTheme.home.profile) do\
-\9_object_5[_k] = _v\
-end\
+local _object_5 = table.clone(darkTheme.home.profile)\
+setmetatable(_object_5, nil)\
 _object_5.foreground = hex(\"#000000\")\
 _object_5.background = hex(\"#ffffff\")\
 local _left_5 = \"avatar\"\
-local _object_6 = {}\
-for _k, _v in pairs(darkTheme.home.profile.avatar) do\
-\9_object_6[_k] = _v\
-end\
+local _object_6 = table.clone(darkTheme.home.profile.avatar)\
+setmetatable(_object_6, nil)\
 _object_6.background = hex(\"#000000\")\
 _object_6.transparency = 0.9\
 _object_6.gradient = {\
@@ -5204,61 +5089,47 @@ _object_6.gradient = {\
 }\
 _object_5[_left_5] = _object_6\
 local _left_6 = \"slider\"\
-local _object_7 = {}\
-for _k, _v in pairs(darkTheme.home.profile.slider) do\
-\9_object_7[_k] = _v\
-end\
+local _object_7 = table.clone(darkTheme.home.profile.slider)\
+setmetatable(_object_7, nil)\
 _object_7.foreground = hex(\"#000000\")\
 _object_7.background = hex(\"#ffffff\")\
 _object_5[_left_6] = _object_7\
 local _left_7 = \"button\"\
-local _object_8 = {}\
-for _k, _v in pairs(darkTheme.home.profile.button) do\
-\9_object_8[_k] = _v\
-end\
+local _object_8 = table.clone(darkTheme.home.profile.button)\
+setmetatable(_object_8, nil)\
 _object_8.foreground = hex(\"#000000\")\
 _object_8.background = hex(\"#ffffff\")\
 _object_5[_left_7] = _object_8\
 _object_3[_left_4] = _object_5\
 local _left_8 = \"server\"\
-local _object_9 = {}\
-for _k, _v in pairs(darkTheme.home.server) do\
-\9_object_9[_k] = _v\
-end\
+local _object_9 = table.clone(darkTheme.home.server)\
+setmetatable(_object_9, nil)\
 _object_9.foreground = hex(\"#000000\")\
 _object_9.background = hex(\"#ff3f6c\")\
 _object_9.dropshadow = hex(\"#ff3f6c\")\
 local _left_9 = \"rejoinButton\"\
-local _object_10 = {}\
-for _k, _v in pairs(darkTheme.home.server.rejoinButton) do\
-\9_object_10[_k] = _v\
-end\
+local _object_10 = table.clone(darkTheme.home.server.rejoinButton)\
+setmetatable(_object_10, nil)\
 _object_10.foreground = hex(\"#000000\")\
 _object_10.background = hex(\"#ff3f6c\")\
 _object_10.accent = hex(\"#ffffff\")\
 _object_9[_left_9] = _object_10\
 local _left_10 = \"switchButton\"\
-local _object_11 = {}\
-for _k, _v in pairs(darkTheme.home.server.switchButton) do\
-\9_object_11[_k] = _v\
-end\
+local _object_11 = table.clone(darkTheme.home.server.switchButton)\
+setmetatable(_object_11, nil)\
 _object_11.foreground = hex(\"#000000\")\
 _object_11.background = hex(\"#ff3f6c\")\
 _object_11.accent = hex(\"#ffffff\")\
 _object_9[_left_10] = _object_11\
 _object_3[_left_8] = _object_9\
 local _left_11 = \"friendActivity\"\
-local _object_12 = {}\
-for _k, _v in pairs(darkTheme.home.friendActivity) do\
-\9_object_12[_k] = _v\
-end\
+local _object_12 = table.clone(darkTheme.home.friendActivity)\
+setmetatable(_object_12, nil)\
 _object_12.foreground = hex(\"#000000\")\
 _object_12.background = hex(\"#ffffff\")\
 local _left_12 = \"friendButton\"\
-local _object_13 = {}\
-for _k, _v in pairs(darkTheme.home.friendActivity.friendButton) do\
-\9_object_13[_k] = _v\
-end\
+local _object_13 = table.clone(darkTheme.home.friendActivity.friendButton)\
+setmetatable(_object_13, nil)\
 _object_13.foreground = hex(\"#ffffff\")\
 _object_13.background = hex(\"#ffffff\")\
 _object_12[_left_12] = _object_13\
@@ -5267,17 +5138,13 @@ _object[_left_2] = _object_3\
 local _left_13 = \"apps\"\
 local _object_14 = {}\
 local _left_14 = \"players\"\
-local _object_15 = {}\
-for _k, _v in pairs(darkTheme.apps.players) do\
-\9_object_15[_k] = _v\
-end\
+local _object_15 = table.clone(darkTheme.apps.players)\
+setmetatable(_object_15, nil)\
 _object_15.foreground = hex(\"#000000\")\
 _object_15.background = hex(\"#ffffff\")\
 local _left_15 = \"avatar\"\
-local _object_16 = {}\
-for _k, _v in pairs(darkTheme.apps.players.avatar) do\
-\9_object_16[_k] = _v\
-end\
+local _object_16 = table.clone(darkTheme.apps.players.avatar)\
+setmetatable(_object_16, nil)\
 _object_16.background = hex(\"#000000\")\
 _object_16.transparency = 0.9\
 _object_16.gradient = {\
@@ -5285,18 +5152,14 @@ _object_16.gradient = {\
 }\
 _object_15[_left_15] = _object_16\
 local _left_16 = \"button\"\
-local _object_17 = {}\
-for _k, _v in pairs(darkTheme.apps.players.button) do\
-\9_object_17[_k] = _v\
-end\
+local _object_17 = table.clone(darkTheme.apps.players.button)\
+setmetatable(_object_17, nil)\
 _object_17.foreground = hex(\"#000000\")\
 _object_17.background = hex(\"#ffffff\")\
 _object_15[_left_16] = _object_17\
 local _left_17 = \"playerButton\"\
-local _object_18 = {}\
-for _k, _v in pairs(darkTheme.apps.players.playerButton) do\
-\9_object_18[_k] = _v\
-end\
+local _object_18 = table.clone(darkTheme.apps.players.playerButton)\
+setmetatable(_object_18, nil)\
 _object_18.foreground = hex(\"#000000\")\
 _object_18.background = hex(\"#ffffff\")\
 _object_18.backgroundHovered = hex(\"#eeeeee\")\
@@ -5308,17 +5171,13 @@ _object[_left_13] = _object_14\
 local _left_18 = \"options\"\
 local _object_19 = {}\
 local _left_19 = \"config\"\
-local _object_20 = {}\
-for _k, _v in pairs(darkTheme.options.config) do\
-\9_object_20[_k] = _v\
-end\
+local _object_20 = table.clone(darkTheme.options.config)\
+setmetatable(_object_20, nil)\
 _object_20.foreground = hex(\"#000000\")\
 _object_20.background = hex(\"#ffffff\")\
 local _left_20 = \"configButton\"\
-local _object_21 = {}\
-for _k, _v in pairs(darkTheme.options.config.configButton) do\
-\9_object_21[_k] = _v\
-end\
+local _object_21 = table.clone(darkTheme.options.config.configButton)\
+setmetatable(_object_21, nil)\
 _object_21.foreground = hex(\"#000000\")\
 _object_21.background = hex(\"#ffffff\")\
 _object_21.backgroundHovered = hex(\"#eeeeee\")\
@@ -5327,17 +5186,13 @@ _object_21.dropshadowTransparency = 0.7\
 _object_20[_left_20] = _object_21\
 _object_19[_left_19] = _object_20\
 local _left_21 = \"shortcuts\"\
-local _object_22 = {}\
-for _k, _v in pairs(darkTheme.options.shortcuts) do\
-\9_object_22[_k] = _v\
-end\
+local _object_22 = table.clone(darkTheme.options.shortcuts)\
+setmetatable(_object_22, nil)\
 _object_22.foreground = hex(\"#000000\")\
 _object_22.background = hex(\"#ffffff\")\
 local _left_22 = \"shortcutButton\"\
-local _object_23 = {}\
-for _k, _v in pairs(darkTheme.options.shortcuts.shortcutButton) do\
-\9_object_23[_k] = _v\
-end\
+local _object_23 = table.clone(darkTheme.options.shortcuts.shortcutButton)\
+setmetatable(_object_23, nil)\
 _object_23.foreground = hex(\"#000000\")\
 _object_23.background = hex(\"#ffffff\")\
 _object_23.backgroundHovered = hex(\"#eeeeee\")\
@@ -5346,17 +5201,13 @@ _object_23.dropshadowTransparency = 0.7\
 _object_22[_left_22] = _object_23\
 _object_19[_left_21] = _object_22\
 local _left_23 = \"themes\"\
-local _object_24 = {}\
-for _k, _v in pairs(darkTheme.options.themes) do\
-\9_object_24[_k] = _v\
-end\
+local _object_24 = table.clone(darkTheme.options.themes)\
+setmetatable(_object_24, nil)\
 _object_24.foreground = hex(\"#000000\")\
 _object_24.background = hex(\"#ffffff\")\
 local _left_24 = \"themeButton\"\
-local _object_25 = {}\
-for _k, _v in pairs(darkTheme.options.themes.themeButton) do\
-\9_object_25[_k] = _v\
-end\
+local _object_25 = table.clone(darkTheme.options.themes.themeButton)\
+setmetatable(_object_25, nil)\
 _object_25.foreground = hex(\"#000000\")\
 _object_25.background = hex(\"#ffffff\")\
 _object_25.backgroundHovered = hex(\"#eeeeee\")\
@@ -5371,16 +5222,14 @@ return {\
 }\
 ", '@'.."Havoc.themes.light-theme")) setfenv(fn, newEnv("Havoc.themes.light-theme")) return fn() end)
 
-newModule("obsidian", "ModuleScript", "Havoc.themes.obsidian", "Havoc.themes", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("obsidian", "ModuleScript", "Havoc.themes.obsidian", "Havoc.themes", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.include.RuntimeLib)\
 local darkTheme = TS.import(script, script.Parent, \"sorbet\").darkTheme\
 local hex = TS.import(script, script.Parent.Parent, \"utils\", \"color3\").hex\
 local accent = hex(\"#000000\")\
 local accentSequence = ColorSequence.new(hex(\"#000000\"))\
-local _object = {}\
-for _k, _v in pairs(darkTheme) do\
-\9_object[_k] = _v\
-end\
+local _object = table.clone(darkTheme)\
+setmetatable(_object, nil)\
 _object.name = \"Obsidian\"\
 _object.preview = {\
 \9foreground = {\
@@ -5390,14 +5239,12 @@ _object.preview = {\
 \9\9color = ColorSequence.new(hex(\"#000000\")),\
 \9},\
 \9accent = {\
-\9\9color = ColorSequence.new(hex(\"#000000\")),\
+\9\9color = accentSequence,\
 \9},\
 }\
 local _left = \"navbar\"\
-local _object_1 = {}\
-for _k, _v in pairs(darkTheme.navbar) do\
-\9_object_1[_k] = _v\
-end\
+local _object_1 = table.clone(darkTheme.navbar)\
+setmetatable(_object_1, nil)\
 _object_1.acrylic = true\
 _object_1.outlined = false\
 _object_1.foreground = hex(\"#ffffff\")\
@@ -5410,10 +5257,8 @@ _object_1.accentGradient = {\
 }\
 _object[_left] = _object_1\
 local _left_1 = \"clock\"\
-local _object_2 = {}\
-for _k, _v in pairs(darkTheme.clock) do\
-\9_object_2[_k] = _v\
-end\
+local _object_2 = table.clone(darkTheme.clock)\
+setmetatable(_object_2, nil)\
 _object_2.acrylic = true\
 _object_2.outlined = false\
 _object_2.foreground = hex(\"#ffffff\")\
@@ -5424,10 +5269,8 @@ _object[_left_1] = _object_2\
 local _left_2 = \"home\"\
 local _object_3 = {}\
 local _left_3 = \"title\"\
-local _object_4 = {}\
-for _k, _v in pairs(darkTheme.home.title) do\
-\9_object_4[_k] = _v\
-end\
+local _object_4 = table.clone(darkTheme.home.title)\
+setmetatable(_object_4, nil)\
 _object_4.acrylic = true\
 _object_4.outlined = false\
 _object_4.foreground = hex(\"#ffffff\")\
@@ -5437,10 +5280,8 @@ _object_4.transparency = 0.7\
 _object_4.dropshadowTransparency = 0.65\
 _object_3[_left_3] = _object_4\
 local _left_4 = \"profile\"\
-local _object_5 = {}\
-for _k, _v in pairs(darkTheme.home.profile) do\
-\9_object_5[_k] = _v\
-end\
+local _object_5 = table.clone(darkTheme.home.profile)\
+setmetatable(_object_5, nil)\
 _object_5.acrylic = true\
 _object_5.outlined = false\
 _object_5.foreground = hex(\"#ffffff\")\
@@ -5449,10 +5290,8 @@ _object_5.dropshadow = hex(\"#000000\")\
 _object_5.transparency = 0.7\
 _object_5.dropshadowTransparency = 0.65\
 local _left_5 = \"avatar\"\
-local _object_6 = {}\
-for _k, _v in pairs(darkTheme.home.profile.avatar) do\
-\9_object_6[_k] = _v\
-end\
+local _object_6 = table.clone(darkTheme.home.profile.avatar)\
+setmetatable(_object_6, nil)\
 _object_6.background = hex(\"#000000\")\
 _object_6.transparency = 0.7\
 _object_6.gradient = {\
@@ -5469,10 +5308,8 @@ _object_5.highlight = {\
 \9freecam = accent,\
 }\
 local _left_6 = \"slider\"\
-local _object_7 = {}\
-for _k, _v in pairs(darkTheme.home.profile.slider) do\
-\9_object_7[_k] = _v\
-end\
+local _object_7 = table.clone(darkTheme.home.profile.slider)\
+setmetatable(_object_7, nil)\
 _object_7.outlined = false\
 _object_7.foreground = hex(\"#ffffff\")\
 _object_7.background = hex(\"#000000\")\
@@ -5480,10 +5317,8 @@ _object_7.backgroundTransparency = 0.5\
 _object_7.indicatorTransparency = 0.5\
 _object_5[_left_6] = _object_7\
 local _left_7 = \"button\"\
-local _object_8 = {}\
-for _k, _v in pairs(darkTheme.home.profile.button) do\
-\9_object_8[_k] = _v\
-end\
+local _object_8 = table.clone(darkTheme.home.profile.button)\
+setmetatable(_object_8, nil)\
 _object_8.outlined = false\
 _object_8.foreground = hex(\"#ffffff\")\
 _object_8.background = hex(\"#000000\")\
@@ -5491,10 +5326,8 @@ _object_8.backgroundTransparency = 0.5\
 _object_5[_left_7] = _object_8\
 _object_3[_left_4] = _object_5\
 local _left_8 = \"server\"\
-local _object_9 = {}\
-for _k, _v in pairs(darkTheme.home.server) do\
-\9_object_9[_k] = _v\
-end\
+local _object_9 = table.clone(darkTheme.home.server)\
+setmetatable(_object_9, nil)\
 _object_9.acrylic = true\
 _object_9.outlined = false\
 _object_9.foreground = hex(\"#ffffff\")\
@@ -5503,10 +5336,8 @@ _object_9.dropshadow = hex(\"#000000\")\
 _object_9.transparency = 0.7\
 _object_9.dropshadowTransparency = 0.65\
 local _left_9 = \"rejoinButton\"\
-local _object_10 = {}\
-for _k, _v in pairs(darkTheme.home.server.rejoinButton) do\
-\9_object_10[_k] = _v\
-end\
+local _object_10 = table.clone(darkTheme.home.server.rejoinButton)\
+setmetatable(_object_10, nil)\
 _object_10.outlined = false\
 _object_10.foreground = hex(\"#ffffff\")\
 _object_10.background = hex(\"#000000\")\
@@ -5515,10 +5346,8 @@ _object_10.foregroundTransparency = 0.5\
 _object_10.accent = accent\
 _object_9[_left_9] = _object_10\
 local _left_10 = \"switchButton\"\
-local _object_11 = {}\
-for _k, _v in pairs(darkTheme.home.server.switchButton) do\
-\9_object_11[_k] = _v\
-end\
+local _object_11 = table.clone(darkTheme.home.server.switchButton)\
+setmetatable(_object_11, nil)\
 _object_11.outlined = false\
 _object_11.foreground = hex(\"#ffffff\")\
 _object_11.background = hex(\"#000000\")\
@@ -5528,10 +5357,8 @@ _object_11.accent = accent\
 _object_9[_left_10] = _object_11\
 _object_3[_left_8] = _object_9\
 local _left_11 = \"friendActivity\"\
-local _object_12 = {}\
-for _k, _v in pairs(darkTheme.home.friendActivity) do\
-\9_object_12[_k] = _v\
-end\
+local _object_12 = table.clone(darkTheme.home.friendActivity)\
+setmetatable(_object_12, nil)\
 _object_12.acrylic = true\
 _object_12.outlined = false\
 _object_12.foreground = hex(\"#ffffff\")\
@@ -5540,10 +5367,8 @@ _object_12.dropshadow = hex(\"#000000\")\
 _object_12.transparency = 0.7\
 _object_12.dropshadowTransparency = 0.65\
 local _left_12 = \"friendButton\"\
-local _object_13 = {}\
-for _k, _v in pairs(darkTheme.home.friendActivity.friendButton) do\
-\9_object_13[_k] = _v\
-end\
+local _object_13 = table.clone(darkTheme.home.friendActivity.friendButton)\
+setmetatable(_object_13, nil)\
 _object_13.outlined = false\
 _object_13.foreground = hex(\"#ffffff\")\
 _object_13.background = hex(\"#000000\")\
@@ -5555,10 +5380,8 @@ _object[_left_2] = _object_3\
 local _left_13 = \"apps\"\
 local _object_14 = {}\
 local _left_14 = \"players\"\
-local _object_15 = {}\
-for _k, _v in pairs(darkTheme.apps.players) do\
-\9_object_15[_k] = _v\
-end\
+local _object_15 = table.clone(darkTheme.apps.players)\
+setmetatable(_object_15, nil)\
 _object_15.acrylic = true\
 _object_15.outlined = false\
 _object_15.foreground = hex(\"#ffffff\")\
@@ -5573,10 +5396,8 @@ _object_15.highlight = {\
 \9spectate = accent,\
 }\
 local _left_15 = \"avatar\"\
-local _object_16 = {}\
-for _k, _v in pairs(darkTheme.apps.players.avatar) do\
-\9_object_16[_k] = _v\
-end\
+local _object_16 = table.clone(darkTheme.apps.players.avatar)\
+setmetatable(_object_16, nil)\
 _object_16.background = hex(\"#000000\")\
 _object_16.transparency = 0.7\
 _object_16.gradient = {\
@@ -5584,20 +5405,16 @@ _object_16.gradient = {\
 }\
 _object_15[_left_15] = _object_16\
 local _left_16 = \"button\"\
-local _object_17 = {}\
-for _k, _v in pairs(darkTheme.apps.players.button) do\
-\9_object_17[_k] = _v\
-end\
+local _object_17 = table.clone(darkTheme.apps.players.button)\
+setmetatable(_object_17, nil)\
 _object_17.outlined = false\
 _object_17.foreground = hex(\"#ffffff\")\
 _object_17.background = hex(\"#000000\")\
 _object_17.backgroundTransparency = 0.5\
 _object_15[_left_16] = _object_17\
 local _left_17 = \"playerButton\"\
-local _object_18 = {}\
-for _k, _v in pairs(darkTheme.apps.players.playerButton) do\
-\9_object_18[_k] = _v\
-end\
+local _object_18 = table.clone(darkTheme.apps.players.playerButton)\
+setmetatable(_object_18, nil)\
 _object_18.outlined = false\
 _object_18.foreground = hex(\"#ffffff\")\
 _object_18.background = hex(\"#000000\")\
@@ -5610,10 +5427,8 @@ _object[_left_13] = _object_14\
 local _left_18 = \"options\"\
 local _object_19 = {}\
 local _left_19 = \"config\"\
-local _object_20 = {}\
-for _k, _v in pairs(darkTheme.options.config) do\
-\9_object_20[_k] = _v\
-end\
+local _object_20 = table.clone(darkTheme.options.config)\
+setmetatable(_object_20, nil)\
 _object_20.acrylic = true\
 _object_20.outlined = false\
 _object_20.foreground = hex(\"#ffffff\")\
@@ -5622,10 +5437,8 @@ _object_20.dropshadow = hex(\"#000000\")\
 _object_20.transparency = 0.7\
 _object_20.dropshadowTransparency = 0.65\
 local _left_20 = \"configButton\"\
-local _object_21 = {}\
-for _k, _v in pairs(darkTheme.options.config.configButton) do\
-\9_object_21[_k] = _v\
-end\
+local _object_21 = table.clone(darkTheme.options.config.configButton)\
+setmetatable(_object_21, nil)\
 _object_21.outlined = false\
 _object_21.foreground = hex(\"#ffffff\")\
 _object_21.background = hex(\"#000000\")\
@@ -5635,10 +5448,8 @@ _object_21.dropshadowTransparency = 0.7\
 _object_20[_left_20] = _object_21\
 _object_19[_left_19] = _object_20\
 local _left_21 = \"shortcuts\"\
-local _object_22 = {}\
-for _k, _v in pairs(darkTheme.options.shortcuts) do\
-\9_object_22[_k] = _v\
-end\
+local _object_22 = table.clone(darkTheme.options.shortcuts)\
+setmetatable(_object_22, nil)\
 _object_22.acrylic = true\
 _object_22.outlined = false\
 _object_22.foreground = hex(\"#ffffff\")\
@@ -5647,10 +5458,8 @@ _object_22.dropshadow = hex(\"#000000\")\
 _object_22.transparency = 0.7\
 _object_22.dropshadowTransparency = 0.65\
 local _left_22 = \"shortcutButton\"\
-local _object_23 = {}\
-for _k, _v in pairs(darkTheme.options.shortcuts.shortcutButton) do\
-\9_object_23[_k] = _v\
-end\
+local _object_23 = table.clone(darkTheme.options.shortcuts.shortcutButton)\
+setmetatable(_object_23, nil)\
 _object_23.outlined = false\
 _object_23.foreground = hex(\"#ffffff\")\
 _object_23.background = hex(\"#000000\")\
@@ -5660,10 +5469,8 @@ _object_23.dropshadowTransparency = 0.7\
 _object_22[_left_22] = _object_23\
 _object_19[_left_21] = _object_22\
 local _left_23 = \"themes\"\
-local _object_24 = {}\
-for _k, _v in pairs(darkTheme.options.themes) do\
-\9_object_24[_k] = _v\
-end\
+local _object_24 = table.clone(darkTheme.options.themes)\
+setmetatable(_object_24, nil)\
 _object_24.acrylic = true\
 _object_24.outlined = false\
 _object_24.foreground = hex(\"#ffffff\")\
@@ -5672,10 +5479,8 @@ _object_24.dropshadow = hex(\"#000000\")\
 _object_24.transparency = 0.7\
 _object_24.dropshadowTransparency = 0.65\
 local _left_24 = \"themeButton\"\
-local _object_25 = {}\
-for _k, _v in pairs(darkTheme.options.themes.themeButton) do\
-\9_object_25[_k] = _v\
-end\
+local _object_25 = table.clone(darkTheme.options.themes.themeButton)\
+setmetatable(_object_25, nil)\
 _object_25.outlined = false\
 _object_25.foreground = hex(\"#ffffff\")\
 _object_25.background = hex(\"#000000\")\
@@ -5691,7 +5496,7 @@ return {\
 }\
 ", '@'.."Havoc.themes.obsidian")) setfenv(fn, newEnv("Havoc.themes.obsidian")) return fn() end)
 
-newModule("sorbet", "ModuleScript", "Havoc.themes.sorbet", "Havoc.themes", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("sorbet", "ModuleScript", "Havoc.themes.sorbet", "Havoc.themes", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.include.RuntimeLib)\
 local hex = TS.import(script, script.Parent.Parent, \"utils\", \"color3\").hex\
 local redAccent = hex(\"#C6428E\")\
@@ -5748,10 +5553,8 @@ local _object = {\
 local _left = \"home\"\
 local _object_1 = {}\
 local _left_1 = \"title\"\
-local _object_2 = {}\
-for _k, _v in pairs(view) do\
-\9_object_2[_k] = _v\
-end\
+local _object_2 = table.clone(view)\
+setmetatable(_object_2, nil)\
 _object_2.background = hex(\"#ffffff\")\
 _object_2.backgroundGradient = {\
 \9color = accentSequence,\
@@ -5765,10 +5568,8 @@ _object_2.dropshadowGradient = {\
 _object_2.dropshadowTransparency = 0.3\
 _object_1[_left_1] = _object_2\
 local _left_2 = \"profile\"\
-local _object_3 = {}\
-for _k, _v in pairs(view) do\
-\9_object_3[_k] = _v\
-end\
+local _object_3 = table.clone(view)\
+setmetatable(_object_3, nil)\
 _object_3.avatar = {\
 \9background = backgroundDark,\
 \9transparency = 0,\
@@ -5802,10 +5603,8 @@ _object_3.button = {\
 }\
 _object_1[_left_2] = _object_3\
 local _left_3 = \"server\"\
-local _object_4 = {}\
-for _k, _v in pairs(view) do\
-\9_object_4[_k] = _v\
-end\
+local _object_4 = table.clone(view)\
+setmetatable(_object_4, nil)\
 _object_4.rejoinButton = {\
 \9outlined = false,\
 \9foreground = hex(\"#ffffff\"),\
@@ -5824,15 +5623,13 @@ _object_4.switchButton = {\
 }\
 _object_1[_left_3] = _object_4\
 local _left_4 = \"friendActivity\"\
-local _object_5 = {}\
-for _k, _v in pairs(view) do\
-\9_object_5[_k] = _v\
-end\
+local _object_5 = table.clone(view)\
+setmetatable(_object_5, nil)\
 _object_5.friendButton = {\
 \9outlined = false,\
 \9foreground = hex(\"#ffffff\"),\
-\9background = backgroundDark,\
 \9foregroundTransparency = 0,\
+\9background = backgroundDark,\
 \9backgroundTransparency = 0,\
 \9dropshadow = backgroundDark,\
 \9dropshadowTransparency = 0.4,\
@@ -5844,10 +5641,8 @@ _object[_left] = _object_1\
 local _left_5 = \"apps\"\
 local _object_6 = {}\
 local _left_6 = \"players\"\
-local _object_7 = {}\
-for _k, _v in pairs(view) do\
-\9_object_7[_k] = _v\
-end\
+local _object_7 = table.clone(view)\
+setmetatable(_object_7, nil)\
 _object_7.highlight = {\
 \9teleport = redAccent,\
 \9hide = blueAccent,\
@@ -5885,10 +5680,8 @@ _object[_left_5] = _object_6\
 local _left_7 = \"options\"\
 local _object_8 = {}\
 local _left_8 = \"themes\"\
-local _object_9 = {}\
-for _k, _v in pairs(view) do\
-\9_object_9[_k] = _v\
-end\
+local _object_9 = table.clone(view)\
+setmetatable(_object_9, nil)\
 _object_9.themeButton = {\
 \9outlined = false,\
 \9foreground = hex(\"#ffffff\"),\
@@ -5902,10 +5695,8 @@ _object_9.themeButton = {\
 }\
 _object_8[_left_8] = _object_9\
 local _left_9 = \"shortcuts\"\
-local _object_10 = {}\
-for _k, _v in pairs(view) do\
-\9_object_10[_k] = _v\
-end\
+local _object_10 = table.clone(view)\
+setmetatable(_object_10, nil)\
 _object_10.shortcutButton = {\
 \9outlined = false,\
 \9foreground = hex(\"#ffffff\"),\
@@ -5919,10 +5710,8 @@ _object_10.shortcutButton = {\
 }\
 _object_8[_left_9] = _object_10\
 local _left_10 = \"config\"\
-local _object_11 = {}\
-for _k, _v in pairs(view) do\
-\9_object_11[_k] = _v\
-end\
+local _object_11 = table.clone(view)\
+setmetatable(_object_11, nil)\
 _object_11.configButton = {\
 \9outlined = false,\
 \9foreground = hex(\"#ffffff\"),\
@@ -5942,21 +5731,23 @@ return {\
 }\
 ", '@'.."Havoc.themes.sorbet")) setfenv(fn, newEnv("Havoc.themes.sorbet")) return fn() end)
 
-newModule("theme.interface", "ModuleScript", "Havoc.themes.theme.interface", "Havoc.themes", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("theme.interface", "ModuleScript", "Havoc.themes.theme.interface", "Havoc.themes", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 ", '@'.."Havoc.themes.theme.interface")) setfenv(fn, newEnv("Havoc.themes.theme.interface")) return fn() end)
 
 newInstance("utils", "Folder", "Havoc.utils", "Havoc")
 
-newModule("array-util", "ModuleScript", "Havoc.utils.array-util", "Havoc.utils", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("array-util", "ModuleScript", "Havoc.utils.array-util", "Havoc.utils", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local function arrayToMap(arr, mapper)\
-\9--▼ ReadonlyArray.map ▼\
-\9local _newValue = table.create(#arr)\
-\9for _k, _v in ipairs(arr) do\
-\9\9_newValue[_k] = mapper(_v, _k - 1, arr)\
+\9local _arr = arr\
+\9local _mapper = mapper\
+\9-- ▼ ReadonlyArray.map ▼\
+\9local _newValue = table.create(#_arr)\
+\9for _k, _v in _arr do\
+\9\9_newValue[_k] = _mapper(_v, _k - 1, _arr)\
 \9end\
-\9--▲ ReadonlyArray.map ▲\
+\9-- ▲ ReadonlyArray.map ▲\
 \9local _map = {}\
-\9for _, _v in ipairs(_newValue) do\
+\9for _, _v in _newValue do\
 \9\9_map[_v[1]] = _v[2]\
 \9end\
 \9return _map\
@@ -5966,11 +5757,16 @@ return {\
 }\
 ", '@'.."Havoc.utils.array-util")) setfenv(fn, newEnv("Havoc.utils.array-util")) return fn() end)
 
-newModule("binding-util", "ModuleScript", "Havoc.utils.binding-util", "Havoc.utils", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("binding-util", "ModuleScript", "Havoc.utils.binding-util", "Havoc.utils", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
+local Roact = TS.import(script, script.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
 local function isBinding(binding)\
-\9return type(binding) == \"table\" and binding.getValue ~= nil\
+\9local _binding = binding\
+\9local _condition = type(_binding) == \"table\"\
+\9if _condition then\
+\9\9_condition = binding.getValue ~= nil\
+\9end\
+\9return _condition\
 end\
 local function mapBinding(value, transform)\
 \9return if isBinding(value) then value:map(transform) else (Roact.createBinding(transform(value)))\
@@ -5985,9 +5781,10 @@ return {\
 }\
 ", '@'.."Havoc.utils.binding-util")) setfenv(fn, newEnv("Havoc.utils.binding-util")) return fn() end)
 
-newModule("color3", "ModuleScript", "Havoc.utils.color3", "Havoc.utils", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("color3", "ModuleScript", "Havoc.utils.color3", "Havoc.utils", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local function getLuminance(color)\
-\9if typeof(color) == \"ColorSequence\" then\
+\9local _color = color\
+\9if typeof(_color) == \"ColorSequence\" then\
 \9\9color = color.Keypoints[1].Value\
 \9end\
 \9return color.R * 0.2126 + color.G * 0.7152 + color.B * 0.0722\
@@ -6035,7 +5832,7 @@ return {\
 }\
 ", '@'.."Havoc.utils.color3")) setfenv(fn, newEnv("Havoc.utils.color3")) return fn() end)
 
-newModule("debug", "ModuleScript", "Havoc.utils.debug", "Havoc.utils", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("debug", "ModuleScript", "Havoc.utils.debug", "Havoc.utils", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local clock = os.clock()\
 local clockName = \"clock\"\
 local debugCounter = {}\
@@ -6055,7 +5852,7 @@ local function endTimer()\
 \9\9_condition = 0\
 \9end\
 \9local count = _condition\
-\9print(\"\\n[\" .. (clockName .. (\" \" .. (tostring(count) .. (\"]\\n\" .. (tostring(diff * 1000) .. \" ms\\n\\n\"))))))\
+\9print(`\\n[{clockName} {count}]\\n{diff * 1000} ms\\n\\n`)\
 end\
 return {\
 \9startTimer = startTimer,\
@@ -6063,28 +5860,51 @@ return {\
 }\
 ", '@'.."Havoc.utils.debug")) setfenv(fn, newEnv("Havoc.utils.debug")) return fn() end)
 
-newModule("http", "ModuleScript", "Havoc.utils.http", "Havoc.utils", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("http", "ModuleScript", "Havoc.utils.http", "Havoc.utils", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.include.RuntimeLib)\
-local HttpService = TS.import(script, TS.getModule(script, \"@rbxts\", \"services\")).HttpService\
+local HttpService = TS.import(script, script.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"services\").HttpService\
 local IS_DEV = TS.import(script, script.Parent.Parent, \"constants\").IS_DEV\
-local request\
-request = TS.async(function(requestOptions)\
+local function request(requestOptions)\
 \9if IS_DEV then\
-\9\9return HttpService:RequestAsync(requestOptions)\
-\9else\
-\9\9local fn = if syn then syn.request else request\
-\9\9if not fn then\
-\9\9\9error(\"request/syn.request is not available\")\
-\9\9end\
-\9\9return fn(requestOptions)\
+\9\9return TS.Promise.resolve(HttpService:RequestAsync(requestOptions))\
 \9end\
-end)\
-local get = TS.async(function(url, requestType)\
-\9return game:HttpGetAsync(url, requestType)\
-end)\
-local post = TS.async(function(url, data, contentType, requestType)\
-\9return game:HttpPostAsync(url, data, contentType, requestType)\
-end)\
+\9local _result\
+\9if syn ~= nil and syn.request ~= nil then\
+\9\9_result = syn.request\
+\9else\
+\9\9local _arg0 = rawget(_G, \"request\")\
+\9\9_result = if type(_arg0) == \"function\" then (rawget(_G, \"request\")) elseif http ~= nil and http.request ~= nil then http.request else nil\
+\9end\
+\9local executorRequest = _result\
+\9if executorRequest ~= nil then\
+\9\9return TS.Promise.resolve(executorRequest(requestOptions))\
+\9end\
+\9return TS.Promise.reject(\"No suitable request function found (syn.request / request / http.request)\")\
+end\
+local function get(url)\
+\9return TS.Promise.new(function(resolve, reject)\
+\9\9task.spawn(function()\
+\9\9\9TS.try(function()\
+\9\9\9\9local body = game.HttpGet(url)\
+\9\9\9\9resolve(body)\
+\9\9\9end, function(err)\
+\9\9\9\9reject(tostring(err))\
+\9\9\9end)\
+\9\9end)\
+\9end)\
+end\
+local function post(url, data, contentType, requestType)\
+\9return TS.Promise.new(function(resolve, reject)\
+\9\9task.spawn(function()\
+\9\9\9TS.try(function()\
+\9\9\9\9local body = game:HttpPostAsync(url, data, contentType, requestType)\
+\9\9\9\9resolve(body)\
+\9\9\9end, function(err)\
+\9\9\9\9reject(tostring(err))\
+\9\9\9end)\
+\9\9end)\
+\9end)\
+end\
 return {\
 \9request = request,\
 \9get = get,\
@@ -6092,7 +5912,7 @@ return {\
 }\
 ", '@'.."Havoc.utils.http")) setfenv(fn, newEnv("Havoc.utils.http")) return fn() end)
 
-newModule("number-util", "ModuleScript", "Havoc.utils.number-util", "Havoc.utils", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("number-util", "ModuleScript", "Havoc.utils.number-util", "Havoc.utils", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local function map(n, min0, max0, min1, max1)\
 \9return min1 + ((n - min0) * (max1 - min1)) / (max0 - min0)\
 end\
@@ -6105,9 +5925,9 @@ return {\
 }\
 ", '@'.."Havoc.utils.number-util")) setfenv(fn, newEnv("Havoc.utils.number-util")) return fn() end)
 
-newModule("timeout", "ModuleScript", "Havoc.utils.timeout", "Havoc.utils", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("timeout", "ModuleScript", "Havoc.utils.timeout", "Havoc.utils", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.include.RuntimeLib)\
-local RunService = TS.import(script, TS.getModule(script, \"@rbxts\", \"services\")).RunService\
+local RunService = TS.import(script, script.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"services\").RunService\
 local Timeout\
 do\
 \9Timeout = setmetatable({}, {\
@@ -6190,7 +6010,7 @@ return {\
 }\
 ", '@'.."Havoc.utils.timeout")) setfenv(fn, newEnv("Havoc.utils.timeout")) return fn() end)
 
-newModule("udim2", "ModuleScript", "Havoc.utils.udim2", "Havoc.utils", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("udim2", "ModuleScript", "Havoc.utils.udim2", "Havoc.utils", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local function px(x, y)\
 \9return UDim2.new(0, x, 0, y)\
 end\
@@ -6212,21 +6032,21 @@ return {\
 
 newInstance("views", "Folder", "Havoc.views", "Havoc")
 
-newModule("Clock", "ModuleScript", "Havoc.views.Clock", "Havoc.views", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Clock", "ModuleScript", "Havoc.views.Clock", "Havoc.views", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.include.RuntimeLib)\
 local exports = {}\
 exports.default = TS.import(script, script, \"Clock\").default\
 return exports\
 ", '@'.."Havoc.views.Clock")) setfenv(fn, newEnv("Havoc.views.Clock")) return fn() end)
 
-newModule("Clock", "ModuleScript", "Havoc.views.Clock.Clock", "Havoc.views.Clock", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Clock", "ModuleScript", "Havoc.views.Clock.Clock", "Havoc.views.Clock", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
-local _roact_hooked = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-hooked\").src)\
+local Roact = TS.import(script, script.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
+local _roact_hooked = TS.import(script, script.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact-hooked\", \"src\")\
 local useEffect = _roact_hooked.useEffect\
 local useMemo = _roact_hooked.useMemo\
 local useState = _roact_hooked.useState\
-local TextService = TS.import(script, TS.getModule(script, \"@rbxts\", \"services\")).TextService\
+local TextService = TS.import(script, script.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"services\").TextService\
 local Acrylic = TS.import(script, script.Parent.Parent.Parent, \"components\", \"Acrylic\").default\
 local Border = TS.import(script, script.Parent.Parent.Parent, \"components\", \"Border\").default\
 local Fill = TS.import(script, script.Parent.Parent.Parent, \"components\", \"Fill\").default\
@@ -6324,17 +6144,17 @@ return {\
 }\
 ", '@'.."Havoc.views.Clock.Clock")) setfenv(fn, newEnv("Havoc.views.Clock.Clock")) return fn() end)
 
-newModule("Dashboard", "ModuleScript", "Havoc.views.Dashboard", "Havoc.views", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Dashboard", "ModuleScript", "Havoc.views.Dashboard", "Havoc.views", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.include.RuntimeLib)\
 local exports = {}\
 exports.default = TS.import(script, script, \"Dashboard\").default\
 return exports\
 ", '@'.."Havoc.views.Dashboard")) setfenv(fn, newEnv("Havoc.views.Dashboard")) return fn() end)
 
-newModule("Dashboard", "ModuleScript", "Havoc.views.Dashboard.Dashboard", "Havoc.views.Dashboard", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Dashboard", "ModuleScript", "Havoc.views.Dashboard.Dashboard", "Havoc.views.Dashboard", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
-local useMemo = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-hooked\").src).useMemo\
+local Roact = TS.import(script, script.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
+local useMemo = TS.import(script, script.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact-hooked\", \"src\").useMemo\
 local Canvas = TS.import(script, script.Parent.Parent.Parent, \"components\", \"Canvas\")\
 local ScaleContext = TS.import(script, script.Parent.Parent.Parent, \"context\", \"scale-context\").ScaleContext\
 local useAppSelector = TS.import(script, script.Parent.Parent.Parent, \"hooks\", \"common\", \"rodux-hooks\").useAppSelector\
@@ -6421,17 +6241,17 @@ end\
 return Dashboard\
 ", '@'.."Havoc.views.Dashboard.Dashboard")) setfenv(fn, newEnv("Havoc.views.Dashboard.Dashboard")) return fn() end)
 
-newModule("Hint", "ModuleScript", "Havoc.views.Hint", "Havoc.views", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Hint", "ModuleScript", "Havoc.views.Hint", "Havoc.views", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.include.RuntimeLib)\
 local exports = {}\
 exports.default = TS.import(script, script, \"Hint\").default\
 return exports\
 ", '@'.."Havoc.views.Hint")) setfenv(fn, newEnv("Havoc.views.Hint")) return fn() end)
 
-newModule("Hint", "ModuleScript", "Havoc.views.Hint.Hint", "Havoc.views.Hint", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Hint", "ModuleScript", "Havoc.views.Hint.Hint", "Havoc.views.Hint", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
-local _roact_hooked = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-hooked\").src)\
+local Roact = TS.import(script, script.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
+local _roact_hooked = TS.import(script, script.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact-hooked\", \"src\")\
 local useEffect = _roact_hooked.useEffect\
 local useState = _roact_hooked.useState\
 local useAppSelector = TS.import(script, script.Parent.Parent.Parent, \"hooks\", \"common\", \"rodux-hooks\").useAppSelector\
@@ -6484,16 +6304,16 @@ return {\
 }\
 ", '@'.."Havoc.views.Hint.Hint")) setfenv(fn, newEnv("Havoc.views.Hint.Hint")) return fn() end)
 
-newModule("Navbar", "ModuleScript", "Havoc.views.Navbar", "Havoc.views", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Navbar", "ModuleScript", "Havoc.views.Navbar", "Havoc.views", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.include.RuntimeLib)\
 local exports = {}\
 exports.default = TS.import(script, script, \"Navbar\").default\
 return exports\
 ", '@'.."Havoc.views.Navbar")) setfenv(fn, newEnv("Havoc.views.Navbar")) return fn() end)
 
-newModule("Navbar", "ModuleScript", "Havoc.views.Navbar.Navbar", "Havoc.views.Navbar", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Navbar", "ModuleScript", "Havoc.views.Navbar.Navbar", "Havoc.views.Navbar", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
+local Roact = TS.import(script, script.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
 local Acrylic = TS.import(script, script.Parent.Parent.Parent, \"components\", \"Acrylic\").default\
 local Border = TS.import(script, script.Parent.Parent.Parent, \"components\", \"Border\").default\
 local Canvas = TS.import(script, script.Parent.Parent.Parent, \"components\", \"Canvas\")\
@@ -6515,7 +6335,7 @@ local _udim2 = TS.import(script, script.Parent.Parent.Parent, \"utils\", \"udim2
 local px = _udim2.px\
 local scale = _udim2.scale\
 local NavbarTab = TS.import(script, script.Parent, \"NavbarTab\").default\
-local NAVBAR_SIZE = px(500, 56)\
+local NAVBAR_SIZE = px(625, 56)\
 local Underglow\
 local function Navbar()\
 \9local theme = useTheme(\"navbar\")\
@@ -6523,7 +6343,7 @@ local function Navbar()\
 \9local isOpen = useAppSelector(function(state)\
 \9\9return state.dashboard.isOpen\
 \9end)\
-\9local alpha = useSpring(PAGE_TO_INDEX[page] / 4, {\
+\9local alpha = useSpring(PAGE_TO_INDEX[page] / 5, {\
 \9\9frequency = 3.9,\
 \9\9dampingRatio = 0.76,\
 \9})\
@@ -6555,33 +6375,42 @@ local function Navbar()\
 \9\9\9radius = 8,\
 \9\9\9transparency = theme.transparency,\
 \9\9}),\
-\9\9Roact.createElement(Canvas, {\
-\9\9\9size = px(100, 56),\
-\9\9\9position = alpha:map(function(a)\
-\9\9\9\9return scale(a, 0)\
-\9\9\9end),\
-\9\9\9clipsDescendants = true,\
-\9\9}, {\
-\9\9\9Roact.createElement(\"Frame\", {\
-\9\9\9\9Size = NAVBAR_SIZE,\
-\9\9\9\9Position = alpha:map(function(a)\
-\9\9\9\9\9return scale(-a, 0)\
-\9\9\9\9end),\
-\9\9\9\9BackgroundColor3 = hex(\"#FFFFFF\"),\
-\9\9\9\9BorderSizePixel = 0,\
-\9\9\9}, {\
-\9\9\9\9Roact.createElement(\"UIGradient\", {\
-\9\9\9\9\9Color = theme.accentGradient.color,\
-\9\9\9\9\9Transparency = theme.accentGradient.transparency,\
-\9\9\9\9\9Rotation = theme.accentGradient.rotation,\
-\9\9\9\9}),\
-\9\9\9\9Roact.createElement(\"UICorner\", {\
-\9\9\9\9\9CornerRadius = UDim.new(0, 8),\
-\9\9\9\9}),\
-\9\9\9}),\
-\9\9}),\
 \9}\
 \9local _length = #_children\
+\9local _attributes_1 = {\
+\9\9size = px(100, 56),\
+\9\9position = alpha:map(function(a)\
+\9\9\9return scale(a, 0)\
+\9\9end),\
+\9\9clipsDescendants = true,\
+\9}\
+\9local _children_1 = {}\
+\9local _length_1 = #_children_1\
+\9local _attributes_2 = {\
+\9\9Size = NAVBAR_SIZE,\
+\9\9Position = alpha:map(function(a)\
+\9\9\9return scale(-a, 0)\
+\9\9end),\
+\9\9BackgroundColor3 = hex(\"#FFFFFF\"),\
+\9\9BorderSizePixel = 0,\
+\9}\
+\9local _children_2 = {}\
+\9local _length_2 = #_children_2\
+\9local _attributes_3 = {\
+\9\9Color = theme.accentGradient.color,\
+\9\9Transparency = theme.accentGradient.transparency or NumberSequence.new(0),\
+\9}\
+\9local _condition = theme.accentGradient.rotation\
+\9if _condition == nil then\
+\9\9_condition = 0\
+\9end\
+\9_attributes_3.Rotation = _condition\
+\9_children_2[_length_2 + 1] = Roact.createElement(\"UIGradient\", _attributes_3)\
+\9_children_2[_length_2 + 2] = Roact.createElement(\"UICorner\", {\
+\9\9CornerRadius = UDim.new(0, 8),\
+\9})\
+\9_children_1[_length_1 + 1] = Roact.createElement(\"Frame\", _attributes_2, _children_2)\
+\9_children[_length + 1] = Roact.createElement(Canvas, _attributes_1, _children_1)\
 \9local _child = theme.outlined and Roact.createFragment({\
 \9\9border = Roact.createElement(Border, {\
 \9\9\9color = theme.foreground,\
@@ -6590,7 +6419,7 @@ local function Navbar()\
 \9\9}),\
 \9})\
 \9if _child then\
-\9\9_children[_length + 1] = _child\
+\9\9_children[_length + 2] = _child\
 \9end\
 \9_length = #_children\
 \9_children[_length + 1] = Roact.createElement(NavbarTab, {\
@@ -6616,7 +6445,6 @@ local function Navbar()\
 \9\9Navbar = Roact.createElement(\"Frame\", _attributes, _children),\
 \9})\
 end\
-local default = Navbar\
 function Underglow(props)\
 \9return Roact.createFragment({\
 \9\9Underglow = Roact.createElement(\"ImageLabel\", {\
@@ -6632,15 +6460,16 @@ function Underglow(props)\
 \9\9}),\
 \9})\
 end\
+local default = Navbar\
 return {\
 \9default = default,\
 }\
 ", '@'.."Havoc.views.Navbar.Navbar")) setfenv(fn, newEnv("Havoc.views.Navbar.Navbar")) return fn() end)
 
-newModule("NavbarTab", "ModuleScript", "Havoc.views.Navbar.NavbarTab", "Havoc.views.Navbar", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("NavbarTab", "ModuleScript", "Havoc.views.Navbar.NavbarTab", "Havoc.views.Navbar", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
-local useState = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-hooked\").src).useState\
+local Roact = TS.import(script, script.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
+local useState = TS.import(script, script.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact-hooked\", \"src\").useState\
 local useAppDispatch = TS.import(script, script.Parent.Parent.Parent, \"hooks\", \"common\", \"rodux-hooks\").useAppDispatch\
 local useSpring = TS.import(script, script.Parent.Parent.Parent, \"hooks\", \"common\", \"use-spring\").useSpring\
 local useIsPageOpen = TS.import(script, script.Parent.Parent.Parent, \"hooks\", \"use-current-page\").useIsPageOpen\
@@ -6665,7 +6494,7 @@ local function NavbarTab(_param)\
 \9\9\9AutoButtonColor = false,\
 \9\9\9Active = not isActive,\
 \9\9\9Size = TAB_SIZE,\
-\9\9\9Position = scale(PAGE_TO_INDEX[page] / 4, 0),\
+\9\9\9Position = scale(PAGE_TO_INDEX[page] / 5, 0),\
 \9\9\9BackgroundTransparency = 1,\
 \9\9\9[Roact.Event.Activated] = function()\
 \9\9\9\9return dispatch(setDashboardPage(page))\
@@ -6698,23 +6527,23 @@ return {\
 }\
 ", '@'.."Havoc.views.Navbar.NavbarTab")) setfenv(fn, newEnv("Havoc.views.Navbar.NavbarTab")) return fn() end)
 
-newModule("Pages", "ModuleScript", "Havoc.views.Pages", "Havoc.views", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Pages", "ModuleScript", "Havoc.views.Pages", "Havoc.views", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.include.RuntimeLib)\
 local exports = {}\
 exports.default = TS.import(script, script, \"Pages\").default\
 return exports\
 ", '@'.."Havoc.views.Pages")) setfenv(fn, newEnv("Havoc.views.Pages")) return fn() end)
 
-newModule("Apps", "ModuleScript", "Havoc.views.Pages.Apps", "Havoc.views.Pages", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Apps", "ModuleScript", "Havoc.views.Pages.Apps", "Havoc.views.Pages", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
 local exports = {}\
 exports.default = TS.import(script, script, \"Apps\").default\
 return exports\
 ", '@'.."Havoc.views.Pages.Apps")) setfenv(fn, newEnv("Havoc.views.Pages.Apps")) return fn() end)
 
-newModule("Apps", "ModuleScript", "Havoc.views.Pages.Apps.Apps", "Havoc.views.Pages.Apps", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Apps", "ModuleScript", "Havoc.views.Pages.Apps.Apps", "Havoc.views.Pages.Apps", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
+local Roact = TS.import(script, script.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
 local Canvas = TS.import(script, script.Parent.Parent.Parent.Parent, \"components\", \"Canvas\")\
 local useScale = TS.import(script, script.Parent.Parent.Parent.Parent, \"hooks\", \"use-scale\").useScale\
 local scale = TS.import(script, script.Parent.Parent.Parent.Parent, \"utils\", \"udim2\").scale\
@@ -6737,16 +6566,16 @@ return {\
 }\
 ", '@'.."Havoc.views.Pages.Apps.Apps")) setfenv(fn, newEnv("Havoc.views.Pages.Apps.Apps")) return fn() end)
 
-newModule("Players", "ModuleScript", "Havoc.views.Pages.Apps.Players", "Havoc.views.Pages.Apps", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Players", "ModuleScript", "Havoc.views.Pages.Apps.Players", "Havoc.views.Pages.Apps", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)\
 local exports = {}\
 exports.default = TS.import(script, script, \"Players\").default\
 return exports\
 ", '@'.."Havoc.views.Pages.Apps.Players")) setfenv(fn, newEnv("Havoc.views.Pages.Apps.Players")) return fn() end)
 
-newModule("Actions", "ModuleScript", "Havoc.views.Pages.Apps.Players.Actions", "Havoc.views.Pages.Apps.Players", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Actions", "ModuleScript", "Havoc.views.Pages.Apps.Players.Actions", "Havoc.views.Pages.Apps.Players", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
+local Roact = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
 local ActionButton = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"components\", \"ActionButton\").default\
 local Canvas = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"components\", \"Canvas\")\
 local useTheme = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"hooks\", \"use-theme\").useTheme\
@@ -6797,10 +6626,10 @@ return {\
 }\
 ", '@'.."Havoc.views.Pages.Apps.Players.Actions")) setfenv(fn, newEnv("Havoc.views.Pages.Apps.Players.Actions")) return fn() end)
 
-newModule("Avatar", "ModuleScript", "Havoc.views.Pages.Apps.Players.Avatar", "Havoc.views.Pages.Apps.Players", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Avatar", "ModuleScript", "Havoc.views.Pages.Apps.Players.Avatar", "Havoc.views.Pages.Apps.Players", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
-local Players = TS.import(script, TS.getModule(script, \"@rbxts\", \"services\")).Players\
+local Roact = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
+local Players = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"services\").Players\
 local Border = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"components\", \"Border\").default\
 local Canvas = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"components\", \"Canvas\")\
 local useAppSelector = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"hooks\", \"common\", \"rodux-hooks\").useAppSelector\
@@ -6817,7 +6646,7 @@ local function Avatar()\
 \9\9position = UDim2.new(0.5, 0, 0, 24),\
 \9}, {\
 \9\9Roact.createElement(\"ImageLabel\", {\
-\9\9\9Image = \"https://www.roblox.com/headshot-thumbnail/image?userId=\" .. (tostring(if playerSelected then playerSelected.UserId else Players.LocalPlayer.UserId) .. \"&width=150&height=150&format=png\"),\
+\9\9\9Image = `https://www.roblox.com/headshot-thumbnail/image?userId={if playerSelected then playerSelected.UserId else Players.LocalPlayer.UserId}&width=150&height=150&format=png`,\
 \9\9\9Size = px(150, 150),\
 \9\9\9Position = px(18, 18),\
 \9\9\9BackgroundColor3 = theme.avatar.background,\
@@ -6845,9 +6674,9 @@ return {\
 }\
 ", '@'.."Havoc.views.Pages.Apps.Players.Avatar")) setfenv(fn, newEnv("Havoc.views.Pages.Apps.Players.Avatar")) return fn() end)
 
-newModule("Players", "ModuleScript", "Havoc.views.Pages.Apps.Players.Players", "Havoc.views.Pages.Apps.Players", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Players", "ModuleScript", "Havoc.views.Pages.Apps.Players.Players", "Havoc.views.Pages.Apps.Players", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
+local Roact = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
 local Card = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"components\", \"Card\").default\
 local useTheme = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"hooks\", \"use-theme\").useTheme\
 local DashboardPage = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"store\", \"models\", \"dashboard.model\").DashboardPage\
@@ -6877,14 +6706,14 @@ return {\
 }\
 ", '@'.."Havoc.views.Pages.Apps.Players.Players")) setfenv(fn, newEnv("Havoc.views.Pages.Apps.Players.Players")) return fn() end)
 
-newModule("Selection", "ModuleScript", "Havoc.views.Pages.Apps.Players.Selection", "Havoc.views.Pages.Apps.Players", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Selection", "ModuleScript", "Havoc.views.Pages.Apps.Players.Selection", "Havoc.views.Pages.Apps.Players", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
-local _roact_hooked = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-hooked\").src)\
+local Roact = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
+local _roact_hooked = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact-hooked\", \"src\")\
 local useEffect = _roact_hooked.useEffect\
 local useMemo = _roact_hooked.useMemo\
 local useState = _roact_hooked.useState\
-local _services = TS.import(script, TS.getModule(script, \"@rbxts\", \"services\"))\
+local _services = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"services\")\
 local Players = _services.Players\
 local TextService = _services.TextService\
 local Border = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"components\", \"Border\").default\
@@ -6905,7 +6734,7 @@ local useTheme = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"
 local _dashboard_action = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"store\", \"actions\", \"dashboard.action\")\
 local playerDeselected = _dashboard_action.playerDeselected\
 local playerSelected = _dashboard_action.playerSelected\
-local DashboardPage = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"store\", \"models\", \"dashboard.model\").DashboardPage\
+local DP = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"store\", \"models\", \"dashboard.model\").DashboardPage\
 local arrayToMap = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"utils\", \"array-util\").arrayToMap\
 local lerp = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"utils\", \"number-util\").lerp\
 local _udim2 = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"utils\", \"udim2\")\
@@ -6920,10 +6749,10 @@ local function usePlayers()\
 \9local players, setPlayers = useState(Players:GetPlayers())\
 \9useEffect(function()\
 \9\9local addedHandle = Players.PlayerAdded:Connect(function()\
-\9\9\9setPlayers(Players:GetPlayers())\
+\9\9\9return setPlayers(Players:GetPlayers())\
 \9\9end)\
 \9\9local removingHandle = Players.PlayerRemoving:Connect(function()\
-\9\9\9setPlayers(Players:GetPlayers())\
+\9\9\9return setPlayers(Players:GetPlayers())\
 \9\9end)\
 \9\9return function()\
 \9\9\9addedHandle:Disconnect()\
@@ -6940,36 +6769,35 @@ local function Selection()\
 \9\9return state.dashboard.apps.playerSelected\
 \9end)\
 \9local sortedPlayers = useMemo(function()\
-\9\9local _arg0 = function(p)\
+\9\9-- ▼ ReadonlyArray.find ▼\
+\9\9local _callback = function(p)\
 \9\9\9return p.Name == playerSelectedName\
 \9\9end\
-\9\9--▼ ReadonlyArray.find ▼\
 \9\9local _result\
-\9\9for _i, _v in ipairs(players) do\
-\9\9\9if _arg0(_v, _i - 1, players) == true then\
+\9\9for _i, _v in players do\
+\9\9\9if _callback(_v, _i - 1, players) == true then\
 \9\9\9\9_result = _v\
 \9\9\9\9break\
 \9\9\9end\
 \9\9end\
-\9\9--▲ ReadonlyArray.find ▲\
+\9\9-- ▲ ReadonlyArray.find ▲\
 \9\9local selected = _result\
-\9\9local _arg0_1 = function(p)\
+\9\9-- ▼ ReadonlyArray.filter ▼\
+\9\9local _newValue = {}\
+\9\9local _callback_1 = function(p)\
 \9\9\9return p.Name ~= playerSelectedName and (p ~= Players.LocalPlayer or IS_DEV)\
 \9\9end\
-\9\9--▼ ReadonlyArray.filter ▼\
-\9\9local _newValue = {}\
 \9\9local _length = 0\
-\9\9for _k, _v in ipairs(players) do\
-\9\9\9if _arg0_1(_v, _k - 1, players) == true then\
+\9\9for _k, _v in players do\
+\9\9\9if _callback_1(_v, _k - 1, players) == true then\
 \9\9\9\9_length += 1\
 \9\9\9\9_newValue[_length] = _v\
 \9\9\9end\
 \9\9end\
-\9\9--▲ ReadonlyArray.filter ▲\
-\9\9local _arg0_2 = function(a, b)\
+\9\9-- ▲ ReadonlyArray.filter ▲\
+\9\9table.sort(_newValue, function(a, b)\
 \9\9\9return string.lower(a.Name) < string.lower(b.Name)\
-\9\9end\
-\9\9table.sort(_newValue, _arg0_2)\
+\9\9end)\
 \9\9local sorted = _newValue\
 \9\9local _result_1\
 \9\9if selected then\
@@ -6985,24 +6813,24 @@ local function Selection()\
 \9useEffect(function()\
 \9\9local _condition = playerSelectedName ~= nil\
 \9\9if _condition then\
-\9\9\9local _arg0 = function(player)\
+\9\9\9-- ▼ ReadonlyArray.find ▼\
+\9\9\9local _callback = function(player)\
 \9\9\9\9return player.Name == playerSelectedName\
 \9\9\9end\
-\9\9\9--▼ ReadonlyArray.find ▼\
 \9\9\9local _result\
-\9\9\9for _i, _v in ipairs(sortedPlayers) do\
-\9\9\9\9if _arg0(_v, _i - 1, sortedPlayers) == true then\
+\9\9\9for _i, _v in sortedPlayers do\
+\9\9\9\9if _callback(_v, _i - 1, sortedPlayers) == true then\
 \9\9\9\9\9_result = _v\
 \9\9\9\9\9break\
 \9\9\9\9end\
 \9\9\9end\
-\9\9\9--▲ ReadonlyArray.find ▲\
+\9\9\9-- ▲ ReadonlyArray.find ▲\
 \9\9\9_condition = not _result\
 \9\9end\
 \9\9if _condition then\
 \9\9\9dispatch(playerDeselected())\
 \9\9end\
-\9end, { players, playerSelectedName })\
+\9end, { players, playerSelectedName, dispatch, sortedPlayers })\
 \9local _attributes = {\
 \9\9size = px(326, 280),\
 \9\9position = px(0, 368),\
@@ -7026,14 +6854,14 @@ local function Selection()\
 \9}\
 \9local _children_1 = {}\
 \9local _length_1 = #_children_1\
-\9for _k, _v in pairs(arrayToMap(sortedPlayers, function(player, index)\
+\9for _k, _v in arrayToMap(sortedPlayers, function(player, index)\
 \9\9return { player.Name, Roact.createElement(PlayerEntry, {\
 \9\9\9name = player.Name,\
 \9\9\9displayName = player.DisplayName,\
 \9\9\9userId = player.UserId,\
 \9\9\9index = index,\
 \9\9}) }\
-\9end)) do\
+\9end) do\
 \9\9_children_1[_k] = _v\
 \9end\
 \9_children[_length + 1] = Roact.createElement(\"ScrollingFrame\", _attributes_1, _children_1)\
@@ -7047,13 +6875,13 @@ function PlayerEntry(_param)\
 \9local index = _param.index\
 \9local dispatch = useAppDispatch()\
 \9local theme = useTheme(\"apps\").players.playerButton\
-\9local isOpen = useIsPageOpen(DashboardPage.Apps)\
+\9local isOpen = useIsPageOpen(DP.Apps)\
 \9local isVisible = useDelayedUpdate(isOpen, if isOpen then 170 + index * 40 else 150)\
 \9local isSelected = useAppSelector(function(state)\
 \9\9return state.dashboard.apps.playerSelected == name\
 \9end)\
 \9local hovered, setHovered = useState(false)\
-\9local text = \" \" .. (displayName .. (\" (@\" .. (name .. \")\")))\
+\9local text = ` {displayName} (@{name})`\
 \9local textSize = useMemo(function()\
 \9\9return TextService:GetTextSize(text, 14, Enum.Font.GothamBold, Vector2.new(1000, ENTRY_HEIGHT))\
 \9end, { text })\
@@ -7062,8 +6890,8 @@ function PlayerEntry(_param)\
 \9}):map(function(x)\
 \9\9return UDim.new(0, math.min(x, 0))\
 \9end)\
-\9local background = useSpring(if isSelected then theme.accent elseif hovered then theme.backgroundHovered or theme.background:Lerp(theme.accent, 0.1) else theme.background, {})\
-\9local dropshadow = useSpring(if isSelected then theme.accent elseif hovered then theme.backgroundHovered or theme.dropshadow:Lerp(theme.accent, 0.5) else theme.dropshadow, {})\
+\9local background = useSpring(if isSelected then theme.accent elseif hovered then (theme.backgroundHovered or theme.background:Lerp(theme.accent, 0.1)) else theme.background, {})\
+\9local dropshadow = useSpring(if isSelected then theme.accent elseif hovered then (theme.backgroundHovered or theme.dropshadow:Lerp(theme.accent, 0.5)) else theme.dropshadow, {})\
 \9local foreground = useSpring(if isSelected and theme.foregroundAccent then theme.foregroundAccent else theme.foreground, {})\
 \9local _attributes = {\
 \9\9size = px(ENTRY_WIDTH, ENTRY_HEIGHT),\
@@ -7104,7 +6932,7 @@ function PlayerEntry(_param)\
 \9\9\9}),\
 \9\9}),\
 \9\9Roact.createElement(\"ImageLabel\", {\
-\9\9\9Image = \"https://www.roblox.com/headshot-thumbnail/image?userId=\" .. (tostring(userId) .. \"&width=60&height=60&format=png\"),\
+\9\9\9Image = `https://www.roblox.com/headshot-thumbnail/image?userId={userId}&width=60&height=60&format=png`,\
 \9\9\9Size = UDim2.new(0, ENTRY_HEIGHT, 0, ENTRY_HEIGHT),\
 \9\9\9BackgroundTransparency = 1,\
 \9\9}, {\
@@ -7157,10 +6985,10 @@ return {\
 }\
 ", '@'.."Havoc.views.Pages.Apps.Players.Selection")) setfenv(fn, newEnv("Havoc.views.Pages.Apps.Players.Selection")) return fn() end)
 
-newModule("Username", "ModuleScript", "Havoc.views.Pages.Apps.Players.Username", "Havoc.views.Pages.Apps.Players", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Username", "ModuleScript", "Havoc.views.Pages.Apps.Players.Username", "Havoc.views.Pages.Apps.Players", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
-local Players = TS.import(script, TS.getModule(script, \"@rbxts\", \"services\")).Players\
+local Roact = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
+local Players = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"services\").Players\
 local Canvas = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"components\", \"Canvas\")\
 local useAppSelector = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"hooks\", \"common\", \"rodux-hooks\").useAppSelector\
 local useTheme = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"hooks\", \"use-theme\").useTheme\
@@ -7206,24 +7034,24 @@ return {\
 }\
 ", '@'.."Havoc.views.Pages.Apps.Players.Username")) setfenv(fn, newEnv("Havoc.views.Pages.Apps.Players.Username")) return fn() end)
 
-newModule("Home", "ModuleScript", "Havoc.views.Pages.Home", "Havoc.views.Pages", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Home", "ModuleScript", "Havoc.views.Pages.Home", "Havoc.views.Pages", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
 local exports = {}\
 exports.default = TS.import(script, script, \"Home\").default\
 return exports\
 ", '@'.."Havoc.views.Pages.Home")) setfenv(fn, newEnv("Havoc.views.Pages.Home")) return fn() end)
 
-newModule("FriendActivity", "ModuleScript", "Havoc.views.Pages.Home.FriendActivity", "Havoc.views.Pages.Home", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("FriendActivity", "ModuleScript", "Havoc.views.Pages.Home.FriendActivity", "Havoc.views.Pages.Home", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)\
 local exports = {}\
 exports.default = TS.import(script, script, \"FriendActivity\").default\
 return exports\
 ", '@'.."Havoc.views.Pages.Home.FriendActivity")) setfenv(fn, newEnv("Havoc.views.Pages.Home.FriendActivity")) return fn() end)
 
-newModule("FriendActivity", "ModuleScript", "Havoc.views.Pages.Home.FriendActivity.FriendActivity", "Havoc.views.Pages.Home.FriendActivity", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("FriendActivity", "ModuleScript", "Havoc.views.Pages.Home.FriendActivity.FriendActivity", "Havoc.views.Pages.Home.FriendActivity", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
-local _roact_hooked = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-hooked\").src)\
+local Roact = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
+local _roact_hooked = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact-hooked\", \"src\")\
 local useEffect = _roact_hooked.useEffect\
 local useReducer = _roact_hooked.useReducer\
 local useState = _roact_hooked.useState\
@@ -7252,10 +7080,9 @@ local function FriendActivity()\
 \9local games, setGames = useState(currentGames)\
 \9useEffect(function()\
 \9\9if #currentGames > 0 then\
-\9\9\9local _arg0 = function(a, b)\
+\9\9\9table.sort(currentGames, function(a, b)\
 \9\9\9\9return #a.friends > #b.friends\
-\9\9\9end\
-\9\9\9table.sort(currentGames, _arg0)\
+\9\9\9end)\
 \9\9\9setGames(currentGames)\
 \9\9end\
 \9end, { currentGames })\
@@ -7300,12 +7127,12 @@ local function FriendActivity()\
 \9}\
 \9local _children_2 = {}\
 \9local _length_2 = #_children_2\
-\9for _k, _v in pairs(arrayToMap(games, function(gameActivity, index)\
+\9for _k, _v in arrayToMap(games, function(gameActivity, index)\
 \9\9return { tostring(gameActivity.placeId), Roact.createElement(GameItem, {\
 \9\9\9gameActivity = gameActivity,\
 \9\9\9index = index,\
 \9\9}) }\
-\9end)) do\
+\9end) do\
 \9\9_children_2[_k] = _v\
 \9end\
 \9_children_1[_length_1 + 1] = Roact.createElement(\"ScrollingFrame\", _attributes_2, _children_2)\
@@ -7318,11 +7145,11 @@ return {\
 }\
 ", '@'.."Havoc.views.Pages.Home.FriendActivity.FriendActivity")) setfenv(fn, newEnv("Havoc.views.Pages.Home.FriendActivity.FriendActivity")) return fn() end)
 
-newModule("FriendItem", "ModuleScript", "Havoc.views.Pages.Home.FriendActivity.FriendItem", "Havoc.views.Pages.Home.FriendActivity", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("FriendItem", "ModuleScript", "Havoc.views.Pages.Home.FriendActivity.FriendItem", "Havoc.views.Pages.Home.FriendActivity", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
-local useState = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-hooked\").src).useState\
-local _services = TS.import(script, TS.getModule(script, \"@rbxts\", \"services\"))\
+local Roact = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
+local useState = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact-hooked\", \"src\").useState\
+local _services = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"services\")\
 local Players = _services.Players\
 local TeleportService = _services.TeleportService\
 local Border = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"components\", \"Border\").default\
@@ -7341,7 +7168,7 @@ local function FriendItem(_param)\
 \9local index = _param.index\
 \9local theme = useTheme(\"home\").friendActivity.friendButton\
 \9local isHovered, setHovered = useState(false)\
-\9local avatar = \"https://www.roblox.com/headshot-thumbnail/image?userId=\" .. (tostring(friend.VisitorId) .. \"&width=48&height=48&format=png\")\
+\9local avatar = `https://www.roblox.com/headshot-thumbnail/image?userId={friend.VisitorId}&width=48&height=48&format=png`\
 \9local _attributes = {\
 \9\9size = useSpring(if isHovered then px(96, 48) else px(48, 48), FRIEND_SPRING_OPTIONS),\
 \9}\
@@ -7422,10 +7249,10 @@ return {\
 }\
 ", '@'.."Havoc.views.Pages.Home.FriendActivity.FriendItem")) setfenv(fn, newEnv("Havoc.views.Pages.Home.FriendActivity.FriendItem")) return fn() end)
 
-newModule("GameItem", "ModuleScript", "Havoc.views.Pages.Home.FriendActivity.GameItem", "Havoc.views.Pages.Home.FriendActivity", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("GameItem", "ModuleScript", "Havoc.views.Pages.Home.FriendActivity.GameItem", "Havoc.views.Pages.Home.FriendActivity", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
-local useMemo = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-hooked\").src).useMemo\
+local Roact = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
+local useMemo = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact-hooked\", \"src\").useMemo\
 local Border = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"components\", \"Border\").default\
 local useDelayedUpdate = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"hooks\", \"common\", \"use-delayed-update\").useDelayedUpdate\
 local useSpring = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"hooks\", \"common\", \"use-spring\").useSpring\
@@ -7487,12 +7314,12 @@ local function GameItem(_param)\
 \9\9}),\
 \9}\
 \9local _length_1 = #_children_1\
-\9for _k, _v in pairs(arrayToMap(gameActivity.friends, function(friend, index)\
+\9for _k, _v in arrayToMap(gameActivity.friends, function(friend, index)\
 \9\9return { tostring(friend.VisitorId), Roact.createElement(FriendItem, {\
 \9\9\9friend = friend,\
 \9\9\9index = index,\
 \9\9}) }\
-\9end)) do\
+\9end) do\
 \9\9_children_1[_k] = _v\
 \9end\
 \9_children[_length + 1] = Roact.createElement(\"ScrollingFrame\", _attributes_1, _children_1)\
@@ -7505,9 +7332,9 @@ return {\
 }\
 ", '@'.."Havoc.views.Pages.Home.FriendActivity.GameItem")) setfenv(fn, newEnv("Havoc.views.Pages.Home.FriendActivity.GameItem")) return fn() end)
 
-newModule("Home", "ModuleScript", "Havoc.views.Pages.Home.Home", "Havoc.views.Pages.Home", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Home", "ModuleScript", "Havoc.views.Pages.Home.Home", "Havoc.views.Pages.Home", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
+local Roact = TS.import(script, script.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
 local Canvas = TS.import(script, script.Parent.Parent.Parent.Parent, \"components\", \"Canvas\")\
 local useScale = TS.import(script, script.Parent.Parent.Parent.Parent, \"hooks\", \"use-scale\").useScale\
 local scale = TS.import(script, script.Parent.Parent.Parent.Parent, \"utils\", \"udim2\").scale\
@@ -7535,16 +7362,16 @@ return {\
 }\
 ", '@'.."Havoc.views.Pages.Home.Home")) setfenv(fn, newEnv("Havoc.views.Pages.Home.Home")) return fn() end)
 
-newModule("Profile", "ModuleScript", "Havoc.views.Pages.Home.Profile", "Havoc.views.Pages.Home", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Profile", "ModuleScript", "Havoc.views.Pages.Home.Profile", "Havoc.views.Pages.Home", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)\
 local exports = {}\
 exports.default = TS.import(script, script, \"Profile\").default\
 return exports\
 ", '@'.."Havoc.views.Pages.Home.Profile")) setfenv(fn, newEnv("Havoc.views.Pages.Home.Profile")) return fn() end)
 
-newModule("Actions", "ModuleScript", "Havoc.views.Pages.Home.Profile.Actions", "Havoc.views.Pages.Home.Profile", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Actions", "ModuleScript", "Havoc.views.Pages.Home.Profile.Actions", "Havoc.views.Pages.Home.Profile", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
+local Roact = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
 local ActionButton = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"components\", \"ActionButton\").default\
 local Canvas = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"components\", \"Canvas\")\
 local useTheme = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"hooks\", \"use-theme\").useTheme\
@@ -7594,15 +7421,15 @@ return {\
 }\
 ", '@'.."Havoc.views.Pages.Home.Profile.Actions")) setfenv(fn, newEnv("Havoc.views.Pages.Home.Profile.Actions")) return fn() end)
 
-newModule("Avatar", "ModuleScript", "Havoc.views.Pages.Home.Profile.Avatar", "Havoc.views.Pages.Home.Profile", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Avatar", "ModuleScript", "Havoc.views.Pages.Home.Profile.Avatar", "Havoc.views.Pages.Home.Profile", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
-local Players = TS.import(script, TS.getModule(script, \"@rbxts\", \"services\")).Players\
+local Roact = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
+local Players = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"services\").Players\
 local Border = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"components\", \"Border\").default\
 local Canvas = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"components\", \"Canvas\")\
 local useTheme = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"hooks\", \"use-theme\").useTheme\
 local px = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"utils\", \"udim2\").px\
-local AVATAR = \"https://www.roblox.com/headshot-thumbnail/image?userId=\" .. (tostring(Players.LocalPlayer.UserId) .. \"&width=150&height=150&format=png\")\
+local AVATAR = `https://www.roblox.com/headshot-thumbnail/image?userId={Players.LocalPlayer.UserId}&width=150&height=150&format=png`\
 local function Avatar()\
 \9local theme = useTheme(\"home\").profile\
 \9return Roact.createElement(Canvas, {\
@@ -7639,21 +7466,21 @@ return {\
 }\
 ", '@'.."Havoc.views.Pages.Home.Profile.Avatar")) setfenv(fn, newEnv("Havoc.views.Pages.Home.Profile.Avatar")) return fn() end)
 
-newModule("Info", "ModuleScript", "Havoc.views.Pages.Home.Profile.Info", "Havoc.views.Pages.Home.Profile", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Info", "ModuleScript", "Havoc.views.Pages.Home.Profile.Info", "Havoc.views.Pages.Home.Profile", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
-local Players = TS.import(script, TS.getModule(script, \"@rbxts\", \"services\")).Players\
+local Roact = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
+local Players = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"services\").Players\
 local Canvas = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"components\", \"Canvas\")\
 local useDelayedUpdate = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"hooks\", \"common\", \"use-delayed-update\").useDelayedUpdate\
 local useSpring = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"hooks\", \"common\", \"use-spring\").useSpring\
 local useIsPageOpen = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"hooks\", \"use-current-page\").useIsPageOpen\
 local useFriends = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"hooks\", \"use-friends\").useFriends\
 local useTheme = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"hooks\", \"use-theme\").useTheme\
-local DashboardPage = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"store\", \"models\", \"dashboard.model\").DashboardPage\
+local DP = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"store\", \"models\", \"dashboard.model\").DashboardPage\
 local px = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"utils\", \"udim2\").px\
 local function Info()\
 \9local theme = useTheme(\"home\").profile\
-\9local isOpen = useIsPageOpen(DashboardPage.Home)\
+\9local isOpen = useIsPageOpen(DP.Home)\
 \9local _binding = useFriends()\
 \9local friends = _binding[1]\
 \9if friends == nil then\
@@ -7661,19 +7488,19 @@ local function Info()\
 \9end\
 \9local status = _binding[3]\
 \9local friendsOnline = #friends\
-\9local _arg0 = function(friend)\
+\9-- ▼ ReadonlyArray.filter ▼\
+\9local _newValue = {}\
+\9local _callback = function(friend)\
 \9\9return friend.PlaceId ~= nil and friend.PlaceId == game.PlaceId\
 \9end\
-\9--▼ ReadonlyArray.filter ▼\
-\9local _newValue = {}\
 \9local _length = 0\
-\9for _k, _v in ipairs(friends) do\
-\9\9if _arg0(_v, _k - 1, friends) == true then\
+\9for _k, _v in friends do\
+\9\9if _callback(_v, _k - 1, friends) == true then\
 \9\9\9_length += 1\
 \9\9\9_newValue[_length] = _v\
 \9\9end\
 \9end\
-\9--▲ ReadonlyArray.filter ▲\
+\9-- ▲ ReadonlyArray.filter ▲\
 \9local friendsJoined = #_newValue\
 \9local showJoinDate = useDelayedUpdate(isOpen, 400, function(open)\
 \9\9return not open\
@@ -7684,11 +7511,12 @@ local function Info()\
 \9local showFriendsOnline = useDelayedUpdate(isOpen and status ~= \"pending\", 600, function(open)\
 \9\9return not open\
 \9end)\
-\9return Roact.createElement(Canvas, {\
+\9local _attributes = {\
 \9\9anchor = Vector2.new(0.5, 0),\
 \9\9size = px(278, 48),\
 \9\9position = UDim2.new(0.5, 0, 0, 300),\
-\9}, {\
+\9}\
+\9local _children = {\
 \9\9Roact.createElement(\"Frame\", {\
 \9\9\9Size = px(0, 26),\
 \9\9\9Position = px(90, 11),\
@@ -7711,43 +7539,50 @@ local function Info()\
 \9\9\9\9Transparency = 0.7,\
 \9\9\9}),\
 \9\9}),\
-\9\9Roact.createElement(\"TextLabel\", {\
-\9\9\9Font = \"GothamBold\",\
-\9\9\9Text = \"Joined\\n\" .. tostring(os.date(\"%m/%d/%Y\", os.time() - Players.LocalPlayer.AccountAge * 24 * 60 * 60)),\
-\9\9\9TextSize = 13,\
-\9\9\9TextColor3 = theme.foreground,\
-\9\9\9TextXAlignment = \"Center\",\
-\9\9\9TextYAlignment = \"Center\",\
-\9\9\9TextTransparency = useSpring(if showJoinDate then 0.2 else 1, {}),\
-\9\9\9Size = px(85, 48),\
-\9\9\9Position = useSpring(if showJoinDate then px(0, 0) else px(-20, 0), {}),\
-\9\9\9BackgroundTransparency = 1,\
-\9\9}),\
-\9\9Roact.createElement(\"TextLabel\", {\
-\9\9\9Font = \"GothamBold\",\
-\9\9\9Text = if friendsJoined == 1 then \"1 friend\\njoined\" else tostring(friendsJoined) .. \" friends\\njoined\",\
-\9\9\9TextSize = 13,\
-\9\9\9TextColor3 = theme.foreground,\
-\9\9\9TextXAlignment = \"Center\",\
-\9\9\9TextYAlignment = \"Center\",\
-\9\9\9TextTransparency = useSpring(if showFriendsJoined then 0.2 else 1, {}),\
-\9\9\9Size = px(85, 48),\
-\9\9\9Position = useSpring(if showFriendsJoined then px(97, 0) else px(97 - 20, 0), {}),\
-\9\9\9BackgroundTransparency = 1,\
-\9\9}),\
-\9\9Roact.createElement(\"TextLabel\", {\
-\9\9\9Font = \"GothamBold\",\
-\9\9\9Text = if friendsOnline == 1 then \"1 friend\\nonline\" else tostring(friendsOnline) .. \" friends\\nonline\",\
-\9\9\9TextSize = 13,\
-\9\9\9TextColor3 = theme.foreground,\
-\9\9\9TextXAlignment = \"Center\",\
-\9\9\9TextYAlignment = \"Center\",\
-\9\9\9TextTransparency = useSpring(if showFriendsOnline then 0.2 else 1, {}),\
-\9\9\9Size = px(85, 48),\
-\9\9\9Position = useSpring(if showFriendsOnline then px(193, 0) else px(193 - 20, 0), {}),\
-\9\9\9BackgroundTransparency = 1,\
-\9\9}),\
+\9}\
+\9local _length_1 = #_children\
+\9local _attributes_1 = {\
+\9\9Font = \"GothamBold\",\
+\9}\
+\9local _condition = (os.date(\"%m/%d/%Y\", os.time() - Players.LocalPlayer.AccountAge * 24 * 60 * 60))\
+\9if _condition == nil then\
+\9\9_condition = \"\"\
+\9end\
+\9_attributes_1.Text = `Joined\\n{_condition}`\
+\9_attributes_1.TextSize = 13\
+\9_attributes_1.TextColor3 = theme.foreground\
+\9_attributes_1.TextXAlignment = \"Center\"\
+\9_attributes_1.TextYAlignment = \"Center\"\
+\9_attributes_1.TextTransparency = useSpring(if showJoinDate then 0.2 else 1, {})\
+\9_attributes_1.Size = px(85, 48)\
+\9_attributes_1.Position = useSpring(if showJoinDate then px(0, 0) else px(-20, 0), {})\
+\9_attributes_1.BackgroundTransparency = 1\
+\9_children[_length_1 + 1] = Roact.createElement(\"TextLabel\", _attributes_1)\
+\9_children[_length_1 + 2] = Roact.createElement(\"TextLabel\", {\
+\9\9Font = \"GothamBold\",\
+\9\9Text = if friendsJoined == 1 then \"1 friend\\njoined\" else `{friendsJoined} friends\\njoined`,\
+\9\9TextSize = 13,\
+\9\9TextColor3 = theme.foreground,\
+\9\9TextXAlignment = \"Center\",\
+\9\9TextYAlignment = \"Center\",\
+\9\9TextTransparency = useSpring(if showFriendsJoined then 0.2 else 1, {}),\
+\9\9Size = px(85, 48),\
+\9\9Position = useSpring(if showFriendsJoined then px(97, 0) else px(97 - 20, 0), {}),\
+\9\9BackgroundTransparency = 1,\
 \9})\
+\9_children[_length_1 + 3] = Roact.createElement(\"TextLabel\", {\
+\9\9Font = \"GothamBold\",\
+\9\9Text = if friendsOnline == 1 then \"1 friend\\nonline\" else `{friendsOnline} friends\\nonline`,\
+\9\9TextSize = 13,\
+\9\9TextColor3 = theme.foreground,\
+\9\9TextXAlignment = \"Center\",\
+\9\9TextYAlignment = \"Center\",\
+\9\9TextTransparency = useSpring(if showFriendsOnline then 0.2 else 1, {}),\
+\9\9Size = px(85, 48),\
+\9\9Position = useSpring(if showFriendsOnline then px(193, 0) else px(193 - 20, 0), {}),\
+\9\9BackgroundTransparency = 1,\
+\9})\
+\9return Roact.createElement(Canvas, _attributes, _children)\
 end\
 local default = Info\
 return {\
@@ -7755,9 +7590,9 @@ return {\
 }\
 ", '@'.."Havoc.views.Pages.Home.Profile.Info")) setfenv(fn, newEnv("Havoc.views.Pages.Home.Profile.Info")) return fn() end)
 
-newModule("Profile", "ModuleScript", "Havoc.views.Pages.Home.Profile.Profile", "Havoc.views.Pages.Home.Profile", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Profile", "ModuleScript", "Havoc.views.Pages.Home.Profile.Profile", "Havoc.views.Pages.Home.Profile", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
+local Roact = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
 local Canvas = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"components\", \"Canvas\")\
 local Card = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"components\", \"Card\").default\
 local useTheme = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"hooks\", \"use-theme\").useTheme\
@@ -7797,10 +7632,10 @@ return {\
 }\
 ", '@'.."Havoc.views.Pages.Home.Profile.Profile")) setfenv(fn, newEnv("Havoc.views.Pages.Home.Profile.Profile")) return fn() end)
 
-newModule("Sliders", "ModuleScript", "Havoc.views.Pages.Home.Profile.Sliders", "Havoc.views.Pages.Home.Profile", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Sliders", "ModuleScript", "Havoc.views.Pages.Home.Profile.Sliders", "Havoc.views.Pages.Home.Profile", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
-local _roact_hooked = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-hooked\").src)\
+local Roact = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
+local _roact_hooked = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact-hooked\", \"src\")\
 local useBinding = _roact_hooked.useBinding\
 local useState = _roact_hooked.useState\
 local BrightButton = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"components\", \"BrightButton\").default\
@@ -7866,7 +7701,7 @@ function Slider(props)\
 \9local hovered, setHovered = useState(false)\
 \9local highlightColors = theme.highlight\
 \9local accent = highlightColors[props.jobName] or theme.foreground\
-\9local buttonBackground = useSpring(if job.active then accent elseif hovered then theme.button.backgroundHovered or theme.button.background:Lerp(accent, 0.1) else theme.button.background, {})\
+\9local buttonBackground = useSpring(if job.active then accent elseif hovered then (theme.button.backgroundHovered or theme.button.background:Lerp(accent, 0.1)) else theme.button.background, {})\
 \9local buttonForeground = useSpring(if job.active and theme.button.foregroundAccent then theme.button.foregroundAccent else theme.foreground, {})\
 \9return Roact.createElement(Canvas, {\
 \9\9size = px(278, 49),\
@@ -7893,7 +7728,7 @@ function Slider(props)\
 \9\9\9Roact.createElement(\"TextLabel\", {\
 \9\9\9\9Font = \"GothamBold\",\
 \9\9\9\9Text = value:map(function(v)\
-\9\9\9\9\9return tostring(math.round(v)) .. (\" \" .. props.units)\
+\9\9\9\9\9return `{math.round(v)} {props.units}`\
 \9\9\9\9end),\
 \9\9\9\9TextSize = 15,\
 \9\9\9\9TextColor3 = theme.slider.foreground,\
@@ -7943,10 +7778,10 @@ return {\
 }\
 ", '@'.."Havoc.views.Pages.Home.Profile.Sliders")) setfenv(fn, newEnv("Havoc.views.Pages.Home.Profile.Sliders")) return fn() end)
 
-newModule("Username", "ModuleScript", "Havoc.views.Pages.Home.Profile.Username", "Havoc.views.Pages.Home.Profile", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Username", "ModuleScript", "Havoc.views.Pages.Home.Profile.Username", "Havoc.views.Pages.Home.Profile", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
-local Players = TS.import(script, TS.getModule(script, \"@rbxts\", \"services\")).Players\
+local Roact = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
+local Players = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"services\").Players\
 local Canvas = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"components\", \"Canvas\")\
 local useTheme = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"hooks\", \"use-theme\").useTheme\
 local _udim2 = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"utils\", \"udim2\")\
@@ -7988,17 +7823,17 @@ return {\
 }\
 ", '@'.."Havoc.views.Pages.Home.Profile.Username")) setfenv(fn, newEnv("Havoc.views.Pages.Home.Profile.Username")) return fn() end)
 
-newModule("Server", "ModuleScript", "Havoc.views.Pages.Home.Server", "Havoc.views.Pages.Home", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Server", "ModuleScript", "Havoc.views.Pages.Home.Server", "Havoc.views.Pages.Home", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)\
 local exports = {}\
 exports.default = TS.import(script, script, \"Server\").default\
 return exports\
 ", '@'.."Havoc.views.Pages.Home.Server")) setfenv(fn, newEnv("Havoc.views.Pages.Home.Server")) return fn() end)
 
-newModule("Server", "ModuleScript", "Havoc.views.Pages.Home.Server.Server", "Havoc.views.Pages.Home.Server", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Server", "ModuleScript", "Havoc.views.Pages.Home.Server.Server", "Havoc.views.Pages.Home.Server", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
-local Players = TS.import(script, TS.getModule(script, \"@rbxts\", \"services\")).Players\
+local Roact = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
+local Players = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"services\").Players\
 local Card = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"components\", \"Card\").default\
 local IS_DEV = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"constants\").IS_DEV\
 local useTheme = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"hooks\", \"use-theme\").useTheme\
@@ -8030,7 +7865,7 @@ local function Server()\
 \9\9\9offset = 69,\
 \9\9\9units = \"players\",\
 \9\9\9getValue = function()\
-\9\9\9\9return tostring(#Players:GetPlayers()) .. (\" / \" .. tostring(Players.MaxPlayers))\
+\9\9\9\9return `{#Players:GetPlayers()} / {Players.MaxPlayers}`\
 \9\9\9end,\
 \9\9}),\
 \9\9Roact.createElement(StatusLabel, {\
@@ -8043,7 +7878,7 @@ local function Server()\
 \9\9\9\9local hours = math.floor((uptime - days * 86400) / 3600)\
 \9\9\9\9local minutes = math.floor((uptime - days * 86400 - hours * 3600) / 60)\
 \9\9\9\9local seconds = math.floor(uptime - days * 86400 - hours * 3600 - minutes * 60)\
-\9\9\9\9return if days > 0 then tostring(days) .. \" days\" elseif hours > 0 then tostring(hours) .. \" hours\" elseif minutes > 0 then tostring(minutes) .. \" minutes\" else tostring(seconds) .. \" seconds\"\
+\9\9\9\9return if days > 0 then `{days} days` elseif hours > 0 then `{hours} hours` elseif minutes > 0 then `{minutes} minutes` else `{seconds} seconds`\
 \9\9\9end,\
 \9\9}),\
 \9\9Roact.createElement(StatusLabel, {\
@@ -8051,7 +7886,7 @@ local function Server()\
 \9\9\9offset = 147,\
 \9\9\9units = \"ping\",\
 \9\9\9getValue = function()\
-\9\9\9\9return tostring(math.round(Players.LocalPlayer:GetNetworkPing() * 1000)) .. \" ms\"\
+\9\9\9\9return `{math.round(Players.LocalPlayer:GetNetworkPing() * 1000)} ms`\
 \9\9\9end,\
 \9\9}),\
 \9\9Roact.createElement(ServerAction, {\
@@ -8076,10 +7911,10 @@ return {\
 }\
 ", '@'.."Havoc.views.Pages.Home.Server.Server")) setfenv(fn, newEnv("Havoc.views.Pages.Home.Server.Server")) return fn() end)
 
-newModule("ServerAction", "ModuleScript", "Havoc.views.Pages.Home.Server.ServerAction", "Havoc.views.Pages.Home.Server", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("ServerAction", "ModuleScript", "Havoc.views.Pages.Home.Server.ServerAction", "Havoc.views.Pages.Home.Server", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
-local useState = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-hooked\").src).useState\
+local Roact = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
+local useState = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact-hooked\", \"src\").useState\
 local BrightButton = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"components\", \"BrightButton\").default\
 local _rodux_hooks = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"hooks\", \"common\", \"rodux-hooks\")\
 local useAppDispatch = _rodux_hooks.useAppDispatch\
@@ -8114,7 +7949,7 @@ local function ServerAction(_param)\
 \9\9return _condition\
 \9end)\
 \9local hovered, setHovered = useState(false)\
-\9local background = useSpring(if active then theme.accent elseif hovered then theme.backgroundHovered or theme.background:Lerp(theme.accent, 0.1) else theme.background, {})\
+\9local background = useSpring(if active then theme.accent elseif hovered then (theme.backgroundHovered or theme.background:Lerp(theme.accent, 0.1)) else theme.background, {})\
 \9local foreground = useSpring(if active and theme.foregroundAccent then theme.foregroundAccent else theme.foreground, {})\
 \9return Roact.createElement(BrightButton, {\
 \9\9onActivate = function()\
@@ -8153,13 +7988,13 @@ return {\
 }\
 ", '@'.."Havoc.views.Pages.Home.Server.ServerAction")) setfenv(fn, newEnv("Havoc.views.Pages.Home.Server.ServerAction")) return fn() end)
 
-newModule("StatusLabel", "ModuleScript", "Havoc.views.Pages.Home.Server.StatusLabel", "Havoc.views.Pages.Home.Server", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("StatusLabel", "ModuleScript", "Havoc.views.Pages.Home.Server.StatusLabel", "Havoc.views.Pages.Home.Server", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
-local _roact_hooked = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-hooked\").src)\
+local Roact = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
+local _roact_hooked = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact-hooked\", \"src\")\
 local useMemo = _roact_hooked.useMemo\
 local useState = _roact_hooked.useState\
-local TextService = TS.import(script, TS.getModule(script, \"@rbxts\", \"services\")).TextService\
+local TextService = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"services\").TextService\
 local useDelayedUpdate = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"hooks\", \"common\", \"use-delayed-update\").useDelayedUpdate\
 local useInterval = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"hooks\", \"common\", \"use-interval\").useInterval\
 local useSpring = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"hooks\", \"common\", \"use-spring\").useSpring\
@@ -8217,9 +8052,9 @@ return {\
 }\
 ", '@'.."Havoc.views.Pages.Home.Server.StatusLabel")) setfenv(fn, newEnv("Havoc.views.Pages.Home.Server.StatusLabel")) return fn() end)
 
-newModule("Title", "ModuleScript", "Havoc.views.Pages.Home.Title", "Havoc.views.Pages.Home", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Title", "ModuleScript", "Havoc.views.Pages.Home.Title", "Havoc.views.Pages.Home", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
+local Roact = TS.import(script, script.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
 local Canvas = TS.import(script, script.Parent.Parent.Parent.Parent, \"components\", \"Canvas\")\
 local Card = TS.import(script, script.Parent.Parent.Parent.Parent, \"components\", \"Card\").default\
 local ParallaxImage = TS.import(script, script.Parent.Parent.Parent.Parent, \"components\", \"ParallaxImage\").default\
@@ -8352,26 +8187,88 @@ end\
 return exports\
 ", '@'.."Havoc.views.Pages.Home.Title")) setfenv(fn, newEnv("Havoc.views.Pages.Home.Title")) return fn() end)
 
-newModule("Misc", "ModuleScript", "Havoc.views.Pages.Misc", "Havoc.views.Pages", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Misc", "ModuleScript", "Havoc.views.Pages.Misc", "Havoc.views.Pages", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
 local exports = {}\
 exports.default = TS.import(script, script, \"Misc\").default\
 return exports\
 ", '@'.."Havoc.views.Pages.Misc")) setfenv(fn, newEnv("Havoc.views.Pages.Misc")) return fn() end)
 
-newModule("GistLoader", "ModuleScript", "Havoc.views.Pages.Misc.GistLoader", "Havoc.views.Pages.Misc", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("GistLoader.backup", "ModuleScript", "Havoc.views.Pages.Misc.GistLoader.backup", "Havoc.views.Pages.Misc", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
-local _roact_hooked = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-hooked\").src)\
+local Workspace = TS.import(script, script.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"services\").Workspace\
+local getSelectedPlayer = TS.import(script, script.Parent.Parent.Parent.Parent, \"jobs\", \"helpers\", \"get-selected-player\").getSelectedPlayer\
+local _job_store = TS.import(script, script.Parent.Parent.Parent.Parent, \"jobs\", \"helpers\", \"job-store\")\
+local getStore = _job_store.getStore\
+local onJobChange = _job_store.onJobChange\
+local setJobActive = TS.import(script, script.Parent.Parent.Parent.Parent, \"store\", \"actions\", \"jobs.action\").setJobActive\
+local warnLog = warn\
+local main = TS.async(function()\
+\9local store = TS.await(getStore())\
+\9local playerSelected = TS.await(getSelectedPlayer(function()\
+\9\9store:dispatch(setJobActive(\"spectate\", false))\
+\9end))\
+\9local shouldResetCameraSubject = false\
+\9local currentSubject\
+\9local defaultSubject\
+\9local function connectCameraSubject(camera)\
+\9\9camera:GetPropertyChangedSignal(\"CameraSubject\"):Connect(function()\
+\9\9\9if currentSubject ~= camera.CameraSubject and store:getState().jobs.spectate.active then\
+\9\9\9\9shouldResetCameraSubject = false\
+\9\9\9\9store:dispatch(setJobActive(\"spectate\", false))\
+\9\9\9end\
+\9\9end)\
+\9end\
+\9Workspace:GetPropertyChangedSignal(\"CurrentCamera\"):Connect(function()\
+\9\9connectCameraSubject(Workspace.CurrentCamera)\
+\9end)\
+\9connectCameraSubject(Workspace.CurrentCamera)\
+\9onJobChange(\"spectate\", function(job)\
+\9\9local camera = Workspace.CurrentCamera\
+\9\9if job.active then\
+\9\9\9local _cameraSubject = playerSelected.current\
+\9\9\9if _cameraSubject ~= nil then\
+\9\9\9\9_cameraSubject = _cameraSubject.Character\
+\9\9\9\9if _cameraSubject ~= nil then\
+\9\9\9\9\9_cameraSubject = _cameraSubject:FindFirstChildWhichIsA(\"Humanoid\")\
+\9\9\9\9end\
+\9\9\9end\
+\9\9\9local cameraSubject = _cameraSubject\
+\9\9\9if not cameraSubject then\
+\9\9\9\9store:dispatch(setJobActive(\"spectate\", false))\
+\9\9\9else\
+\9\9\9\9shouldResetCameraSubject = true\
+\9\9\9\9defaultSubject = camera.CameraSubject\
+\9\9\9\9currentSubject = cameraSubject\
+\9\9\9\9camera.CameraSubject = cameraSubject\
+\9\9\9end\
+\9\9elseif shouldResetCameraSubject then\
+\9\9\9shouldResetCameraSubject = false\
+\9\9\9camera.CameraSubject = defaultSubject\
+\9\9\9defaultSubject = nil\
+\9\9\9currentSubject = nil\
+\9\9end\
+\9end):catch(function(err)\
+\9\9return warnLog(`[spectate-worker] {tostring(err)}`)\
+\9end)\
+end)\
+main():catch(function(err)\
+\9warnLog(`[spectate-worker] {tostring(err)}`)\
+end)\
+", '@'.."Havoc.views.Pages.Misc.GistLoader.backup")) setfenv(fn, newEnv("Havoc.views.Pages.Misc.GistLoader.backup")) return fn() end)
+
+newModule("GistLoader", "ModuleScript", "Havoc.views.Pages.Misc.GistLoader", "Havoc.views.Pages.Misc", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
+local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)\
+local Roact = TS.import(script, script.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
+local _roact_hooked = TS.import(script, script.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact-hooked\", \"src\")\
 local useCallback = _roact_hooked.useCallback\
-local useEffect = _roact_hooked.useEffect\
 local useState = _roact_hooked.useState\
-local HttpService = TS.import(script, TS.getModule(script, \"@rbxts\", \"services\")).HttpService\
 local http = TS.import(script, script.Parent.Parent.Parent.Parent, \"utils\", \"http\")\
-local INDEX_GIST_ID = \"REPLACE_WITH_YOUR_GIST_ID\"\
-local GIST_API_URL = function(id)\
-\9return \"https://api.github.com/gists/\" .. id\
-end\
+local COMMANDS = { {\
+\9name = \"Example Script\",\
+\9description = \"A placeholder — replace with your own Gist\",\
+\9gistId = \"YOUR_GIST_ID_HERE\",\
+} }\
 local GREEN = Color3.fromRGB(80, 220, 140)\
 local BG_INPUT = Color3.fromRGB(20, 20, 20)\
 local BG_ITEM = Color3.fromRGB(25, 25, 25)\
@@ -8379,104 +8276,73 @@ local BG_ITEM_HOVER = Color3.fromRGB(35, 35, 35)\
 local TEXT_PRIMARY = Color3.fromRGB(255, 255, 255)\
 local TEXT_SECONDARY = Color3.fromRGB(160, 160, 160)\
 local TEXT_DIM = Color3.fromRGB(100, 100, 100)\
+local GIST_RAW_URL = function(id)\
+\9return `https://gist.githubusercontent.com/{id}/raw`\
+end\
+local compile = loadstring\
 local CommandItem\
 local function GistLoader()\
-\9local commands, setCommands = useState({})\
-\9local filtered, setFiltered = useState({})\
+\9local filtered, setFiltered = useState(COMMANDS)\
 \9local searchText, setSearchText = useState(\"\")\
 \9local selected, setSelected = useState(nil)\
-\9local status, setStatus = useState(\"Loading commands...\")\
+\9local status, setStatus = useState(`{#COMMANDS} commands available`)\
 \9local isRunning, setIsRunning = useState(false)\
-\9useEffect(function()\
-\9\9task.spawn(function()\
-\9\9\9TS.try(function()\
-\9\9\9\9local response = http.get(GIST_API_URL(INDEX_GIST_ID))\
-\9\9\9\9local _arg0 = function(body)\
-\9\9\9\9\9local gistData = HttpService:JSONDecode(body)\
-\9\9\9\9\9local content = \"\"\
-\9\9\9\9\9for _, file in pairs(gistData.files) do\
-\9\9\9\9\9\9content = file.content\
-\9\9\9\9\9\9break\
-\9\9\9\9\9end\
-\9\9\9\9\9if content == \"\" then\
-\9\9\9\9\9\9setStatus(\"Index gist is empty\")\
-\9\9\9\9\9\9return nil\
-\9\9\9\9\9end\
-\9\9\9\9\9local entries = HttpService:JSONDecode(content)\
-\9\9\9\9\9setCommands(entries)\
-\9\9\9\9\9setFiltered(entries)\
-\9\9\9\9\9setStatus(tostring(#entries) .. \" commands loaded\")\
-\9\9\9\9end\
-\9\9\9\9response:andThen(_arg0):catch(function(err)\
-\9\9\9\9\9setStatus(\"Failed to load: \" .. tostring(err))\
-\9\9\9\9end)\
-\9\9\9end, function(err)\
-\9\9\9\9setStatus(\"Failed to load: \" .. tostring(err))\
-\9\9\9end)\
-\9\9end)\
-\9end, {})\
 \9local handleSearch = useCallback(function(rbx)\
 \9\9local query = string.lower(rbx.Text)\
 \9\9setSearchText(rbx.Text)\
 \9\9if query == \"\" then\
-\9\9\9setFiltered(commands)\
+\9\9\9setFiltered(COMMANDS)\
 \9\9else\
-\9\9\9local _arg0 = function(cmd)\
-\9\9\9\9return (string.find(string.lower(cmd.name), query)) ~= nil or (string.find(string.lower(cmd.description), query)) ~= nil\
-\9\9\9end\
-\9\9\9--▼ ReadonlyArray.filter ▼\
+\9\9\9-- ▼ ReadonlyArray.filter ▼\
 \9\9\9local _newValue = {}\
+\9\9\9local _callback = function(cmd)\
+\9\9\9\9return (string.find(string.lower(cmd.name), query, 1, true)) ~= nil or (string.find(string.lower(cmd.description), query, 1, true)) ~= nil\
+\9\9\9end\
 \9\9\9local _length = 0\
-\9\9\9for _k, _v in ipairs(commands) do\
-\9\9\9\9if _arg0(_v, _k - 1, commands) == true then\
+\9\9\9for _k, _v in COMMANDS do\
+\9\9\9\9if _callback(_v, _k - 1, COMMANDS) == true then\
 \9\9\9\9\9_length += 1\
 \9\9\9\9\9_newValue[_length] = _v\
 \9\9\9\9end\
 \9\9\9end\
-\9\9\9--▲ ReadonlyArray.filter ▲\
+\9\9\9-- ▲ ReadonlyArray.filter ▲\
 \9\9\9setFiltered(_newValue)\
 \9\9end\
-\9end, { commands })\
+\9end, {})\
 \9local handleRun = useCallback(function()\
-\9\9if not selected or isRunning then\
+\9\9if selected == nil or isRunning then\
 \9\9\9return nil\
 \9\9end\
 \9\9setIsRunning(true)\
-\9\9setStatus(\"Running \" .. (selected.name .. \"...\"))\
+\9\9setStatus(`Fetching {selected.name}...`)\
+\9\9local entry = selected\
 \9\9task.spawn(function()\
-\9\9\9TS.try(function()\
-\9\9\9\9local content = http.get(GIST_API_URL(selected.gistId))\
-\9\9\9\9local _arg0 = function(body)\
-\9\9\9\9\9local gistData = HttpService:JSONDecode(body)\
-\9\9\9\9\9local luaCode = \"\"\
-\9\9\9\9\9for _, file in pairs(gistData.files) do\
-\9\9\9\9\9\9luaCode = file.content\
-\9\9\9\9\9\9break\
-\9\9\9\9\9end\
-\9\9\9\9\9if luaCode == \"\" then\
-\9\9\9\9\9\9setStatus(\"Gist file is empty\")\
-\9\9\9\9\9\9setIsRunning(false)\
-\9\9\9\9\9\9return nil\
-\9\9\9\9\9end\
-\9\9\9\9\9local _binding = loadstring(luaCode, \"@\" .. selected.name)\
-\9\9\9\9\9local fn = _binding[1]\
-\9\9\9\9\9local err = _binding[2]\
-\9\9\9\9\9local _arg1 = \"loadstring failed: \" .. err\
-\9\9\9\9\9assert(fn, _arg1)\
-\9\9\9\9\9task.defer(fn)\
-\9\9\9\9\9setStatus(\"Ran \" .. selected.name)\
+\9\9\9http.get(GIST_RAW_URL(entry.gistId)):andThen(function(body)\
+\9\9\9\9if body == \"\" then\
+\9\9\9\9\9setStatus(\"Gist returned empty content\")\
 \9\9\9\9\9setIsRunning(false)\
+\9\9\9\9\9return nil\
 \9\9\9\9end\
-\9\9\9\9content:andThen(_arg0):catch(function(err)\
-\9\9\9\9\9setStatus(\"Error: \" .. tostring(err))\
+\9\9\9\9local fn, err = compile(body, `@{entry.name}`)\
+\9\9\9\9if fn == nil then\
+\9\9\9\9\9setStatus(`Compile error: {err}`)\
 \9\9\9\9\9setIsRunning(false)\
+\9\9\9\9\9return nil\
+\9\9\9\9end\
+\9\9\9\9TS.try(function()\
+\9\9\9\9\9fn()\
+\9\9\9\9\9setStatus(`Ran {entry.name}`)\
+\9\9\9\9end, function(runErr)\
+\9\9\9\9\9setStatus(`Runtime error: {tostring(runErr)}`)\
 \9\9\9\9end)\
-\9\9\9end, function(err)\
-\9\9\9\9setStatus(\"Error: \" .. tostring(err))\
+\9\9\9\9setIsRunning(false)\
+\9\9\9end):catch(function(err)\
+\9\9\9\9setStatus(`Fetch error: {tostring(err)}`)\
 \9\9\9\9setIsRunning(false)\
 \9\9\9end)\
 \9\9end)\
 \9end, { selected, isRunning })\
+\9local runButtonActive = selected ~= nil and not isRunning\
 \9local _attributes = {\
 \9\9Size = UDim2.new(1, 0, 0, 400),\
 \9\9BackgroundTransparency = 1,\
@@ -8515,9 +8381,11 @@ local function GistLoader()\
 \9\9}),\
 \9}\
 \9local _length = #_children\
-\9local _arg0 = function(cmd, i)\
+\9-- ▼ ReadonlyArray.map ▼\
+\9local _newValue = table.create(#filtered)\
+\9local _callback = function(cmd, i)\
 \9\9return Roact.createFragment({\
-\9\9\9[\"cmd-\" .. tostring(i)] = Roact.createElement(CommandItem, {\
+\9\9\9[cmd.gistId] = Roact.createElement(CommandItem, {\
 \9\9\9\9entry = cmd,\
 \9\9\9\9isSelected = selected ~= nil and selected.gistId == cmd.gistId,\
 \9\9\9\9layoutOrder = i,\
@@ -8527,12 +8395,10 @@ local function GistLoader()\
 \9\9\9}),\
 \9\9})\
 \9end\
-\9--▼ ReadonlyArray.map ▼\
-\9local _newValue = table.create(#filtered)\
-\9for _k, _v in ipairs(filtered) do\
-\9\9_newValue[_k] = _arg0(_v, _k - 1, filtered)\
+\9for _k, _v in filtered do\
+\9\9_newValue[_k] = _callback(_v, _k - 1, filtered)\
 \9end\
-\9--▲ ReadonlyArray.map ▲\
+\9-- ▲ ReadonlyArray.map ▲\
 \9local _attributes_1 = {\
 \9\9Size = UDim2.new(1, 0, 0, 260),\
 \9\9BackgroundTransparency = 1,\
@@ -8549,18 +8415,19 @@ local function GistLoader()\
 \9\9}),\
 \9}\
 \9local _length_1 = #_children_1\
-\9for _k, _v in ipairs(_newValue) do\
+\9for _k, _v in _newValue do\
 \9\9_children_1[_length_1 + _k] = _v\
 \9end\
 \9_length_1 = #_children_1\
 \9local _child = #filtered == 0 and (Roact.createFragment({\
 \9\9NoResults = Roact.createElement(\"TextLabel\", {\
-\9\9\9Text = if #commands == 0 then status else \"No matching commands\",\
+\9\9\9Text = \"No matching commands\",\
 \9\9\9Size = UDim2.new(1, 0, 0, 40),\
 \9\9\9BackgroundTransparency = 1,\
 \9\9\9TextColor3 = TEXT_DIM,\
 \9\9\9Font = Enum.Font.Gotham,\
 \9\9\9TextSize = 13,\
+\9\9\9TextXAlignment = Enum.TextXAlignment.Center,\
 \9\9}),\
 \9}))\
 \9if _child then\
@@ -8568,18 +8435,19 @@ local function GistLoader()\
 \9end\
 \9_children.CommandList = Roact.createElement(\"ScrollingFrame\", _attributes_1, _children_1)\
 \9_children.Footer = Roact.createElement(\"Frame\", {\
-\9\9Size = UDim2.new(1, 0, 0, 44),\
+\9\9Size = UDim2.new(1, 0, 0, 40),\
 \9\9BackgroundTransparency = 1,\
 \9\9LayoutOrder = 2,\
 \9}, {\
 \9\9RunButton = Roact.createElement(\"TextButton\", {\
-\9\9\9Text = if isRunning then \"Running...\" elseif selected then \"Run: \" .. selected.name else \"Select a command\",\
-\9\9\9Size = UDim2.new(1, 0, 0, 40),\
-\9\9\9BackgroundColor3 = if selected and not isRunning then GREEN else Color3.fromRGB(40, 40, 40),\
-\9\9\9TextColor3 = if selected and not isRunning then Color3.fromRGB(10, 10, 10) else TEXT_DIM,\
+\9\9\9Text = if isRunning then \"Running...\" elseif selected ~= nil then `Run: {selected.name}` else \"Select a command\",\
+\9\9\9Size = UDim2.new(1, 0, 1, 0),\
+\9\9\9BackgroundColor3 = if runButtonActive then GREEN else Color3.fromRGB(40, 40, 40),\
+\9\9\9TextColor3 = if runButtonActive then Color3.fromRGB(10, 10, 10) else TEXT_DIM,\
 \9\9\9Font = Enum.Font.GothamBold,\
 \9\9\9TextSize = 14,\
 \9\9\9AutoButtonColor = false,\
+\9\9\9Active = runButtonActive,\
 \9\9\9[Roact.Event.Activated] = handleRun,\
 \9\9}, {\
 \9\9\9Roact.createElement(\"UICorner\", {\
@@ -8609,7 +8477,7 @@ function CommandItem(_param)\
 \9local hovered, setHovered = useState(false)\
 \9local _attributes = {\
 \9\9Text = \"\",\
-\9\9Size = UDim2.new(1, 0, 0, 50),\
+\9\9Size = UDim2.new(1, 0, 0, 52),\
 \9\9BackgroundColor3 = if isSelected then Color3.fromRGB(30, 50, 35) elseif hovered then BG_ITEM_HOVER else BG_ITEM,\
 \9\9AutoButtonColor = false,\
 \9\9LayoutOrder = layoutOrder,\
@@ -8638,7 +8506,7 @@ function CommandItem(_param)\
 \9_children.Name = Roact.createElement(\"TextLabel\", {\
 \9\9Text = entry.name,\
 \9\9Size = UDim2.new(1, -16, 0, 22),\
-\9\9Position = UDim2.new(0, 12, 0, 6),\
+\9\9Position = UDim2.new(0, 12, 0, 7),\
 \9\9BackgroundTransparency = 1,\
 \9\9TextColor3 = TEXT_PRIMARY,\
 \9\9Font = Enum.Font.GothamBold,\
@@ -8648,7 +8516,7 @@ function CommandItem(_param)\
 \9_children.Description = Roact.createElement(\"TextLabel\", {\
 \9\9Text = entry.description,\
 \9\9Size = UDim2.new(1, -16, 0, 16),\
-\9\9Position = UDim2.new(0, 12, 0, 28),\
+\9\9Position = UDim2.new(0, 12, 0, 29),\
 \9\9BackgroundTransparency = 1,\
 \9\9TextColor3 = TEXT_SECONDARY,\
 \9\9Font = Enum.Font.Gotham,\
@@ -8665,32 +8533,34 @@ return {\
 }\
 ", '@'.."Havoc.views.Pages.Misc.GistLoader")) setfenv(fn, newEnv("Havoc.views.Pages.Misc.GistLoader")) return fn() end)
 
-newModule("Misc", "ModuleScript", "Havoc.views.Pages.Misc.Misc", "Havoc.views.Pages.Misc", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Misc", "ModuleScript", "Havoc.views.Pages.Misc.Misc", "Havoc.views.Pages.Misc", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
+local Roact = TS.import(script, script.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
 local Card = TS.import(script, script.Parent.Parent.Parent.Parent, \"components\", \"Card\").default\
 local useTheme = TS.import(script, script.Parent.Parent.Parent.Parent, \"hooks\", \"use-theme\").useTheme\
 local DashboardPage = TS.import(script, script.Parent.Parent.Parent.Parent, \"store\", \"models\", \"dashboard.model\").DashboardPage\
 local px = TS.import(script, script.Parent.Parent.Parent.Parent, \"utils\", \"udim2\").px\
 local GistLoader = TS.import(script, script.Parent, \"GistLoader\").default\
 local function MiscPage()\
-\9local theme = useTheme(\"apps\").players\
+\9local theme = useTheme(\"clock\")\
 \9return Roact.createElement(Card, {\
-\9\9index = 2,\
-\9\9page = DashboardPage.Apps,\
+\9\9index = 4,\
+\9\9page = DashboardPage.Misc,\
 \9\9theme = theme,\
 \9\9size = px(326, 648),\
-\9\9position = UDim2.new(0, 0, 1, 0),\
+\9\9position = UDim2.new(0, 0, 0, 0),\
 \9}, {\
 \9\9Roact.createElement(\"UIPadding\", {\
 \9\9\9PaddingTop = UDim.new(0, 20),\
 \9\9\9PaddingLeft = UDim.new(0, 20),\
 \9\9\9PaddingRight = UDim.new(0, 20),\
+\9\9\9PaddingBottom = UDim.new(0, 20),\
 \9\9}),\
 \9\9ContentScroll = Roact.createElement(\"ScrollingFrame\", {\
 \9\9\9Size = UDim2.new(1, 0, 1, 0),\
 \9\9\9BackgroundTransparency = 1,\
 \9\9\9ScrollBarThickness = 2,\
+\9\9\9ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100),\
 \9\9\9CanvasSize = UDim2.new(0, 0, 0, 0),\
 \9\9\9AutomaticCanvasSize = Enum.AutomaticSize.Y,\
 \9\9\9ZIndex = 1,\
@@ -8710,23 +8580,23 @@ return {\
 }\
 ", '@'.."Havoc.views.Pages.Misc.Misc")) setfenv(fn, newEnv("Havoc.views.Pages.Misc.Misc")) return fn() end)
 
-newModule("Options", "ModuleScript", "Havoc.views.Pages.Options", "Havoc.views.Pages", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Options", "ModuleScript", "Havoc.views.Pages.Options", "Havoc.views.Pages", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
 local exports = {}\
 exports.default = TS.import(script, script, \"Options\").default\
 return exports\
 ", '@'.."Havoc.views.Pages.Options")) setfenv(fn, newEnv("Havoc.views.Pages.Options")) return fn() end)
 
-newModule("Config", "ModuleScript", "Havoc.views.Pages.Options.Config", "Havoc.views.Pages.Options", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Config", "ModuleScript", "Havoc.views.Pages.Options.Config", "Havoc.views.Pages.Options", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)\
 local exports = {}\
 exports.default = TS.import(script, script, \"Config\").default\
 return exports\
 ", '@'.."Havoc.views.Pages.Options.Config")) setfenv(fn, newEnv("Havoc.views.Pages.Options.Config")) return fn() end)
 
-newModule("Config", "ModuleScript", "Havoc.views.Pages.Options.Config.Config", "Havoc.views.Pages.Options.Config", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Config", "ModuleScript", "Havoc.views.Pages.Options.Config.Config", "Havoc.views.Pages.Options.Config", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
+local Roact = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
 local Canvas = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"components\", \"Canvas\")\
 local Card = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"components\", \"Card\").default\
 local useTheme = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"hooks\", \"use-theme\").useTheme\
@@ -8793,10 +8663,10 @@ return {\
 }\
 ", '@'.."Havoc.views.Pages.Options.Config.Config")) setfenv(fn, newEnv("Havoc.views.Pages.Options.Config.Config")) return fn() end)
 
-newModule("ConfigItem", "ModuleScript", "Havoc.views.Pages.Options.Config.ConfigItem", "Havoc.views.Pages.Options.Config", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("ConfigItem", "ModuleScript", "Havoc.views.Pages.Options.Config.ConfigItem", "Havoc.views.Pages.Options.Config", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
-local useState = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-hooked\").src).useState\
+local Roact = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
+local useState = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact-hooked\", \"src\").useState\
 local Border = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"components\", \"Border\").default\
 local Canvas = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"components\", \"Canvas\")\
 local Fill = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"components\", \"Fill\").default\
@@ -8831,8 +8701,8 @@ local function ConfigItem(_param)\
 \9\9return state.options.config[action]\
 \9end)\
 \9local hovered, setHovered = useState(false)\
-\9local background = useSpring(if active then buttonTheme.accent elseif hovered then buttonTheme.backgroundHovered or buttonTheme.background:Lerp(buttonTheme.accent, 0.1) else buttonTheme.background, {})\
-\9local dropshadow = useSpring(if active then buttonTheme.accent elseif hovered then buttonTheme.backgroundHovered or buttonTheme.dropshadow:Lerp(buttonTheme.accent, 0.5) else buttonTheme.dropshadow, {})\
+\9local background = useSpring(if active then buttonTheme.accent elseif hovered then (buttonTheme.backgroundHovered or buttonTheme.background:Lerp(buttonTheme.accent, 0.1)) else buttonTheme.background, {})\
+\9local dropshadow = useSpring(if active then buttonTheme.accent elseif hovered then (buttonTheme.backgroundHovered or buttonTheme.dropshadow:Lerp(buttonTheme.accent, 0.5)) else buttonTheme.dropshadow, {})\
 \9local foreground = useSpring(if active and buttonTheme.foregroundAccent then buttonTheme.foregroundAccent else buttonTheme.foreground, {})\
 \9local _attributes = {\
 \9\9size = px(ENTRY_WIDTH, ENTRY_HEIGHT),\
@@ -8904,9 +8774,9 @@ return {\
 }\
 ", '@'.."Havoc.views.Pages.Options.Config.ConfigItem")) setfenv(fn, newEnv("Havoc.views.Pages.Options.Config.ConfigItem")) return fn() end)
 
-newModule("Options", "ModuleScript", "Havoc.views.Pages.Options.Options", "Havoc.views.Pages.Options", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Options", "ModuleScript", "Havoc.views.Pages.Options.Options", "Havoc.views.Pages.Options", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
+local Roact = TS.import(script, script.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
 local Canvas = TS.import(script, script.Parent.Parent.Parent.Parent, \"components\", \"Canvas\")\
 local useScale = TS.import(script, script.Parent.Parent.Parent.Parent, \"hooks\", \"use-scale\").useScale\
 local scale = TS.import(script, script.Parent.Parent.Parent.Parent, \"utils\", \"udim2\").scale\
@@ -8933,20 +8803,20 @@ return {\
 }\
 ", '@'.."Havoc.views.Pages.Options.Options")) setfenv(fn, newEnv("Havoc.views.Pages.Options.Options")) return fn() end)
 
-newModule("Shortcuts", "ModuleScript", "Havoc.views.Pages.Options.Shortcuts", "Havoc.views.Pages.Options", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Shortcuts", "ModuleScript", "Havoc.views.Pages.Options.Shortcuts", "Havoc.views.Pages.Options", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)\
 local exports = {}\
 exports.default = TS.import(script, script, \"Shortcuts\").default\
 return exports\
 ", '@'.."Havoc.views.Pages.Options.Shortcuts")) setfenv(fn, newEnv("Havoc.views.Pages.Options.Shortcuts")) return fn() end)
 
-newModule("ShortcutItem", "ModuleScript", "Havoc.views.Pages.Options.Shortcuts.ShortcutItem", "Havoc.views.Pages.Options.Shortcuts", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("ShortcutItem", "ModuleScript", "Havoc.views.Pages.Options.Shortcuts.ShortcutItem", "Havoc.views.Pages.Options.Shortcuts", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
-local _roact_hooked = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-hooked\").src)\
+local Roact = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
+local _roact_hooked = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact-hooked\", \"src\")\
 local useEffect = _roact_hooked.useEffect\
 local useState = _roact_hooked.useState\
-local UserInputService = TS.import(script, TS.getModule(script, \"@rbxts\", \"services\")).UserInputService\
+local UserInputService = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"services\").UserInputService\
 local Border = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"components\", \"Border\").default\
 local Canvas = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"components\", \"Canvas\")\
 local Fill = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"components\", \"Fill\").default\
@@ -8987,18 +8857,18 @@ local function ShortcutItem(_param)\
 \9\9return state.options.shortcuts[action]\
 \9end)\
 \9local _exp = Enum.KeyCode:GetEnumItems()\
-\9local _arg0 = function(item)\
+\9-- ▼ ReadonlyArray.find ▼\
+\9local _callback = function(item)\
 \9\9return item.Value == shortcut\
 \9end\
-\9--▼ ReadonlyArray.find ▼\
 \9local _result\
-\9for _i, _v in ipairs(_exp) do\
-\9\9if _arg0(_v, _i - 1, _exp) == true then\
+\9for _i, _v in _exp do\
+\9\9if _callback(_v, _i - 1, _exp) == true then\
 \9\9\9_result = _v\
 \9\9\9break\
 \9\9end\
 \9end\
-\9--▲ ReadonlyArray.find ▲\
+\9-- ▲ ReadonlyArray.find ▲\
 \9local shortcutEnum = _result\
 \9local selected = selectedItem == action\
 \9local hovered, setHovered = useState(false)\
@@ -9055,8 +8925,8 @@ local function ShortcutItem(_param)\
 \9\9\9handle:Disconnect()\
 \9\9end\
 \9end, { selected })\
-\9local background = useSpring(if selected then buttonTheme.accent elseif hovered then buttonTheme.backgroundHovered or buttonTheme.background:Lerp(buttonTheme.accent, 0.1) else buttonTheme.background, {})\
-\9local dropshadow = useSpring(if selected then buttonTheme.accent elseif hovered then buttonTheme.backgroundHovered or buttonTheme.dropshadow:Lerp(buttonTheme.accent, 0.5) else buttonTheme.dropshadow, {})\
+\9local background = useSpring(if selected then buttonTheme.accent elseif hovered then (buttonTheme.backgroundHovered or buttonTheme.background:Lerp(buttonTheme.accent, 0.1)) else buttonTheme.background, {})\
+\9local dropshadow = useSpring(if selected then buttonTheme.accent elseif hovered then (buttonTheme.backgroundHovered or buttonTheme.dropshadow:Lerp(buttonTheme.accent, 0.5)) else buttonTheme.dropshadow, {})\
 \9local foreground = useSpring(if selected and buttonTheme.foregroundAccent then buttonTheme.foregroundAccent else buttonTheme.foreground, {})\
 \9local _attributes = {\
 \9\9size = px(ENTRY_WIDTH, ENTRY_HEIGHT),\
@@ -9148,10 +9018,10 @@ return {\
 }\
 ", '@'.."Havoc.views.Pages.Options.Shortcuts.ShortcutItem")) setfenv(fn, newEnv("Havoc.views.Pages.Options.Shortcuts.ShortcutItem")) return fn() end)
 
-newModule("Shortcuts", "ModuleScript", "Havoc.views.Pages.Options.Shortcuts.Shortcuts", "Havoc.views.Pages.Options.Shortcuts", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Shortcuts", "ModuleScript", "Havoc.views.Pages.Options.Shortcuts.Shortcuts", "Havoc.views.Pages.Options.Shortcuts", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
-local useState = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-hooked\").src).useState\
+local Roact = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
+local useState = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact-hooked\", \"src\").useState\
 local Canvas = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"components\", \"Canvas\")\
 local Card = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"components\", \"Card\").default\
 local _rodux_hooks = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"hooks\", \"common\", \"rodux-hooks\")\
@@ -9174,13 +9044,14 @@ local function Shortcuts()\
 \9local dispatch = useAppDispatch()\
 \9local theme = useTheme(\"options\").shortcuts\
 \9local selectedItem, setSelectedItem = useState(nil)\
-\9return Roact.createElement(Card, {\
+\9local _attributes = {\
 \9\9index = 1,\
 \9\9page = DashboardPage.Options,\
 \9\9theme = theme,\
 \9\9size = px(326, 416),\
 \9\9position = UDim2.new(0, 0, 1, 0),\
-\9}, {\
+\9}\
+\9local _children = {\
 \9\9Roact.createElement(\"TextLabel\", {\
 \9\9\9Text = \"Shortcuts\",\
 \9\9\9Font = \"GothamBlack\",\
@@ -9191,98 +9062,129 @@ local function Shortcuts()\
 \9\9\9Position = px(24, 24),\
 \9\9\9BackgroundTransparency = 1,\
 \9\9}),\
-\9\9Roact.createElement(Canvas, {\
-\9\9\9size = px(326, 348),\
-\9\9\9position = px(0, 68),\
-\9\9\9padding = {\
-\9\9\9\9left = 24,\
-\9\9\9\9right = 24,\
-\9\9\9\9top = 8,\
-\9\9\9},\
-\9\9\9clipsDescendants = true,\
-\9\9}, {\
-\9\9\9Roact.createElement(\"ScrollingFrame\", {\
-\9\9\9\9Size = scale(1, 1),\
-\9\9\9\9CanvasSize = px(0, ENTRY_COUNT * (ENTRY_HEIGHT + PADDING) + PADDING),\
-\9\9\9\9BackgroundTransparency = 1,\
-\9\9\9\9BorderSizePixel = 0,\
-\9\9\9\9ScrollBarImageTransparency = 1,\
-\9\9\9\9ScrollBarThickness = 0,\
-\9\9\9\9ClipsDescendants = false,\
-\9\9\9}, {\
-\9\9\9\9Roact.createElement(ShortcutItem, {\
-\9\9\9\9\9onActivate = function()\
-\9\9\9\9\9\9dispatch(toggleDashboard())\
-\9\9\9\9\9end,\
-\9\9\9\9\9onSelect = setSelectedItem,\
-\9\9\9\9\9selectedItem = selectedItem,\
-\9\9\9\9\9action = \"toggleDashboard\",\
-\9\9\9\9\9description = \"Open Orca\",\
-\9\9\9\9\9index = 0,\
-\9\9\9\9}),\
-\9\9\9\9Roact.createElement(ShortcutItem, {\
-\9\9\9\9\9onActivate = function()\
-\9\9\9\9\9\9local state = store:getState()\
-\9\9\9\9\9\9local job = state.jobs.flight\
-\9\9\9\9\9\9dispatch(setJobActive(\"flight\", not job.active))\
-\9\9\9\9\9end,\
-\9\9\9\9\9onSelect = setSelectedItem,\
-\9\9\9\9\9selectedItem = selectedItem,\
-\9\9\9\9\9action = \"toggleFlight\",\
-\9\9\9\9\9description = \"Toggle flight\",\
-\9\9\9\9\9index = 1,\
-\9\9\9\9}),\
-\9\9\9\9Roact.createElement(ShortcutItem, {\
-\9\9\9\9\9onActivate = function()\
-\9\9\9\9\9\9local state = store:getState()\
-\9\9\9\9\9\9local job = state.jobs.freecam\
-\9\9\9\9\9\9dispatch(setJobActive(\"freecam\", not job.active))\
-\9\9\9\9\9end,\
-\9\9\9\9\9onSelect = setSelectedItem,\
-\9\9\9\9\9selectedItem = selectedItem,\
-\9\9\9\9\9action = \"setFreecam\",\
-\9\9\9\9\9description = \"Set freecam\",\
-\9\9\9\9\9index = 2,\
-\9\9\9\9}),\
-\9\9\9\9Roact.createElement(ShortcutItem, {\
-\9\9\9\9\9onActivate = function()\
-\9\9\9\9\9\9local state = store:getState()\
-\9\9\9\9\9\9local job = state.jobs.ghost\
-\9\9\9\9\9\9dispatch(setJobActive(\"ghost\", not job.active))\
-\9\9\9\9\9end,\
-\9\9\9\9\9onSelect = setSelectedItem,\
-\9\9\9\9\9selectedItem = selectedItem,\
-\9\9\9\9\9action = \"setGhost\",\
-\9\9\9\9\9description = \"Set ghost mode\",\
-\9\9\9\9\9index = 3,\
-\9\9\9\9}),\
-\9\9\9\9Roact.createElement(ShortcutItem, {\
-\9\9\9\9\9onActivate = function()\
-\9\9\9\9\9\9local state = store:getState()\
-\9\9\9\9\9\9local job = state.jobs.walkSpeed\
-\9\9\9\9\9\9dispatch(setJobActive(\"walkSpeed\", not job.active))\
-\9\9\9\9\9end,\
-\9\9\9\9\9onSelect = setSelectedItem,\
-\9\9\9\9\9selectedItem = selectedItem,\
-\9\9\9\9\9action = \"setSpeed\",\
-\9\9\9\9\9description = \"Set walk speed\",\
-\9\9\9\9\9index = 4,\
-\9\9\9\9}),\
-\9\9\9\9Roact.createElement(ShortcutItem, {\
-\9\9\9\9\9onActivate = function()\
-\9\9\9\9\9\9local state = store:getState()\
-\9\9\9\9\9\9local job = state.jobs.jumpHeight\
-\9\9\9\9\9\9dispatch(setJobActive(\"jumpHeight\", not job.active))\
-\9\9\9\9\9end,\
-\9\9\9\9\9onSelect = setSelectedItem,\
-\9\9\9\9\9selectedItem = selectedItem,\
-\9\9\9\9\9action = \"setJumpHeight\",\
-\9\9\9\9\9description = \"Set jump height\",\
-\9\9\9\9\9index = 5,\
-\9\9\9\9}),\
-\9\9\9}),\
-\9\9}),\
-\9})\
+\9}\
+\9local _length = #_children\
+\9local _attributes_1 = {\
+\9\9size = px(326, 348),\
+\9\9position = px(0, 68),\
+\9\9padding = {\
+\9\9\9left = 24,\
+\9\9\9right = 24,\
+\9\9\9top = 8,\
+\9\9},\
+\9\9clipsDescendants = true,\
+\9}\
+\9local _children_1 = {}\
+\9local _length_1 = #_children_1\
+\9local _attributes_2 = {\
+\9\9Size = scale(1, 1),\
+\9\9CanvasSize = px(0, ENTRY_COUNT * (ENTRY_HEIGHT + PADDING) + PADDING),\
+\9\9BackgroundTransparency = 1,\
+\9\9BorderSizePixel = 0,\
+\9\9ScrollBarImageTransparency = 1,\
+\9\9ScrollBarThickness = 0,\
+\9\9ClipsDescendants = false,\
+\9}\
+\9local _children_2 = {}\
+\9local _length_2 = #_children_2\
+\9local _attributes_3 = {\
+\9\9onActivate = function()\
+\9\9\9dispatch(toggleDashboard())\
+\9\9end,\
+\9\9onSelect = setSelectedItem,\
+\9}\
+\9local _condition = selectedItem\
+\9if _condition == nil then\
+\9\9_condition = \"\"\
+\9end\
+\9_attributes_3.selectedItem = _condition\
+\9_attributes_3.action = \"toggleDashboard\"\
+\9_attributes_3.description = \"Open Orca\"\
+\9_attributes_3.index = 0\
+\9_children_2[_length_2 + 1] = Roact.createElement(ShortcutItem, _attributes_3)\
+\9local _attributes_4 = {\
+\9\9onActivate = function()\
+\9\9\9local job = store:getState().jobs.flight\
+\9\9\9dispatch(setJobActive(\"flight\", not job.active))\
+\9\9end,\
+\9\9onSelect = setSelectedItem,\
+\9}\
+\9local _condition_1 = selectedItem\
+\9if _condition_1 == nil then\
+\9\9_condition_1 = \"\"\
+\9end\
+\9_attributes_4.selectedItem = _condition_1\
+\9_attributes_4.action = \"toggleFlight\"\
+\9_attributes_4.description = \"Toggle flight\"\
+\9_attributes_4.index = 1\
+\9_children_2[_length_2 + 2] = Roact.createElement(ShortcutItem, _attributes_4)\
+\9local _attributes_5 = {\
+\9\9onActivate = function()\
+\9\9\9local job = store:getState().jobs.freecam\
+\9\9\9dispatch(setJobActive(\"freecam\", not job.active))\
+\9\9end,\
+\9\9onSelect = setSelectedItem,\
+\9}\
+\9local _condition_2 = selectedItem\
+\9if _condition_2 == nil then\
+\9\9_condition_2 = \"\"\
+\9end\
+\9_attributes_5.selectedItem = _condition_2\
+\9_attributes_5.action = \"setFreecam\"\
+\9_attributes_5.description = \"Set freecam\"\
+\9_attributes_5.index = 2\
+\9_children_2[_length_2 + 3] = Roact.createElement(ShortcutItem, _attributes_5)\
+\9local _attributes_6 = {\
+\9\9onActivate = function()\
+\9\9\9local job = store:getState().jobs.ghost\
+\9\9\9dispatch(setJobActive(\"ghost\", not job.active))\
+\9\9end,\
+\9\9onSelect = setSelectedItem,\
+\9}\
+\9local _condition_3 = selectedItem\
+\9if _condition_3 == nil then\
+\9\9_condition_3 = \"\"\
+\9end\
+\9_attributes_6.selectedItem = _condition_3\
+\9_attributes_6.action = \"setGhost\"\
+\9_attributes_6.description = \"Set ghost mode\"\
+\9_attributes_6.index = 3\
+\9_children_2[_length_2 + 4] = Roact.createElement(ShortcutItem, _attributes_6)\
+\9local _attributes_7 = {\
+\9\9onActivate = function()\
+\9\9\9local job = store:getState().jobs.walkSpeed\
+\9\9\9dispatch(setJobActive(\"walkSpeed\", not job.active))\
+\9\9end,\
+\9\9onSelect = setSelectedItem,\
+\9}\
+\9local _condition_4 = selectedItem\
+\9if _condition_4 == nil then\
+\9\9_condition_4 = \"\"\
+\9end\
+\9_attributes_7.selectedItem = _condition_4\
+\9_attributes_7.action = \"setSpeed\"\
+\9_attributes_7.description = \"Set walk speed\"\
+\9_attributes_7.index = 4\
+\9_children_2[_length_2 + 5] = Roact.createElement(ShortcutItem, _attributes_7)\
+\9local _attributes_8 = {\
+\9\9onActivate = function()\
+\9\9\9local job = store:getState().jobs.jumpHeight\
+\9\9\9dispatch(setJobActive(\"jumpHeight\", not job.active))\
+\9\9end,\
+\9\9onSelect = setSelectedItem,\
+\9}\
+\9local _condition_5 = selectedItem\
+\9if _condition_5 == nil then\
+\9\9_condition_5 = \"\"\
+\9end\
+\9_attributes_8.selectedItem = _condition_5\
+\9_attributes_8.action = \"setJumpHeight\"\
+\9_attributes_8.description = \"Set jump height\"\
+\9_attributes_8.index = 5\
+\9_children_2[_length_2 + 6] = Roact.createElement(ShortcutItem, _attributes_8)\
+\9_children_1[_length_1 + 1] = Roact.createElement(\"ScrollingFrame\", _attributes_2, _children_2)\
+\9_children[_length + 1] = Roact.createElement(Canvas, _attributes_1, _children_1)\
+\9return Roact.createElement(Card, _attributes, _children)\
 end\
 local default = Shortcuts\
 return {\
@@ -9290,17 +9192,17 @@ return {\
 }\
 ", '@'.."Havoc.views.Pages.Options.Shortcuts.Shortcuts")) setfenv(fn, newEnv("Havoc.views.Pages.Options.Shortcuts.Shortcuts")) return fn() end)
 
-newModule("Themes", "ModuleScript", "Havoc.views.Pages.Options.Themes", "Havoc.views.Pages.Options", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Themes", "ModuleScript", "Havoc.views.Pages.Options.Themes", "Havoc.views.Pages.Options", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)\
 local exports = {}\
 exports.default = TS.import(script, script, \"Themes\").default\
 return exports\
 ", '@'.."Havoc.views.Pages.Options.Themes")) setfenv(fn, newEnv("Havoc.views.Pages.Options.Themes")) return fn() end)
 
-newModule("ThemeItem", "ModuleScript", "Havoc.views.Pages.Options.Themes.ThemeItem", "Havoc.views.Pages.Options.Themes", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("ThemeItem", "ModuleScript", "Havoc.views.Pages.Options.Themes.ThemeItem", "Havoc.views.Pages.Options.Themes", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
-local useState = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-hooked\").src).useState\
+local Roact = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
+local useState = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact-hooked\", \"src\").useState\
 local Border = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"components\", \"Border\").default\
 local Canvas = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"components\", \"Canvas\")\
 local Fill = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"components\", \"Fill\").default\
@@ -9339,8 +9241,8 @@ local function ThemeItem(_param)\
 \9\9return state.options.currentTheme == theme.name\
 \9end)\
 \9local hovered, setHovered = useState(false)\
-\9local background = useSpring(if isSelected then buttonTheme.accent elseif hovered then buttonTheme.backgroundHovered or buttonTheme.background:Lerp(buttonTheme.accent, 0.1) else buttonTheme.background, {})\
-\9local dropshadow = useSpring(if isSelected then buttonTheme.accent elseif hovered then buttonTheme.backgroundHovered or buttonTheme.dropshadow:Lerp(buttonTheme.accent, 0.5) else buttonTheme.dropshadow, {})\
+\9local background = useSpring(if isSelected then buttonTheme.accent elseif hovered then (buttonTheme.backgroundHovered or buttonTheme.background:Lerp(buttonTheme.accent, 0.1)) else buttonTheme.background, {})\
+\9local dropshadow = useSpring(if isSelected then buttonTheme.accent elseif hovered then (buttonTheme.backgroundHovered or buttonTheme.dropshadow:Lerp(buttonTheme.accent, 0.5)) else buttonTheme.dropshadow, {})\
 \9local foreground = useSpring(if isSelected and buttonTheme.foregroundAccent then buttonTheme.foregroundAccent else buttonTheme.foreground, {})\
 \9local _attributes = {\
 \9\9size = px(ENTRY_WIDTH, ENTRY_HEIGHT),\
@@ -9493,10 +9395,10 @@ return {\
 }\
 ", '@'.."Havoc.views.Pages.Options.Themes.ThemeItem")) setfenv(fn, newEnv("Havoc.views.Pages.Options.Themes.ThemeItem")) return fn() end)
 
-newModule("Themes", "ModuleScript", "Havoc.views.Pages.Options.Themes.Themes", "Havoc.views.Pages.Options.Themes", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Themes", "ModuleScript", "Havoc.views.Pages.Options.Themes.Themes", "Havoc.views.Pages.Options.Themes", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
-local useMemo = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-hooked\").src).useMemo\
+local Roact = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
+local useMemo = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact-hooked\", \"src\").useMemo\
 local Canvas = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"components\", \"Canvas\")\
 local Card = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"components\", \"Card\").default\
 local useTheme = TS.import(script, script.Parent.Parent.Parent.Parent.Parent, \"hooks\", \"use-theme\").useTheme\
@@ -9556,12 +9458,12 @@ local function Themes()\
 \9}\
 \9local _children_2 = {}\
 \9local _length_2 = #_children_2\
-\9for _k, _v in pairs(arrayToMap(themes, function(theme, index)\
+\9for _k, _v in arrayToMap(themes, function(theme, index)\
 \9\9return { theme.name, Roact.createElement(ThemeItem, {\
 \9\9\9theme = theme,\
 \9\9\9index = index,\
 \9\9}) }\
-\9end)) do\
+\9end) do\
 \9\9_children_2[_k] = _v\
 \9end\
 \9_children_1[_length_1 + 1] = Roact.createElement(\"ScrollingFrame\", _attributes_2, _children_2)\
@@ -9574,9 +9476,9 @@ return {\
 }\
 ", '@'.."Havoc.views.Pages.Options.Themes.Themes")) setfenv(fn, newEnv("Havoc.views.Pages.Options.Themes.Themes")) return fn() end)
 
-newModule("Pages", "ModuleScript", "Havoc.views.Pages.Pages", "Havoc.views.Pages", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Pages", "ModuleScript", "Havoc.views.Pages.Pages", "Havoc.views.Pages", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
+local Roact = TS.import(script, script.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
 local useDelayedUpdate = TS.import(script, script.Parent.Parent.Parent, \"hooks\", \"common\", \"use-delayed-update\").useDelayedUpdate\
 local useCurrentPage = TS.import(script, script.Parent.Parent.Parent, \"hooks\", \"use-current-page\").useCurrentPage\
 local DashboardPage = TS.import(script, script.Parent.Parent.Parent, \"store\", \"models\", \"dashboard.model\").DashboardPage\
@@ -9620,16 +9522,16 @@ end\
 return Pages\
 ", '@'.."Havoc.views.Pages.Pages")) setfenv(fn, newEnv("Havoc.views.Pages.Pages")) return fn() end)
 
-newModule("Scripts", "ModuleScript", "Havoc.views.Pages.Scripts", "Havoc.views.Pages", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Scripts", "ModuleScript", "Havoc.views.Pages.Scripts", "Havoc.views.Pages", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.include.RuntimeLib)\
 local exports = {}\
 exports.default = TS.import(script, script, \"Scripts\").default\
 return exports\
 ", '@'.."Havoc.views.Pages.Scripts")) setfenv(fn, newEnv("Havoc.views.Pages.Scripts")) return fn() end)
 
-newModule("Content", "ModuleScript", "Havoc.views.Pages.Scripts.Content", "Havoc.views.Pages.Scripts", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Content", "ModuleScript", "Havoc.views.Pages.Scripts.Content", "Havoc.views.Pages.Scripts", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
+local Roact = TS.import(script, script.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
 local Canvas = TS.import(script, script.Parent.Parent.Parent.Parent, \"components\", \"Canvas\")\
 local useScale = TS.import(script, script.Parent.Parent.Parent.Parent, \"hooks\", \"use-scale\").useScale\
 local hex = TS.import(script, script.Parent.Parent.Parent.Parent, \"utils\", \"color3\").hex\
@@ -9755,10 +9657,10 @@ return {\
 }\
 ", '@'.."Havoc.views.Pages.Scripts.Content")) setfenv(fn, newEnv("Havoc.views.Pages.Scripts.Content")) return fn() end)
 
-newModule("ScriptCard", "ModuleScript", "Havoc.views.Pages.Scripts.ScriptCard", "Havoc.views.Pages.Scripts", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("ScriptCard", "ModuleScript", "Havoc.views.Pages.Scripts.ScriptCard", "Havoc.views.Pages.Scripts", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
-local useEffect = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact-hooked\").src).useEffect\
+local Roact = TS.import(script, script.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
+local useEffect = TS.import(script, script.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact-hooked\", \"src\").useEffect\
 local Border = TS.import(script, script.Parent.Parent.Parent.Parent, \"components\", \"Border\").default\
 local Canvas = TS.import(script, script.Parent.Parent.Parent.Parent, \"components\", \"Canvas\")\
 local Fill = TS.import(script, script.Parent.Parent.Parent.Parent, \"components\", \"Fill\").default\
@@ -9794,7 +9696,7 @@ local function ScriptCard(_param)\
 \9local isOpen = if useIsMount() then false else isCurrentlyOpen\
 \9local isTransitioning = useDelayedUpdate(isOpen, index * 30)\
 \9useEffect(function()\
-\9\9return rerender()\
+\9\9rerender()\
 \9end, {})\
 \9local offset = useParallaxOffset()\
 \9local _binding = useSetState({\
@@ -9805,6 +9707,9 @@ local function ScriptCard(_param)\
 \9local isHovered = _binding_1.isHovered\
 \9local isPressed = _binding_1.isPressed\
 \9local setButtonState = _binding[2]\
+\9local handleActivate = function()\
+\9\9return onActivate()\
+\9end\
 \9local _attributes = {\
 \9\9anchor = anchorPoint,\
 \9\9size = size,\
@@ -9855,7 +9760,7 @@ local function ScriptCard(_param)\
 \9local _children_2 = {}\
 \9local _length_2 = #_children_2\
 \9if children then\
-\9\9for _k, _v in pairs(children) do\
+\9\9for _k, _v in children do\
 \9\9\9if type(_k) == \"number\" then\
 \9\9\9\9_children_2[_length_2 + _k] = _v\
 \9\9\9else\
@@ -9894,9 +9799,7 @@ local function ScriptCard(_param)\
 \9})\
 \9_children[_length + 1] = Roact.createElement(Canvas, _attributes_1, _children_1)\
 \9_children[_length + 2] = Roact.createElement(\"TextButton\", {\
-\9\9[Roact.Event.Activated] = function()\
-\9\9\9return onActivate()\
-\9\9end,\
+\9\9[Roact.Event.Activated] = handleActivate,\
 \9\9[Roact.Event.MouseEnter] = function()\
 \9\9\9return setButtonState({\
 \9\9\9\9isHovered = true,\
@@ -9930,9 +9833,9 @@ return {\
 }\
 ", '@'.."Havoc.views.Pages.Scripts.ScriptCard")) setfenv(fn, newEnv("Havoc.views.Pages.Scripts.ScriptCard")) return fn() end)
 
-newModule("Scripts", "ModuleScript", "Havoc.views.Pages.Scripts.Scripts", "Havoc.views.Pages.Scripts", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("Scripts", "ModuleScript", "Havoc.views.Pages.Scripts.Scripts", "Havoc.views.Pages.Scripts", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local TS = require(script.Parent.Parent.Parent.Parent.include.RuntimeLib)\
-local Roact = TS.import(script, TS.getModule(script, \"@rbxts\", \"roact\").src)\
+local Roact = TS.import(script, script.Parent.Parent.Parent.Parent, \"include\", \"node_modules\", \"@rbxts\", \"roact\", \"src\")\
 local Canvas = TS.import(script, script.Parent.Parent.Parent.Parent, \"components\", \"Canvas\")\
 local http = TS.import(script, script.Parent.Parent.Parent.Parent, \"utils\", \"http\")\
 local scale = TS.import(script, script.Parent.Parent.Parent.Parent, \"utils\", \"udim2\").scale\
@@ -9941,23 +9844,19 @@ local BASE_PADDING = _constants.BASE_PADDING\
 local BASE_WINDOW_HEIGHT = _constants.BASE_WINDOW_HEIGHT\
 local Content = TS.import(script, script.Parent, \"Content\").default\
 local ScriptCard = TS.import(script, script.Parent, \"ScriptCard\").default\
+local warnLog = warn\
 local runScriptFromUrl = TS.async(function(url, src)\
-\9local _exitType, _returns = TS.try(function()\
+\9TS.try(function()\
 \9\9local content = TS.await(http.get(url))\
 \9\9local _binding = loadstring(content, \"@\" .. src)\
 \9\9local fn = _binding[1]\
 \9\9local err = _binding[2]\
-\9\9local _arg1 = \"Failed to call loadstring on Lua script from '\" .. (url .. (\"': \" .. err))\
+\9\9local _arg1 = `Failed to call loadstring on Lua script from '{url}': {err}`\
 \9\9assert(fn, _arg1)\
 \9\9task.defer(fn)\
-\9\9return TS.TRY_RETURN, { \"\" }\
 \9end, function(e)\
-\9\9warn(\"Failed to run Lua script from '\" .. (url .. (\"': \" .. tostring(e))))\
-\9\9return TS.TRY_RETURN, { \"\" }\
+\9\9warnLog(`Failed to run Lua script from '{url}': {tostring(e)}`)\
 \9end)\
-\9if _exitType then\
-\9\9return unpack(_returns)\
-\9end\
 end)\
 local function Scripts()\
 \9return Roact.createElement(Canvas, {\
@@ -9966,7 +9865,9 @@ local function Scripts()\
 \9}, {\
 \9\9Roact.createElement(ScriptCard, {\
 \9\9\9onActivate = function()\
-\9\9\9\9return runScriptFromUrl(\"https://absent.wtf/AKADMIN.lua\", \"AKADMIN\")\
+\9\9\9\9runScriptFromUrl(\"https://absent.wtf/AKADMIN.lua\", \"AKADMIN\"):catch(function(e)\
+\9\9\9\9\9warnLog(`Failed to run script: {tostring(e)}`)\
+\9\9\9\9end)\
 \9\9\9end,\
 \9\9\9index = 4,\
 \9\9\9backgroundImage = \"rbxassetid://126623834306744\",\
@@ -9986,7 +9887,9 @@ local function Scripts()\
 \9\9}),\
 \9\9Roact.createElement(ScriptCard, {\
 \9\9\9onActivate = function()\
-\9\9\9\9return runScriptFromUrl(\"https://novoline.pro\", \"Novoline\")\
+\9\9\9\9runScriptFromUrl(\"https://novoline.pro\", \"Novoline\"):catch(function(e)\
+\9\9\9\9\9warnLog(`Failed to run script: {tostring(e)}`)\
+\9\9\9\9end)\
 \9\9\9end,\
 \9\9\9index = 1,\
 \9\9\9backgroundImage = \"rbxassetid://127094516248328\",\
@@ -10006,7 +9909,9 @@ local function Scripts()\
 \9\9}),\
 \9\9Roact.createElement(ScriptCard, {\
 \9\9\9onActivate = function()\
-\9\9\9\9return runScriptFromUrl(\"https://onyxv2.lol/main.lua\", \"ONYX\")\
+\9\9\9\9runScriptFromUrl(\"https://onyxv2.lol/main.lua\", \"ONYX\"):catch(function(e)\
+\9\9\9\9\9warnLog(`Failed to run script: {tostring(e)}`)\
+\9\9\9\9end)\
 \9\9\9end,\
 \9\9\9index = 5,\
 \9\9\9backgroundImage = \"rbxassetid://130072532268670\",\
@@ -10025,7 +9930,9 @@ local function Scripts()\
 \9\9}),\
 \9\9Roact.createElement(ScriptCard, {\
 \9\9\9onActivate = function()\
-\9\9\9\9return runScriptFromUrl(\"https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source\", \"Infinite Yield\")\
+\9\9\9\9runScriptFromUrl(\"https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source\", \"Infinite Yield\"):catch(function(e)\
+\9\9\9\9\9warnLog(`Failed to run script: {tostring(e)}`)\
+\9\9\9\9end)\
 \9\9\9end,\
 \9\9\9index = 3,\
 \9\9\9backgroundImage = \"rbxassetid://8992291444\",\
@@ -10044,7 +9951,9 @@ local function Scripts()\
 \9\9}),\
 \9\9Roact.createElement(ScriptCard, {\
 \9\9\9onActivate = function()\
-\9\9\9\9return runScriptFromUrl(\"https://pastebin.com/raw/mMbsHWiQ\", \"Dex Explorer\")\
+\9\9\9\9runScriptFromUrl(\"https://pastebin.com/raw/mMbsHWiQ\", \"Dex Explorer\"):catch(function(e)\
+\9\9\9\9\9warnLog(`Failed to run script: {tostring(e)}`)\
+\9\9\9\9end)\
 \9\9\9end,\
 \9\9\9index = 1,\
 \9\9\9backgroundImage = \"rbxassetid://8992290931\",\
@@ -10063,7 +9972,9 @@ local function Scripts()\
 \9\9}),\
 \9\9Roact.createElement(ScriptCard, {\
 \9\9\9onActivate = function()\
-\9\9\9\9return runScriptFromUrl(\"https://raw.githubusercontent.com/ic3w0lf22/Unnamed-ESP/master/UnnamedESP.lua\", \"Unnamed ESP\")\
+\9\9\9\9runScriptFromUrl(\"https://raw.githubusercontent.com/ic3w0lf22/Unnamed-ESP/master/UnnamedESP.lua\", \"Unnamed ESP\"):catch(function(e)\
+\9\9\9\9\9warnLog(`Failed to run script: {tostring(e)}`)\
+\9\9\9\9end)\
 \9\9\9end,\
 \9\9\9index = 6,\
 \9\9\9backgroundImage = \"rbxassetid://8992290714\",\
@@ -10082,7 +9993,9 @@ local function Scripts()\
 \9\9}),\
 \9\9Roact.createElement(ScriptCard, {\
 \9\9\9onActivate = function()\
-\9\9\9\9return runScriptFromUrl(\"https://projectevo.xyz/script/loader.lua\", \"EvoV2\")\
+\9\9\9\9runScriptFromUrl(\"https://projectevo.xyz/script/loader.lua\", \"EvoV2\"):catch(function(e)\
+\9\9\9\9\9warnLog(`Failed to run script: {tostring(e)}`)\
+\9\9\9\9end)\
 \9\9\9end,\
 \9\9\9index = 2,\
 \9\9\9backgroundImage = \"rbxassetid://8992290314\",\
@@ -10108,7 +10021,7 @@ return {\
 }\
 ", '@'.."Havoc.views.Pages.Scripts.Scripts")) setfenv(fn, newEnv("Havoc.views.Pages.Scripts.Scripts")) return fn() end)
 
-newModule("constants", "ModuleScript", "Havoc.views.Pages.Scripts.constants", "Havoc.views.Pages.Scripts", function () local fn = assert(loadstring("--Compiled with roblox-ts v1.3.3\
+newModule("constants", "ModuleScript", "Havoc.views.Pages.Scripts.constants", "Havoc.views.Pages.Scripts", function () local fn = assert(loadstring("-- Compiled with roblox-ts v2.3.0\
 local BASE_WINDOW_HEIGHT = 880\
 local BASE_WINDOW_WIDTH = 1824\
 local BASE_PADDING = 48\
@@ -12174,68 +12087,63 @@ return Promise\
 newModule("RuntimeLib", "ModuleScript", "Havoc.include.RuntimeLib", "Havoc.include", function () local fn = assert(loadstring("local Promise = require(script.Parent.Promise)\
 \
 local RunService = game:GetService(\"RunService\")\
-local ReplicatedFirst = game:GetService(\"ReplicatedFirst\")\
+\
+local OUTPUT_PREFIX = \"roblox-ts: \"\
+local NODE_MODULES = \"node_modules\"\
+local DEFAULT_SCOPE = \"@rbxts\"\
 \
 local TS = {}\
 \
 TS.Promise = Promise\
 \
-local function isPlugin(object)\
-\9return RunService:IsStudio() and object:FindFirstAncestorWhichIsA(\"Plugin\") ~= nil\
+local function isPlugin(context)\
+\9return RunService:IsStudio() and context:FindFirstAncestorWhichIsA(\"Plugin\") ~= nil\
 end\
 \
-function TS.getModule(object, scope, moduleName)\
+function TS.getModule(context, scope, moduleName)\
+\9-- legacy call signature\
 \9if moduleName == nil then\
 \9\9moduleName = scope\
-\9\9scope = \"@rbxts\"\
-\9end\
-\
-\9if RunService:IsRunning() and object:IsDescendantOf(ReplicatedFirst) then\
-\9\9warn(\"roblox-ts packages should not be used from ReplicatedFirst!\")\
+\9\9scope = DEFAULT_SCOPE\
 \9end\
 \
 \9-- ensure modules have fully replicated\
-\9if RunService:IsRunning() and RunService:IsClient() and not isPlugin(object) and not game:IsLoaded() then\
+\9if RunService:IsRunning() and RunService:IsClient() and not isPlugin(context) and not game:IsLoaded() then\
 \9\9game.Loaded:Wait()\
 \9end\
 \
-\9local globalModules = script.Parent:FindFirstChild(\"node_modules\")\
-\9if not globalModules then\
-\9\9error(\"Could not find any modules!\", 2)\
-\9end\
-\
+\9local object = context\
 \9repeat\
-\9\9local modules = object:FindFirstChild(\"node_modules\")\
-\9\9if modules and modules ~= globalModules then\
-\9\9\9modules = modules:FindFirstChild(\"@rbxts\")\
-\9\9end\
-\9\9if modules then\
-\9\9\9local module = modules:FindFirstChild(moduleName)\
-\9\9\9if module then\
-\9\9\9\9return module\
+\9\9local nodeModulesFolder = object:FindFirstChild(NODE_MODULES)\
+\9\9if nodeModulesFolder then\
+\9\9\9local scopeFolder = nodeModulesFolder:FindFirstChild(scope)\
+\9\9\9if scopeFolder then\
+\9\9\9\9local module = scopeFolder:FindFirstChild(moduleName)\
+\9\9\9\9if module then\
+\9\9\9\9\9return module\
+\9\9\9\9end\
 \9\9\9end\
 \9\9end\
 \9\9object = object.Parent\
-\9until object == nil or object == globalModules\
+\9until object == nil\
 \
-\9local scopedModules = globalModules:FindFirstChild(scope or \"@rbxts\");\
-\9return (scopedModules or globalModules):FindFirstChild(moduleName) or error(\"Could not find module: \" .. moduleName, 2)\
+\9error(OUTPUT_PREFIX .. \"Could not find module: \" .. moduleName, 2)\
 end\
 \
 -- This is a hash which TS.import uses as a kind of linked-list-like history of [Script who Loaded] -> Library\
 local currentlyLoading = {}\
 local registeredLibraries = {}\
 \
-function TS.import(caller, module, ...)\
+function TS.import(context, module, ...)\
 \9for i = 1, select(\"#\", ...) do\
 \9\9module = module:WaitForChild((select(i, ...)))\
 \9end\
 \
 \9if module.ClassName ~= \"ModuleScript\" then\
-\9\9error(\"Failed to import! Expected ModuleScript, got \" .. module.ClassName, 2)\
+\9\9error(OUTPUT_PREFIX .. \"Failed to import! Expected ModuleScript, got \" .. module.ClassName, 2)\
 \9end\
 \
-\9currentlyLoading[caller] = module\
+\9currentlyLoading[context] = module\
 \
 \9-- Check to see if a case like this occurs:\
 \9-- module -> Module1 -> Module2 -> module\
@@ -12259,14 +12167,16 @@ function TS.import(caller, module, ...)\
 \9\9\9\9str = str .. \"  ⇒ \" .. currentModule.Name\
 \9\9\9end\
 \
-\9\9\9error(\"Failed to import! Detected a circular dependency chain: \" .. str, 2)\
+\9\9\9error(OUTPUT_PREFIX .. \"Failed to import! Detected a circular dependency chain: \" .. str, 2)\
 \9\9end\
 \9end\
 \
 \9if not registeredLibraries[module] then\
 \9\9if _G[module] then\
 \9\9\9error(\
-\9\9\9\9\"Invalid module access! Do you have two TS runtimes trying to import this? \" .. module:GetFullName(),\
+\9\9\9\9OUTPUT_PREFIX\
+\9\9\9\9.. \"Invalid module access! Do you have multiple TS runtimes trying to import this? \"\
+\9\9\9\9.. module:GetFullName(),\
 \9\9\9\0092\
 \9\9\9)\
 \9\9end\
@@ -12277,8 +12187,8 @@ function TS.import(caller, module, ...)\
 \
 \9local data = require(module)\
 \
-\9if currentlyLoading[caller] == module then -- Thread-safe cleanup!\
-\9\9currentlyLoading[caller] = nil\
+\9if currentlyLoading[context] == module then -- Thread-safe cleanup!\
+\9\9currentlyLoading[context] = nil\
 \9end\
 \
 \9return data\
@@ -12341,14 +12251,19 @@ function TS.await(promise)\
 \9end\
 end\
 \
-function TS.bit_lrsh(a, b)\
-\9local absA = math.abs(a)\
-\9local result = bit32.rshift(absA, b)\
-\9if a == absA then\
-\9\9return result\
+local SIGN = 2 ^ 31\
+local COMPLEMENT = 2 ^ 32\
+local function bit_sign(num)\
+\9-- Restores the sign after an unsigned conversion according to 2s complement.\
+\9if bit32.btest(num, SIGN) then\
+\9\9return num - COMPLEMENT\
 \9else\
-\9\9return -result - 1\
+\9\9return num\
 \9end\
+end\
+\
+function TS.bit_lrsh(a, b)\
+\9return bit_sign(bit32.arshift(a, b))\
 end\
 \
 TS.TRY_RETURN = 1\
@@ -12404,17 +12319,19 @@ return TS\
 
 newInstance("node_modules", "Folder", "Havoc.include.node_modules", "Havoc.include")
 
-newInstance("compiler-types", "Folder", "Havoc.include.node_modules.compiler-types", "Havoc.include.node_modules")
+newInstance("@rbxts", "Folder", "Havoc.include.node_modules.@rbxts", "Havoc.include.node_modules")
 
-newInstance("types", "Folder", "Havoc.include.node_modules.compiler-types.types", "Havoc.include.node_modules.compiler-types")
+newInstance("compiler-types", "Folder", "Havoc.include.node_modules.@rbxts.compiler-types", "Havoc.include.node_modules.@rbxts")
 
-newInstance("exploit-types", "Folder", "Havoc.include.node_modules.exploit-types", "Havoc.include.node_modules")
+newInstance("types", "Folder", "Havoc.include.node_modules.@rbxts.compiler-types.types", "Havoc.include.node_modules.@rbxts.compiler-types")
 
-newInstance("types", "Folder", "Havoc.include.node_modules.exploit-types.types", "Havoc.include.node_modules.exploit-types")
+newInstance("exploit-types", "Folder", "Havoc.include.node_modules.@rbxts.exploit-types", "Havoc.include.node_modules.@rbxts")
 
-newInstance("flipper", "Folder", "Havoc.include.node_modules.flipper", "Havoc.include.node_modules")
+newInstance("types", "Folder", "Havoc.include.node_modules.@rbxts.exploit-types.types", "Havoc.include.node_modules.@rbxts.exploit-types")
 
-newModule("src", "ModuleScript", "Havoc.include.node_modules.flipper.src", "Havoc.include.node_modules.flipper", function () local fn = assert(loadstring("local Flipper = {\
+newInstance("flipper", "Folder", "Havoc.include.node_modules.@rbxts.flipper", "Havoc.include.node_modules.@rbxts")
+
+newModule("src", "ModuleScript", "Havoc.include.node_modules.@rbxts.flipper.src", "Havoc.include.node_modules.@rbxts.flipper", function () local fn = assert(loadstring("local Flipper = {\
 \9SingleMotor = require(script.SingleMotor),\
 \9GroupMotor = require(script.GroupMotor),\
 \
@@ -12425,9 +12342,9 @@ newModule("src", "ModuleScript", "Havoc.include.node_modules.flipper.src", "Havo
 \9isMotor = require(script.isMotor),\
 }\
 \
-return Flipper", '@'.."Havoc.include.node_modules.flipper.src")) setfenv(fn, newEnv("Havoc.include.node_modules.flipper.src")) return fn() end)
+return Flipper", '@'.."Havoc.include.node_modules.@rbxts.flipper.src")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.flipper.src")) return fn() end)
 
-newModule("BaseMotor", "ModuleScript", "Havoc.include.node_modules.flipper.src.BaseMotor", "Havoc.include.node_modules.flipper.src", function () local fn = assert(loadstring("local RunService = game:GetService(\"RunService\")\
+newModule("BaseMotor", "ModuleScript", "Havoc.include.node_modules.@rbxts.flipper.src.BaseMotor", "Havoc.include.node_modules.@rbxts.flipper.src", function () local fn = assert(loadstring("local RunService = game:GetService(\"RunService\")\
 \
 local Signal = require(script.Parent.Signal)\
 \
@@ -12482,9 +12399,9 @@ function BaseMotor:__tostring()\
 end\
 \
 return BaseMotor\
-", '@'.."Havoc.include.node_modules.flipper.src.BaseMotor")) setfenv(fn, newEnv("Havoc.include.node_modules.flipper.src.BaseMotor")) return fn() end)
+", '@'.."Havoc.include.node_modules.@rbxts.flipper.src.BaseMotor")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.flipper.src.BaseMotor")) return fn() end)
 
-newModule("GroupMotor", "ModuleScript", "Havoc.include.node_modules.flipper.src.GroupMotor", "Havoc.include.node_modules.flipper.src", function () local fn = assert(loadstring("local BaseMotor = require(script.Parent.BaseMotor)\
+newModule("GroupMotor", "ModuleScript", "Havoc.include.node_modules.@rbxts.flipper.src.GroupMotor", "Havoc.include.node_modules.@rbxts.flipper.src", function () local fn = assert(loadstring("local BaseMotor = require(script.Parent.BaseMotor)\
 local SingleMotor = require(script.Parent.SingleMotor)\
 \
 local isMotor = require(script.Parent.isMotor)\
@@ -12591,9 +12508,9 @@ function GroupMotor:__tostring()\
 end\
 \
 return GroupMotor\
-", '@'.."Havoc.include.node_modules.flipper.src.GroupMotor")) setfenv(fn, newEnv("Havoc.include.node_modules.flipper.src.GroupMotor")) return fn() end)
+", '@'.."Havoc.include.node_modules.@rbxts.flipper.src.GroupMotor")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.flipper.src.GroupMotor")) return fn() end)
 
-newModule("Instant", "ModuleScript", "Havoc.include.node_modules.flipper.src.Instant", "Havoc.include.node_modules.flipper.src", function () local fn = assert(loadstring("local Instant = {}\
+newModule("Instant", "ModuleScript", "Havoc.include.node_modules.@rbxts.flipper.src.Instant", "Havoc.include.node_modules.@rbxts.flipper.src", function () local fn = assert(loadstring("local Instant = {}\
 Instant.__index = Instant\
 \
 function Instant.new(targetValue)\
@@ -12609,9 +12526,9 @@ function Instant:step()\
 \9}\
 end\
 \
-return Instant", '@'.."Havoc.include.node_modules.flipper.src.Instant")) setfenv(fn, newEnv("Havoc.include.node_modules.flipper.src.Instant")) return fn() end)
+return Instant", '@'.."Havoc.include.node_modules.@rbxts.flipper.src.Instant")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.flipper.src.Instant")) return fn() end)
 
-newModule("Linear", "ModuleScript", "Havoc.include.node_modules.flipper.src.Linear", "Havoc.include.node_modules.flipper.src", function () local fn = assert(loadstring("local Linear = {}\
+newModule("Linear", "ModuleScript", "Havoc.include.node_modules.@rbxts.flipper.src.Linear", "Havoc.include.node_modules.@rbxts.flipper.src", function () local fn = assert(loadstring("local Linear = {}\
 Linear.__index = Linear\
 \
 function Linear.new(targetValue, options)\
@@ -12646,9 +12563,9 @@ function Linear:step(state, dt)\
 \9}\
 end\
 \
-return Linear", '@'.."Havoc.include.node_modules.flipper.src.Linear")) setfenv(fn, newEnv("Havoc.include.node_modules.flipper.src.Linear")) return fn() end)
+return Linear", '@'.."Havoc.include.node_modules.@rbxts.flipper.src.Linear")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.flipper.src.Linear")) return fn() end)
 
-newModule("Signal", "ModuleScript", "Havoc.include.node_modules.flipper.src.Signal", "Havoc.include.node_modules.flipper.src", function () local fn = assert(loadstring("local Connection = {}\
+newModule("Signal", "ModuleScript", "Havoc.include.node_modules.@rbxts.flipper.src.Signal", "Havoc.include.node_modules.@rbxts.flipper.src", function () local fn = assert(loadstring("local Connection = {}\
 Connection.__index = Connection\
 \
 function Connection.new(signal, handler)\
@@ -12705,9 +12622,9 @@ function Signal:wait()\
 \9return coroutine.yield()\
 end\
 \
-return Signal", '@'.."Havoc.include.node_modules.flipper.src.Signal")) setfenv(fn, newEnv("Havoc.include.node_modules.flipper.src.Signal")) return fn() end)
+return Signal", '@'.."Havoc.include.node_modules.@rbxts.flipper.src.Signal")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.flipper.src.Signal")) return fn() end)
 
-newModule("SingleMotor", "ModuleScript", "Havoc.include.node_modules.flipper.src.SingleMotor", "Havoc.include.node_modules.flipper.src", function () local fn = assert(loadstring("local BaseMotor = require(script.Parent.BaseMotor)\
+newModule("SingleMotor", "ModuleScript", "Havoc.include.node_modules.@rbxts.flipper.src.SingleMotor", "Havoc.include.node_modules.@rbxts.flipper.src", function () local fn = assert(loadstring("local BaseMotor = require(script.Parent.BaseMotor)\
 \
 local SingleMotor = setmetatable({}, BaseMotor)\
 SingleMotor.__index = SingleMotor\
@@ -12774,9 +12691,9 @@ function SingleMotor:__tostring()\
 end\
 \
 return SingleMotor\
-", '@'.."Havoc.include.node_modules.flipper.src.SingleMotor")) setfenv(fn, newEnv("Havoc.include.node_modules.flipper.src.SingleMotor")) return fn() end)
+", '@'.."Havoc.include.node_modules.@rbxts.flipper.src.SingleMotor")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.flipper.src.SingleMotor")) return fn() end)
 
-newModule("Spring", "ModuleScript", "Havoc.include.node_modules.flipper.src.Spring", "Havoc.include.node_modules.flipper.src", function () local fn = assert(loadstring("local VELOCITY_THRESHOLD = 0.001\
+newModule("Spring", "ModuleScript", "Havoc.include.node_modules.@rbxts.flipper.src.Spring", "Havoc.include.node_modules.@rbxts.flipper.src", function () local fn = assert(loadstring("local VELOCITY_THRESHOLD = 0.001\
 local POSITION_THRESHOLD = 0.001\
 \
 local EPS = 0.0001\
@@ -12883,9 +12800,9 @@ function Spring:step(state, dt)\
 \9}\
 end\
 \
-return Spring", '@'.."Havoc.include.node_modules.flipper.src.Spring")) setfenv(fn, newEnv("Havoc.include.node_modules.flipper.src.Spring")) return fn() end)
+return Spring", '@'.."Havoc.include.node_modules.@rbxts.flipper.src.Spring")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.flipper.src.Spring")) return fn() end)
 
-newModule("isMotor", "ModuleScript", "Havoc.include.node_modules.flipper.src.isMotor", "Havoc.include.node_modules.flipper.src", function () local fn = assert(loadstring("local function isMotor(value)\
+newModule("isMotor", "ModuleScript", "Havoc.include.node_modules.@rbxts.flipper.src.isMotor", "Havoc.include.node_modules.@rbxts.flipper.src", function () local fn = assert(loadstring("local function isMotor(value)\
 \9local motorType = tostring(value):match(\"^Motor%((.+)%)$\")\
 \
 \9if motorType then\
@@ -12895,11 +12812,11 @@ newModule("isMotor", "ModuleScript", "Havoc.include.node_modules.flipper.src.isM
 \9end\
 end\
 \
-return isMotor", '@'.."Havoc.include.node_modules.flipper.src.isMotor")) setfenv(fn, newEnv("Havoc.include.node_modules.flipper.src.isMotor")) return fn() end)
+return isMotor", '@'.."Havoc.include.node_modules.@rbxts.flipper.src.isMotor")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.flipper.src.isMotor")) return fn() end)
 
-newInstance("typings", "Folder", "Havoc.include.node_modules.flipper.typings", "Havoc.include.node_modules.flipper")
+newInstance("typings", "Folder", "Havoc.include.node_modules.@rbxts.flipper.typings", "Havoc.include.node_modules.@rbxts.flipper")
 
-newModule("make", "ModuleScript", "Havoc.include.node_modules.make", "Havoc.include.node_modules", function () local fn = assert(loadstring("-- Compiled with roblox-ts v1.2.3\
+newModule("make", "ModuleScript", "Havoc.include.node_modules.@rbxts.make", "Havoc.include.node_modules.@rbxts", function () local fn = assert(loadstring("-- Compiled with roblox-ts v1.2.3\
 --[[\
 \9*\
 \9* Returns a table wherein an object's writable properties can be specified,\
@@ -12941,19 +12858,19 @@ local function Make(className, settings)\
 \9return instance\
 end\
 return Make\
-", '@'.."Havoc.include.node_modules.make")) setfenv(fn, newEnv("Havoc.include.node_modules.make")) return fn() end)
+", '@'.."Havoc.include.node_modules.@rbxts.make")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.make")) return fn() end)
 
-newInstance("node_modules", "Folder", "Havoc.include.node_modules.make.node_modules", "Havoc.include.node_modules.make")
+newInstance("node_modules", "Folder", "Havoc.include.node_modules.@rbxts.make.node_modules", "Havoc.include.node_modules.@rbxts.make")
 
-newInstance("@rbxts", "Folder", "Havoc.include.node_modules.make.node_modules.@rbxts", "Havoc.include.node_modules.make.node_modules")
+newInstance("@rbxts", "Folder", "Havoc.include.node_modules.@rbxts.make.node_modules.@rbxts", "Havoc.include.node_modules.@rbxts.make.node_modules")
 
-newInstance("compiler-types", "Folder", "Havoc.include.node_modules.make.node_modules.@rbxts.compiler-types", "Havoc.include.node_modules.make.node_modules.@rbxts")
+newInstance("compiler-types", "Folder", "Havoc.include.node_modules.@rbxts.make.node_modules.@rbxts.compiler-types", "Havoc.include.node_modules.@rbxts.make.node_modules.@rbxts")
 
-newInstance("types", "Folder", "Havoc.include.node_modules.make.node_modules.@rbxts.compiler-types.types", "Havoc.include.node_modules.make.node_modules.@rbxts.compiler-types")
+newInstance("types", "Folder", "Havoc.include.node_modules.@rbxts.make.node_modules.@rbxts.compiler-types.types", "Havoc.include.node_modules.@rbxts.make.node_modules.@rbxts.compiler-types")
 
-newInstance("roact", "Folder", "Havoc.include.node_modules.roact", "Havoc.include.node_modules")
+newInstance("roact", "Folder", "Havoc.include.node_modules.@rbxts.roact", "Havoc.include.node_modules.@rbxts")
 
-newModule("src", "ModuleScript", "Havoc.include.node_modules.roact.src", "Havoc.include.node_modules.roact", function () local fn = assert(loadstring("--[[\
+newModule("src", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact.src", "Havoc.include.node_modules.@rbxts.roact", function () local fn = assert(loadstring("--[[\
 \9Packages up the internals of Roact and exposes a public API for it.\
 ]]\
 \
@@ -13001,9 +12918,9 @@ local Roact = strict {\
 \9},\
 }\
 \
-return Roact", '@'.."Havoc.include.node_modules.roact.src")) setfenv(fn, newEnv("Havoc.include.node_modules.roact.src")) return fn() end)
+return Roact", '@'.."Havoc.include.node_modules.@rbxts.roact.src")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact.src")) return fn() end)
 
-newModule("Binding", "ModuleScript", "Havoc.include.node_modules.roact.src.Binding", "Havoc.include.node_modules.roact.src", function () local fn = assert(loadstring("local createSignal = require(script.Parent.createSignal)\
+newModule("Binding", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact.src.Binding", "Havoc.include.node_modules.@rbxts.roact.src", function () local fn = assert(loadstring("local createSignal = require(script.Parent.createSignal)\
 local Symbol = require(script.Parent.Symbol)\
 local Type = require(script.Parent.Type)\
 \
@@ -13159,9 +13076,9 @@ function BindingInternalApi.join(upstreamBindings)\
 \9}, BindingPublicMeta)\
 end\
 \
-return BindingInternalApi", '@'.."Havoc.include.node_modules.roact.src.Binding")) setfenv(fn, newEnv("Havoc.include.node_modules.roact.src.Binding")) return fn() end)
+return BindingInternalApi", '@'.."Havoc.include.node_modules.@rbxts.roact.src.Binding")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact.src.Binding")) return fn() end)
 
-newModule("Component", "ModuleScript", "Havoc.include.node_modules.roact.src.Component", "Havoc.include.node_modules.roact.src", function () local fn = assert(loadstring("local assign = require(script.Parent.assign)\
+newModule("Component", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact.src.Component", "Havoc.include.node_modules.@rbxts.roact.src", function () local fn = assert(loadstring("local assign = require(script.Parent.assign)\
 local ComponentLifecyclePhase = require(script.Parent.ComponentLifecyclePhase)\
 local Type = require(script.Parent.Type)\
 local Symbol = require(script.Parent.Symbol)\
@@ -13681,9 +13598,9 @@ function Component:__resolveUpdate(incomingProps, incomingState)\
 \9return true\
 end\
 \
-return Component", '@'.."Havoc.include.node_modules.roact.src.Component")) setfenv(fn, newEnv("Havoc.include.node_modules.roact.src.Component")) return fn() end)
+return Component", '@'.."Havoc.include.node_modules.@rbxts.roact.src.Component")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact.src.Component")) return fn() end)
 
-newModule("ComponentLifecyclePhase", "ModuleScript", "Havoc.include.node_modules.roact.src.ComponentLifecyclePhase", "Havoc.include.node_modules.roact.src", function () local fn = assert(loadstring("local Symbol = require(script.Parent.Symbol)\
+newModule("ComponentLifecyclePhase", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact.src.ComponentLifecyclePhase", "Havoc.include.node_modules.@rbxts.roact.src", function () local fn = assert(loadstring("local Symbol = require(script.Parent.Symbol)\
 local strict = require(script.Parent.strict)\
 \
 local ComponentLifecyclePhase = strict({\
@@ -13701,9 +13618,9 @@ local ComponentLifecyclePhase = strict({\
 \9Idle = Symbol.named(\"idle\"),\
 }, \"ComponentLifecyclePhase\")\
 \
-return ComponentLifecyclePhase", '@'.."Havoc.include.node_modules.roact.src.ComponentLifecyclePhase")) setfenv(fn, newEnv("Havoc.include.node_modules.roact.src.ComponentLifecyclePhase")) return fn() end)
+return ComponentLifecyclePhase", '@'.."Havoc.include.node_modules.@rbxts.roact.src.ComponentLifecyclePhase")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact.src.ComponentLifecyclePhase")) return fn() end)
 
-newModule("Config", "ModuleScript", "Havoc.include.node_modules.roact.src.Config", "Havoc.include.node_modules.roact.src", function () local fn = assert(loadstring("--[[\
+newModule("Config", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact.src.Config", "Havoc.include.node_modules.@rbxts.roact.src", function () local fn = assert(loadstring("--[[\
 \9Exposes an interface to set global configuration values for Roact.\
 \
 \9Configuration can only occur once, and should only be done by an application\
@@ -13829,9 +13746,9 @@ function Config:scoped(configValues, callback)\
 \9assert(success, result)\
 end\
 \
-return Config", '@'.."Havoc.include.node_modules.roact.src.Config")) setfenv(fn, newEnv("Havoc.include.node_modules.roact.src.Config")) return fn() end)
+return Config", '@'.."Havoc.include.node_modules.@rbxts.roact.src.Config")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact.src.Config")) return fn() end)
 
-newModule("ElementKind", "ModuleScript", "Havoc.include.node_modules.roact.src.ElementKind", "Havoc.include.node_modules.roact.src", function () local fn = assert(loadstring("--[[\
+newModule("ElementKind", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact.src.ElementKind", "Havoc.include.node_modules.@rbxts.roact.src", function () local fn = assert(loadstring("--[[\
 \9Contains markers for annotating the type of an element.\
 \
 \9Use `ElementKind` as a key, and values from it as the value.\
@@ -13881,9 +13798,9 @@ getmetatable(ElementKind).__index = ElementKindInternal\
 \
 strict(ElementKindInternal, \"ElementKind\")\
 \
-return ElementKind", '@'.."Havoc.include.node_modules.roact.src.ElementKind")) setfenv(fn, newEnv("Havoc.include.node_modules.roact.src.ElementKind")) return fn() end)
+return ElementKind", '@'.."Havoc.include.node_modules.@rbxts.roact.src.ElementKind")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact.src.ElementKind")) return fn() end)
 
-newModule("ElementUtils", "ModuleScript", "Havoc.include.node_modules.roact.src.ElementUtils", "Havoc.include.node_modules.roact.src", function () local fn = assert(loadstring("local Type = require(script.Parent.Type)\
+newModule("ElementUtils", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact.src.ElementUtils", "Havoc.include.node_modules.@rbxts.roact.src", function () local fn = assert(loadstring("local Type = require(script.Parent.Type)\
 local Symbol = require(script.Parent.Symbol)\
 \
 local function noop()\
@@ -13981,17 +13898,17 @@ function ElementUtils.getElementByKey(elements, hostKey)\
 \9error(\"Invalid elements\")\
 end\
 \
-return ElementUtils", '@'.."Havoc.include.node_modules.roact.src.ElementUtils")) setfenv(fn, newEnv("Havoc.include.node_modules.roact.src.ElementUtils")) return fn() end)
+return ElementUtils", '@'.."Havoc.include.node_modules.@rbxts.roact.src.ElementUtils")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact.src.ElementUtils")) return fn() end)
 
-newModule("GlobalConfig", "ModuleScript", "Havoc.include.node_modules.roact.src.GlobalConfig", "Havoc.include.node_modules.roact.src", function () local fn = assert(loadstring("--[[\
+newModule("GlobalConfig", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact.src.GlobalConfig", "Havoc.include.node_modules.@rbxts.roact.src", function () local fn = assert(loadstring("--[[\
 \9Exposes a single instance of a configuration as Roact's GlobalConfig.\
 ]]\
 \
 local Config = require(script.Parent.Config)\
 \
-return Config.new()", '@'.."Havoc.include.node_modules.roact.src.GlobalConfig")) setfenv(fn, newEnv("Havoc.include.node_modules.roact.src.GlobalConfig")) return fn() end)
+return Config.new()", '@'.."Havoc.include.node_modules.@rbxts.roact.src.GlobalConfig")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact.src.GlobalConfig")) return fn() end)
 
-newModule("Logging", "ModuleScript", "Havoc.include.node_modules.roact.src.Logging", "Havoc.include.node_modules.roact.src", function () local fn = assert(loadstring("--[[\
+newModule("Logging", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact.src.Logging", "Havoc.include.node_modules.@rbxts.roact.src", function () local fn = assert(loadstring("--[[\
 \9Centralized place to handle logging. Lets us:\
 \9- Unit test log output via `Logging.capture`\
 \9- Disable verbose log messages when not debugging Roact\
@@ -14149,17 +14066,17 @@ function Logging.warnOnce(messageTemplate, ...)\
 \9Logging.warn(messageTemplate, ...)\
 end\
 \
-return Logging", '@'.."Havoc.include.node_modules.roact.src.Logging")) setfenv(fn, newEnv("Havoc.include.node_modules.roact.src.Logging")) return fn() end)
+return Logging", '@'.."Havoc.include.node_modules.@rbxts.roact.src.Logging")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact.src.Logging")) return fn() end)
 
-newModule("None", "ModuleScript", "Havoc.include.node_modules.roact.src.None", "Havoc.include.node_modules.roact.src", function () local fn = assert(loadstring("local Symbol = require(script.Parent.Symbol)\
+newModule("None", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact.src.None", "Havoc.include.node_modules.@rbxts.roact.src", function () local fn = assert(loadstring("local Symbol = require(script.Parent.Symbol)\
 \
 -- Marker used to specify that the value is nothing, because nil cannot be\
 -- stored in tables.\
 local None = Symbol.named(\"None\")\
 \
-return None", '@'.."Havoc.include.node_modules.roact.src.None")) setfenv(fn, newEnv("Havoc.include.node_modules.roact.src.None")) return fn() end)
+return None", '@'.."Havoc.include.node_modules.@rbxts.roact.src.None")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact.src.None")) return fn() end)
 
-newModule("NoopRenderer", "ModuleScript", "Havoc.include.node_modules.roact.src.NoopRenderer", "Havoc.include.node_modules.roact.src", function () local fn = assert(loadstring("--[[\
+newModule("NoopRenderer", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact.src.NoopRenderer", "Havoc.include.node_modules.@rbxts.roact.src", function () local fn = assert(loadstring("--[[\
 \9Reference renderer intended for use in tests as well as for documenting the\
 \9minimum required interface for a Roact renderer.\
 ]]\
@@ -14182,17 +14099,17 @@ function NoopRenderer.updateHostNode(reconciler, node, newElement)\
 \9return node\
 end\
 \
-return NoopRenderer", '@'.."Havoc.include.node_modules.roact.src.NoopRenderer")) setfenv(fn, newEnv("Havoc.include.node_modules.roact.src.NoopRenderer")) return fn() end)
+return NoopRenderer", '@'.."Havoc.include.node_modules.@rbxts.roact.src.NoopRenderer")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact.src.NoopRenderer")) return fn() end)
 
-newModule("Portal", "ModuleScript", "Havoc.include.node_modules.roact.src.Portal", "Havoc.include.node_modules.roact.src", function () local fn = assert(loadstring("local Symbol = require(script.Parent.Symbol)\
+newModule("Portal", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact.src.Portal", "Havoc.include.node_modules.@rbxts.roact.src", function () local fn = assert(loadstring("local Symbol = require(script.Parent.Symbol)\
 \
 local Portal = Symbol.named(\"Portal\")\
 \
-return Portal", '@'.."Havoc.include.node_modules.roact.src.Portal")) setfenv(fn, newEnv("Havoc.include.node_modules.roact.src.Portal")) return fn() end)
+return Portal", '@'.."Havoc.include.node_modules.@rbxts.roact.src.Portal")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact.src.Portal")) return fn() end)
 
-newInstance("PropMarkers", "Folder", "Havoc.include.node_modules.roact.src.PropMarkers", "Havoc.include.node_modules.roact.src")
+newInstance("PropMarkers", "Folder", "Havoc.include.node_modules.@rbxts.roact.src.PropMarkers", "Havoc.include.node_modules.@rbxts.roact.src")
 
-newModule("Change", "ModuleScript", "Havoc.include.node_modules.roact.src.PropMarkers.Change", "Havoc.include.node_modules.roact.src.PropMarkers", function () local fn = assert(loadstring("--[[\
+newModule("Change", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact.src.PropMarkers.Change", "Havoc.include.node_modules.@rbxts.roact.src.PropMarkers", function () local fn = assert(loadstring("--[[\
 \9Change is used to generate special prop keys that can be used to connect to\
 \9GetPropertyChangedSignal.\
 \
@@ -14230,15 +14147,15 @@ setmetatable(Change, {\
 })\
 \
 return Change\
-", '@'.."Havoc.include.node_modules.roact.src.PropMarkers.Change")) setfenv(fn, newEnv("Havoc.include.node_modules.roact.src.PropMarkers.Change")) return fn() end)
+", '@'.."Havoc.include.node_modules.@rbxts.roact.src.PropMarkers.Change")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact.src.PropMarkers.Change")) return fn() end)
 
-newModule("Children", "ModuleScript", "Havoc.include.node_modules.roact.src.PropMarkers.Children", "Havoc.include.node_modules.roact.src.PropMarkers", function () local fn = assert(loadstring("local Symbol = require(script.Parent.Parent.Symbol)\
+newModule("Children", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact.src.PropMarkers.Children", "Havoc.include.node_modules.@rbxts.roact.src.PropMarkers", function () local fn = assert(loadstring("local Symbol = require(script.Parent.Parent.Symbol)\
 \
 local Children = Symbol.named(\"Children\")\
 \
-return Children", '@'.."Havoc.include.node_modules.roact.src.PropMarkers.Children")) setfenv(fn, newEnv("Havoc.include.node_modules.roact.src.PropMarkers.Children")) return fn() end)
+return Children", '@'.."Havoc.include.node_modules.@rbxts.roact.src.PropMarkers.Children")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact.src.PropMarkers.Children")) return fn() end)
 
-newModule("Event", "ModuleScript", "Havoc.include.node_modules.roact.src.PropMarkers.Event", "Havoc.include.node_modules.roact.src.PropMarkers", function () local fn = assert(loadstring("--[[\
+newModule("Event", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact.src.PropMarkers.Event", "Havoc.include.node_modules.@rbxts.roact.src.PropMarkers", function () local fn = assert(loadstring("--[[\
 \9Index into `Event` to get a prop key for attaching to an event on a Roblox\
 \9Instance.\
 \
@@ -14279,15 +14196,15 @@ setmetatable(Event, {\
 })\
 \
 return Event\
-", '@'.."Havoc.include.node_modules.roact.src.PropMarkers.Event")) setfenv(fn, newEnv("Havoc.include.node_modules.roact.src.PropMarkers.Event")) return fn() end)
+", '@'.."Havoc.include.node_modules.@rbxts.roact.src.PropMarkers.Event")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact.src.PropMarkers.Event")) return fn() end)
 
-newModule("Ref", "ModuleScript", "Havoc.include.node_modules.roact.src.PropMarkers.Ref", "Havoc.include.node_modules.roact.src.PropMarkers", function () local fn = assert(loadstring("local Symbol = require(script.Parent.Parent.Symbol)\
+newModule("Ref", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact.src.PropMarkers.Ref", "Havoc.include.node_modules.@rbxts.roact.src.PropMarkers", function () local fn = assert(loadstring("local Symbol = require(script.Parent.Parent.Symbol)\
 \
 local Ref = Symbol.named(\"Ref\")\
 \
-return Ref", '@'.."Havoc.include.node_modules.roact.src.PropMarkers.Ref")) setfenv(fn, newEnv("Havoc.include.node_modules.roact.src.PropMarkers.Ref")) return fn() end)
+return Ref", '@'.."Havoc.include.node_modules.@rbxts.roact.src.PropMarkers.Ref")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact.src.PropMarkers.Ref")) return fn() end)
 
-newModule("PureComponent", "ModuleScript", "Havoc.include.node_modules.roact.src.PureComponent", "Havoc.include.node_modules.roact.src", function () local fn = assert(loadstring("--[[\
+newModule("PureComponent", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact.src.PureComponent", "Havoc.include.node_modules.@rbxts.roact.src", function () local fn = assert(loadstring("--[[\
 \9A version of Component with a `shouldUpdate` method that forces the\
 \9resulting component to be pure.\
 ]]\
@@ -14327,9 +14244,9 @@ function PureComponent:shouldUpdate(newProps, newState)\
 \9return false\
 end\
 \
-return PureComponent", '@'.."Havoc.include.node_modules.roact.src.PureComponent")) setfenv(fn, newEnv("Havoc.include.node_modules.roact.src.PureComponent")) return fn() end)
+return PureComponent", '@'.."Havoc.include.node_modules.@rbxts.roact.src.PureComponent")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact.src.PureComponent")) return fn() end)
 
-newModule("RobloxRenderer", "ModuleScript", "Havoc.include.node_modules.roact.src.RobloxRenderer", "Havoc.include.node_modules.roact.src", function () local fn = assert(loadstring("--[[\
+newModule("RobloxRenderer", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact.src.RobloxRenderer", "Havoc.include.node_modules.@rbxts.roact.src", function () local fn = assert(loadstring("--[[\
 \9Renderer that deals in terms of Roblox Instances. This is the most\
 \9well-supported renderer after NoopRenderer and is currently the only\
 \9renderer that does anything.\
@@ -14612,9 +14529,9 @@ function RobloxRenderer.updateHostNode(reconciler, virtualNode, newElement)\
 end\
 \
 return RobloxRenderer\
-", '@'.."Havoc.include.node_modules.roact.src.RobloxRenderer")) setfenv(fn, newEnv("Havoc.include.node_modules.roact.src.RobloxRenderer")) return fn() end)
+", '@'.."Havoc.include.node_modules.@rbxts.roact.src.RobloxRenderer")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact.src.RobloxRenderer")) return fn() end)
 
-newModule("SingleEventManager", "ModuleScript", "Havoc.include.node_modules.roact.src.SingleEventManager", "Havoc.include.node_modules.roact.src", function () local fn = assert(loadstring("--[[\
+newModule("SingleEventManager", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact.src.SingleEventManager", "Havoc.include.node_modules.@rbxts.roact.src", function () local fn = assert(loadstring("--[[\
 \9A manager for a single host virtual node's connected events.\
 ]]\
 \
@@ -14760,9 +14677,9 @@ function SingleEventManager:resume()\
 \9self._suspendedEventQueue = {}\
 end\
 \
-return SingleEventManager", '@'.."Havoc.include.node_modules.roact.src.SingleEventManager")) setfenv(fn, newEnv("Havoc.include.node_modules.roact.src.SingleEventManager")) return fn() end)
+return SingleEventManager", '@'.."Havoc.include.node_modules.@rbxts.roact.src.SingleEventManager")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact.src.SingleEventManager")) return fn() end)
 
-newModule("Symbol", "ModuleScript", "Havoc.include.node_modules.roact.src.Symbol", "Havoc.include.node_modules.roact.src", function () local fn = assert(loadstring("--[[\
+newModule("Symbol", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact.src.Symbol", "Havoc.include.node_modules.@rbxts.roact.src", function () local fn = assert(loadstring("--[[\
 \9A 'Symbol' is an opaque marker type.\
 \
 \9Symbols have the type 'userdata', but when printed to the console, the name\
@@ -14791,9 +14708,9 @@ function Symbol.named(name)\
 \9return self\
 end\
 \
-return Symbol", '@'.."Havoc.include.node_modules.roact.src.Symbol")) setfenv(fn, newEnv("Havoc.include.node_modules.roact.src.Symbol")) return fn() end)
+return Symbol", '@'.."Havoc.include.node_modules.@rbxts.roact.src.Symbol")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact.src.Symbol")) return fn() end)
 
-newModule("Type", "ModuleScript", "Havoc.include.node_modules.roact.src.Type", "Havoc.include.node_modules.roact.src", function () local fn = assert(loadstring("--[[\
+newModule("Type", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact.src.Type", "Havoc.include.node_modules.@rbxts.roact.src", function () local fn = assert(loadstring("--[[\
 \9Contains markers for annotating objects with types.\
 \
 \9To set the type of an object, use `Type` as a key and the actual marker as\
@@ -14840,9 +14757,9 @@ end\
 \
 strict(TypeInternal, \"Type\")\
 \
-return Type", '@'.."Havoc.include.node_modules.roact.src.Type")) setfenv(fn, newEnv("Havoc.include.node_modules.roact.src.Type")) return fn() end)
+return Type", '@'.."Havoc.include.node_modules.@rbxts.roact.src.Type")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact.src.Type")) return fn() end)
 
-newModule("assertDeepEqual", "ModuleScript", "Havoc.include.node_modules.roact.src.assertDeepEqual", "Havoc.include.node_modules.roact.src", function () local fn = assert(loadstring("--[[\
+newModule("assertDeepEqual", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact.src.assertDeepEqual", "Havoc.include.node_modules.@rbxts.roact.src", function () local fn = assert(loadstring("--[[\
 \9A utility used to assert that two objects are value-equal recursively. It\
 \9outputs fairly nicely formatted messages to help diagnose why two objects\
 \9would be different.\
@@ -14914,9 +14831,9 @@ local function assertDeepEqual(a, b)\
 \9end\
 end\
 \
-return assertDeepEqual", '@'.."Havoc.include.node_modules.roact.src.assertDeepEqual")) setfenv(fn, newEnv("Havoc.include.node_modules.roact.src.assertDeepEqual")) return fn() end)
+return assertDeepEqual", '@'.."Havoc.include.node_modules.@rbxts.roact.src.assertDeepEqual")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact.src.assertDeepEqual")) return fn() end)
 
-newModule("assign", "ModuleScript", "Havoc.include.node_modules.roact.src.assign", "Havoc.include.node_modules.roact.src", function () local fn = assert(loadstring("local None = require(script.Parent.None)\
+newModule("assign", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact.src.assign", "Havoc.include.node_modules.@rbxts.roact.src", function () local fn = assert(loadstring("local None = require(script.Parent.None)\
 \
 --[[\
 \9Merges values from zero or more tables onto a target table. If a value is\
@@ -14942,9 +14859,9 @@ local function assign(target, ...)\
 \9return target\
 end\
 \
-return assign", '@'.."Havoc.include.node_modules.roact.src.assign")) setfenv(fn, newEnv("Havoc.include.node_modules.roact.src.assign")) return fn() end)
+return assign", '@'.."Havoc.include.node_modules.@rbxts.roact.src.assign")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact.src.assign")) return fn() end)
 
-newModule("createContext", "ModuleScript", "Havoc.include.node_modules.roact.src.createContext", "Havoc.include.node_modules.roact.src", function () local fn = assert(loadstring("local Symbol = require(script.Parent.Symbol)\
+newModule("createContext", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact.src.createContext", "Havoc.include.node_modules.@rbxts.roact.src", function () local fn = assert(loadstring("local Symbol = require(script.Parent.Symbol)\
 local createFragment = require(script.Parent.createFragment)\
 local createSignal = require(script.Parent.createSignal)\
 local Children = require(script.Parent.PropMarkers.Children)\
@@ -15095,9 +15012,9 @@ local function createContext(defaultValue)\
 end\
 \
 return createContext\
-", '@'.."Havoc.include.node_modules.roact.src.createContext")) setfenv(fn, newEnv("Havoc.include.node_modules.roact.src.createContext")) return fn() end)
+", '@'.."Havoc.include.node_modules.@rbxts.roact.src.createContext")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact.src.createContext")) return fn() end)
 
-newModule("createElement", "ModuleScript", "Havoc.include.node_modules.roact.src.createElement", "Havoc.include.node_modules.roact.src", function () local fn = assert(loadstring("local Children = require(script.Parent.PropMarkers.Children)\
+newModule("createElement", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact.src.createElement", "Havoc.include.node_modules.@rbxts.roact.src", function () local fn = assert(loadstring("local Children = require(script.Parent.PropMarkers.Children)\
 local ElementKind = require(script.Parent.ElementKind)\
 local Logging = require(script.Parent.Logging)\
 local Type = require(script.Parent.Type)\
@@ -15170,9 +15087,9 @@ local function createElement(component, props, children)\
 \9return element\
 end\
 \
-return createElement", '@'.."Havoc.include.node_modules.roact.src.createElement")) setfenv(fn, newEnv("Havoc.include.node_modules.roact.src.createElement")) return fn() end)
+return createElement", '@'.."Havoc.include.node_modules.@rbxts.roact.src.createElement")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact.src.createElement")) return fn() end)
 
-newModule("createFragment", "ModuleScript", "Havoc.include.node_modules.roact.src.createFragment", "Havoc.include.node_modules.roact.src", function () local fn = assert(loadstring("local ElementKind = require(script.Parent.ElementKind)\
+newModule("createFragment", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact.src.createFragment", "Havoc.include.node_modules.@rbxts.roact.src", function () local fn = assert(loadstring("local ElementKind = require(script.Parent.ElementKind)\
 local Type = require(script.Parent.Type)\
 \
 local function createFragment(elements)\
@@ -15183,9 +15100,9 @@ local function createFragment(elements)\
 \9}\
 end\
 \
-return createFragment", '@'.."Havoc.include.node_modules.roact.src.createFragment")) setfenv(fn, newEnv("Havoc.include.node_modules.roact.src.createFragment")) return fn() end)
+return createFragment", '@'.."Havoc.include.node_modules.@rbxts.roact.src.createFragment")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact.src.createFragment")) return fn() end)
 
-newModule("createReconciler", "ModuleScript", "Havoc.include.node_modules.roact.src.createReconciler", "Havoc.include.node_modules.roact.src", function () local fn = assert(loadstring("local Type = require(script.Parent.Type)\
+newModule("createReconciler", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact.src.createReconciler", "Havoc.include.node_modules.@rbxts.roact.src", function () local fn = assert(loadstring("local Type = require(script.Parent.Type)\
 local ElementKind = require(script.Parent.ElementKind)\
 local ElementUtils = require(script.Parent.ElementUtils)\
 local Children = require(script.Parent.PropMarkers.Children)\
@@ -15670,9 +15587,9 @@ local function createReconciler(renderer)\
 end\
 \
 return createReconciler\
-", '@'.."Havoc.include.node_modules.roact.src.createReconciler")) setfenv(fn, newEnv("Havoc.include.node_modules.roact.src.createReconciler")) return fn() end)
+", '@'.."Havoc.include.node_modules.@rbxts.roact.src.createReconciler")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact.src.createReconciler")) return fn() end)
 
-newModule("createReconcilerCompat", "ModuleScript", "Havoc.include.node_modules.roact.src.createReconcilerCompat", "Havoc.include.node_modules.roact.src", function () local fn = assert(loadstring("--[[\
+newModule("createReconcilerCompat", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact.src.createReconcilerCompat", "Havoc.include.node_modules.@rbxts.roact.src", function () local fn = assert(loadstring("--[[\
 \9Contains deprecated methods from Reconciler. Broken out so that removing\
 \9this shim is easy -- just delete this file and remove it from init.\
 ]]\
@@ -15718,9 +15635,9 @@ local function createReconcilerCompat(reconciler)\
 \9return compat\
 end\
 \
-return createReconcilerCompat", '@'.."Havoc.include.node_modules.roact.src.createReconcilerCompat")) setfenv(fn, newEnv("Havoc.include.node_modules.roact.src.createReconcilerCompat")) return fn() end)
+return createReconcilerCompat", '@'.."Havoc.include.node_modules.@rbxts.roact.src.createReconcilerCompat")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact.src.createReconcilerCompat")) return fn() end)
 
-newModule("createRef", "ModuleScript", "Havoc.include.node_modules.roact.src.createRef", "Havoc.include.node_modules.roact.src", function () local fn = assert(loadstring("--[[\
+newModule("createRef", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact.src.createRef", "Havoc.include.node_modules.@rbxts.roact.src", function () local fn = assert(loadstring("--[[\
 \9A ref is nothing more than a binding with a special field 'current'\
 \9that maps to the getValue method of the binding\
 ]]\
@@ -15757,9 +15674,9 @@ local function createRef()\
 \9return ref\
 end\
 \
-return createRef", '@'.."Havoc.include.node_modules.roact.src.createRef")) setfenv(fn, newEnv("Havoc.include.node_modules.roact.src.createRef")) return fn() end)
+return createRef", '@'.."Havoc.include.node_modules.@rbxts.roact.src.createRef")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact.src.createRef")) return fn() end)
 
-newModule("createSignal", "ModuleScript", "Havoc.include.node_modules.roact.src.createSignal", "Havoc.include.node_modules.roact.src", function () local fn = assert(loadstring("--[[\
+newModule("createSignal", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact.src.createSignal", "Havoc.include.node_modules.@rbxts.roact.src", function () local fn = assert(loadstring("--[[\
 \9This is a simple signal implementation that has a dead-simple API.\
 \
 \9\9local signal = createSignal()\
@@ -15827,9 +15744,9 @@ local function createSignal()\
 end\
 \
 return createSignal\
-", '@'.."Havoc.include.node_modules.roact.src.createSignal")) setfenv(fn, newEnv("Havoc.include.node_modules.roact.src.createSignal")) return fn() end)
+", '@'.."Havoc.include.node_modules.@rbxts.roact.src.createSignal")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact.src.createSignal")) return fn() end)
 
-newModule("createSpy", "ModuleScript", "Havoc.include.node_modules.roact.src.createSpy", "Havoc.include.node_modules.roact.src", function () local fn = assert(loadstring("--[[\
+newModule("createSpy", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact.src.createSpy", "Havoc.include.node_modules.@rbxts.roact.src", function () local fn = assert(loadstring("--[[\
 \9A utility used to create a function spy that can be used to robustly test\
 \9that functions are invoked the correct number of times and with the correct\
 \9number of arguments.\
@@ -15913,9 +15830,9 @@ local function createSpy(inner)\
 \9return self\
 end\
 \
-return createSpy", '@'.."Havoc.include.node_modules.roact.src.createSpy")) setfenv(fn, newEnv("Havoc.include.node_modules.roact.src.createSpy")) return fn() end)
+return createSpy", '@'.."Havoc.include.node_modules.@rbxts.roact.src.createSpy")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact.src.createSpy")) return fn() end)
 
-newModule("forwardRef", "ModuleScript", "Havoc.include.node_modules.roact.src.forwardRef", "Havoc.include.node_modules.roact.src", function () local fn = assert(loadstring("local assign = require(script.Parent.assign)\
+newModule("forwardRef", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact.src.forwardRef", "Havoc.include.node_modules.@rbxts.roact.src", function () local fn = assert(loadstring("local assign = require(script.Parent.assign)\
 local None = require(script.Parent.None)\
 local Ref = require(script.Parent.PropMarkers.Ref)\
 \
@@ -15942,9 +15859,9 @@ local function forwardRef(render)\
 \9end\
 end\
 \
-return forwardRef", '@'.."Havoc.include.node_modules.roact.src.forwardRef")) setfenv(fn, newEnv("Havoc.include.node_modules.roact.src.forwardRef")) return fn() end)
+return forwardRef", '@'.."Havoc.include.node_modules.@rbxts.roact.src.forwardRef")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact.src.forwardRef")) return fn() end)
 
-newModule("getDefaultInstanceProperty", "ModuleScript", "Havoc.include.node_modules.roact.src.getDefaultInstanceProperty", "Havoc.include.node_modules.roact.src", function () local fn = assert(loadstring("--[[\
+newModule("getDefaultInstanceProperty", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact.src.getDefaultInstanceProperty", "Havoc.include.node_modules.@rbxts.roact.src", function () local fn = assert(loadstring("--[[\
 \9Attempts to get the default value of a given property on a Roblox instance.\
 \
 \9This is used by the reconciler in cases where a prop was previously set on a\
@@ -15997,17 +15914,17 @@ local function getDefaultInstanceProperty(className, propertyName)\
 \9return ok, defaultValue\
 end\
 \
-return getDefaultInstanceProperty", '@'.."Havoc.include.node_modules.roact.src.getDefaultInstanceProperty")) setfenv(fn, newEnv("Havoc.include.node_modules.roact.src.getDefaultInstanceProperty")) return fn() end)
+return getDefaultInstanceProperty", '@'.."Havoc.include.node_modules.@rbxts.roact.src.getDefaultInstanceProperty")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact.src.getDefaultInstanceProperty")) return fn() end)
 
-newModule("internalAssert", "ModuleScript", "Havoc.include.node_modules.roact.src.internalAssert", "Havoc.include.node_modules.roact.src", function () local fn = assert(loadstring("local function internalAssert(condition, message)\
+newModule("internalAssert", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact.src.internalAssert", "Havoc.include.node_modules.@rbxts.roact.src", function () local fn = assert(loadstring("local function internalAssert(condition, message)\
 \9if not condition then\
 \9\9error(message .. \" (This is probably a bug in Roact!)\", 3)\
 \9end\
 end\
 \
-return internalAssert", '@'.."Havoc.include.node_modules.roact.src.internalAssert")) setfenv(fn, newEnv("Havoc.include.node_modules.roact.src.internalAssert")) return fn() end)
+return internalAssert", '@'.."Havoc.include.node_modules.@rbxts.roact.src.internalAssert")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact.src.internalAssert")) return fn() end)
 
-newModule("invalidSetStateMessages", "ModuleScript", "Havoc.include.node_modules.roact.src.invalidSetStateMessages", "Havoc.include.node_modules.roact.src", function () local fn = assert(loadstring("--[[\
+newModule("invalidSetStateMessages", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact.src.invalidSetStateMessages", "Havoc.include.node_modules.@rbxts.roact.src", function () local fn = assert(loadstring("--[[\
 \9These messages are used by Component to help users diagnose when they're\
 \9calling setState in inappropriate places.\
 \
@@ -16050,9 +15967,9 @@ This is a bug in Roact.\
 It was triggered by the component %q.\
 ]]\
 \
-return invalidSetStateMessages", '@'.."Havoc.include.node_modules.roact.src.invalidSetStateMessages")) setfenv(fn, newEnv("Havoc.include.node_modules.roact.src.invalidSetStateMessages")) return fn() end)
+return invalidSetStateMessages", '@'.."Havoc.include.node_modules.@rbxts.roact.src.invalidSetStateMessages")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact.src.invalidSetStateMessages")) return fn() end)
 
-newModule("oneChild", "ModuleScript", "Havoc.include.node_modules.roact.src.oneChild", "Havoc.include.node_modules.roact.src", function () local fn = assert(loadstring("--[[\
+newModule("oneChild", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact.src.oneChild", "Havoc.include.node_modules.@rbxts.roact.src", function () local fn = assert(loadstring("--[[\
 \9Retrieves at most one child from the children passed to a component.\
 \
 \9If passed nil or an empty table, will return nil.\
@@ -16079,9 +15996,9 @@ local function oneChild(children)\
 \9return child\
 end\
 \
-return oneChild", '@'.."Havoc.include.node_modules.roact.src.oneChild")) setfenv(fn, newEnv("Havoc.include.node_modules.roact.src.oneChild")) return fn() end)
+return oneChild", '@'.."Havoc.include.node_modules.@rbxts.roact.src.oneChild")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact.src.oneChild")) return fn() end)
 
-newModule("strict", "ModuleScript", "Havoc.include.node_modules.roact.src.strict", "Havoc.include.node_modules.roact.src", function () local fn = assert(loadstring("local function strict(t, name)\
+newModule("strict", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact.src.strict", "Havoc.include.node_modules.@rbxts.roact.src", function () local fn = assert(loadstring("local function strict(t, name)\
 \9name = name or tostring(t)\
 \
 \9return setmetatable(t, {\
@@ -16107,11 +16024,11 @@ newModule("strict", "ModuleScript", "Havoc.include.node_modules.roact.src.strict
 \9})\
 end\
 \
-return strict", '@'.."Havoc.include.node_modules.roact.src.strict")) setfenv(fn, newEnv("Havoc.include.node_modules.roact.src.strict")) return fn() end)
+return strict", '@'.."Havoc.include.node_modules.@rbxts.roact.src.strict")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact.src.strict")) return fn() end)
 
-newInstance("roact-hooked", "Folder", "Havoc.include.node_modules.roact-hooked", "Havoc.include.node_modules")
+newInstance("roact-hooked", "Folder", "Havoc.include.node_modules.@rbxts.roact-hooked", "Havoc.include.node_modules.@rbxts")
 
-newModule("src", "ModuleScript", "Havoc.include.node_modules.roact-hooked.src", "Havoc.include.node_modules.roact-hooked", function () local fn = assert(loadstring("local hoc = require(script.hoc)\
+newModule("src", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact-hooked.src", "Havoc.include.node_modules.@rbxts.roact-hooked", function () local fn = assert(loadstring("local hoc = require(script.hoc)\
 local hooks = require(script.hooks)\
 local withHookDetection = require(script.withHookDetection)\
 local pureComponent = require(script.pureComponent)\
@@ -16134,9 +16051,9 @@ return {\
 \9useRef = hooks.useRef,\
 \9useState = hooks.useState,\
 }\
-", '@'.."Havoc.include.node_modules.roact-hooked.src")) setfenv(fn, newEnv("Havoc.include.node_modules.roact-hooked.src")) return fn() end)
+", '@'.."Havoc.include.node_modules.@rbxts.roact-hooked.src")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact-hooked.src")) return fn() end)
 
-newModule("NoYield", "ModuleScript", "Havoc.include.node_modules.roact-hooked.src.NoYield", "Havoc.include.node_modules.roact-hooked.src", function () local fn = assert(loadstring("--[[\
+newModule("NoYield", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact-hooked.src.NoYield", "Havoc.include.node_modules.@rbxts.roact-hooked.src", function () local fn = assert(loadstring("--[[\
 \9Calls a function and throws an error if it attempts to yield.\
 \9Pass any number of arguments to the function after the callback.\
 \9This function supports multiple return; all results returned from the\
@@ -16171,9 +16088,9 @@ local function NoYield(callback, ...)\
 end\
 \
 return NoYield\
-", '@'.."Havoc.include.node_modules.roact-hooked.src.NoYield")) setfenv(fn, newEnv("Havoc.include.node_modules.roact-hooked.src.NoYield")) return fn() end)
+", '@'.."Havoc.include.node_modules.@rbxts.roact-hooked.src.NoYield")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact-hooked.src.NoYield")) return fn() end)
 
-newModule("Roact", "ModuleScript", "Havoc.include.node_modules.roact-hooked.src.Roact", "Havoc.include.node_modules.roact-hooked.src", function () local fn = assert(loadstring("local modules = script:FindFirstAncestor(\"node_modules\")\
+newModule("Roact", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact-hooked.src.Roact", "Havoc.include.node_modules.@rbxts.roact-hooked.src", function () local fn = assert(loadstring("local modules = script:FindFirstAncestor(\"node_modules\")\
 \
 if modules:FindFirstChild(\"roact\") then\
 \9return require(modules.roact.src)\
@@ -16184,9 +16101,9 @@ elseif script.Parent.Parent:FindFirstChild(\"Roact\") then\
 else\
 \9error(\"Could not find Roact or @rbxts/roact in the parent hierarchy.\")\
 end\
-", '@'.."Havoc.include.node_modules.roact-hooked.src.Roact")) setfenv(fn, newEnv("Havoc.include.node_modules.roact-hooked.src.Roact")) return fn() end)
+", '@'.."Havoc.include.node_modules.@rbxts.roact-hooked.src.Roact")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact-hooked.src.Roact")) return fn() end)
 
-newModule("hoc", "ModuleScript", "Havoc.include.node_modules.roact-hooked.src.hoc", "Havoc.include.node_modules.roact-hooked.src", function () local fn = assert(loadstring("local Roact = require(script.Parent.Roact)\
+newModule("hoc", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact-hooked.src.hoc", "Havoc.include.node_modules.@rbxts.roact-hooked.src", function () local fn = assert(loadstring("local Roact = require(script.Parent.Roact)\
 local hooks = require(script.Parent.hooks)\
 local prepareToUseHooks = hooks.prepareToUseHooks\
 local finishHooks = hooks.finishHooks\
@@ -16243,9 +16160,9 @@ return {\
 \9withHooks = withHooks,\
 \9withHooksPure = withHooksPure,\
 }\
-", '@'.."Havoc.include.node_modules.roact-hooked.src.hoc")) setfenv(fn, newEnv("Havoc.include.node_modules.roact-hooked.src.hoc")) return fn() end)
+", '@'.."Havoc.include.node_modules.@rbxts.roact-hooked.src.hoc")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact-hooked.src.hoc")) return fn() end)
 
-newModule("hooks", "ModuleScript", "Havoc.include.node_modules.roact-hooked.src.hooks", "Havoc.include.node_modules.roact-hooked.src", function () local fn = assert(loadstring("-- https://github.com/facebook/react/blob/main/packages/react-dom/src/server/ReactPartialRendererHooks.js\
+newModule("hooks", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact-hooked.src.hooks", "Havoc.include.node_modules.@rbxts.roact-hooked.src", function () local fn = assert(loadstring("-- https://github.com/facebook/react/blob/main/packages/react-dom/src/server/ReactPartialRendererHooks.js\
 -- https://github.com/facebook/react/blob/main/packages/react-reconciler/src/ReactFiberHooks.new.js\
 \
 local Roact = require(script.Parent.Roact)\
@@ -16665,9 +16582,9 @@ return {\
 \9prepareToUseHooks = prepareToUseHooks,\
 \9finishHooks = finishHooks,\
 }\
-", '@'.."Havoc.include.node_modules.roact-hooked.src.hooks")) setfenv(fn, newEnv("Havoc.include.node_modules.roact-hooked.src.hooks")) return fn() end)
+", '@'.."Havoc.include.node_modules.@rbxts.roact-hooked.src.hooks")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact-hooked.src.hooks")) return fn() end)
 
-newModule("pureComponent", "ModuleScript", "Havoc.include.node_modules.roact-hooked.src.pureComponent", "Havoc.include.node_modules.roact-hooked.src", function () local fn = assert(loadstring("local pureComponents = {}\
+newModule("pureComponent", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact-hooked.src.pureComponent", "Havoc.include.node_modules.@rbxts.roact-hooked.src", function () local fn = assert(loadstring("local pureComponents = {}\
 \
 local function markPureComponent(functionComponent)\
 \9pureComponents[functionComponent] = true\
@@ -16682,9 +16599,9 @@ return {\
 \9markPureComponent = markPureComponent,\
 \9isPureComponent = isPureComponent,\
 }\
-", '@'.."Havoc.include.node_modules.roact-hooked.src.pureComponent")) setfenv(fn, newEnv("Havoc.include.node_modules.roact-hooked.src.pureComponent")) return fn() end)
+", '@'.."Havoc.include.node_modules.@rbxts.roact-hooked.src.pureComponent")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact-hooked.src.pureComponent")) return fn() end)
 
-newModule("withHookDetection", "ModuleScript", "Havoc.include.node_modules.roact-hooked.src.withHookDetection", "Havoc.include.node_modules.roact-hooked.src", function () local fn = assert(loadstring("local hoc = require(script.Parent.hoc)\
+newModule("withHookDetection", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact-hooked.src.withHookDetection", "Havoc.include.node_modules.@rbxts.roact-hooked.src", function () local fn = assert(loadstring("local hoc = require(script.Parent.hoc)\
 local hooks = require(script.Parent.hooks)\
 local pureComponent = require(script.Parent.pureComponent)\
 \
@@ -16763,11 +16680,11 @@ local function withHookDetection(Roact, options)\
 end\
 \
 return withHookDetection\
-", '@'.."Havoc.include.node_modules.roact-hooked.src.withHookDetection")) setfenv(fn, newEnv("Havoc.include.node_modules.roact-hooked.src.withHookDetection")) return fn() end)
+", '@'.."Havoc.include.node_modules.@rbxts.roact-hooked.src.withHookDetection")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact-hooked.src.withHookDetection")) return fn() end)
 
-newInstance("roact-rodux-hooked", "Folder", "Havoc.include.node_modules.roact-rodux-hooked", "Havoc.include.node_modules")
+newInstance("roact-rodux-hooked", "Folder", "Havoc.include.node_modules.@rbxts.roact-rodux-hooked", "Havoc.include.node_modules.@rbxts")
 
-newModule("src", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.src", "Havoc.include.node_modules.roact-rodux-hooked", function () local fn = assert(loadstring("local RoactRoduxContext = require(script.components.Context)\
+newModule("src", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact-rodux-hooked.src", "Havoc.include.node_modules.@rbxts.roact-rodux-hooked", function () local fn = assert(loadstring("local RoactRoduxContext = require(script.components.Context)\
 local StoreProvider = require(script.components.StoreProvider)\
 \
 local useDispatch = require(script.hooks.useDispatch)\
@@ -16784,18 +16701,18 @@ return {\
 \9StoreProvider = StoreProvider,\
 \9RoactRoduxContext = RoactRoduxContext,\
 }\
-", '@'.."Havoc.include.node_modules.roact-rodux-hooked.src")) setfenv(fn, newEnv("Havoc.include.node_modules.roact-rodux-hooked.src")) return fn() end)
+", '@'.."Havoc.include.node_modules.@rbxts.roact-rodux-hooked.src")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact-rodux-hooked.src")) return fn() end)
 
-newInstance("components", "Folder", "Havoc.include.node_modules.roact-rodux-hooked.src.components", "Havoc.include.node_modules.roact-rodux-hooked.src")
+newInstance("components", "Folder", "Havoc.include.node_modules.@rbxts.roact-rodux-hooked.src.components", "Havoc.include.node_modules.@rbxts.roact-rodux-hooked.src")
 
-newModule("Context", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.src.components.Context", "Havoc.include.node_modules.roact-rodux-hooked.src.components", function () local fn = assert(loadstring("local Roact = require(script.Parent.Parent.vendor.Roact)\
+newModule("Context", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact-rodux-hooked.src.components.Context", "Havoc.include.node_modules.@rbxts.roact-rodux-hooked.src.components", function () local fn = assert(loadstring("local Roact = require(script.Parent.Parent.vendor.Roact)\
 \
 local RoactRoduxContext = Roact.createContext()\
 \
 return RoactRoduxContext\
-", '@'.."Havoc.include.node_modules.roact-rodux-hooked.src.components.Context")) setfenv(fn, newEnv("Havoc.include.node_modules.roact-rodux-hooked.src.components.Context")) return fn() end)
+", '@'.."Havoc.include.node_modules.@rbxts.roact-rodux-hooked.src.components.Context")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact-rodux-hooked.src.components.Context")) return fn() end)
 
-newModule("StoreProvider", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.src.components.StoreProvider", "Havoc.include.node_modules.roact-rodux-hooked.src.components", function () local fn = assert(loadstring("local Roact = require(script.Parent.Parent.vendor.Roact)\
+newModule("StoreProvider", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact-rodux-hooked.src.components.StoreProvider", "Havoc.include.node_modules.@rbxts.roact-rodux-hooked.src.components", function () local fn = assert(loadstring("local Roact = require(script.Parent.Parent.vendor.Roact)\
 local RoactRoduxContext = require(script.Parent.Context)\
 \
 local function StoreProvider(props)\
@@ -16807,11 +16724,11 @@ local function StoreProvider(props)\
 end\
 \
 return StoreProvider\
-", '@'.."Havoc.include.node_modules.roact-rodux-hooked.src.components.StoreProvider")) setfenv(fn, newEnv("Havoc.include.node_modules.roact-rodux-hooked.src.components.StoreProvider")) return fn() end)
+", '@'.."Havoc.include.node_modules.@rbxts.roact-rodux-hooked.src.components.StoreProvider")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact-rodux-hooked.src.components.StoreProvider")) return fn() end)
 
-newInstance("hooks", "Folder", "Havoc.include.node_modules.roact-rodux-hooked.src.hooks", "Havoc.include.node_modules.roact-rodux-hooked.src")
+newInstance("hooks", "Folder", "Havoc.include.node_modules.@rbxts.roact-rodux-hooked.src.hooks", "Havoc.include.node_modules.@rbxts.roact-rodux-hooked.src")
 
-newModule("useDispatch", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.src.hooks.useDispatch", "Havoc.include.node_modules.roact-rodux-hooked.src.hooks", function () local fn = assert(loadstring("local Hooks = require(script.Parent.Parent.vendor.RoactHooked)\
+newModule("useDispatch", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact-rodux-hooked.src.hooks.useDispatch", "Havoc.include.node_modules.@rbxts.roact-rodux-hooked.src.hooks", function () local fn = assert(loadstring("local Hooks = require(script.Parent.Parent.vendor.RoactHooked)\
 local useStore = require(script.Parent.useStore)\
 \
 local function useDispatch()\
@@ -16825,9 +16742,9 @@ local function useDispatch()\
 end\
 \
 return useDispatch\
-", '@'.."Havoc.include.node_modules.roact-rodux-hooked.src.hooks.useDispatch")) setfenv(fn, newEnv("Havoc.include.node_modules.roact-rodux-hooked.src.hooks.useDispatch")) return fn() end)
+", '@'.."Havoc.include.node_modules.@rbxts.roact-rodux-hooked.src.hooks.useDispatch")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact-rodux-hooked.src.hooks.useDispatch")) return fn() end)
 
-newModule("useSelector", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.src.hooks.useSelector", "Havoc.include.node_modules.roact-rodux-hooked.src.hooks", function () local fn = assert(loadstring("-- https://github.com/reduxjs/react-redux/blob/7.x/src/hooks/useSelector.js\
+newModule("useSelector", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact-rodux-hooked.src.hooks.useSelector", "Havoc.include.node_modules.@rbxts.roact-rodux-hooked.src.hooks", function () local fn = assert(loadstring("-- https://github.com/reduxjs/react-redux/blob/7.x/src/hooks/useSelector.js\
 \
 local Hooks = require(script.Parent.Parent.vendor.RoactHooked)\
 local useStore = require(script.Parent.useStore)\
@@ -16943,9 +16860,9 @@ local function useSelector(selector, isEqual)\
 end\
 \
 return useSelector\
-", '@'.."Havoc.include.node_modules.roact-rodux-hooked.src.hooks.useSelector")) setfenv(fn, newEnv("Havoc.include.node_modules.roact-rodux-hooked.src.hooks.useSelector")) return fn() end)
+", '@'.."Havoc.include.node_modules.@rbxts.roact-rodux-hooked.src.hooks.useSelector")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact-rodux-hooked.src.hooks.useSelector")) return fn() end)
 
-newModule("useStore", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.src.hooks.useStore", "Havoc.include.node_modules.roact-rodux-hooked.src.hooks", function () local fn = assert(loadstring("local Hooks = require(script.Parent.Parent.vendor.RoactHooked)\
+newModule("useStore", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact-rodux-hooked.src.hooks.useStore", "Havoc.include.node_modules.@rbxts.roact-rodux-hooked.src.hooks", function () local fn = assert(loadstring("local Hooks = require(script.Parent.Parent.vendor.RoactHooked)\
 local RoactRoduxContext = require(script.Parent.Parent.components.Context)\
 \
 local function useStore()\
@@ -16953,11 +16870,11 @@ local function useStore()\
 end\
 \
 return useStore\
-", '@'.."Havoc.include.node_modules.roact-rodux-hooked.src.hooks.useStore")) setfenv(fn, newEnv("Havoc.include.node_modules.roact-rodux-hooked.src.hooks.useStore")) return fn() end)
+", '@'.."Havoc.include.node_modules.@rbxts.roact-rodux-hooked.src.hooks.useStore")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact-rodux-hooked.src.hooks.useStore")) return fn() end)
 
-newInstance("utils", "Folder", "Havoc.include.node_modules.roact-rodux-hooked.src.utils", "Havoc.include.node_modules.roact-rodux-hooked.src")
+newInstance("utils", "Folder", "Havoc.include.node_modules.@rbxts.roact-rodux-hooked.src.utils", "Havoc.include.node_modules.@rbxts.roact-rodux-hooked.src")
 
-newModule("shallowEqual", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.src.utils.shallowEqual", "Havoc.include.node_modules.roact-rodux-hooked.src.utils", function () local fn = assert(loadstring("local function shallowEqual(left, right)\
+newModule("shallowEqual", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact-rodux-hooked.src.utils.shallowEqual", "Havoc.include.node_modules.@rbxts.roact-rodux-hooked.src.utils", function () local fn = assert(loadstring("local function shallowEqual(left, right)\
 \9if left == right then\
 \9\9return true\
 \9end\
@@ -16980,11 +16897,11 @@ newModule("shallowEqual", "ModuleScript", "Havoc.include.node_modules.roact-rodu
 end\
 \
 return shallowEqual\
-", '@'.."Havoc.include.node_modules.roact-rodux-hooked.src.utils.shallowEqual")) setfenv(fn, newEnv("Havoc.include.node_modules.roact-rodux-hooked.src.utils.shallowEqual")) return fn() end)
+", '@'.."Havoc.include.node_modules.@rbxts.roact-rodux-hooked.src.utils.shallowEqual")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact-rodux-hooked.src.utils.shallowEqual")) return fn() end)
 
-newInstance("vendor", "Folder", "Havoc.include.node_modules.roact-rodux-hooked.src.vendor", "Havoc.include.node_modules.roact-rodux-hooked.src")
+newInstance("vendor", "Folder", "Havoc.include.node_modules.@rbxts.roact-rodux-hooked.src.vendor", "Havoc.include.node_modules.@rbxts.roact-rodux-hooked.src")
 
-newModule("Roact", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.src.vendor.Roact", "Havoc.include.node_modules.roact-rodux-hooked.src.vendor", function () local fn = assert(loadstring("local modules = script:FindFirstAncestor(\"node_modules\")\
+newModule("Roact", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact-rodux-hooked.src.vendor.Roact", "Havoc.include.node_modules.@rbxts.roact-rodux-hooked.src.vendor", function () local fn = assert(loadstring("local modules = script:FindFirstAncestor(\"node_modules\")\
 \
 if modules:FindFirstChild(\"@rbxts\") then\
 \9return require(modules[\"@rbxts\"].roact.src)\
@@ -16995,9 +16912,9 @@ elseif script.Parent.Parent.Parent:FindFirstChild(\"Roact\") then\
 else\
 \9error(\"Could not find Roact or @rbxts/roact in the parent hierarchy.\")\
 end\
-", '@'.."Havoc.include.node_modules.roact-rodux-hooked.src.vendor.Roact")) setfenv(fn, newEnv("Havoc.include.node_modules.roact-rodux-hooked.src.vendor.Roact")) return fn() end)
+", '@'.."Havoc.include.node_modules.@rbxts.roact-rodux-hooked.src.vendor.Roact")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact-rodux-hooked.src.vendor.Roact")) return fn() end)
 
-newModule("RoactHooked", "ModuleScript", "Havoc.include.node_modules.roact-rodux-hooked.src.vendor.RoactHooked", "Havoc.include.node_modules.roact-rodux-hooked.src.vendor", function () local fn = assert(loadstring("local modules = script:FindFirstAncestor(\"node_modules\")\
+newModule("RoactHooked", "ModuleScript", "Havoc.include.node_modules.@rbxts.roact-rodux-hooked.src.vendor.RoactHooked", "Havoc.include.node_modules.@rbxts.roact-rodux-hooked.src.vendor", function () local fn = assert(loadstring("local modules = script:FindFirstAncestor(\"node_modules\")\
 \
 if modules:FindFirstChild(\"@rbxts\") then\
 \9return require(modules[\"@rbxts\"][\"roact-hooked\"].src)\
@@ -17008,11 +16925,11 @@ elseif script.Parent.Parent.Parent:FindFirstChild(\"roact-hooked\") then\
 else\
 \9error(\"Could not find @rbxts/roact-hooked in the parent hierarchy.\")\
 end\
-", '@'.."Havoc.include.node_modules.roact-rodux-hooked.src.vendor.RoactHooked")) setfenv(fn, newEnv("Havoc.include.node_modules.roact-rodux-hooked.src.vendor.RoactHooked")) return fn() end)
+", '@'.."Havoc.include.node_modules.@rbxts.roact-rodux-hooked.src.vendor.RoactHooked")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.roact-rodux-hooked.src.vendor.RoactHooked")) return fn() end)
 
-newInstance("rodux", "Folder", "Havoc.include.node_modules.rodux", "Havoc.include.node_modules")
+newInstance("rodux", "Folder", "Havoc.include.node_modules.@rbxts.rodux", "Havoc.include.node_modules.@rbxts")
 
-newModule("src", "ModuleScript", "Havoc.include.node_modules.rodux.src", "Havoc.include.node_modules.rodux", function () local fn = assert(loadstring("local Store = require(script.Store)\
+newModule("src", "ModuleScript", "Havoc.include.node_modules.@rbxts.rodux.src", "Havoc.include.node_modules.@rbxts.rodux", function () local fn = assert(loadstring("local Store = require(script.Store)\
 local createReducer = require(script.createReducer)\
 local combineReducers = require(script.combineReducers)\
 local makeActionCreator = require(script.makeActionCreator)\
@@ -17027,9 +16944,9 @@ return {\
 \9loggerMiddleware = loggerMiddleware.middleware,\
 \9thunkMiddleware = thunkMiddleware,\
 }\
-", '@'.."Havoc.include.node_modules.rodux.src")) setfenv(fn, newEnv("Havoc.include.node_modules.rodux.src")) return fn() end)
+", '@'.."Havoc.include.node_modules.@rbxts.rodux.src")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.rodux.src")) return fn() end)
 
-newModule("NoYield", "ModuleScript", "Havoc.include.node_modules.rodux.src.NoYield", "Havoc.include.node_modules.rodux.src", function () local fn = assert(loadstring("--!nocheck\
+newModule("NoYield", "ModuleScript", "Havoc.include.node_modules.@rbxts.rodux.src.NoYield", "Havoc.include.node_modules.@rbxts.rodux.src", function () local fn = assert(loadstring("--!nocheck\
 \
 --[[\
 \9Calls a function and throws an error if it attempts to yield.\
@@ -17060,9 +16977,9 @@ local function NoYield(callback, ...)\
 end\
 \
 return NoYield\
-", '@'.."Havoc.include.node_modules.rodux.src.NoYield")) setfenv(fn, newEnv("Havoc.include.node_modules.rodux.src.NoYield")) return fn() end)
+", '@'.."Havoc.include.node_modules.@rbxts.rodux.src.NoYield")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.rodux.src.NoYield")) return fn() end)
 
-newModule("Signal", "ModuleScript", "Havoc.include.node_modules.rodux.src.Signal", "Havoc.include.node_modules.rodux.src", function () local fn = assert(loadstring("--[[\
+newModule("Signal", "ModuleScript", "Havoc.include.node_modules.@rbxts.rodux.src.Signal", "Havoc.include.node_modules.@rbxts.rodux.src", function () local fn = assert(loadstring("--[[\
 \9A limited, simple implementation of a Signal.\
 \
 \9Handlers are fired in order, and (dis)connections are properly handled when\
@@ -17165,9 +17082,9 @@ function Signal:fire(...)\
 \9end\
 end\
 \
-return Signal", '@'.."Havoc.include.node_modules.rodux.src.Signal")) setfenv(fn, newEnv("Havoc.include.node_modules.rodux.src.Signal")) return fn() end)
+return Signal", '@'.."Havoc.include.node_modules.@rbxts.rodux.src.Signal")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.rodux.src.Signal")) return fn() end)
 
-newModule("Store", "ModuleScript", "Havoc.include.node_modules.rodux.src.Store", "Havoc.include.node_modules.rodux.src", function () local fn = assert(loadstring("local RunService = game:GetService(\"RunService\")\
+newModule("Store", "ModuleScript", "Havoc.include.node_modules.@rbxts.rodux.src.Store", "Havoc.include.node_modules.@rbxts.rodux.src", function () local fn = assert(loadstring("local RunService = game:GetService(\"RunService\")\
 \
 local Signal = require(script.Parent.Signal)\
 local NoYield = require(script.Parent.NoYield)\
@@ -17384,9 +17301,9 @@ function Store:flush()\
 end\
 \
 return Store\
-", '@'.."Havoc.include.node_modules.rodux.src.Store")) setfenv(fn, newEnv("Havoc.include.node_modules.rodux.src.Store")) return fn() end)
+", '@'.."Havoc.include.node_modules.@rbxts.rodux.src.Store")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.rodux.src.Store")) return fn() end)
 
-newModule("combineReducers", "ModuleScript", "Havoc.include.node_modules.rodux.src.combineReducers", "Havoc.include.node_modules.rodux.src", function () local fn = assert(loadstring("--[[\
+newModule("combineReducers", "ModuleScript", "Havoc.include.node_modules.@rbxts.rodux.src.combineReducers", "Havoc.include.node_modules.@rbxts.rodux.src", function () local fn = assert(loadstring("--[[\
 \9Create a composite reducer from a map of keys and sub-reducers.\
 ]]\
 local function combineReducers(map)\
@@ -17408,9 +17325,9 @@ local function combineReducers(map)\
 end\
 \
 return combineReducers\
-", '@'.."Havoc.include.node_modules.rodux.src.combineReducers")) setfenv(fn, newEnv("Havoc.include.node_modules.rodux.src.combineReducers")) return fn() end)
+", '@'.."Havoc.include.node_modules.@rbxts.rodux.src.combineReducers")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.rodux.src.combineReducers")) return fn() end)
 
-newModule("createReducer", "ModuleScript", "Havoc.include.node_modules.rodux.src.createReducer", "Havoc.include.node_modules.rodux.src", function () local fn = assert(loadstring("return function(initialState, handlers)\
+newModule("createReducer", "ModuleScript", "Havoc.include.node_modules.@rbxts.rodux.src.createReducer", "Havoc.include.node_modules.@rbxts.rodux.src", function () local fn = assert(loadstring("return function(initialState, handlers)\
 \9return function(state, action)\
 \9\9if state == nil then\
 \9\9\9state = initialState\
@@ -17425,9 +17342,9 @@ newModule("createReducer", "ModuleScript", "Havoc.include.node_modules.rodux.src
 \9\9return state\
 \9end\
 end\
-", '@'.."Havoc.include.node_modules.rodux.src.createReducer")) setfenv(fn, newEnv("Havoc.include.node_modules.rodux.src.createReducer")) return fn() end)
+", '@'.."Havoc.include.node_modules.@rbxts.rodux.src.createReducer")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.rodux.src.createReducer")) return fn() end)
 
-newModule("loggerMiddleware", "ModuleScript", "Havoc.include.node_modules.rodux.src.loggerMiddleware", "Havoc.include.node_modules.rodux.src", function () local fn = assert(loadstring("-- We want to be able to override outputFunction in tests, so the shape of this\
+newModule("loggerMiddleware", "ModuleScript", "Havoc.include.node_modules.@rbxts.rodux.src.loggerMiddleware", "Havoc.include.node_modules.@rbxts.rodux.src", function () local fn = assert(loadstring("-- We want to be able to override outputFunction in tests, so the shape of this\
 -- module is kind of unconventional.\
 --\
 -- We fix it this weird shape in init.lua.\
@@ -17450,9 +17367,9 @@ function loggerMiddleware.middleware(nextDispatch, store)\
 end\
 \
 return loggerMiddleware\
-", '@'.."Havoc.include.node_modules.rodux.src.loggerMiddleware")) setfenv(fn, newEnv("Havoc.include.node_modules.rodux.src.loggerMiddleware")) return fn() end)
+", '@'.."Havoc.include.node_modules.@rbxts.rodux.src.loggerMiddleware")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.rodux.src.loggerMiddleware")) return fn() end)
 
-newModule("makeActionCreator", "ModuleScript", "Havoc.include.node_modules.rodux.src.makeActionCreator", "Havoc.include.node_modules.rodux.src", function () local fn = assert(loadstring("--[[\
+newModule("makeActionCreator", "ModuleScript", "Havoc.include.node_modules.@rbxts.rodux.src.makeActionCreator", "Havoc.include.node_modules.@rbxts.rodux.src", function () local fn = assert(loadstring("--[[\
 \9A helper function to define a Rodux action creator with an associated name.\
 ]]\
 local function makeActionCreator(name, fn)\
@@ -17476,9 +17393,9 @@ local function makeActionCreator(name, fn)\
 end\
 \
 return makeActionCreator\
-", '@'.."Havoc.include.node_modules.rodux.src.makeActionCreator")) setfenv(fn, newEnv("Havoc.include.node_modules.rodux.src.makeActionCreator")) return fn() end)
+", '@'.."Havoc.include.node_modules.@rbxts.rodux.src.makeActionCreator")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.rodux.src.makeActionCreator")) return fn() end)
 
-newModule("prettyPrint", "ModuleScript", "Havoc.include.node_modules.rodux.src.prettyPrint", "Havoc.include.node_modules.rodux.src", function () local fn = assert(loadstring("local indent = \"    \"\
+newModule("prettyPrint", "ModuleScript", "Havoc.include.node_modules.@rbxts.rodux.src.prettyPrint", "Havoc.include.node_modules.@rbxts.rodux.src", function () local fn = assert(loadstring("local indent = \"    \"\
 \
 local function prettyPrint(value, indentLevel)\
 \9indentLevel = indentLevel or 0\
@@ -17511,9 +17428,9 @@ local function prettyPrint(value, indentLevel)\
 \9return table.concat(output, \"\")\
 end\
 \
-return prettyPrint", '@'.."Havoc.include.node_modules.rodux.src.prettyPrint")) setfenv(fn, newEnv("Havoc.include.node_modules.rodux.src.prettyPrint")) return fn() end)
+return prettyPrint", '@'.."Havoc.include.node_modules.@rbxts.rodux.src.prettyPrint")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.rodux.src.prettyPrint")) return fn() end)
 
-newModule("thunkMiddleware", "ModuleScript", "Havoc.include.node_modules.rodux.src.thunkMiddleware", "Havoc.include.node_modules.rodux.src", function () local fn = assert(loadstring("--[[\
+newModule("thunkMiddleware", "ModuleScript", "Havoc.include.node_modules.@rbxts.rodux.src.thunkMiddleware", "Havoc.include.node_modules.@rbxts.rodux.src", function () local fn = assert(loadstring("--[[\
 \9A middleware that allows for functions to be dispatched.\
 \9Functions will receive a single argument, the store itself.\
 \9This middleware consumes the function; middleware further down the chain\
@@ -17547,21 +17464,21 @@ local function thunkMiddleware(nextDispatch, store)\
 end\
 \
 return thunkMiddleware\
-", '@'.."Havoc.include.node_modules.rodux.src.thunkMiddleware")) setfenv(fn, newEnv("Havoc.include.node_modules.rodux.src.thunkMiddleware")) return fn() end)
+", '@'.."Havoc.include.node_modules.@rbxts.rodux.src.thunkMiddleware")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.rodux.src.thunkMiddleware")) return fn() end)
 
-newModule("services", "ModuleScript", "Havoc.include.node_modules.services", "Havoc.include.node_modules", function () local fn = assert(loadstring("return setmetatable({}, {\
+newModule("services", "ModuleScript", "Havoc.include.node_modules.@rbxts.services", "Havoc.include.node_modules.@rbxts", function () local fn = assert(loadstring("return setmetatable({}, {\
 \9__index = function(self, serviceName)\
 \9\9local service = game:GetService(serviceName)\
 \9\9self[serviceName] = service\
 \9\9return service\
 \9end,\
 })\
-", '@'.."Havoc.include.node_modules.services")) setfenv(fn, newEnv("Havoc.include.node_modules.services")) return fn() end)
+", '@'.."Havoc.include.node_modules.@rbxts.services")) setfenv(fn, newEnv("Havoc.include.node_modules.@rbxts.services")) return fn() end)
 
-newInstance("types", "Folder", "Havoc.include.node_modules.types", "Havoc.include.node_modules")
+newInstance("types", "Folder", "Havoc.include.node_modules.@rbxts.types", "Havoc.include.node_modules.@rbxts")
 
-newInstance("include", "Folder", "Havoc.include.node_modules.types.include", "Havoc.include.node_modules.types")
+newInstance("include", "Folder", "Havoc.include.node_modules.@rbxts.types.include", "Havoc.include.node_modules.@rbxts.types")
 
-newInstance("generated", "Folder", "Havoc.include.node_modules.types.include.generated", "Havoc.include.node_modules.types.include")
+newInstance("generated", "Folder", "Havoc.include.node_modules.@rbxts.types.include.generated", "Havoc.include.node_modules.@rbxts.types.include")
 
 hInit()

@@ -8,7 +8,7 @@
 		/* JSX - Roact */
 		"jsx": "react",
 		"jsxFactory": "Roact.createElement",
-		"jsxFragmentFactory": "Roact.Fragment",
+		"jsxFragmentFactory": "Roact.createFragment",
 		/* Module */
 		"module": "commonjs",
 		"resolveJsonModule": true,

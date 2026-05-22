@@ -1,9 +1,9 @@
 import Roact from "@rbxts/roact";
-import { hooked, useEffect } from "@rbxts/roact-hooked";
-import type Border from "components/Border";
-import type Canvas from "components/Canvas";
-import type Fill from "components/Fill";
-import type ParallaxImage from "components/ParallaxImage";
+import { useEffect } from "@rbxts/roact-hooked";
+import Border from "components/Border";
+import Canvas from "components/Canvas";
+import Fill from "components/Fill";
+import ParallaxImage from "components/ParallaxImage";
 import type { SpringOptions } from "hooks/common/flipper-hooks";
 import { useDelayedUpdate } from "hooks/common/use-delayed-update";
 import { useIsMount } from "hooks/common/use-did-mount";
@@ -143,5 +143,4 @@ function ScriptCard({
 	);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-call
-export default hooked(ScriptCard);
+export default ScriptCard;

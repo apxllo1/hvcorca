@@ -19,7 +19,9 @@ export function request(requestOptions: RequestAsyncRequest): Promise<RequestAsy
 		return Promise.resolve(executorRequest(requestOptions));
 	}
 
-	return Promise.reject("No suitable request function found (syn.request / request / http.request)");
+	return Promise.reject(
+		"No suitable request function found (syn.request / request / http.request)",
+	) as Promise<RequestAsyncResponse>;
 }
 
 export function get(url: string): Promise<string> {

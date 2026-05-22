@@ -4,7 +4,7 @@ declare global {
     const gethui: (() => BasePlayerGui) | undefined;
     const protect_gui: ((object: ScreenGui) => void) | undefined;
     
-    function getgenv(): Record<string, any>;
+    function getgenv(): Record<string, unknown>;
 
     namespace syn {
         function queue_on_teleport(script: string): void;
@@ -12,10 +12,10 @@ declare global {
     }
 
     interface _G {
-        [key: string]: any;
-        Havoc_Init: (env: any) => void;
-        Havoc_NewModule: (...args: any[]) => void;
-        Havoc_NewInstance: (...args: any[]) => void;
+        [key: string]: unknown;
+        Havoc_Init: (env: unknown) => void;
+        Havoc_NewModule: (...args: unknown[]) => void;
+        Havoc_NewInstance: (...args: unknown[]) => void;
     }
 }
 

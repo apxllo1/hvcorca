@@ -6,20 +6,20 @@ const player = Players.LocalPlayer;
 let healthConnection: RBXScriptConnection | undefined;
 
 function errorHandler(err: unknown) {
-	warn(`[godmode-worker] ${err instanceof Error ? err.message : err}`);
+	warn(`[godmode-worker] ${tostring(err)}`);
 	deactivate().catch(() => {});
 }
 
 function main() {
 	onJobChange("godmode", (job, state) => {
 		if (state.jobs.ghost.active && job.active) {
-			deactivate().catch((err: unknown) => warn(`[godmode-worker] ${err instanceof Error ? err.message : err}`));
+			deactivate().catch((err: unknown) => warn(`[godmode-worker] ${tostring(err)}`));
 		} else if (job.active) {
 			activateGodmode().catch(errorHandler);
 		} else {
-			deactivate().catch((err: unknown) => warn(`[godmode-worker] ${err instanceof Error ? err.message : err}`));
+			deactivate().catch((err: unknown) => warn(`[godmode-worker] ${tostring(err)}`));
 		}
-	}).catch((err: unknown) => warn(`[godmode-worker] ${err instanceof Error ? err.message : err}`));
+	}).catch((err: unknown) => warn(`[godmode-worker] ${tostring(err)}`));
 }
 
 async function deactivate() {
@@ -38,9 +38,9 @@ async function deactivate() {
 
 function activateGodmode(): Promise<void> {
 	const character = player.Character;
-	if (!character) return Promise.reject("No character found");
+	if (!character) return Promise.reject("No character found") as Promise<void>;
 	const humanoid = character.FindFirstChildWhichIsA("Humanoid");
-	if (!humanoid) return Promise.reject("No humanoid found");
+	if (!humanoid) return Promise.reject("No humanoid found") as Promise<void>;
 
 	healthConnection = humanoid.HealthChanged.Connect(() => {
 		if (humanoid.Health < humanoid.MaxHealth) {

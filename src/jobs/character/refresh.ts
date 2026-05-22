@@ -1,4 +1,4 @@
-import { Players, Workspace, Instance } from "@rbxts/services";
+import { Players, Workspace } from "@rbxts/services";
 import { getStore, onJobChange } from "jobs/helpers/job-store";
 import type { JobsAction } from "store/actions/jobs.action";
 
@@ -46,7 +46,7 @@ async function respawn() {
 
 	// Create mock to detach character
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-call
-	const mockCharacter = new Instance("Model") as Model;
+	const mockCharacter = new Instance("Model");
 	mockCharacter.Parent = Workspace;
 
 	try {
@@ -63,25 +63,25 @@ async function respawn() {
 		player.Character = clonedCharacter;
 
 		// Wait for CharacterAdded (optional safety net)
-		const newCharacter: Model = await Promise.race([
-			Promise.fromEvent(player, "CharacterAdded").timeout(MAX_RESPAWN_TIME, "Respawn timeout"),
+		const newCharacter = await Promise.race([
+			Promise.fromEvent(player.CharacterAdded).timeout(MAX_RESPAWN_TIME, "Respawn timeout"),
 			Promise.resolve(clonedCharacter),
 		]);
 
 		// Wait for root part and humanoid
 		const newRoot = newCharacter.WaitForChild("HumanoidRootPart", 5) as BasePart | undefined;
 		if (newRoot !== undefined && newRoot.IsA("BasePart")) {
-			task.delay(() => {
+			task.delay(0.1, () => {
 				if (newRoot.Parent) {
 					newRoot.CFrame = respawnLocation;
 				}
-			}, 0.1);
+			});
 		}
 
 		// Ensure Humanoid exists
 		if (newCharacter.FindFirstChildWhichIsA("Humanoid") === undefined) {
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-call
-			const newHumanoid = new Instance("Humanoid") as Humanoid;
+			const newHumanoid = new Instance("Humanoid");
 			newHumanoid.Parent = newCharacter;
 		}
 	} finally {
