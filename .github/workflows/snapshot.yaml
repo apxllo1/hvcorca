@@ -9,7 +9,9 @@ on:
 
 jobs:
   bundle-snapshot:
-    runs-on: ubuntu-latest
+    # Pinned to 22.04 because remodel 0.11.0 (the latest release) links
+    # against libssl 1.1, which Ubuntu 24.04 (ubuntu-latest) no longer ships.
+    runs-on: ubuntu-22.04
     permissions:
       contents: write
 
