@@ -47,7 +47,7 @@ jobs:
 
       - name: Install Remodel
         if: steps.changes.outputs.changed != '0' || github.event_name == 'workflow_dispatch'
-        run: aftman install remodel
+        run: aftman install
 
       - name: Install NPM dependencies
         if: steps.changes.outputs.changed != '0' || github.event_name == 'workflow_dispatch'
