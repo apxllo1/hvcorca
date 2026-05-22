@@ -4,6 +4,12 @@
 		"column_span": 10000000000
 	},
 	"rules": [
+		"remove_interpolated_string",
+		"remove_if_expression",
+		"remove_compound_assignment",
+		"remove_continue",
+		"remove_types",
+
 		"convert_local_function_to_assign",
 		"convert_index_to_field",
 		"compute_expression",
