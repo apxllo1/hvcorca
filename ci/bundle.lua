@@ -20,11 +20,38 @@ local RUNTIME_FILE = "ci/runtime.lua"
 local BUNDLE_TEMP = "ci/bundle.tmp"
 local DARKLUA_CONFIG = "ci/darklua.json"
 
+---Wrap bare `for k,v in tbl do` loops (Luau generalized iteration) with
+---`pairs(tbl)` so the bundle runs on script-executor VMs that still parse
+---Lua 5.1 — those VMs accept the syntax but fail at runtime when they try
+---to call the table as an iterator function. Darklua has no rule for this
+---(checked against 0.18.0), and roblox-ts emits these loops freely.
+---
+---Only matches when the in-expression is a single identifier or dotted
+---path — anything with parens, commas, or method-call colons is already a
+---valid Lua-5.1 iterator (pairs(x), ipairs(x), next, t, foo:iter(), …) so
+---we leave it alone.
+---@param source string
+---@return string
+local function addPairsIterators(source)
+	return (source:gsub("(for [%w_,]+ in )([%w_][%w_%.]*)( do)", function(prefix, expr, suffix)
+		-- Defensive: skip the four built-in iterator names. The pattern can't
+		-- match `pairs(x)` (parens) but `pairs` alone (as a function value)
+		-- would mis-wrap to `pairs(pairs)`.
+		if expr == "pairs" or expr == "ipairs" or expr == "next" then
+			return prefix .. expr .. suffix
+		end
+		return prefix .. "pairs(" .. expr .. ")" .. suffix
+	end))
+end
+
 ---Minify the given Luau source by passing it through darklua. Darklua
 ---natively understands Luau-specific syntax (inline if-then-else, backtick
----template strings, continue, +=, generic-for without iterator), so the
----bundle no longer needs the bespoke regex-based transforms that luamin
----required.
+---template strings, continue, +=), so the bundle no longer needs the
+---bespoke regex-based transforms that luamin required.
+---
+---After minification, run `addPairsIterators` to fix the one Luau feature
+---darklua doesn't normalize — generic-for loops without an explicit
+---iterator function.
 ---@param source string
 ---@return string
 local function minify(source)
@@ -37,7 +64,7 @@ local function minify(source)
 	end
 	local output = remodel.readFile(BUNDLE_TEMP)
 	os.remove(BUNDLE_TEMP)
-	return output
+	return addPairsIterators(output)
 end
 
 ---@param object LocalScript | ModuleScript
@@ -123,8 +150,13 @@ local function main()
 
 	-- Minify the assembled bundle as a single unit so darklua can rename
 	-- locals consistently and drop dead branches across the whole tree.
+	-- For the unminified path (debug bundle), still run addPairsIterators
+	-- so executor VMs that can't iterate tables directly don't blow up at
+	-- runtime inside loadstring'd module bodies.
 	if MINIFY then
 		source = minify(source)
+	else
+		source = addPairsIterators(source)
 	end
 
 	-- Write to file

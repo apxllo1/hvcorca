@@ -2079,7 +2079,7 @@ local baseEffect = Make(\"DepthOfFieldEffect\", {\
 })\
 local depthOfFieldDefaults = {}\
 local function enableAcrylic()\
-\9for effect in depthOfFieldDefaults do\
+\9for effect in pairs(depthOfFieldDefaults) do\
 \9\9effect.Enabled = false\
 \9end\
 \9baseEffect.Parent = Lighting\
