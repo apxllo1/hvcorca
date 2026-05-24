@@ -20,28 +20,129 @@ local RUNTIME_FILE = "ci/runtime.lua"
 local BUNDLE_TEMP = "ci/bundle.tmp"
 local DARKLUA_CONFIG = "ci/darklua.json"
 
----Wrap bare `for k,v in tbl do` loops (Luau generalized iteration) with
----`pairs(tbl)` so the bundle runs on script-executor VMs that still parse
+---Wrap bare `for k,v in EXPR do` loops (Luau generalized iteration) with
+---`pairs(EXPR)` so the bundle runs on script-executor VMs that still parse
 ---Lua 5.1 — those VMs accept the syntax but fail at runtime when they try
 ---to call the table as an iterator function. Darklua has no rule for this
 ---(checked against 0.18.0), and roblox-ts emits these loops freely.
 ---
----Only matches when the in-expression is a single identifier or dotted
----path — anything with parens, commas, or method-call colons is already a
----valid Lua-5.1 iterator (pairs(x), ipairs(x), next, t, foo:iter(), …) so
----we leave it alone.
+---EXPR is anything between `in` and the matching top-level ` do`. We track
+---paren / bracket / brace depth so we don't terminate on a `do` nested in
+---a function literal or string. We then leave EXPR alone if it's already a
+---known iterator form — pairs(…), ipairs(…), next, …, string.gmatch(…) —
+---and otherwise wrap it.
+---
+---Handles all the call shapes roblox-ts emits after darklua minifies:
+---   for k,v in tbl            do  →  for k,v in pairs(tbl)            do
+---   for k,v in tbl.field      do  →  for k,v in pairs(tbl.field)      do
+---   for k,v in obj:Method()   do  →  for k,v in pairs(obj:Method())   do
+---   for k,v in (expr or alt)  do  →  for k,v in pairs((expr or alt))  do
 ---@param source string
 ---@return string
 local function addPairsIterators(source)
-	return (source:gsub("(for [%w_,]+ in )([%w_][%w_%.]*)( do)", function(prefix, expr, suffix)
-		-- Defensive: skip the four built-in iterator names. The pattern can't
-		-- match `pairs(x)` (parens) but `pairs` alone (as a function value)
-		-- would mis-wrap to `pairs(pairs)`.
-		if expr == "pairs" or expr == "ipairs" or expr == "next" then
-			return prefix .. expr .. suffix
+	local len = #source
+	local out = {}
+	local cursor = 1
+
+	-- Skip-the-iterator names (followed by `(`, whitespace, or `,` to bind
+	-- as the boundary). `next` accepts `next, t` so we also allow `,`.
+	local function alreadyIterator(expr)
+		expr = expr:gsub("^%s+", "")
+		for _, name in ipairs({ "pairs", "ipairs", "next", "string.gmatch", "io.lines" }) do
+			if expr == name then return true end
+			local nlen = #name
+			if expr:sub(1, nlen) == name then
+				local after = expr:sub(nlen + 1, nlen + 1)
+				if after == "(" or after == " " or after == "\t" or after == "," then
+					return true
+				end
+			end
 		end
-		return prefix .. "pairs(" .. expr .. ")" .. suffix
-	end))
+		return false
+	end
+
+	while cursor <= len do
+		-- Find next candidate `for` keyword followed by IDS, space, `in`, then
+		-- a space, newline, or open-paren (so we tolerate darklua's dense
+		-- output where `in(` has no space).
+		local fStart, fEnd = source:find("for[ \t\n][ \t\n%w_,]+[ \t\n]in[ \t\n%(]", cursor)
+		if not fStart then
+			table.insert(out, source:sub(cursor))
+			break
+		end
+
+		-- Word-boundary check on the left.
+		local skipThis = false
+		if fStart > 1 then
+			local left = source:sub(fStart - 1, fStart - 1)
+			if left:match("[%w_]") then
+				skipThis = true
+			end
+		end
+
+		if skipThis then
+			table.insert(out, source:sub(cursor, fStart))
+			cursor = fStart + 1
+		else
+			-- Locate the position just past `in` — that's where the in-expr starts.
+			local _, inEnd = source:find("[ \t\n]in[ \t\n%(]", fStart)
+			local exprStart = inEnd
+
+			-- Walk forward to matching ` do` at depth 0.
+			local depth = 0
+			local i = exprStart
+			local doStart = nil
+			while i <= len do
+				local ch = source:sub(i, i)
+				if ch == "(" or ch == "[" or ch == "{" then
+					depth = depth + 1
+				elseif ch == ")" or ch == "]" or ch == "}" then
+					depth = depth - 1
+				elseif ch == "'" or ch == "\"" then
+					local q = ch
+					i = i + 1
+					while i <= len and source:sub(i, i) ~= q do
+						if source:sub(i, i) == "\\" then i = i + 1 end
+						i = i + 1
+					end
+				elseif depth == 0 and ch == "d" and source:sub(i + 1, i + 1) == "o" then
+					local lc = source:sub(i - 1, i - 1)
+					local rc = source:sub(i + 2, i + 2)
+					local leftOk = lc == "" or not lc:match("[%w_]")
+					local rightOk = rc == "" or not rc:match("[%w_]")
+					if leftOk and rightOk then
+						doStart = i
+						break
+					end
+				end
+				i = i + 1
+			end
+
+			if not doStart then
+				table.insert(out, source:sub(cursor, fEnd))
+				cursor = fEnd + 1
+			else
+				local rawExpr = source:sub(exprStart, doStart - 1)
+				local trimmed = rawExpr:gsub("^%s+", ""):gsub("%s+$", "")
+				table.insert(out, source:sub(cursor, exprStart - 1))
+				if alreadyIterator(trimmed) then
+					table.insert(out, rawExpr)
+				else
+					local leading = rawExpr:match("^(%s*)") or ""
+					local trailing = rawExpr:match("(%s*)$") or ""
+					-- Darklua emits dense output like `in(expr)` — no space
+					-- after `in`. If we wrap without ensuring a separator we
+					-- get `inpairs(...)`, which is one identifier. Force a
+					-- single space when no leading whitespace exists.
+					if leading == "" then leading = " " end
+					table.insert(out, leading .. "pairs(" .. trimmed .. ")" .. trailing)
+				end
+				cursor = doStart
+			end
+		end
+	end
+
+	return table.concat(out)
 end
 
 ---Minify the given Luau source by passing it through darklua. Darklua
