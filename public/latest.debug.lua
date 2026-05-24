@@ -5,7 +5,7 @@
 --
 -- Author: apxllo
 -- License: MIT
--- Version: "V0.1.2"
+-- Version: "v1.1.4"
 -- GitHub: https://github.com/apxllo1/hvcorca
 --]]
 
@@ -108,7 +108,7 @@ end
 ---@return table<string, any> environment
 local function newEnv(id)
 	return setmetatable({
-		VERSION = "V0.1.2",
+		VERSION = "v1.1.4",
 		script = instanceFromId[id],
 		require = function(module)
 			return requireModuleInternal(module, instanceFromId[id])
@@ -396,7 +396,7 @@ local _object_1 = {\
 \9\9Offset = Vector3.new(0, 0, -0.000001),\
 \9}) },\
 }\
-for _k, _v in fill do\
+for _k, _v in pairs(fill) do\
 \9_object_1[_k] = _v\
 end\
 local _exp = Make(\"Part\", _object_1)\
@@ -407,7 +407,7 @@ local _object_2 = {\
 \9\9Offset = Vector3.new(0, 0, 0.000001),\
 \9}) },\
 }\
-for _k, _v in fill do\
+for _k, _v in pairs(fill) do\
 \9_object_2[_k] = _v\
 end\
 local _exp_1 = Make(\"Part\", _object_2)\
@@ -417,7 +417,7 @@ local _object_3 = {\
 \9\9MeshType = Enum.MeshType.Cylinder,\
 \9}) },\
 }\
-for _k, _v in corner do\
+for _k, _v in pairs(corner) do\
 \9_object_3[_k] = _v\
 end\
 local _exp_2 = Make(\"Part\", _object_3)\
@@ -427,7 +427,7 @@ local _object_4 = {\
 \9\9MeshType = Enum.MeshType.Cylinder,\
 \9}) },\
 }\
-for _k, _v in corner do\
+for _k, _v in pairs(corner) do\
 \9_object_4[_k] = _v\
 end\
 local _exp_3 = Make(\"Part\", _object_4)\
@@ -437,7 +437,7 @@ local _object_5 = {\
 \9\9MeshType = Enum.MeshType.Cylinder,\
 \9}) },\
 }\
-for _k, _v in corner do\
+for _k, _v in pairs(corner) do\
 \9_object_5[_k] = _v\
 end\
 local _exp_4 = Make(\"Part\", _object_5)\
@@ -447,7 +447,7 @@ local _object_6 = {\
 \9\9MeshType = Enum.MeshType.Cylinder,\
 \9}) },\
 }\
-for _k, _v in corner do\
+for _k, _v in pairs(corner) do\
 \9_object_6[_k] = _v\
 end\
 _object[_left] = { _exp, _exp_1, _exp_2, _exp_3, _exp_4, Make(\"Part\", _object_6) }\
@@ -2026,12 +2026,12 @@ local _newValue = table.create(#_exp)\
 local _callback = function(t)\
 \9return { t.name, t }\
 end\
-for _k, _v in _exp do\
+for _k, _v in pairs(_exp) do\
 \9_newValue[_k] = _callback(_v, _k - 1, _exp)\
 end\
 -- ▲ ReadonlyArray.map ▲\
 local _map = {}\
-for _, _v in _newValue do\
+for _, _v in pairs(_newValue) do\
 \9_map[_v[1]] = _v[2]\
 end\
 local THEME_MAP = _map\
@@ -2079,7 +2079,7 @@ local baseEffect = Make(\"DepthOfFieldEffect\", {\
 })\
 local depthOfFieldDefaults = {}\
 local function enableAcrylic()\
-\9for effect in pairs(depthOfFieldDefaults) do\
+\9for effect in depthOfFieldDefaults do\
 \9\9effect.Enabled = false\
 \9end\
 \9baseEffect.Parent = Lighting\
@@ -4332,7 +4332,7 @@ local _callback = function(t)\
 \9return t ~= nil\
 end\
 local _length = 0\
-for _k, _v in _exp do\
+for _k, _v in pairs(_exp) do\
 \9if _callback(_v, _k - 1, _exp) == true then\
 \9\9_length += 1\
 \9\9_newValue[_length] = _v\
@@ -4347,7 +4347,7 @@ local _callback_1 = function(theme)\
 \9local _theme = theme\
 \9themeMap[_name] = _theme\
 end\
-for _k, _v in themeList do\
+for _k, _v in pairs(themeList) do\
 \9_callback_1(_v, _k - 1, themeList)\
 end\
 -- ▲ ReadonlyArray.forEach ▲\
@@ -10882,7 +10882,7 @@ end\
 \
 \9If a Promise in the array of values is already Rejected when `Promise.each` is called, `Promise.each` rejects with that value immediately (the predicate callback will never be called even once). If a Promise in the list is already Cancelled when `Promise.each` is called, `Promise.each` rejects with `Promise.Error(Promise.Error.Kind.AlreadyCancelled`). If a Promise in the array of values is Started at first, but later rejects, `Promise.each` will reject with that value and iteration will not continue once iteration encounters that value.\
 \
-\9Returns a Promise containing an array of the returned/resolved values from the predicate for each item in the array of values.\
+\9Returns a Promise containing an array of the returned/resolved values from the predicate for each item in pairs(the array of values.\
 \
 \9If this Promise returned from `Promise.each` rejects or is cancelled for any reason, the following are true:\
 \9- Iteration will not continue.\
@@ -10918,7 +10918,7 @@ function Promise.each(list, predicate)\
 \
 \9\9-- We need to preprocess the list of values and look for Promises.\
 \9\9-- If we find some, we must register our andThen calls now, so that those Promises have a consumer\
-\9\9-- from us registered. If we don't do this, those Promises might get cancelled by something else\
+\9\9-- from us registered. If we don't) do this, those Promises might get cancelled by something else\
 \9\9-- before we get to them in the series because it's not possible to tell that we plan to use it\
 \9\9-- unless we indicate it here.\
 \
